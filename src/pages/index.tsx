@@ -3,13 +3,15 @@ import InteractiveRoom from '@components/InteractiveRoom'
 
 export default function Home() {
   return (
-    <main className="flex flex-col min-h-screen">
+    <>
       <NavBar />
-      <div className="flex flex-grow justify-center">
-        <div className="flex-grow">
-          <InteractiveRoom />
+      <main className="flex flex-col min-h-screen">
+        <div className="flex flex-grow justify-center">
+          <div className="flex-grow">
+            <InteractiveRoom />
+          </div>
         </div>
-      </div>
-    </main>  
+      </main>
+    </>
   )
 }
