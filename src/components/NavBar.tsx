@@ -45,7 +45,7 @@ export default function NavBar() {
           id="navbar-menu"
           className="hidden w-full items-center justify-between md:order-1 md:flex md:w-auto"
         >
-          <ul className="flex w-full flex-col gap-x-10 p-4 font-thin uppercase md:flex-row md:p-0 ">
+          <ul className="flex w-full flex-col gap-x-10 p-4 capitalize md:flex-row md:p-0 ">
             {links.map((link) => (
               <li key={link.name}>
                 <a
