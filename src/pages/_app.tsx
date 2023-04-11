@@ -8,5 +8,9 @@ const roboto = Roboto({
 });
 
 export default function App({ Component, pageProps }: AppProps) {
-  return <Component className={roboto.className} {...pageProps} />;
+  return (
+    <div className={roboto.className}>
+      <Component {...pageProps} />;
+    </div>
+  );
 }
