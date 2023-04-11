@@ -1,11 +1,11 @@
-import NavBar from '@components/NavBar'
-import InteractiveRoom from '@components/InteractiveRoom'
+import NavBar from '@components/NavBar';
+import InteractiveRoom from '@components/InteractiveRoom';
 
 export default function Home() {
   return (
     <>
       <NavBar />
-      <main className="flex flex-col min-h-screen">
+      <main className="flex min-h-screen flex-col">
         <div className="flex flex-grow justify-center">
           <div className="flex-grow">
             <InteractiveRoom />
@@ -13,5 +13,5 @@ export default function Home() {
         </div>
       </main>
     </>
-  )
+  );
 }
