@@ -8,7 +8,7 @@ const links = [
 export default function NavBar() {
   return (
     <nav className="fixed top-0 z-20 w-full border-b-[1px] border-white/20 bg-white/40 backdrop-blur-[8px] dark:bg-black/40">
-      <div className="mx-auto flex max-w-screen-xl items-center justify-between p-5 pl-10 pr-10">
+      <div className="mx-auto flex max-w-screen-xl items-center justify-between p-5 px-10">
         <Image
           className="relative ml-5 dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
           src="/next.svg"
