@@ -1,8 +1,19 @@
 import Image from 'next/image';
+import Link from 'next/link';
 
 const links = [
-  { name: 'About', href: '/about' },
-  { name: 'Contact', href: '/contact' }
+  {
+    label: 'Home',
+    href: '/'
+  },
+  {
+    label: 'About',
+    href: '/about'
+  },
+  {
+    label: 'Contact',
+    href: '/contact'
+  }
 ];
 
 export default function NavBar() {
@@ -46,14 +57,14 @@ export default function NavBar() {
           className="hidden w-full items-center justify-between md:order-1 md:flex md:w-auto"
         >
           <ul className="flex w-full flex-col gap-x-10 p-4 capitalize md:flex-row md:p-0 ">
-            {links.map((link) => (
-              <li key={link.name}>
-                <a
-                  href={link.href}
+            {links.map(({ label, href }) => (
+              <li key={label}>
+                <Link
+                  href={href}
                   className="dark:hover:drop-shadow-[0_0_0.3rem_#ffffff70]"
                 >
-                  {link.name}
-                </a>
+                  {label}
+                </Link>
               </li>
             ))}
           </ul>
