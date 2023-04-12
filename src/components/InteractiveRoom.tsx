@@ -16,7 +16,6 @@ export default function InteractiveRoom() {
 }
 
 function Scene(props: any) {
-  const time = useTime();
   return (
     <motion.group {...props} dispose={null}>
       <motion.ambientLight />
