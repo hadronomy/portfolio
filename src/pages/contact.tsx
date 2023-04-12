@@ -5,7 +5,7 @@ export default function ContactPage() {
   return (
     <>
       <Head>
-        <title>Hadronomy | Contact</title>
+        <title>Contact | Hadronomy</title>
       </Head>
       <NavBar />
       <main>

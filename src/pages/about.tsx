@@ -5,7 +5,7 @@ export default function AboutPage() {
   return (
     <>
       <Head>
-        <title>Hadronomy | About</title>
+        <title>About | Hadronomy</title>
       </Head>
       <NavBar />
       <main>

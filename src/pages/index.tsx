@@ -6,7 +6,7 @@ export default function HomePage() {
   return (
     <>
       <Head>
-        <title>Hadronomy | Home</title>
+        <title>Hadronomy - Pablo Hernández</title>
       </Head>
       <NavBar />
       <main className="flex min-h-screen flex-col">
