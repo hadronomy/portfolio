@@ -1,5 +1,5 @@
 import { Canvas } from '@react-three/fiber';
-import { motion, useTime } from 'framer-motion-3d';
+import { motion } from 'framer-motion-3d';
 import { useState } from 'react';
 import { PerformanceMonitor } from '@react-three/drei';
 import RotatingCube from '@components/3d/RotatingCube';
