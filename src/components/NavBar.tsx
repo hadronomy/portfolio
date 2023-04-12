@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Bars3Icon } from '@heroicons/react/24/solid';
+import { useRouter } from 'next/router';
 
 const links = [
   {
@@ -18,6 +19,8 @@ const links = [
 ];
 
 export default function NavBar() {
+  const router = useRouter();
+
   return (
     <nav className="fixed top-0 z-20 w-full border-b-[1px] border-white/20 bg-white/40 backdrop-blur-[8px] dark:bg-black/40">
       <div className="mx-auto flex max-w-screen-xl items-center justify-between p-5 px-10">
@@ -50,7 +53,9 @@ export default function NavBar() {
               <li key={label}>
                 <Link
                   href={href}
-                  className="dark:hover:drop-shadow-[0_0_0.3rem_#ffffff70]"
+                  className="aria-selected:border-b-2 dark:hover:drop-shadow-[0_0_0.3rem_#ffffff70]"
+                  aria-current={router.route === href ? 'page' : undefined}
+                  aria-selected={router.route === href}
                 >
                   {label}
                 </Link>
