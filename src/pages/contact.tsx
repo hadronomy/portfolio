@@ -1,7 +1,7 @@
 import NavBar from '@components/NavBar';
 import Head from 'next/head';
 
-export default function Contact() {
+export default function ContactPage() {
   return (
     <>
       <Head>

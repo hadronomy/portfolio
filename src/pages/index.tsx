@@ -2,7 +2,7 @@ import NavBar from '@components/NavBar';
 import InteractiveRoom from '@components/InteractiveRoom';
 import Head from 'next/head';
 
-export default function Home() {
+export default function HomePage() {
   return (
     <>
       <Head>

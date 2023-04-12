@@ -1,7 +1,7 @@
 import NavBar from '@components/NavBar';
 import Head from 'next/head';
 
-export default function About() {
+export default function AboutPage() {
   return (
     <>
       <Head>
