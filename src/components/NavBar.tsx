@@ -23,7 +23,7 @@ export default function NavBar() {
 
   return (
     <nav className="fixed top-0 z-20 w-full border-b-[1px] border-white/20 bg-white/40 backdrop-blur-[8px] dark:bg-black/40">
-      <div className="mx-auto flex max-w-screen-xl items-center justify-between p-5 md:px-10">
+      <div className="mx-auto flex max-w-screen-xl items-center justify-between p-6">
         <div className="flex md:order-2 md:hidden">
           <button
             data-collapse-toggle="navbar-menu"
