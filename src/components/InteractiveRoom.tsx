@@ -6,8 +6,18 @@ import RotatingCube from '@components/3d/RotatingCube';
 
 export default function InteractiveRoom() {
   const [badPerf, degrade] = useState(false);
+
   return (
-    <Canvas shadows dpr={[1, badPerf ? 1.5 : 2]}>
+    <Canvas
+      shadows
+      dpr={[1, badPerf ? 1.5 : 2]}
+      camera={{
+        fov: 50,
+        near: 0.1,
+        far: 1000,
+        position: [0, 0, 0]
+      }}
+    >
       <PerformanceMonitor onDecline={() => degrade(true)} />
       <color attach="background" args={['#000000']} />
       <Scene />
