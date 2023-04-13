@@ -10,7 +10,7 @@ export default function ContactPage() {
       <NavBar />
       <main>
         <div className="flex min-h-screen flex-col justify-center">
-          <h1 className="mx-auto text-9xl">Contact</h1>
+          <h1 className="mx-auto text-8xl">Contact</h1>
           <p className="mx-auto text-lg uppercase tracking-widest">
             Under construction
           </p>
