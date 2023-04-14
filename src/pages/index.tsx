@@ -21,56 +21,63 @@ export default function HomePage() {
         <title>Hadronomy - Pablo Hernández</title>
       </Head>
       <NavBar />
-      <section className="flex min-h-screen flex-col">
-        <div className="relative flex-grow grid-cols-12 grid-rows-6 gap-4 p-10">
-          <div className="h-auto w-auto rounded-2xl p-5 text-left md:absolute md:z-10 md:ml-10">
-            <div className="flex flex-col">
-              <span className="text-6xl md:text-8xl">
-                <span className={`${balooChettan2.className} `}>I&apos;m </span>
-                <span className="font-semibold">Pablo</span>
-              </span>
-              <span
-                className={`${bellota.className} text-5xl font-semibold underline decoration-sky-500 md:text-8xl`}
-              >
-                Hernandez
-              </span>
-              <span className="mt-4 text-4xl will-change-contents">
-                <Typewritter
-                  options={{ loop: true }}
-                  onInit={(typewriter) => {
-                    typewriter
-                      .typeString('Hi 👋')
-                      .pauseFor(500)
-                      .deleteAll()
-                      .typeString(
-                        `I'm a <b class="text-emerald-500">Developer</b>`
-                      )
-                      .pauseFor(1000)
-                      .deleteChars('Developer'.length)
-                      .pauseFor(1000)
-                      .deleteAll()
-                      .typeString(
-                        '<span>I 💕 <b class="text-amber-300">EVERYTHING</b></span> related to code'
-                      )
-                      .changeDeleteSpeed(50)
-                      .deleteAll()
-                      .start();
-                  }}
-                />
-              </span>
+      <main>
+        <section className="flex min-h-screen flex-col">
+          <div className="relative flex-grow grid-cols-12 grid-rows-6 gap-4 p-10">
+            <div className="h-auto w-auto rounded-2xl p-5 text-left md:absolute md:z-10 md:ml-10">
+              <div className="flex flex-col">
+                <span className="text-6xl md:text-8xl">
+                  <span className={`${balooChettan2.className} `}>
+                    I&apos;m{' '}
+                  </span>
+                  <span className="font-semibold">Pablo</span>
+                </span>
+                <span
+                  className={`${bellota.className} text-5xl font-semibold underline decoration-sky-500 md:text-8xl`}
+                >
+                  Hernandez
+                </span>
+                <span className="mt-4 text-4xl will-change-contents">
+                  <Typewritter
+                    options={{ loop: true }}
+                    onInit={(typewriter) => {
+                      typewriter
+                        .typeString('Hi 👋')
+                        .pauseFor(500)
+                        .deleteAll()
+                        .typeString(
+                          `I'm a <b class="text-emerald-500">Developer</b>`
+                        )
+                        .pauseFor(1000)
+                        .deleteChars('Developer'.length)
+                        .pauseFor(1000)
+                        .deleteAll()
+                        .typeString(
+                          '<span>I 💕 <b class="text-amber-300">EVERYTHING</b></span> related to code'
+                        )
+                        .changeDeleteSpeed(50)
+                        .deleteAll()
+                        .start();
+                    }}
+                  />
+                </span>
+              </div>
+              {/* Socials */}
             </div>
-            {/* Socials */}
+            <div className="bottom-0 right-0 hidden h-full w-full overflow-clip rounded-2xl md:absolute md:flex">
+              <InteractiveRoom />
+            </div>
           </div>
-          <div className="bottom-0 right-0 hidden h-full w-full overflow-clip rounded-2xl md:absolute md:flex">
-            <InteractiveRoom />
-          </div>
-        </div>
-      </section>
-      <section id="about" className="h-[900px] snap-start border-t-2"></section>
-      <section
-        id="contact"
-        className="h-[900px] snap-start border-t-2"
-      ></section>
+        </section>
+        <section
+          id="about"
+          className="h-[900px] snap-start border-t-2"
+        ></section>
+        <section
+          id="contact"
+          className="h-[900px] snap-start border-t-2"
+        ></section>
+      </main>
       {/* Footer */}
     </>
   );

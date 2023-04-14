@@ -22,8 +22,8 @@ export default function NavBar() {
   const router = useRouter();
 
   return (
-    <nav className="sticky top-0 z-20 w-full border-b-[1px] border-white/20 bg-white/40 backdrop-blur-[8px] dark:bg-black/40">
-      <div className="mx-auto flex max-w-screen-xl items-center justify-between p-6">
+    <header className="sticky top-0 z-20 w-full border-b-[1px] border-white/20 bg-white/40 backdrop-blur-[8px] dark:bg-black/40">
+      <nav className="mx-auto flex max-w-screen-xl items-center justify-between p-6">
         <div className="flex md:order-2 md:hidden">
           <button
             data-collapse-toggle="navbar-menu"
@@ -68,7 +68,7 @@ export default function NavBar() {
             <HiMoon className="h-full w-full" />
           </button>
         </div>
-      </div>
-    </nav>
+      </nav>
+    </header>
   );
 }
