@@ -66,6 +66,11 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+      <section id="about" className="h-[900px] snap-start border-t-2"></section>
+      <section
+        id="contact"
+        className="h-[900px] snap-start border-t-2"
+      ></section>
       {/* Footer */}
     </>
   );

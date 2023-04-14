@@ -10,11 +10,11 @@ const links = [
   },
   {
     label: 'About',
-    href: '/about'
+    href: '#about'
   },
   {
     label: 'Contact',
-    href: '/contact'
+    href: '#contact'
   }
 ];
 

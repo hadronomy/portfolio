@@ -9,7 +9,7 @@ const urbanist = Urbanist({
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
-    <div className={urbanist.className}>
+    <div className={`${urbanist.className}`}>
       <Component {...pageProps} />;
     </div>
   );
