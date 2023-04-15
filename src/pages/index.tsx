@@ -4,7 +4,7 @@ import Head from 'next/head';
 
 export default function HomePage() {
   return (
-    <div className="scroll h-screen flex-col divide-y-[1px] divide-white/30 overflow-y-scroll">
+    <div className="scroll h-screen flex-col overflow-y-scroll">
       <Head>
         <title>Hadronomy - Pablo Hernández</title>
       </Head>
