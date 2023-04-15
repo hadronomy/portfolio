@@ -15,7 +15,7 @@ const bellota = Bellota({
 export default function Hero() {
   return (
     <div className="relative flex flex-grow grid-cols-12 grid-rows-6 gap-4 p-10">
-      <div className="z-10 flex h-auto w-auto place-items-center justify-center rounded-2xl p-5 text-left">
+      <div className="z-10 flex h-auto w-auto justify-center rounded-2xl p-5 pt-40 text-left">
         <div className="flex flex-col">
           <span className="text-6xl md:text-8xl">
             <span className={`${balooChettan2.className} `}>I&apos;m </span>
