@@ -9,7 +9,7 @@ export default function HomePage() {
         <title>Hadronomy - Pablo Hernández</title>
       </Head>
       <NavBar />
-      <section className="flex h-screen snap-start flex-col">
+      <section id="hero" className="flex h-screen snap-start flex-col">
         <Hero />
       </section>
       <section id="about" className="h-screen snap-start">

@@ -6,15 +6,15 @@ import { useRouter } from 'next/router';
 const links = [
   {
     label: 'Home',
-    href: '/'
+    href: '/#hero'
   },
   {
     label: 'About',
-    href: '#about'
+    href: '/#about'
   },
   {
     label: 'Contact',
-    href: '#contact'
+    href: '/#contact'
   }
 ];
 
