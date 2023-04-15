@@ -31,6 +31,7 @@ export default function NavBar({}: Props) {
             data-collapse-toggle="navbar-menu"
             type="button"
             className="inline-flex h-10 w-10 items-center rounded-lg p-3 text-sm text-white ring-slate-50/60 transition-all hover:ring-2 after:hover:ring-slate-50/30 focus:ring-2 active:ring-slate-50 md:hidden"
+            aria-label="Menu Button"
             aria-controls="navbar-menu"
             aria-expanded="false"
           >
@@ -55,9 +56,9 @@ export default function NavBar({}: Props) {
               <li key={label}>
                 <Link
                   href={href}
-                  className="aria-selected:border-b-2 dark:hover:drop-shadow-[0_0_0.3rem_#ffffff70]"
+                  className="dark:hover:drop-shadow-[0_0_0.3rem_#ffffff70]"
                   aria-current={router.route === href ? 'page' : undefined}
-                  aria-selected={router.route === href}
+                  aria-label={label}
                 >
                   {label}
                 </Link>
@@ -66,7 +67,10 @@ export default function NavBar({}: Props) {
           </ul>
         </div>
         <div className="order-last items-center">
-          <button className="inline-flex h-10 w-10 items-center rounded-lg p-3 text-sm text-white ring-slate-50/60 transition-all hover:ring-2  hover:ring-slate-50/30 focus:ring-2 active:ring-slate-50">
+          <button
+            className="inline-flex h-10 w-10 items-center rounded-lg p-3 text-sm text-white ring-slate-50/60 transition-all hover:ring-2  hover:ring-slate-50/30 focus:ring-2 active:ring-slate-50"
+            aria-label="Dark Mode Button"
+          >
             <HiMoon className="h-full w-full" />
           </button>
         </div>
