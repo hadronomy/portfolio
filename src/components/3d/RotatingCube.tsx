@@ -2,10 +2,11 @@ import { useState, useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { motion, useTime } from 'framer-motion-3d';
 
-export default function RotatingCube(props: any) {
+type Props = {};
+
+export default function RotatingCube({}: Props) {
   return (
     <motion.mesh
-      {...props}
       animate={{
         rotateX: 2 * Math.PI,
         transition: { duration: 3, repeat: Infinity, ease: 'anticipate' }

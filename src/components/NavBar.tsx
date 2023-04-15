@@ -18,7 +18,9 @@ const links = [
   }
 ];
 
-export default function NavBar() {
+type Props = {};
+
+export default function NavBar({}: Props) {
   const router = useRouter();
 
   return (

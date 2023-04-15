@@ -4,7 +4,9 @@ import { useState } from 'react';
 import { PerformanceMonitor } from '@react-three/drei';
 import RotatingCube from '@components/3d/RotatingCube';
 
-export default function InteractiveRoom() {
+type Props = {};
+
+export default function InteractiveRoom({}: Props) {
   const [badPerf, degrade] = useState(false);
 
   return (
@@ -25,9 +27,11 @@ export default function InteractiveRoom() {
   );
 }
 
-function Scene(props: any) {
+type SceneProps = {};
+
+function Scene({}: SceneProps) {
   return (
-    <motion.group {...props} dispose={null}>
+    <motion.group dispose={null}>
       <motion.ambientLight />
       <RotatingCube />
     </motion.group>
