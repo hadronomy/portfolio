@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import { HiMoon, HiMenuAlt1 } from 'react-icons/hi';
 import { useRouter } from 'next/router';
