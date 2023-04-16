@@ -24,10 +24,10 @@ const socials = [
     link: 'https://github.com/Hadronomy'
   },
   {
-    link: 'https://twitter.com'
+    link: 'https://twitter.com/hadronomy'
   },
   {
-    link: 'https://linkedin.com'
+    link: 'https://linkedin.com/in/hadronomy'
   }
 ];
 
