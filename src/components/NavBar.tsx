@@ -83,7 +83,8 @@ export default function NavBar({}: Props) {
         </div>
         <div className="order-last items-center">
           <button
-            className="inline-flex h-10 w-10 items-center rounded-lg p-3 text-sm text-white ring-slate-50/60 transition-all hover:ring-2  hover:ring-slate-50/30 focus:ring-2 active:ring-slate-50"
+            disabled={true}
+            className="inline-flex h-10 w-10 items-center rounded-lg p-3 text-sm text-white ring-slate-50/60 transition-all hover:ring-2 hover:ring-slate-50/30  focus:ring-2 active:ring-slate-50 disabled:opacity-20"
             aria-label="Dark Mode Button"
           >
             <HiMoon className="h-full w-full" />
