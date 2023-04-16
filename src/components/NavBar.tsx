@@ -2,6 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { HiMoon, HiMenuAlt1 } from 'react-icons/hi';
 import { useRouter } from 'next/router';
+import { SocialIcon } from 'react-social-icons';
 
 const links = [
   {
@@ -18,14 +19,26 @@ const links = [
   }
 ];
 
+const socials = [
+  {
+    link: 'https://github.com/Hadronomy'
+  },
+  {
+    link: 'https://twitter.com'
+  },
+  {
+    link: 'https://linkedin.com'
+  }
+];
+
 type Props = {};
 
 export default function NavBar({}: Props) {
   const router = useRouter();
 
   return (
-    <header className="sticky top-0 z-20 w-full border-b-[1px] border-white/20 bg-white/40 backdrop-blur-[8px] dark:bg-black/40">
-      <nav className="mx-auto flex max-w-screen-xl items-center justify-between p-6">
+    <header className="sticky top-0 z-20 max-h-20 w-full border-b-[1px] border-white/20 bg-white/40 backdrop-blur-[8px] dark:bg-black/40">
+      <nav className="mx-auto flex max-h-20 max-w-screen-xl items-center justify-between p-6">
         <div className="flex md:order-2 md:hidden">
           <button
             data-collapse-toggle="navbar-menu"
@@ -39,14 +52,17 @@ export default function NavBar({}: Props) {
             <HiMenuAlt1 className="h-full w-full" />
           </button>
         </div>
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={80}
-          height={80}
-          priority
-        />
+        <div className="flex max-h-10 items-center justify-between gap-x-2 align-middle">
+          {socials.map(({ link }) => (
+            <SocialIcon
+              key={link}
+              className="scale-75"
+              bgColor="transparent"
+              fgColor="white"
+              url={link}
+            />
+          ))}
+        </div>
         <div
           id="navbar-menu"
           className="hidden w-full items-center justify-between md:order-1 md:flex md:w-auto"
