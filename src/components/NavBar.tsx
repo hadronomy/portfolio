@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { HiMoon, HiMenuAlt1 } from 'react-icons/hi';
-import { useRouter } from 'next/router';
 import { SocialIcon } from 'react-social-icons';
 
 const links = [
@@ -33,8 +32,6 @@ const socials = [
 type Props = {};
 
 export default function NavBar({}: Props) {
-  const router = useRouter();
-
   return (
     <header className="sticky top-0 z-20 max-h-20 w-full border-b-[1px] border-white/20 bg-white/40 backdrop-blur-[8px] dark:bg-black/40">
       <nav className="mx-auto flex max-h-20 max-w-screen-xl items-center justify-between p-6">
@@ -72,7 +69,6 @@ export default function NavBar({}: Props) {
                 <Link
                   href={href}
                   className="dark:hover:drop-shadow-[0_0_0.3rem_#ffffff70]"
-                  aria-current={router.route === href ? 'page' : undefined}
                   aria-label={label}
                 >
                   {label}
