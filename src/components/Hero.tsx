@@ -1,11 +1,6 @@
-import { Baloo_Chettan_2, Bellota } from 'next/font/google';
+import { Bellota } from 'next/font/google';
 import Typewritter from 'typewriter-effect';
 import InteractiveRoom from '@components/InteractiveRoom';
-
-const balooChettan2 = Baloo_Chettan_2({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700']
-});
 
 const bellota = Bellota({
   subsets: ['latin'],
