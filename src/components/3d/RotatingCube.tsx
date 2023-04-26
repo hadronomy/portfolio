@@ -1,10 +1,8 @@
-import { useState, useRef } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { motion, useTime } from 'framer-motion-3d';
+import { motion } from 'framer-motion-3d';
 
-type Props = {};
+type RotatingCubeProps = {};
 
-export default function RotatingCube({}: Props) {
+export default function RotatingCube({}: RotatingCubeProps) {
   return (
     <motion.mesh
       animate={{

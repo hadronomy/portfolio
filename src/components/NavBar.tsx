@@ -29,9 +29,9 @@ const socials = [
   }
 ];
 
-type Props = {};
+type NavBarProps = {};
 
-export default function NavBar({}: Props) {
+export default function NavBar({}: NavBarProps) {
   return (
     <header className="sticky top-0 z-20 max-h-20 w-full border-b-[1px] border-white/20 bg-white/40 backdrop-blur-[8px] dark:bg-black/40">
       <nav className="mx-auto flex max-h-20 max-w-screen-xl items-center justify-between p-6">

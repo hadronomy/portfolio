@@ -7,9 +7,9 @@ const bellota = Bellota({
   weight: ['400', '400', '700']
 });
 
-type Props = {};
+type HeroProps = {};
 
-export default function Hero({}: Props) {
+export default function Hero({}: HeroProps) {
   return (
     <div className="relative flex flex-grow p-10">
       <div className="flex h-fit w-full place-items-center justify-center rounded-2xl p-5 text-left">

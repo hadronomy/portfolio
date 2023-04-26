@@ -4,9 +4,9 @@ import { useState } from 'react';
 import { PerformanceMonitor } from '@react-three/drei';
 import RotatingCube from '@components/3d/RotatingCube';
 
-type Props = {};
+type InteractiveRoomProps = {};
 
-export default function InteractiveRoom({}: Props) {
+export default function InteractiveRoom({}: InteractiveRoomProps) {
   const [badPerf, degrade] = useState(false);
 
   return (
