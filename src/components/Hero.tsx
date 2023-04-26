@@ -1,17 +1,19 @@
 import { Bellota } from 'next/font/google';
 import Typewritter from 'typewriter-effect';
 import InteractiveRoom from '@components/InteractiveRoom';
+import { cn } from '@/lib/utils';
+import React from 'react';
 
 const bellota = Bellota({
   subsets: ['latin'],
   weight: ['400', '400', '700']
 });
 
-type HeroProps = {};
+type HeroProps = React.HTMLAttributes<HTMLDivElement> & {};
 
-export default function Hero({}: HeroProps) {
+export default function Hero({ className, ...props }: HeroProps) {
   return (
-    <div className="relative flex flex-grow p-10">
+    <div className={cn('relative flex flex-grow p-10', className)} {...props}>
       <div className="flex h-fit w-full place-items-center justify-center rounded-2xl p-5 text-left">
         <div className="mx-auto flex flex-col space-y-5">
           <div className="flex w-fit flex-col">

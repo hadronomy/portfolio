@@ -22,6 +22,12 @@ dependencies:
   autoprefixer:
     specifier: 10.4.14
     version: 10.4.14(postcss@8.4.21)
+  class-variance-authority:
+    specifier: ^0.5.3
+    version: 0.5.3(typescript@5.0.4)
+  clsx:
+    specifier: ^1.2.1
+    version: 1.2.1
   eslint:
     specifier: 8.38.0
     version: 8.38.0
@@ -52,6 +58,9 @@ dependencies:
   framer-motion-3d:
     specifier: ^10.11.2
     version: 10.11.2(@react-three/fiber@8.12.0)(react-dom@18.2.0)(react@18.2.0)(three@0.151.3)
+  lucide-react:
+    specifier: ^0.180.0
+    version: 0.180.0(react@18.2.0)
   maath:
     specifier: ^0.5.3
     version: 0.5.3(@types/three@0.150.1)(three@0.151.3)
@@ -79,9 +88,15 @@ dependencies:
   react-social-icons:
     specifier: ^5.15.0
     version: 5.15.0(react@18.2.0)
+  tailwind-merge:
+    specifier: ^1.12.0
+    version: 1.12.0
   tailwindcss:
     specifier: 3.3.1
     version: 3.3.1(postcss@8.4.21)
+  tailwindcss-animate:
+    specifier: ^1.0.5
+    version: 1.0.5(tailwindcss@3.3.1)
   three:
     specifier: ^0.151.3
     version: 0.151.3
@@ -860,8 +875,24 @@ packages:
       fsevents: 2.3.2
     dev: false
 
+  /class-variance-authority@0.5.3(typescript@5.0.4):
+    resolution: {integrity: sha512-vcMxnya/xxQSvTuXO9FWAOnmLihbzX82fPkQpMUwPHZ4tdopmFlM4X818fMgCPt2L6CirOIbN91vybifdScUVw==}
+    peerDependencies:
+      typescript: '>= 4.5.5 < 6'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+    dependencies:
+      typescript: 5.0.4
+    dev: false
+
   /client-only@0.0.1:
     resolution: {integrity: sha512-IV3Ou0jSMzZrd3pZ48nLkT9DA7Ag1pnPzaiQhpW7c3RbcqqzvzzVu+L8gfqMp/8IM2MQtSiqaCxrrcfu8I8rMA==}
+    dev: false
+
+  /clsx@1.2.1:
+    resolution: {integrity: sha512-EcR6r5a8bj6pu3ycsa/E/cKVGuTgZJZdsyUYHOksG/UHIiKfjxzRxYJpyVBwYaQeOvghal9fcc4PidlgzugAQg==}
+    engines: {node: '>=6'}
     dev: false
 
   /color-convert@2.0.1:
@@ -2071,6 +2102,14 @@ packages:
       yallist: 4.0.0
     dev: false
 
+  /lucide-react@0.180.0(react@18.2.0):
+    resolution: {integrity: sha512-QGGawkbqAPnT2xAqM/+RN046/Khbpp2LNMLiEYOdW601OV4tOhLvDgU4Uva5jyJ5Vumoyv4uqJeF93QTBGuMtQ==}
+    peerDependencies:
+      react: ^16.5.1 || ^17.0.0 || ^18.0.0
+    dependencies:
+      react: 18.2.0
+    dev: false
+
   /maath@0.5.3(@types/three@0.150.1)(three@0.151.3):
     resolution: {integrity: sha512-ut63A4zTd9abtpi+sOHW1fPWPtAFrjK0E17eAthx1k93W/T2cWLKV5oaswyotJVDvvW1EXSdokAqhK5KOu0Qdw==}
     peerDependencies:
@@ -2911,6 +2950,18 @@ packages:
     dependencies:
       '@pkgr/utils': 2.3.1
       tslib: 2.5.0
+    dev: false
+
+  /tailwind-merge@1.12.0:
+    resolution: {integrity: sha512-Y17eDp7FtN1+JJ4OY0Bqv9OA41O+MS8c1Iyr3T6JFLnOgLg3EvcyMKZAnQ8AGyvB5Nxm3t9Xb5Mhe139m8QT/g==}
+    dev: false
+
+  /tailwindcss-animate@1.0.5(tailwindcss@3.3.1):
+    resolution: {integrity: sha512-UU3qrOJ4lFQABY+MVADmBm+0KW3xZyhMdRvejwtXqYOL7YjHYxmuREFAZdmVG5LPe5E9CAst846SLC4j5I3dcw==}
+    peerDependencies:
+      tailwindcss: '>=3.0.0 || insiders'
+    dependencies:
+      tailwindcss: 3.3.1(postcss@8.4.21)
     dev: false
 
   /tailwindcss@3.3.1(postcss@8.4.21):

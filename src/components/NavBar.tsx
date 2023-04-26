@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { HiMoon, HiMenuAlt1 } from 'react-icons/hi';
 import { SocialIcon } from 'react-social-icons';
+import { Button } from './ui/Button';
+import React from 'react';
 
 const links = [
   {
@@ -29,11 +31,11 @@ const socials = [
   }
 ];
 
-type NavBarProps = {};
+type NavBarProps = React.HTMLAttributes<HTMLHeadElement> & {};
 
 export default function NavBar({}: NavBarProps) {
   return (
-    <header className="sticky top-0 z-20 max-h-20 w-full border-b-[1px] border-white/20 bg-white/40 backdrop-blur-[8px] dark:bg-black/40">
+    <header className="sticky top-0 z-20 max-h-20 w-full border-b-[1px] border-white/20 bg-background/80 backdrop-blur-[8px]">
       <nav className="mx-auto flex max-h-20 max-w-screen-xl items-center justify-between p-6">
         <div className="flex md:order-2 md:hidden">
           <button
@@ -50,13 +52,9 @@ export default function NavBar({}: NavBarProps) {
         </div>
         <div className="flex max-h-10 items-center justify-between gap-x-2 align-middle">
           {socials.map(({ link }) => (
-            <SocialIcon
-              key={link}
-              className="scale-75"
-              bgColor="transparent"
-              fgColor="white"
-              url={link}
-            />
+            <Button className="w-10 p-1" variant="ghost" key={link}>
+              <SocialIcon bgColor="transparent" fgColor="white" url={link} />
+            </Button>
           ))}
         </div>
         <div
