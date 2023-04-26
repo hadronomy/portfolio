@@ -4,30 +4,24 @@ import Head from 'next/head';
 
 export default function HomePage() {
   return (
-    <div className="scroll h-screen flex-col overflow-y-scroll">
+    <>
       <Head>
         <title>Hadronomy - Pablo Hernández</title>
       </Head>
       <NavBar />
       <section
         id="hero"
-        className="mx-auto flex h-screen max-w-screen-xl snap-start flex-col"
+        className="mx-auto flex h-screen max-w-screen-xl flex-col"
       >
         <Hero />
       </section>
-      <section
-        id="about"
-        className="mx-auto h-screen max-w-screen-xl snap-start"
-      >
+      <section id="about" className="mx-auto h-screen max-w-screen-xl">
         {/* About */}
       </section>
-      <section
-        id="contact"
-        className="mx-auto h-screen max-w-screen-xl snap-start"
-      >
+      <section id="contact" className="mx-auto h-screen max-w-screen-xl">
         {/* Contact */}
       </section>
       {/* Footer */}
-    </div>
+    </>
   );
 }
