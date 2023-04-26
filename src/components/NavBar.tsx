@@ -1,8 +1,9 @@
 import Link from 'next/link';
 import { HiMoon, HiMenuAlt1 } from 'react-icons/hi';
 import { SocialIcon } from 'react-social-icons';
-import { Button } from './ui/Button';
 import React from 'react';
+
+import { Button } from '~/components/ui/Button';
 
 const links = [
   {

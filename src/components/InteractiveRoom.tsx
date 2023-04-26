@@ -3,7 +3,8 @@ import { motion } from 'framer-motion-3d';
 import { MotionProps } from 'framer-motion';
 import { useState } from 'react';
 import { PerformanceMonitor } from '@react-three/drei';
-import RotatingCube from '@components/3d/RotatingCube';
+
+import RotatingCube from '~/components/3d/RotatingCube';
 
 type InteractiveRoomProps = React.HTMLAttributes<HTMLCanvasElement> & {};
 

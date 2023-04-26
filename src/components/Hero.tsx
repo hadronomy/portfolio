@@ -1,8 +1,9 @@
 import { Bellota } from 'next/font/google';
 import Typewritter from 'typewriter-effect';
-import InteractiveRoom from '@components/InteractiveRoom';
-import { cn } from '@/lib/utils';
 import React from 'react';
+
+import InteractiveRoom from '~/components/InteractiveRoom';
+import { cn } from '~/lib/utils';
 
 const bellota = Bellota({
   subsets: ['latin'],

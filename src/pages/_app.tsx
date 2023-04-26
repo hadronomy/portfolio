@@ -1,6 +1,7 @@
-import '@styles/globals.css';
 import { Urbanist } from 'next/font/google';
-import type { AppProps } from 'next/app';
+import { type AppProps } from 'next/app';
+
+import '~/styles/globals.css';
 
 const urbanist = Urbanist({
   subsets: ['latin'],
