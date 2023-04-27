@@ -1,6 +1,7 @@
-import { Canvas, GroupProps } from '@react-three/fiber';
+'use client';
+
+import { Canvas } from '@react-three/fiber';
 import { motion } from 'framer-motion-3d';
-import { MotionProps } from 'framer-motion';
 import { useState } from 'react';
 import { PerformanceMonitor } from '@react-three/drei';
 

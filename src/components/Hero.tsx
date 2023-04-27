@@ -1,8 +1,8 @@
 import { Bellota } from 'next/font/google';
-import Typewritter from 'typewriter-effect';
 import React from 'react';
 
 import InteractiveRoom from '~/components/InteractiveRoom';
+import Typewritter from '~/components/Typewritter';
 import { cn } from '~/lib/utils';
 
 const bellota = Bellota({
@@ -32,26 +32,7 @@ export default function Hero({ className, ...props }: HeroProps) {
             </h1>
           </div>
           <h2 className="max-w-[13ch] text-4xl md:max-w-[20ch]">
-            <Typewritter
-              options={{ loop: true }}
-              onInit={(typewriter) => {
-                typewriter
-                  .typeString('Hi 👋')
-                  .pauseFor(500)
-                  .deleteAll()
-                  .typeString(`I'm a <b class="text-emerald-500">Developer</b>`)
-                  .pauseFor(1000)
-                  .deleteChars('Developer'.length)
-                  .pauseFor(1000)
-                  .deleteAll()
-                  .typeString(
-                    '<span>I 💕 <b class="text-amber-300">EVERYTHING</b></span> related to code'
-                  )
-                  .changeDeleteSpeed(50)
-                  .deleteAll()
-                  .start();
-              }}
-            />
+            <Typewritter />
           </h2>
         </div>
       </div>
