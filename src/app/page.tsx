@@ -1,7 +1,7 @@
 import Head from 'next/head';
 
 import Hero from '~/components/Hero';
-import NavBar from '~/components/NavBar';
+import Navbar from '~/components/Navbar';
 
 export const metadata = {
   title: 'Hadronomy - Pablo Hernández'
@@ -10,7 +10,7 @@ export const metadata = {
 export default function HomePage() {
   return (
     <>
-      <NavBar />
+      <Navbar />
       <section
         id="hero"
         className="mx-auto flex h-screen max-w-screen-xl flex-col"

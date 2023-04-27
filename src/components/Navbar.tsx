@@ -34,7 +34,7 @@ const socials = [
 
 type NavBarProps = React.HTMLAttributes<HTMLHeadElement> & {};
 
-export default function NavBar({}: NavBarProps) {
+export default function Navbar({}: NavBarProps) {
   return (
     <header className="sticky top-0 z-20 max-h-20 w-full border-b-[1px] border-white/20 bg-background/80 backdrop-blur-[8px]">
       <nav className="mx-auto flex max-h-20 max-w-screen-xl items-center justify-between p-6">
