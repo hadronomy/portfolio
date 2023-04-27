@@ -3,12 +3,13 @@ import Head from 'next/head';
 import Hero from '~/components/Hero';
 import NavBar from '~/components/NavBar';
 
+export const metadata = {
+  title: 'Hadronomy - Pablo Hernández'
+};
+
 export default function HomePage() {
   return (
     <>
-      <Head>
-        <title>Hadronomy - Pablo Hernández</title>
-      </Head>
       <NavBar />
       <section
         id="hero"
