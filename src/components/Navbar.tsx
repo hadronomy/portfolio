@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import { HiMoon, HiMenuAlt1 } from 'react-icons/hi';
 import { SocialIcon } from 'react-social-icons';
-import React from 'react';
+import { HTMLAttributes } from 'react';
 
-import { Button, buttonVariants } from '~/components/ui/Button';
+import { buttonVariants } from '~/components/ui/Button';
 
 const links = [
   {
@@ -32,7 +32,7 @@ const socials = [
   }
 ];
 
-type NavBarProps = React.HTMLAttributes<HTMLHeadElement> & {};
+type NavBarProps = HTMLAttributes<HTMLHeadElement>;
 
 export default function Navbar({}: NavBarProps) {
   return (
