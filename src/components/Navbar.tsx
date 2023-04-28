@@ -3,7 +3,7 @@ import { HiMoon, HiMenuAlt1 } from 'react-icons/hi';
 import { SocialIcon } from 'react-social-icons';
 import React from 'react';
 
-import { Button } from '~/components/ui/Button';
+import { Button, buttonVariants } from '~/components/ui/Button';
 
 const links = [
   {
@@ -53,9 +53,17 @@ export default function Navbar({}: NavBarProps) {
         </div>
         <div className="flex max-h-10 items-center justify-between gap-x-2 align-middle">
           {socials.map(({ link }) => (
-            <Button className="w-10 p-1" variant="ghost" key={link}>
-              <SocialIcon bgColor="transparent" fgColor="white" url={link} />
-            </Button>
+            <div className="inline-flex w-10 p-1" key={link}>
+              <SocialIcon
+                className={buttonVariants({
+                  className: 'h-10',
+                  variant: 'ghost'
+                })}
+                bgColor="transparent"
+                fgColor="white"
+                url={link}
+              />
+            </div>
           ))}
         </div>
         <div
