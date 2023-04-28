@@ -1,5 +1,5 @@
 import { Bellota } from 'next/font/google';
-import React from 'react';
+import { HTMLAttributes } from 'react';
 
 import InteractiveRoom from '~/components/InteractiveRoom';
 import Typewritter from '~/components/Typewritter';
@@ -10,7 +10,7 @@ const bellota = Bellota({
   weight: ['400', '400', '700']
 });
 
-type HeroProps = React.HTMLAttributes<HTMLDivElement> & {};
+type HeroProps = HTMLAttributes<HTMLDivElement> & {};
 
 export default function Hero({ className, ...props }: HeroProps) {
   return (
