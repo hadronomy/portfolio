@@ -2,9 +2,9 @@
 
 import TypewritterEffect from 'typewriter-effect';
 
-type TypewritterProps = {};
+export type TypewritterProps = {};
 
-export default function Typewritter({}: TypewritterProps) {
+export function Typewritter({}: TypewritterProps) {
   return (
     <TypewritterEffect
       options={{ loop: true }}

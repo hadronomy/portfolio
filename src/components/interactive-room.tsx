@@ -1,16 +1,16 @@
 'use client';
 
+import * as React from 'react';
 import { Canvas } from '@react-three/fiber';
 import { motion } from 'framer-motion-3d';
-import { useState, HTMLAttributes } from 'react';
 import { PerformanceMonitor } from '@react-three/drei';
 
-import RotatingCube from '~/components/3d/rotating-cube';
+import { RotatingCube } from '~/components/3d/rotating-cube';
 
-type InteractiveRoomProps = HTMLAttributes<HTMLCanvasElement>;
+export type InteractiveRoomProps = React.ComponentProps<'canvas'>;
 
-export default function InteractiveRoom({}: InteractiveRoomProps) {
-  const [badPerf, degrade] = useState(false);
+export function InteractiveRoom({}: InteractiveRoomProps) {
+  const [badPerf, degrade] = React.useState(false);
 
   return (
     <Canvas

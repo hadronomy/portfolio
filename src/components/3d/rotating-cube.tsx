@@ -1,8 +1,8 @@
 import { motion } from 'framer-motion-3d';
 
-type RotatingCubeProps = {};
+export type RotatingCubeProps = {};
 
-export default function RotatingCube({}: RotatingCubeProps) {
+export function RotatingCube({}: RotatingCubeProps) {
   return (
     <motion.mesh
       animate={{

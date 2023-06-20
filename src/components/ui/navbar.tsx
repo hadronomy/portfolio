@@ -1,7 +1,7 @@
+import * as React from 'react';
 import Link from 'next/link';
 import { HiMoon, HiMenuAlt1 } from 'react-icons/hi';
 import { SocialIcon } from 'react-social-icons';
-import { HTMLAttributes } from 'react';
 
 import { buttonVariants } from '~/components/ui/button';
 
@@ -32,9 +32,9 @@ const socials = [
   }
 ];
 
-type NavBarProps = HTMLAttributes<HTMLHeadElement>;
+export type NavbarProps = React.ComponentProps<'header'>;
 
-export default function Navbar({}: NavBarProps) {
+export function Navbar({}: NavbarProps) {
   return (
     <header className="sticky top-0 z-20 max-h-20 w-full border-b-[1px] border-white/20 bg-background/80 backdrop-blur-[8px]">
       <nav className="mx-auto flex max-h-20 max-w-screen-xl items-center justify-between p-6">

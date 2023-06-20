@@ -1,7 +1,7 @@
 import Head from 'next/head';
 
-import Hero from '~/components/hero';
-import Navbar from '~/components/navbar';
+import { Hero } from '~/components/hero';
+import { Navbar } from '~/components/ui/navbar';
 
 export const metadata = {
   title: 'Hadronomy - Pablo Hernández'
