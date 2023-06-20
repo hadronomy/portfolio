@@ -5,7 +5,7 @@ import { motion } from 'framer-motion-3d';
 import { useState, HTMLAttributes } from 'react';
 import { PerformanceMonitor } from '@react-three/drei';
 
-import RotatingCube from '~/components/3d/RotatingCube';
+import RotatingCube from '~/components/3d/rotating-cube';
 
 type InteractiveRoomProps = HTMLAttributes<HTMLCanvasElement>;
 

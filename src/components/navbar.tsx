@@ -3,7 +3,7 @@ import { HiMoon, HiMenuAlt1 } from 'react-icons/hi';
 import { SocialIcon } from 'react-social-icons';
 import { HTMLAttributes } from 'react';
 
-import { buttonVariants } from '~/components/ui/Button';
+import { buttonVariants } from '~/components/ui/button';
 
 const links = [
   {
