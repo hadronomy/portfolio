@@ -41,7 +41,9 @@ export default function HomePage() {
                         src="https://github.com/hadronomy.png"
                         alt="hadronomy"
                       />
-                      <AvatarFallback>HDR</AvatarFallback>
+                      <AvatarFallback className="rounded-lg">
+                        HDR
+                      </AvatarFallback>
                     </Avatar>
                     <div>
                       <CardTitle>Pablo Hernández Jiménez</CardTitle>
