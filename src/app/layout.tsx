@@ -1,6 +1,8 @@
 import React from 'react';
 import { Urbanist } from 'next/font/google';
 
+import { Navbar } from '~/components/ui/navbar';
+
 import '~/styles/globals.css';
 
 const urbanist = Urbanist({
@@ -15,7 +17,10 @@ type RootLayoutProps = {
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html className={`dark ${urbanist.className}`} lang="en">
-      <body>{children}</body>
+      <body>
+        <Navbar />
+        {children}
+      </body>
     </html>
   );
 }
