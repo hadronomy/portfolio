@@ -11,15 +11,15 @@ export function Typewritter({}: TypewritterProps) {
       onInit={(typewriter) => {
         typewriter
           .typeString('Hi 👋')
-          .pauseFor(500)
+          .pauseFor(200)
           .deleteAll()
-          .typeString(`I'm a <b class="text-emerald-500">Developer</b>`)
+          .typeString(`Full Stack <b class="text-emerald-500">Developer</b>`)
           .pauseFor(1000)
           .deleteChars('Developer'.length)
           .pauseFor(1000)
           .deleteAll()
           .typeString(
-            '<span>I 💕 <b class="text-amber-300">EVERYTHING</b></span> related to code'
+            '<span>Lover💕 of <b class="text-amber-300">EVERYTHING</b></span> related to code'
           )
           .changeDeleteSpeed(50)
           .deleteAll()

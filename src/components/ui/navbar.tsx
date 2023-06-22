@@ -36,8 +36,8 @@ export type NavbarProps = React.ComponentProps<'header'>;
 
 export function Navbar({}: NavbarProps) {
   return (
-    <header className="sticky top-0 z-20 max-h-20 w-full border-b-[1px] border-white/20 bg-background/90 backdrop-blur-[8px]">
-      <nav className="mx-auto grid max-h-20 max-w-screen-xl grid-cols-4 p-6">
+    <header className="sticky top-0 z-20 w-full border-b-[1px] border-white/20 bg-background/90 backdrop-blur-[8px]">
+      <nav className="mx-auto grid max-w-screen-xl grid-cols-4 px-6 py-3">
         <div className="flex md:order-2 md:hidden">
           <button
             data-collapse-toggle="navbar-menu"
@@ -83,15 +83,6 @@ export function Navbar({}: NavbarProps) {
               </li>
             ))}
           </ul>
-        </div>
-        <div className="order-last ml-auto items-center">
-          <button
-            disabled={true}
-            className="inline-flex h-10 w-10 items-center rounded-lg p-3 text-sm text-white ring-slate-50/60 transition-all hover:ring-2 hover:ring-slate-50/30  focus:ring-2 active:ring-slate-50 disabled:opacity-20"
-            aria-label="Dark Mode Button"
-          >
-            <Moon className="h-full w-full" />
-          </button>
         </div>
       </nav>
     </header>
