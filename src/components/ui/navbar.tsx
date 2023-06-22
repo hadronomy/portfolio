@@ -1,6 +1,6 @@
 import * as React from 'react';
 import Link from 'next/link';
-import { HiMoon, HiMenuAlt1 } from 'react-icons/hi';
+import { AlignLeft as Menu, Moon } from 'lucide-react';
 import { SocialIcon } from 'react-social-icons';
 
 import { buttonVariants } from '~/components/ui/button';
@@ -48,7 +48,7 @@ export function Navbar({}: NavbarProps) {
             aria-expanded="false"
           >
             <span className="sr-only">Open main menu</span>
-            <HiMenuAlt1 className="h-full w-full" />
+            <Menu className="h-full w-full" />
           </button>
         </div>
         <div className="mr-auto flex max-h-10 items-center justify-between gap-x-2 align-middle">
@@ -90,7 +90,7 @@ export function Navbar({}: NavbarProps) {
             className="inline-flex h-10 w-10 items-center rounded-lg p-3 text-sm text-white ring-slate-50/60 transition-all hover:ring-2 hover:ring-slate-50/30  focus:ring-2 active:ring-slate-50 disabled:opacity-20"
             aria-label="Dark Mode Button"
           >
-            <HiMoon className="h-full w-full" />
+            <Moon className="h-full w-full" />
           </button>
         </div>
       </nav>

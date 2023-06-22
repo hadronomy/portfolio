@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { Cake, Code2, Flag } from 'lucide-react';
+import { Cake, FileCode, Flag } from 'lucide-react';
 import { cva, VariantProps } from 'class-variance-authority';
 import { DateTime } from 'luxon';
 
@@ -80,7 +80,7 @@ export function About({ className }: AboutProps) {
                   </HoverCardContent>
                 </HoverCard>
                 <Badge className="space-x-3 text-lg">
-                  <Code2 />
+                  <FileCode />
                   <div>10</div>
                 </Badge>
                 <Badge className="space-x-3 text-lg">

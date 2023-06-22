@@ -32,8 +32,8 @@ dependencies:
     specifier: ^10.12.16
     version: 10.12.16(@react-three/fiber@8.13.3)(react-dom@18.2.0)(react@18.2.0)(three@0.151.3)
   lucide-react:
-    specifier: ^0.180.0
-    version: 0.180.0(react@18.2.0)
+    specifier: ^0.248.0
+    version: 0.248.0(react@18.2.0)
   luxon:
     specifier: ^3.3.0
     version: 3.3.0
@@ -58,9 +58,6 @@ dependencies:
   react-dom:
     specifier: 18.2.0
     version: 18.2.0(react@18.2.0)
-  react-icons:
-    specifier: ^4.10.1
-    version: 4.10.1(react@18.2.0)
   react-social-icons:
     specifier: ^5.15.0
     version: 5.15.0(react@18.2.0)
@@ -2554,8 +2551,8 @@ packages:
       yallist: 4.0.0
     dev: true
 
-  /lucide-react@0.180.0(react@18.2.0):
-    resolution: {integrity: sha512-QGGawkbqAPnT2xAqM/+RN046/Khbpp2LNMLiEYOdW601OV4tOhLvDgU4Uva5jyJ5Vumoyv4uqJeF93QTBGuMtQ==}
+  /lucide-react@0.248.0(react@18.2.0):
+    resolution: {integrity: sha512-zMqVvwsvhLV6ooekfM8HEngR/lLGkIgOwZ4X140K+CDdAPwfp9LARnmJhMF32wlDganAIVEgN7saIv3pcCLUVw==}
     peerDependencies:
       react: ^16.5.1 || ^17.0.0 || ^18.0.0
     dependencies:
@@ -3110,14 +3107,6 @@ packages:
       loose-envify: 1.4.0
       react: 18.2.0
       scheduler: 0.23.0
-    dev: false
-
-  /react-icons@4.10.1(react@18.2.0):
-    resolution: {integrity: sha512-/ngzDP/77tlCfqthiiGNZeYFACw85fUjZtLbedmJ5DTlNDIwETxhwBzdOJ21zj4iJdvc0J3y7yOsX3PpxAJzrw==}
-    peerDependencies:
-      react: '*'
-    dependencies:
-      react: 18.2.0
     dev: false
 
   /react-is@16.13.1:
