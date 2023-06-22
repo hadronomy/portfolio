@@ -37,7 +37,7 @@ export type NavbarProps = React.ComponentProps<'header'>;
 export function Navbar({}: NavbarProps) {
   return (
     <header className="sticky top-0 z-20 max-h-20 w-full border-b-[1px] border-white/20 bg-background/90 backdrop-blur-[8px]">
-      <nav className="mx-auto flex max-h-20 max-w-screen-xl items-center justify-between p-6">
+      <nav className="mx-auto grid max-h-20 max-w-screen-xl grid-cols-3 p-6">
         <div className="flex md:order-2 md:hidden">
           <button
             data-collapse-toggle="navbar-menu"
@@ -51,7 +51,7 @@ export function Navbar({}: NavbarProps) {
             <HiMenuAlt1 className="h-full w-full" />
           </button>
         </div>
-        <div className="flex max-h-10 items-center justify-between gap-x-2 align-middle">
+        <div className="mr-auto flex max-h-10 items-center justify-between gap-x-2 align-middle">
           {socials.map(({ link }) => (
             <div className="inline-flex w-10 p-1" key={link}>
               <SocialIcon
@@ -68,7 +68,7 @@ export function Navbar({}: NavbarProps) {
         </div>
         <div
           id="navbar-menu"
-          className="hidden w-full items-center justify-between md:order-1 md:flex md:w-auto"
+          className="mx-auto hidden w-full items-center justify-center md:order-1 md:flex md:w-auto"
         >
           <ul className="flex w-full flex-col gap-x-10 p-4 capitalize md:flex-row md:p-0 ">
             {links.map(({ label, href }) => (
@@ -84,7 +84,7 @@ export function Navbar({}: NavbarProps) {
             ))}
           </ul>
         </div>
-        <div className="order-last items-center">
+        <div className="order-last ml-auto items-center">
           <button
             disabled={true}
             className="inline-flex h-10 w-10 items-center rounded-lg p-3 text-sm text-white ring-slate-50/60 transition-all hover:ring-2 hover:ring-slate-50/30  focus:ring-2 active:ring-slate-50 disabled:opacity-20"
