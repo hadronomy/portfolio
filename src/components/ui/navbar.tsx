@@ -76,7 +76,7 @@ export function Navbar({}: NavbarProps) {
               <li key={label}>
                 <Link
                   href={href}
-                  className="dark:hover:drop-shadow-[0_0_0.3rem_#ffffff70]"
+                  className="font-bold text-muted-foreground hover:text-foreground/80 dark:hover:drop-shadow-[0.3_0.3_1.2rem_#ffffff80]"
                   aria-label={label}
                 >
                   {label}

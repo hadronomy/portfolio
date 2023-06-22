@@ -14,9 +14,9 @@ export type HeroProps = React.ComponentProps<'div'>;
 
 export function Hero({ className, ...props }: HeroProps) {
   return (
-    <div className={cn('relative flex flex-grow p-10', className)} {...props}>
-      <div className="flex h-fit w-full place-items-center justify-center rounded-2xl p-5 text-left">
-        <div className="mx-auto flex flex-col space-y-5">
+    <div className={cn('relative flex flex-grow p-5', className)} {...props}>
+      <div className="mt-10 flex h-fit w-full origin-center place-items-center justify-center rounded-2xl text-left md:mt-0 md:h-full">
+        <div className="mx-auto flex origin-center flex-col space-y-5">
           <div className="flex w-fit flex-col">
             <h2 className="text-2xl font-thin uppercase tracking-widest">
               @hadronomy
@@ -31,7 +31,7 @@ export function Hero({ className, ...props }: HeroProps) {
               Hernandez
             </h1>
           </div>
-          <h2 className="max-w-[13ch] text-4xl md:max-w-[20ch]">
+          <h2 className="h-[80px] max-w-[13ch] text-4xl md:max-w-[20ch]">
             <Typewritter />
           </h2>
         </div>

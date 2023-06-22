@@ -22,7 +22,7 @@ import {
 } from '~/components/ui/hover-card';
 import { cn } from '~/lib/utils';
 
-export const aboutStyle = cva('flex h-full flex-col space-y-3 p-10');
+export const aboutStyle = cva('flex h-full flex-col space-y-6 p-10');
 
 export type AboutProps = React.ComponentProps<'div'> &
   VariantProps<typeof aboutStyle>;

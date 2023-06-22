@@ -9,7 +9,7 @@ export function RotatingCube({}: RotatingCubeProps) {
         rotateX: 2 * Math.PI,
         transition: { duration: 3, repeat: Infinity, ease: 'anticipate' }
       }}
-      position={[0.0, 0.25, -5.0]}
+      position={[0.0, 0.25, -7.0]}
     >
       <motion.boxGeometry args={[2, 2, 2]} />
       <motion.meshStandardMaterial />
