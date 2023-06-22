@@ -37,7 +37,7 @@ export type NavbarProps = React.ComponentProps<'header'>;
 export function Navbar({}: NavbarProps) {
   return (
     <header className="sticky top-0 z-20 max-h-20 w-full border-b-[1px] border-white/20 bg-background/90 backdrop-blur-[8px]">
-      <nav className="mx-auto grid max-h-20 max-w-screen-xl grid-cols-3 p-6">
+      <nav className="mx-auto grid max-h-20 max-w-screen-xl grid-cols-4 p-6">
         <div className="flex md:order-2 md:hidden">
           <button
             data-collapse-toggle="navbar-menu"
@@ -51,7 +51,7 @@ export function Navbar({}: NavbarProps) {
             <Menu className="h-full w-full" />
           </button>
         </div>
-        <div className="mr-auto flex max-h-10 items-center justify-between gap-x-2 align-middle">
+        <div className="col-span-2 mx-auto flex max-h-10 items-center justify-between gap-x-2 align-middle md:col-span-1 md:ml-0 md:mr-auto">
           {socials.map(({ link }) => (
             <div className="inline-flex w-10 p-1" key={link}>
               <SocialIcon
@@ -68,7 +68,7 @@ export function Navbar({}: NavbarProps) {
         </div>
         <div
           id="navbar-menu"
-          className="mx-auto hidden w-full items-center justify-center md:order-1 md:flex md:w-auto"
+          className="col-span-2 mx-auto hidden w-full items-center justify-center md:order-1 md:flex md:w-auto"
         >
           <ul className="flex w-full flex-col gap-x-10 p-4 capitalize md:flex-row md:p-0 ">
             {links.map(({ label, href }) => (
