@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { Cake, FileCode, Flag } from 'lucide-react';
+import { Cake, FileCode, Flag, Languages } from 'lucide-react';
 import { cva, VariantProps } from 'class-variance-authority';
 import { DateTime } from 'luxon';
 
@@ -63,7 +63,7 @@ export function About({ className }: AboutProps) {
                   <CardDescription>@hadronomy</CardDescription>
                 </div>
               </div>
-              <div className="flex items-center justify-center space-x-3 align-middle">
+              <div className="flex flex-wrap items-center justify-center gap-3 align-middle">
                 <HoverCard>
                   <HoverCardTrigger>
                     <Badge className="space-x-3 text-lg">
@@ -86,6 +86,14 @@ export function About({ className }: AboutProps) {
                 <Badge className="space-x-3 text-lg">
                   <Flag />
                   <div>Spain</div>
+                </Badge>
+                <Badge className="space-x-3 text-lg">
+                  <Languages />
+                  <div>Spanish</div>
+                </Badge>
+                <Badge className="space-x-3 text-lg">
+                  <Languages />
+                  <div>English</div>
                 </Badge>
               </div>
             </CardHeader>
