@@ -111,13 +111,9 @@ export function About({ className }: AboutProps) {
               </div>
               <div className="px-5">
                 <p className="text-justify leading-relaxed">
-                  Lorem ipsum dolor, sit amet consectetur adipisicing elit.
-                  Aperiam, qui. Ullam, velit eius! Fuga odit mollitia maiores
-                  iusto suscipit quibusdam, recusandae ea quasi quos officia,
-                  temporibus ut excepturi aperiam necessitatibus! Magni, minima
-                  iste fuga architecto fugiat possimus iure ipsam eos in quos.
-                  Magni odio consequuntur ad odit, necessitatibus, natus debitis
-                  veniam error sunt nemo fugiat rerum earum. Vel, quas in.
+                  Lover of things code and art. 10 years of experience
+                  developing all kinds of applications with different languages,
+                  frameworks and toolsets.
                 </p>
               </div>
             </CardContent>
