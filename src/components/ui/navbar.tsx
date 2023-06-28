@@ -61,6 +61,7 @@ export function Navbar({}: NavbarProps) {
                 })
               )}
               href={link}
+              target="_blank"
               key={link}
             >
               <Icon />
