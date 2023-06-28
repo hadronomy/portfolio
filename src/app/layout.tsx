@@ -19,11 +19,13 @@ type RootLayoutProps = {
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html className={`dark ${urbanist.className}`} lang="en">
-      <Script
-        async
-        src="https://analytics.umami.is/script.js"
-        data-website-id={env.ANALYTICS_ID}
-      />
+      {process.env.NODE_ENV === 'production' && (
+        <Script
+          async
+          src="https://analytics.umami.is/script.js"
+          data-website-id={env.ANALYTICS_ID}
+        />
+      )}
       <body>
         <Navbar />
         {children}
