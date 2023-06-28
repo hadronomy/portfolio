@@ -14,6 +14,7 @@
     "@radix-ui/react-separator": "^1.0.3",
     "@react-three/drei": "^9.77.5",
     "@react-three/fiber": "^8.13.4",
+    "@t3-oss/env-nextjs": "^0.6.0",
     "autoprefixer": "10.4.14",
     "class-variance-authority": "^0.6.1",
     "clsx": "^1.2.1",
@@ -35,7 +36,8 @@
     "tailwindcss-animate": "^1.0.6",
     "three": "^0.151.3",
     "typescript": "^5.1.5",
-    "typewriter-effect": "^2.20.1"
+    "typewriter-effect": "^2.20.1",
+    "zod": "^3.21.4"
   },
   "devDependencies": {
     "@types/luxon": "^3.3.0",

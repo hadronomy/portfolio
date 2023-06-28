@@ -16,6 +16,9 @@ dependencies:
   '@react-three/fiber':
     specifier: ^8.13.4
     version: 8.13.4(react-dom@18.2.0)(react@18.2.0)(three@0.151.3)
+  '@t3-oss/env-nextjs':
+    specifier: ^0.6.0
+    version: 0.6.0(typescript@5.1.5)(zod@3.21.4)
   autoprefixer:
     specifier: 10.4.14
     version: 10.4.14(postcss@8.4.21)
@@ -82,6 +85,9 @@ dependencies:
   typewriter-effect:
     specifier: ^2.20.1
     version: 2.20.1(react-dom@18.2.0)(react@18.2.0)
+  zod:
+    specifier: ^3.21.4
+    version: 3.21.4
 
 devDependencies:
   '@types/luxon':
@@ -932,6 +938,27 @@ packages:
     resolution: {integrity: sha512-sJ902EfIzn1Fa+qYmjdQqh8tPsoxyBz+8yBKC2HKUxyezKJFwPGOn7pv4WY6QuQW//ySQi5lJjA/ZT9sNWWNTg==}
     dependencies:
       tslib: 2.6.0
+    dev: false
+
+  /@t3-oss/env-core@0.6.0(typescript@5.1.5)(zod@3.21.4):
+    resolution: {integrity: sha512-3FkPAba069WRZVVab/sB1m3eSGn/rZeypx5k+sWEu1d+k0OQdRDnvFS+7MtxYgqVrwaRk3b7yVnX2dgSPVmWPQ==}
+    peerDependencies:
+      typescript: '>=4.7.2'
+      zod: ^3.0.0
+    dependencies:
+      typescript: 5.1.5
+      zod: 3.21.4
+    dev: false
+
+  /@t3-oss/env-nextjs@0.6.0(typescript@5.1.5)(zod@3.21.4):
+    resolution: {integrity: sha512-SpzcGNIbUYcQw4zPPFeRJqCC1560zL7QmB0puIqOnuCsmykPkqHPX+n9CNZLXVQerboHzfvb7Kd+jAdouk72Vw==}
+    peerDependencies:
+      typescript: '>=4.7.2'
+      zod: ^3.0.0
+    dependencies:
+      '@t3-oss/env-core': 0.6.0(typescript@5.1.5)(zod@3.21.4)
+      typescript: 5.1.5
+      zod: 3.21.4
     dev: false
 
   /@ts-morph/common@0.19.0:
