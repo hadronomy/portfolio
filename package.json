@@ -24,6 +24,7 @@
     "luxon": "^3.3.0",
     "maath": "^0.5.3",
     "next": "^13.4.7",
+    "next-axiom": "^0.18.0",
     "postcss": "8.4.21",
     "prettier": "^2.8.8",
     "prettier-plugin-tailwindcss": "^0.2.8",

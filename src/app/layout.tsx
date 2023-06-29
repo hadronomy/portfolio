@@ -1,6 +1,7 @@
 import React from 'react';
 import { Urbanist } from 'next/font/google';
 import Script from 'next/script';
+import { reportWebVitals } from 'next-axiom';
 
 import { Navbar } from '~/components/ui/navbar';
 import { env } from '~/env.mjs';
