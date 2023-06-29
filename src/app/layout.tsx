@@ -3,6 +3,7 @@ import { Urbanist } from 'next/font/google';
 import Script from 'next/script';
 
 import { Navbar } from '~/components/ui/navbar';
+import { WebVitals } from '~/components/webvitals';
 import { env } from '~/env.mjs';
 
 import '~/styles/globals.css';
@@ -27,6 +28,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         />
       )}
       <body>
+        <WebVitals />
         <Navbar />
         {children}
       </body>
