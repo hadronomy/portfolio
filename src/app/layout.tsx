@@ -7,8 +7,6 @@ import { env } from '~/env.mjs';
 
 import '~/styles/globals.css';
 
-export { reportWebVitals } from 'next-axiom';
-
 const urbanist = Urbanist({
   subsets: ['latin'],
   weight: ['100', '300', '400', '500', '700', '900']
