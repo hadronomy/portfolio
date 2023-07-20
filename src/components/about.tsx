@@ -111,9 +111,9 @@ export function About({ className }: AboutProps) {
               </div>
               <div className="px-5">
                 <p className="text-justify leading-relaxed">
-                  Lover of all things related to code and art. 10 years of experience
-                  developing all kinds of applications with different languages,
-                  frameworks and toolsets.
+                  Lover of all things related to code and art. 10 years of
+                  experience developing all kinds of applications with different
+                  languages, frameworks and toolsets.
                 </p>
               </div>
             </CardContent>
