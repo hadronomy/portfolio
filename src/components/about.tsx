@@ -48,7 +48,7 @@ export function About({ className }: AboutProps) {
       </div>
       <div className="grid h-full grid-cols-1 gap-8 md:grid-cols-2">
         <div>
-          <Card>
+          <Card className="max-w-md px-5">
             <CardHeader className="mt-3 items-center justify-center space-y-3 align-middle">
               <div className="space-y-5">
                 <Avatar className="h-52 w-52 rounded-lg ring-4 ring-foreground">
@@ -63,11 +63,11 @@ export function About({ className }: AboutProps) {
                   <CardDescription>@hadronomy</CardDescription>
                 </div>
               </div>
-              <div className="flex flex-wrap items-center justify-center gap-3 align-middle">
+              <div className="flex flex-wrap items-center justify-center gap-2 align-middle">
                 <HoverCard>
                   <HoverCardTrigger>
-                    <Badge className="space-x-3 text-lg">
-                      <Cake />
+                    <Badge className="space-x-3 text-sm">
+                      <Cake className="w-5" />
                       <div>{age.toFormat('yy')}</div>
                     </Badge>
                   </HoverCardTrigger>
@@ -79,20 +79,20 @@ export function About({ className }: AboutProps) {
                     </div>
                   </HoverCardContent>
                 </HoverCard>
-                <Badge className="space-x-3 text-lg">
-                  <FileCode />
+                <Badge className="space-x-3 text-sm">
+                  <FileCode className="w-5" />
                   <div>10</div>
                 </Badge>
-                <Badge className="space-x-3 text-lg">
-                  <Flag />
+                <Badge className="space-x-3 text-sm capitalize">
+                  <Flag className="w-5" />
                   <div>Spain</div>
                 </Badge>
-                <Badge className="space-x-3 text-lg">
-                  <Languages />
+                <Badge className="space-x-3 text-sm capitalize">
+                  <Languages className="w-5" />
                   <div>Spanish</div>
                 </Badge>
-                <Badge className="space-x-3 text-lg">
-                  <Languages />
+                <Badge className="space-x-3 text-sm capitalize">
+                  <Languages className="w-5" />
                   <div>English</div>
                 </Badge>
               </div>
@@ -100,16 +100,16 @@ export function About({ className }: AboutProps) {
             <CardContent className="space-y-4">
               <div className="flex justify-between align-middle">
                 <Separator
-                  className="mb-auto mt-auto"
+                  className="mb-auto ml-0 mt-auto"
                   orientation="horizontal"
                 />
                 <a className="capitalize text-muted-foreground">DESCRIPTION</a>
                 <Separator
-                  className="mb-auto mt-auto"
+                  className="mb-auto mr-0 mt-auto"
                   orientation="horizontal"
                 />
               </div>
-              <div className="px-5">
+              <div>
                 <p className="text-justify leading-relaxed">
                   Lover of all things related to code and art. 10 years of
                   experience developing all kinds of applications with different
