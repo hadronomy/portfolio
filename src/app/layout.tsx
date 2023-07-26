@@ -34,8 +34,8 @@ export default function RootLayout({ children }: RootLayoutProps) {
         />
       )}
       <body>
-        <WebVitals />
         {children}
+        <WebVitals />
       </body>
     </html>
   );
