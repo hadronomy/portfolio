@@ -2,8 +2,6 @@ import { About } from '~/components/about';
 import { Hero } from '~/components/hero';
 import { Navbar } from '~/components/ui/navbar';
 
-export const runtime = 'edge';
-
 export const metadata = {
   title: 'Hadronomy - Pablo Hernández'
 };
