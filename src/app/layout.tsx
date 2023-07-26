@@ -12,6 +12,13 @@ const urbanist = Urbanist({
   weight: ['100', '300', '400', '500', '700', '900']
 });
 
+export const metadata = {
+  title: {
+    default: 'Hadronomy',
+    template: '%s - Pablo Hernández'
+  }
+};
+
 type RootLayoutProps = {
   children: React.ReactNode;
 };
