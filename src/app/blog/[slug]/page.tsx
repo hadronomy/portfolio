@@ -71,8 +71,9 @@ export default async function BlogPage({ params }: BlogPageProps) {
             </Avatar>
             <a className="font-semibold">Pablo Hernández Jiménez</a>
           </div>
-          <div className="mt-6 h-fit max-h-80 overflow-clip rounded">
+          <div className="mt-6 h-fit overflow-clip rounded">
             <Image
+              unoptimized
               src={post.image}
               alt="example"
               width={1000}
