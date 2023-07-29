@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion-3d';
 
-export type RotatingCubeProps = {};
+export type RotatingCubeProps = Record<string, never>;
 
 export function RotatingCube({}: RotatingCubeProps) {
   return (

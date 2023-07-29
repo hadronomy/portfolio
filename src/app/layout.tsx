@@ -1,7 +1,7 @@
 import React from 'react';
 import { Urbanist } from 'next/font/google';
 import Script from 'next/script';
-import { Metadata } from 'next';
+import { type Metadata } from 'next';
 
 import { WebVitals } from '~/components/webvitals';
 import { env } from '~/env.mjs';

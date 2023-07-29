@@ -57,6 +57,7 @@ export const Post = defineDocumentType(() => ({
 
 /** @type {import('rehype-pretty-code').Options} */
 const prettyCodeOptions = {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   theme: JSON.parse(
     fs.readFileSync(path.resolve('./assets/mocha.json'), 'utf-8')
   ),

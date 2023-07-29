@@ -27,7 +27,7 @@ export const components = {
       {...props}
     />
   ),
-  h3: ({ className, id, ...props }: React.ComponentProps<'h3'>) => (
+  h3: ({ className, ...props }: React.ComponentProps<'h3'>) => (
     <h3
       className={cn(
         'mt-8 scroll-m-20 text-2xl font-semibold tracking-tight',

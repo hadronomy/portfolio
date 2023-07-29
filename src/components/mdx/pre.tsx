@@ -6,6 +6,7 @@ import { ClipboardCopy, ClipboardCheck } from 'lucide-react';
 import { Button } from '~/components/ui/button';
 
 import { cn, delay } from '~/lib/utils';
+import { never } from 'zod';
 
 export type MDXPre = React.ComponentProps<'pre'>;
 
@@ -15,8 +16,9 @@ export function MDXPre({ className, children, ...props }: MDXPre) {
 
   async function copyContents() {
     setCopied(true);
-    if (codeText.current !== null && codeText.current.textContent !== null)
-      navigator.clipboard.writeText(codeText.current.textContent);
+    if (codeText?.current === null) return never;
+    if (codeText.current?.textContent !== null)
+      await navigator.clipboard.writeText(codeText.current.textContent);
   }
 
   async function handleLeaveButton() {

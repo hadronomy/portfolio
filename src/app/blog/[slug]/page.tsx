@@ -1,5 +1,5 @@
 import { format, parseISO } from 'date-fns';
-import { Metadata } from 'next';
+import { type Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { allPosts } from 'contentlayer/generated';
@@ -8,7 +8,6 @@ import { Balancer } from 'react-wrap-balancer';
 import { MDX } from '~/components/mdx';
 import { Navbar } from '~/components/ui/navbar';
 import { Avatar, AvatarImage, AvatarFallback } from '~/components/ui/avatar';
-import { Separator } from '~/components/ui/separator';
 import { Badge } from '~/components/ui/badge';
 
 export type BlogPageProps = {
@@ -17,17 +16,17 @@ export type BlogPageProps = {
   };
 };
 
-async function getPostFromSlug(slug: string) {
+function getPostFromSlug(slug: string) {
   const post = allPosts.find((post) => post._raw.flattenedPath === slug);
   if (!post) notFound();
   return post;
 }
 
-export async function generateStaticParams() {
+export function generateStaticParams() {
   return allPosts.map((post) => ({ slug: post._raw.flattenedPath }));
 }
 
-export async function generateMetadata({ params }: BlogPageProps) {
+export function generateMetadata({ params }: BlogPageProps) {
   const post = allPosts.find((post) => post._raw.flattenedPath === params.slug);
   if (!post) notFound();
   return {
@@ -42,8 +41,8 @@ export async function generateMetadata({ params }: BlogPageProps) {
   } satisfies Metadata;
 }
 
-export default async function BlogPage({ params }: BlogPageProps) {
-  const post = await getPostFromSlug(params.slug);
+export default function BlogPage({ params }: BlogPageProps) {
+  const post = getPostFromSlug(params.slug);
 
   return (
     <>

@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { Cake, FileCode, Flag, Languages } from 'lucide-react';
-import { cva, VariantProps } from 'class-variance-authority';
+import { cva, type VariantProps } from 'class-variance-authority';
 import { DateTime } from 'luxon';
 
 import {
