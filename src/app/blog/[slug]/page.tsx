@@ -73,7 +73,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
           </div>
           <div className="mt-6 h-fit max-h-80 overflow-clip rounded">
             <Image
-              src="https://picsum.photos/1000/700"
+              src={post.image}
               alt="example"
               width={1000}
               height={700}
