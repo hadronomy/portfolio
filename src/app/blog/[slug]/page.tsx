@@ -29,12 +29,15 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: BlogPageProps) {
   const post = allPosts.find((post) => post._raw.flattenedPath === params.slug);
+  if (!post) notFound();
   return {
-    title: post?.title,
+    title: post.title,
     openGraph: {
-      title: post?.title,
-      siteName: 'Hadronomy | Blog',
-      images: ['https://picsum.photos/1000/700']
+      title: post.title,
+      description: post.description,
+      siteName: 'Pablo Hernández | Blog',
+      images: [post.image],
+      authors: ['Pablo Hernández']
     }
   } satisfies Metadata;
 }
