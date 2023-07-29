@@ -28,11 +28,11 @@ const socials = [
   },
   {
     Icon: FaLinkedinIn,
-    link: 'https://twitter.com/hadronomy'
+    link: 'https://linkedin.com/in/hadronomy'
   },
   {
     Icon: FaTwitter,
-    link: 'https://linkedin.com/in/hadronomy'
+    link: 'https://twitter.com/hadronomy'
   }
 ];
 
