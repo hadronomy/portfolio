@@ -60,7 +60,7 @@ dependencies:
     specifier: 0.18.0
     version: 0.18.0(next@13.4.7)
   next-contentlayer:
-    specifier: ^0.3.4
+    specifier: 0.3.4
     version: 0.3.4(contentlayer@0.3.4)(esbuild@0.18.17)(next@13.4.7)(react-dom@18.2.0)(react@18.2.0)
   postcss:
     specifier: 8.4.21
@@ -81,7 +81,7 @@ dependencies:
     specifier: 4.10.1
     version: 4.10.1(react@18.2.0)
   react-wrap-balancer:
-    specifier: ^1.0.0
+    specifier: 1.0.0
     version: 1.0.0(react@18.2.0)
   rehype-autolink-headings:
     specifier: 6.1.1
