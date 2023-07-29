@@ -73,7 +73,6 @@ export default async function BlogPage({ params }: BlogPageProps) {
           </div>
           <div className="mt-6 h-fit overflow-clip rounded">
             <Image
-              unoptimized
               src={post.image}
               alt="example"
               width={1000}
