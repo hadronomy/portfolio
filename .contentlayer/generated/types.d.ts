@@ -21,6 +21,7 @@ export type Post = {
   title: string;
   description?: string | undefined;
   date: IsoDateTimeString;
+  tags: string[];
   published: boolean;
   /** MDX file body */
   body: MDX;

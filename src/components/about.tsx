@@ -20,6 +20,7 @@ import {
   HoverCardTrigger,
   HoverCardContent
 } from '~/components/ui/hover-card';
+
 import { cn } from '~/lib/utils';
 
 export const aboutStyle = cva('flex h-full flex-col space-y-6 p-10');

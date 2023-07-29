@@ -1,3 +1,5 @@
+import fs from 'fs';
+import path from 'path';
 import { defineDocumentType, makeSource } from 'contentlayer/source-files';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import rehypePrettyCode from 'rehype-pretty-code';
@@ -36,6 +38,11 @@ export const Post = defineDocumentType(() => ({
       type: 'date',
       required: true
     },
+    tags: {
+      type: 'list',
+      of: { type: 'string' },
+      default: []
+    },
     published: {
       type: 'boolean',
       default: false
@@ -46,7 +53,10 @@ export const Post = defineDocumentType(() => ({
 
 /** @type {import('rehype-pretty-code').Options} */
 const prettyCodeOptions = {
-  theme: 'dracula',
+  theme: JSON.parse(
+    fs.readFileSync(path.resolve('./assets/mocha.json'), 'utf-8')
+  ),
+  keepBackground: false,
   onVisitLine(node) {
     if (node.children.length === 0) {
       node.children = [{ type: 'text', value: ' ' }];

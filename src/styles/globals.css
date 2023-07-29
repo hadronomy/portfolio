@@ -31,6 +31,8 @@
     --destructive: 0 100% 50%;
     --destructive-foreground: 210 40% 98%;
 
+    --selection: 233, 12%, 39%;
+
     --ring: 215 20.2% 65.1%;
 
     --radius: 0.5rem;
@@ -64,6 +66,8 @@
     --destructive: 0 63% 31%;
     --destructive-foreground: 210 40% 98%;
 
+    --selection: 233, 12%, 39%;
+
     --ring: 216 0% 17%;
 
     --radius: 0.5rem;
@@ -74,8 +78,85 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
     font-feature-settings: 'rlig' 1, 'calt' 1;
+  }
+
+  /* width */
+  ::-webkit-scrollbar {
+    @apply h-1 w-1;
+  }
+
+  /* Track */
+  ::-webkit-scrollbar-track {
+    @apply rounded bg-muted;
+  }
+
+  /* Handle */
+  ::-webkit-scrollbar-thumb {
+    @apply rounded bg-muted-foreground;
+  }
+
+  /* Handle on hover */
+  ::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+
+  pre > code {
+    @apply grid py-6;
+    counter-reset: line;
+  }
+
+  :not(pre) > code {
+    @apply rounded-lg border-2 bg-muted px-1;
+  }
+
+  code {
+    counter-reset: line;
+  }
+
+  code[data-line-numbers] > [data-line]::before {
+    counter-increment: line;
+    content: counter(line);
+    position: sticky;
+
+    /* Other styling */
+    display: inline-block;
+    width: 1rem;
+    margin-right: 2rem;
+    text-align: right;
+    color: gray;
+  }
+
+  code[data-line-numbers-max-digits='2'] > [data-line]::before {
+    @apply w-[2rem]
+  }
+
+  code[data-line-numbers-max-digits='3'] > [data-line]::before {
+    @apply w-[3rem];
+  }
+
+  [data-line] {
+    @apply border-l-2 border-l-2 border-l-transparent border-l-transparent px-6;
+  }
+
+  [data-highlighted-line] {
+    background: rgba(200, 200, 255, 0.1);
+    @apply border-l-blue-400;
+  }
+
+  [data-highlighted-chars] {
+    @apply rounded bg-zinc-600/50;
+    box-shadow: 0 0 0 4px rgb(82 82 91 / 0.5);
+  }
+
+  [data-chars-id] {
+    @apply border-b-2 p-1 shadow-none;
+  }
+
+  [data-chars-id] span {
+    @apply !text-inherit;
   }
 }

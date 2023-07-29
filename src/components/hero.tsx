@@ -3,6 +3,7 @@ import { Bellota } from 'next/font/google';
 
 import { InteractiveRoom } from '~/components/interactive-room';
 import { Typewritter } from '~/components/typewritter';
+
 import { cn } from '~/lib/utils';
 
 const bellota = Bellota({
