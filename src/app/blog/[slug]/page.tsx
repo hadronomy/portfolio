@@ -59,7 +59,7 @@ export default function BlogPage({ params }: BlogPageProps) {
           <h1 className="scroll-m-20 text-4xl font-extrabold leading-tight tracking-tight md:leading-loose lg:text-5xl">
             <Balancer>{post.title}</Balancer>
           </h1>
-          <div className="flex space-x-3">
+          <div className="mt-6 flex space-x-3">
             {post.tags.map((tag) => (
               <Badge className="text-sm font-extrabold" key={tag}>
                 #{tag}
