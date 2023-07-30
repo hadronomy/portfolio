@@ -38,10 +38,7 @@ export const components = {
   ),
   p: ({ className, ...props }: React.ComponentProps<'p'>) => (
     <p
-      className={cn(
-        'text-justify text-lg leading-7 [&:not(:first-child)]:mt-6',
-        className
-      )}
+      className={cn('text-lg leading-7 [&:not(:first-child)]:mt-6', className)}
       {...props}
     />
   ),
