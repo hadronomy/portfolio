@@ -73,15 +73,13 @@ export default function BlogPage({ params }: BlogPageProps) {
             </Avatar>
             <a className="font-semibold">Pablo Hernández Jiménez</a>
           </div>
-          <div className="mt-6 h-fit overflow-clip rounded">
-            <Image
-              src={post.image}
-              alt="example"
-              width={1000}
-              height={700}
-              className="object-cover"
-            />
-          </div>
+          <Image
+            src={post.image}
+            alt="example"
+            width={1000}
+            height={700}
+            className="mt-6 h-fit rounded object-cover"
+          />
         </div>
         <MDX code={post.body.code} />
       </article>

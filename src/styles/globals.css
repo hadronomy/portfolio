@@ -110,7 +110,7 @@
   }
 
   :not(pre) > code {
-    @apply rounded-lg border-2 bg-muted px-1;
+    @apply rounded-lg border-2 bg-muted px-1 text-foreground/100;
   }
 
   code {
@@ -131,7 +131,7 @@
   }
 
   code[data-line-numbers-max-digits='2'] > [data-line]::before {
-    @apply w-[2rem]
+    @apply w-[2rem];
   }
 
   code[data-line-numbers-max-digits='3'] > [data-line]::before {

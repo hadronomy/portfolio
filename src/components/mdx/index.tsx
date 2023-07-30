@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import Image from 'next/image';
 import { type MDXComponents } from 'mdx/types';
 import { getMDXComponent } from 'next-contentlayer/hooks';
 
@@ -47,9 +48,15 @@ export const components = {
   ),
   p: ({ className, ...props }: React.ComponentProps<'p'>) => (
     <p
-      className={cn('text-lg leading-7 [&:not(:first-child)]:mt-6', className)}
+      className={cn(
+        'text-lg leading-7 text-foreground/80 [&:not(:first-child)]:mt-6',
+        className
+      )}
       {...props}
     />
+  ),
+  strong: ({ className, ...props }: React.ComponentProps<'strong'>) => (
+    <b className={cn('text-foreground/100', className)} {...props} />
   ),
   blockquote: ({ className, ...props }: React.ComponentProps<'blockquote'>) => (
     <blockquote
@@ -62,6 +69,17 @@ export const components = {
     <code
       className={cn('relative overflow-x-auto font-mono', className)}
       {...props}
+    />
+  ),
+  img: ({ className, src, alt, id }: React.ComponentProps<'img'>) => (
+    // eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text
+    <Image
+      src={src ?? ''}
+      alt={alt ?? ''}
+      id={id}
+      width={1000}
+      height={700}
+      className={cn('rounded', className)}
     />
   )
 } as const satisfies MDXComponents;
