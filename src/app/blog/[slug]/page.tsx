@@ -49,7 +49,7 @@ export default function BlogPage({ params }: BlogPageProps) {
       <Navbar />
       <article className="mx-4 mt-10 max-w-screen-md py-8 md:mx-auto">
         <div className="mb-8 flex flex-col">
-          <div className="mb-6 inline-flex items-center space-x-2 align-middle text-sm font-extrabold text-gray-600">
+          <div className="mb-6 inline-flex items-center space-x-2 align-middle text-sm font-extrabold text-muted-foreground">
             <time dateTime={post.date}>
               {format(parseISO(post.date), 'LLLL d, yyyy')}
             </time>
