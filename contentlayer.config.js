@@ -79,16 +79,16 @@ export default makeSource({
     remarkPlugins: [remarkGfm],
     rehypePlugins: [
       rehypeSlug,
-      [rehypePrettyCode, prettyCodeOptions],
-      [
-        rehypeAutolinkHeadings,
-        {
-          properties: {
-            className: ['subheading-anchor'],
-            ariaLabel: 'Link to sections'
-          }
-        }
-      ]
+      [rehypePrettyCode, prettyCodeOptions]
+      // [
+      //   rehypeAutolinkHeadings,
+      //   {
+      //     properties: {
+      //       className: ['subheading-anchor'],
+      //       ariaLabel: 'Link to sections'
+      //     }
+      //   }
+      // ]
     ]
   }
 });

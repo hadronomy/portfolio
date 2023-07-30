@@ -9,32 +9,41 @@ import { MDXPre } from '~/components/mdx/pre';
 import { cn } from '~/lib/utils';
 
 export const components = {
-  h1: ({ className, ...props }: React.ComponentProps<'h1'>) => (
-    <h1
-      className={cn(
-        'scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl',
-        className
-      )}
-      {...props}
-    />
+  h1: ({ className, id, ...props }: React.ComponentProps<'h1'>) => (
+    <a href={`#${id}`} className="group relative">
+      <h1
+        id={id}
+        className={cn(
+          'scroll-m-20 text-4xl font-extrabold tracking-tight before:content-["#"] lg:text-5xl',
+          className
+        )}
+        {...props}
+      />
+    </a>
   ),
-  h2: ({ className, ...props }: React.ComponentProps<'h2'>) => (
-    <h2
-      className={cn(
-        'scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight transition-colors first:mt-0',
-        className
-      )}
-      {...props}
-    />
+  h2: ({ className, id, ...props }: React.ComponentProps<'h2'>) => (
+    <a href={`#${id}`}>
+      <h2
+        id={id}
+        className={cn(
+          'scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight transition-all before:absolute before:translate-x-[-2rem] before:opacity-0 before:transition-all before:content-["#"] first:mt-0 hover:before:opacity-100',
+          className
+        )}
+        {...props}
+      />
+    </a>
   ),
-  h3: ({ className, ...props }: React.ComponentProps<'h3'>) => (
-    <h3
-      className={cn(
-        'mt-8 scroll-m-20 text-2xl font-semibold tracking-tight',
-        className
-      )}
-      {...props}
-    />
+  h3: ({ className, id, ...props }: React.ComponentProps<'h3'>) => (
+    <a href={`#${id}`}>
+      <h3
+        id={id}
+        className={cn(
+          'mt-8 scroll-m-20 text-2xl font-semibold tracking-tight before:absolute before:float-left before:translate-x-[-2rem] before:opacity-0 before:transition-all before:content-["#"] hover:before:opacity-100',
+          className
+        )}
+        {...props}
+      />
+    </a>
   ),
   p: ({ className, ...props }: React.ComponentProps<'p'>) => (
     <p
