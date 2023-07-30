@@ -58,6 +58,12 @@ export const components = {
   strong: ({ className, ...props }: React.ComponentProps<'strong'>) => (
     <b className={cn('text-foreground/100', className)} {...props} />
   ),
+  em: ({ className, ...props }: React.ComponentProps<'em'>) => (
+    <em
+      className={cn('font-medium text-foreground/100', className)}
+      {...props}
+    />
+  ),
   blockquote: ({ className, ...props }: React.ComponentProps<'blockquote'>) => (
     <blockquote
       className={cn('mt-6 border-l-2 pl-6 italic', className)}
