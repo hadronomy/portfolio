@@ -53,8 +53,8 @@ export default function BlogPage({ params }: BlogPageProps) {
             <time dateTime={post.date}>
               {format(parseISO(post.date), 'LLLL d, yyyy')}
             </time>
-            <a hidden>•</a>
-            <a hidden>10 min</a>
+            <span hidden>•</span>
+            <span hidden>10 min</span>
           </div>
           <h1 className="scroll-m-20 text-4xl font-extrabold leading-tight tracking-tight md:leading-loose lg:text-5xl">
             <Balancer>{post.title}</Balancer>
@@ -71,7 +71,7 @@ export default function BlogPage({ params }: BlogPageProps) {
               <AvatarImage src="https://github.com/hadronomy.png" />
               <AvatarFallback>H</AvatarFallback>
             </Avatar>
-            <a className="font-semibold">Pablo Hernández Jiménez</a>
+            <span className="font-semibold">Pablo Hernández Jiménez</span>
           </div>
           <Image
             src={post.image}
