@@ -1,10 +1,11 @@
 import fs from 'fs';
 import path from 'path';
 import { defineDocumentType, makeSource } from 'contentlayer/source-files';
-// import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import rehypePrettyCode from 'rehype-pretty-code';
 import rehypeSlug from 'rehype-slug';
 import remarkGfm from 'remark-gfm';
+import { rehypeAccessibleEmojis } from 'rehype-accessible-emojis';
+import remarkGemoji from 'remark-gemoji';
 
 /** @type {import('contentlayer/source-files').ComputedFields} */
 const computedFields = {
@@ -76,10 +77,11 @@ export default makeSource({
   contentDirPath: 'src/blog',
   documentTypes: [Post],
   mdx: {
-    remarkPlugins: [remarkGfm],
+    remarkPlugins: [remarkGfm, remarkGemoji],
     rehypePlugins: [
       rehypeSlug,
-      [rehypePrettyCode, prettyCodeOptions]
+      [rehypePrettyCode, prettyCodeOptions],
+      rehypeAccessibleEmojis
       // [
       //   rehypeAutolinkHeadings,
       //   {

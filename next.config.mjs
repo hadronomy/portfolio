@@ -16,6 +16,10 @@ const nextConfig = withContentlayer(
           protocol: 'https',
           hostname: 'picsum.photos',
           pathname: '/**/*'
+        },
+        {
+          protocol: 'https',
+          hostname: 'twemoji.maxcdn.com'
         }
       ]
     }
