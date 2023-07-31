@@ -6,6 +6,15 @@ import { type MDXComponents } from 'mdx/types';
 import { getMDXComponent } from 'next-contentlayer/hooks';
 
 import { MDXPre } from '~/components/mdx/pre';
+import {
+  Table,
+  TableBody,
+  // TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from '~/components/ui/table';
 
 import { cn } from '~/lib/utils';
 
@@ -87,6 +96,24 @@ export const components = {
       height={700}
       className={cn('rounded', className)}
     />
+  ),
+  table: ({ className, children }: React.ComponentProps<'table'>) => (
+    <Table className={cn('mt-6', className)}>{children}</Table>
+  ),
+  thead: ({ className, children }: React.ComponentProps<'thead'>) => (
+    <TableHeader className={cn('', className)}>{children}</TableHeader>
+  ),
+  th: ({ className, children }: React.ComponentProps<'th'>) => (
+    <TableHead className={cn('font-bold', className)}>{children}</TableHead>
+  ),
+  tbody: ({ className, children }: React.ComponentProps<'tbody'>) => (
+    <TableBody className={cn('', className)}>{children}</TableBody>
+  ),
+  tr: ({ className, children }: React.ComponentProps<'tr'>) => (
+    <TableRow className={cn('', className)}>{children}</TableRow>
+  ),
+  td: ({ className, children }: React.ComponentProps<'td'>) => (
+    <TableCell className={cn('', className)}>{children}</TableCell>
   )
 } as const satisfies MDXComponents;
 
