@@ -9,6 +9,7 @@ import { MDX } from '~/components/mdx';
 import { Navbar } from '~/components/ui/navbar';
 import { Avatar, AvatarImage, AvatarFallback } from '~/components/ui/avatar';
 import { Badge } from '~/components/ui/badge';
+import { Sandpack } from '~/components/sandpack';
 
 export type BlogPageProps = {
   params: {
@@ -47,7 +48,7 @@ export default function BlogPage({ params }: BlogPageProps) {
   return (
     <>
       <Navbar />
-      <article className="mx-4 mt-10 max-w-screen-md py-8 md:mx-auto">
+      <article className="mt-10 grid grid-cols-[1fr_min(85ch,_calc(100%_-_3rem))_1fr] px-6 py-8 [&>*]:col-start-2">
         <div className="mb-8 flex flex-col">
           <div className="mb-6 inline-flex items-center space-x-2 align-middle text-sm font-extrabold text-muted-foreground">
             <time dateTime={post.date}>
@@ -73,14 +74,16 @@ export default function BlogPage({ params }: BlogPageProps) {
             </Avatar>
             <span className="font-semibold">Pablo Hernández Jiménez</span>
           </div>
-          <Image
-            src={post.image}
-            alt="example"
-            width={1000}
-            height={700}
-            className="mt-6 h-fit rounded object-cover"
-          />
+          <div className="relative mt-6 h-fit min-h-[30rem] max-w-full overflow-hidden rounded">
+            <Image
+              src={post.image}
+              alt="example"
+              fill
+              className="object-cover"
+            />
+          </div>
         </div>
+        <Sandpack />
         <MDX code={post.body.code} />
       </article>
     </>

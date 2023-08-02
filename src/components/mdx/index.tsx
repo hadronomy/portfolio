@@ -127,8 +127,8 @@ export function MDX({ code }: MDXProps) {
   const Component = getMDXComponent(code);
 
   return (
-    <div className="mdx bg-background">
+    <>
       <Component components={components} />
-    </div>
+    </>
   );
 }
