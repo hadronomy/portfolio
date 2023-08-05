@@ -9,9 +9,9 @@ import { MDX } from '~/components/mdx';
 import { Navbar } from '~/components/ui/navbar';
 import { Avatar, AvatarImage, AvatarFallback } from '~/components/ui/avatar';
 import { Badge } from '~/components/ui/badge';
-import { Sandpack } from '~/components/sandpack';
+// import { Sandpack } from '~/components/sandpack';
 
-export type BlogPageProps = {
+export type BlogPostPageProps = {
   params: {
     slug: string;
   };
@@ -27,7 +27,7 @@ export function generateStaticParams() {
   return allPosts.map((post) => ({ slug: post._raw.flattenedPath }));
 }
 
-export function generateMetadata({ params }: BlogPageProps) {
+export function generateMetadata({ params }: BlogPostPageProps) {
   const post = allPosts.find((post) => post._raw.flattenedPath === params.slug);
   if (!post) notFound();
   return {
@@ -42,8 +42,8 @@ export function generateMetadata({ params }: BlogPageProps) {
   } satisfies Metadata;
 }
 
-export default function BlogPage({ params }: BlogPageProps) {
-  const post = getPostFromSlug(params.slug);
+export default function BlogPostPage({ params }: BlogPostPageProps) {
+  const { title, image, date, tags, body } = getPostFromSlug(params.slug);
 
   return (
     <>
@@ -51,17 +51,17 @@ export default function BlogPage({ params }: BlogPageProps) {
       <article className="mt-10 grid grid-cols-[1fr_min(85ch,_calc(100%_-_3rem))_1fr] px-6 py-8 [&>*]:col-start-2">
         <div className="mb-8 flex flex-col">
           <div className="mb-6 inline-flex items-center space-x-2 align-middle text-sm font-extrabold text-muted-foreground">
-            <time dateTime={post.date}>
-              {format(parseISO(post.date), 'LLLL d, yyyy')}
+            <time dateTime={date}>
+              {format(parseISO(date), 'LLLL d, yyyy')}
             </time>
             <span hidden>•</span>
             <span hidden>10 min</span>
           </div>
           <h1 className="scroll-m-20 text-4xl font-extrabold leading-tight tracking-tight md:leading-loose lg:text-5xl">
-            <Balancer>{post.title}</Balancer>
+            <Balancer>{title}</Balancer>
           </h1>
           <div className="mt-6 flex space-x-3">
-            {post.tags.map((tag) => (
+            {tags.map((tag) => (
               <Badge className="text-sm font-extrabold" key={tag}>
                 #{tag}
               </Badge>
@@ -75,16 +75,10 @@ export default function BlogPage({ params }: BlogPageProps) {
             <span className="font-semibold">Pablo Hernández Jiménez</span>
           </div>
           <div className="relative mt-6 h-fit min-h-[30rem] max-w-full overflow-hidden rounded">
-            <Image
-              src={post.image}
-              alt="example"
-              fill
-              className="object-cover"
-            />
+            <Image src={image} alt="example" fill className="object-cover" />
           </div>
         </div>
-        <Sandpack />
-        <MDX code={post.body.code} />
+        <MDX code={body.code} />
       </article>
     </>
   );

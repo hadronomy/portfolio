@@ -4,7 +4,7 @@ import Script from 'next/script';
 import { type Metadata } from 'next';
 
 import { WebVitals } from '~/components/webvitals';
-import { SandpackCSS } from '~/components/sandpack';
+// import { SandpackCSS } from '~/components/sandpack';
 
 import { env } from '~/env.mjs';
 
