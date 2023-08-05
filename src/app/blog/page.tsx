@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import { format, isAfter, parseISO } from 'date-fns';
 import { Balancer } from 'react-wrap-balancer';
@@ -20,6 +19,9 @@ export type BlogPage = Record<string, never>;
 
 export default function BlogPage({}: BlogPage) {
   const recentPosts = allPosts
+    .filter(({ published }) => {
+      return process.env.NODE_ENV !== 'production' || published;
+    })
     .sort((a, b) => {
       const dateA = parseISO(a.date);
       const dateB = parseISO(b.date);
