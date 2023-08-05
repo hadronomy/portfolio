@@ -18,17 +18,17 @@ import { Badge } from '~/components/ui/badge';
 export type BlogPage = Record<string, never>;
 
 export default function BlogPage({}: BlogPage) {
-  const recentPosts = allPosts
-    .filter(({ published }) => {
-      return process.env.NODE_ENV !== 'production' || published;
-    })
+  const posts = allPosts.filter(({ published }) => {
+    return process.env.NODE_ENV !== 'production' || published;
+  });
+  const recentPosts = posts
     .sort((a, b) => {
       const dateA = parseISO(a.date);
       const dateB = parseISO(b.date);
       return isAfter(dateA, dateB) ? -1 : 1;
     })
     .slice(0, 10);
-  const tags = Array.from(new Set(allPosts.flatMap(({ tags }) => tags)));
+  const tags = Array.from(new Set(posts.flatMap(({ tags }) => tags)));
 
   return (
     <>
