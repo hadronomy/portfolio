@@ -3,7 +3,7 @@ import { Hero } from '~/components/hero';
 import { Navbar } from '~/components/ui/navbar';
 
 export const metadata = {
-  title: 'Home'
+  title: 'Portofolio'
 };
 
 export default function HomePage() {

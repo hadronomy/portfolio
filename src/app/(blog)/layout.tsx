@@ -2,8 +2,8 @@ import { type Metadata } from 'next';
 
 export const metadata = {
   title: {
-    default: 'Pablo Hernández | Blog',
-    template: '%s - Pablo Hernández'
+    default: 'Blog',
+    template: '%s | Pablo Hernández'
   },
   creator: 'Pablo Hernández'
 } satisfies Metadata;

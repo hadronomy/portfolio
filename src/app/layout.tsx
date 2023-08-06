@@ -19,8 +19,8 @@ const urbanist = Urbanist({
 
 export const metadata = {
   title: {
-    default: 'Pablo Hernández | Portofolio',
-    template: '%s - Pablo Hernández'
+    default: 'Portofolio | Pablo Hernández',
+    template: '%s | Pablo Hernández'
   },
   creator: 'Pablo Hernández'
 } satisfies Metadata;

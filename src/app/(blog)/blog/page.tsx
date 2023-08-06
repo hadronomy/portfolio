@@ -1,9 +1,14 @@
+import { type Metadata } from 'next';
 import { isAfter, parseISO } from 'date-fns';
 import { allPosts } from 'contentlayer/generated';
 
 import { Navbar } from '~/components/ui/navbar';
 import { Badge } from '~/components/ui/badge';
 import { BlogPostCard } from './_components/blogpost-card';
+
+export const metadata = {
+  title: 'Blog'
+} satisfies Metadata;
 
 export type BlogPage = Record<string, never>;
 
