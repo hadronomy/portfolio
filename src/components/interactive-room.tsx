@@ -30,7 +30,7 @@ export function InteractiveRoom({}: InteractiveRoomProps) {
   );
 }
 
-type SceneProps = {};
+type SceneProps = Record<string, never>;
 
 function Scene({}: SceneProps) {
   return (

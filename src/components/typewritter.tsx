@@ -2,7 +2,7 @@
 
 import TypewritterEffect from 'typewriter-effect';
 
-export type TypewritterProps = {};
+export type TypewritterProps = Record<string, never>;
 
 export function Typewritter({}: TypewritterProps) {
   return (

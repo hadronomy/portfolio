@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { Cake, FileCode, Flag, Languages } from 'lucide-react';
-import { cva, VariantProps } from 'class-variance-authority';
+import { cva, type VariantProps } from 'class-variance-authority';
 import { DateTime } from 'luxon';
 
 import {
@@ -20,6 +20,7 @@ import {
   HoverCardTrigger,
   HoverCardContent
 } from '~/components/ui/hover-card';
+
 import { cn } from '~/lib/utils';
 
 export const aboutStyle = cva('flex h-full flex-col space-y-6 p-10');
@@ -110,7 +111,7 @@ export function About({ className }: AboutProps) {
                 />
               </div>
               <div>
-                <p className="text-justify leading-relaxed">
+                <p className="leading-relaxed">
                   Lover of all things related to code and art. 10 years of
                   experience developing all kinds of applications with different
                   languages, frameworks and toolsets.

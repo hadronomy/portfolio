@@ -2,11 +2,12 @@
 
 import { useReportWebVitals } from 'next/web-vitals';
 import { reportWebVitals } from 'next-axiom';
+import { type NextWebVitalsMetric } from 'next/app';
 
-export type WebVitalsProps = {};
+export type WebVitalsProps = Record<string, never>;
 
 export function WebVitals({}: WebVitalsProps) {
-  useReportWebVitals((metrics) => {
+  useReportWebVitals((metrics: NextWebVitalsMetric) => {
     reportWebVitals(metrics);
   });
   return <></>;
