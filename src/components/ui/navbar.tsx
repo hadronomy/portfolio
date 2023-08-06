@@ -28,11 +28,11 @@ const socials = [
   },
   {
     Icon: FaLinkedinIn,
-    link: 'https://twitter.com/hadronomy'
+    link: 'https://linkedin.com/in/hadronomy'
   },
   {
     Icon: FaTwitter,
-    link: 'https://linkedin.com/in/hadronomy'
+    link: 'https://twitter.com/hadronomy'
   }
 ];
 
@@ -40,7 +40,7 @@ export type NavbarProps = React.ComponentProps<'header'>;
 
 export function Navbar({}: NavbarProps) {
   return (
-    <header className="sticky top-0 z-20 w-full border-b-[1px] border-white/20 bg-background/90 backdrop-blur-[8px]">
+    <header className="bg-background/90 sticky top-0 z-20 w-full border-b-[1px] border-white/20 backdrop-blur-[8px]">
       <nav className="mx-auto grid max-w-screen-xl grid-cols-4 px-6 py-4">
         <div className="flex md:order-2 md:hidden">
           <Button
@@ -77,7 +77,7 @@ export function Navbar({}: NavbarProps) {
               <li key={label}>
                 <Link
                   href={href}
-                  className="font-bold text-muted-foreground hover:text-foreground/80 dark:hover:drop-shadow-[0.3_0.3_1.2rem_#ffffff80]"
+                  className="text-muted-foreground hover:text-foreground/80 font-bold dark:hover:drop-shadow-[0.3_0.3_1.2rem_#ffffff80]"
                   aria-label={label}
                 >
                   {label}
