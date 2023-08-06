@@ -1,12 +1,10 @@
 import * as React from 'react';
-import { format, parseISO } from 'date-fns';
 import Link from 'next/link';
 import Balancer from 'react-wrap-balancer';
 import type { Post } from 'contentlayer/generated';
 
 import { cn } from '~/lib/utils';
 
-import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import {
   Card,
   CardContent,
@@ -16,6 +14,7 @@ import {
   CardTitle
 } from '~/components/ui/card';
 import { PostDate } from './post-date';
+import { Author } from './author';
 
 export type BlogPostCardProps = React.ComponentProps<typeof Link> & {
   post: Post;
@@ -41,13 +40,7 @@ export function BlogPostCard({ className, post, ...props }: BlogPostCardProps) {
           )}
         </CardContent>
         <CardFooter>
-          <div className="mt-6 inline-flex items-center gap-x-3 align-middle">
-            <Avatar>
-              <AvatarImage src="https://github.com/hadronomy.png" />
-              <AvatarFallback>H</AvatarFallback>
-            </Avatar>
-            <span className="font-semibold">Pablo Hernández Jiménez</span>
-          </div>
+          <Author className="mt-6" />
         </CardFooter>
       </Card>
     </Link>

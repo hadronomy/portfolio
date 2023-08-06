@@ -6,9 +6,9 @@ import { Balancer } from 'react-wrap-balancer';
 
 import { MDX } from '~/components/mdx';
 import { Navbar } from '~/components/ui/navbar';
-import { Avatar, AvatarImage, AvatarFallback } from '~/components/ui/avatar';
 import { Badge } from '~/components/ui/badge';
 import { PostDate } from '../_components/post-date';
+import { Author } from '../_components/author';
 // import { Sandpack } from '~/components/sandpack';
 
 export type BlogPostPageProps = {
@@ -61,15 +61,10 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
               </Badge>
             ))}
           </div>
-          <div className="mt-6 inline-flex items-center gap-x-3 align-middle">
-            <Avatar>
-              <AvatarImage src="https://github.com/hadronomy.png" />
-              <AvatarFallback>H</AvatarFallback>
-            </Avatar>
-            <span className="font-semibold">Pablo Hernández Jiménez</span>
-          </div>
+          <Author className="mt-6" />
           <div className="relative mt-6 h-fit min-h-[30rem] max-w-full overflow-hidden rounded">
             <Image src={image} alt="example" fill className="object-cover" />
+            AA
           </div>
         </div>
         <MDX code={body.code} />

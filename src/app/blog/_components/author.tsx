@@ -1,5 +1,22 @@
-export type AuthorProps = Record<string, never>;
+import * as React from 'react';
 
-export function Author() {
-  return <></>;
+import { cn } from '~/lib/utils';
+
+import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
+
+export type AuthorProps = React.ComponentProps<'div'>;
+
+export function Author({ className, ...props }: AuthorProps) {
+  return (
+    <div
+      className={cn('inline-flex items-center gap-x-3 align-middle', className)}
+      {...props}
+    >
+      <Avatar>
+        <AvatarImage src="https://github.com/hadronomy.png" />
+        <AvatarFallback>H</AvatarFallback>
+      </Avatar>
+      <span className="font-semibold">Pablo Hernández Jiménez</span>
+    </div>
+  );
 }
