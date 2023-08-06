@@ -6,13 +6,15 @@ import { type Metadata } from 'next';
 import { WebVitals } from '~/components/webvitals';
 // import { SandpackCSS } from '~/components/sandpack';
 
+import { cn } from '~/lib/utils';
 import { env } from '~/env.mjs';
 
 import '~/styles/globals.css';
 
 const urbanist = Urbanist({
   subsets: ['latin'],
-  weight: ['100', '300', '400', '500', '700', '900']
+  weight: ['100', '300', '400', '500', '700', '900'],
+  variable: '--font-sans'
 });
 
 export const metadata = {
@@ -29,7 +31,7 @@ type RootLayoutProps = {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html className={`dark ${urbanist.className}`} lang="en">
+    <html className={cn('dark', urbanist.variable)} lang="en">
       {process.env.NODE_ENV === 'production' && (
         <Script
           async

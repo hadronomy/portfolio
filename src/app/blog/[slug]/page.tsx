@@ -1,4 +1,3 @@
-import { format, parseISO } from 'date-fns';
 import { type Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
@@ -9,6 +8,7 @@ import { MDX } from '~/components/mdx';
 import { Navbar } from '~/components/ui/navbar';
 import { Avatar, AvatarImage, AvatarFallback } from '~/components/ui/avatar';
 import { Badge } from '~/components/ui/badge';
+import { PostDate } from '../_components/post-date';
 // import { Sandpack } from '~/components/sandpack';
 
 export type BlogPostPageProps = {
@@ -50,19 +50,13 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
       <Navbar />
       <article className="mt-10 grid grid-cols-[1fr_min(85ch,_calc(100%_-_3rem))_1fr] px-6 py-8 [&>*]:col-start-2">
         <div className="mb-8 flex flex-col">
-          <div className="mb-6 inline-flex items-center space-x-2 align-middle text-sm font-extrabold text-muted-foreground">
-            <time dateTime={date}>
-              {format(parseISO(date), 'LLLL d, yyyy')}
-            </time>
-            <span hidden>•</span>
-            <span hidden>10 min</span>
-          </div>
+          <PostDate date={date} className="mb-6" />
           <h1 className="scroll-m-20 text-4xl font-extrabold leading-tight tracking-tight md:leading-loose lg:text-5xl">
             <Balancer>{title}</Balancer>
           </h1>
           <div className="mt-6 flex space-x-3">
             {tags.map((tag) => (
-              <Badge className="text-sm font-extrabold" key={tag}>
+              <Badge key={tag} className="text-sm font-extrabold">
                 #{tag}
               </Badge>
             ))}
