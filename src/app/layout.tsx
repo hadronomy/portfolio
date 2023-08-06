@@ -31,7 +31,7 @@ type RootLayoutProps = {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html className={cn('dark', urbanist.variable)} lang="en">
+    <html className={cn('dark antialiased', urbanist.variable)} lang="en">
       {process.env.NODE_ENV === 'production' && (
         <Script
           async
