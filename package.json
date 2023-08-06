@@ -3,12 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "prepare": "husky install",
-    "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "dev": "next dev",
     "lint": "next lint",
-    "lint-staged": "lint-staged"
+    "lint-staged": "lint-staged",
+    "prepare": "husky install",
+    "start": "next start"
+  },
+  "lint-staged": {
+    "**/*.{js,jsx,ts,tsx}": "eslint --fix",
+    "**/*.{js,jsx,ts,tsx,json}": "prettier --write --ignore-unknown"
   },
   "dependencies": {
     "@codesandbox/sandpack-react": "2.6.9",
@@ -74,9 +78,5 @@
     "lint-staged": "13.2.3",
     "prettier-plugin-packagejson": "2.4.5",
     "turbo": "1.10.9"
-  },
-  "lint-staged": {
-    "**/*.{js,jsx,ts,tsx}": "eslint --fix",
-    "**/*.{js,jsx,ts,tsx,json}": "prettier --write --ignore-unknown"
   }
 }
