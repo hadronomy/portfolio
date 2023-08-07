@@ -7,7 +7,7 @@ import { PerformanceMonitor } from '@react-three/drei';
 
 import { RotatingCube } from '~/components/3d/rotating-cube';
 
-export type InteractiveRoomProps = React.ComponentProps<'canvas'>;
+export type InteractiveRoomProps = React.ComponentProps<typeof Canvas>;
 
 export function InteractiveRoom({}: InteractiveRoomProps) {
   const [badPerf, degrade] = React.useState(false);
