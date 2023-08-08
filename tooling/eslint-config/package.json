@@ -1,0 +1,24 @@
+{
+  "name": "@portofolio/eslint-config",
+  "version": "0.1.0",
+  "private": true,
+  "files": [
+    "next.js",
+    "node.js",
+    "svelte.js"
+  ],
+  "scripts": {
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@next/eslint-plugin-next": "^13.4.13",
+    "@portofolio/tsconfig": "workspace:^",
+    "@typescript-eslint/eslint-plugin": "6.1.0",
+    "@typescript-eslint/parser": "6.1.0",
+    "eslint": "8.45.0",
+    "eslint-config-next": "13.4.12"
+  },
+  "devDependencies": {
+    "typescript": "5.1.5"
+  }
+}

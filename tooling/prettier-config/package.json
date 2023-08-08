@@ -1,0 +1,18 @@
+{
+  "name": "@portofolio/prettier-config",
+  "version": "0.1.0",
+  "private": true,
+  "files": [
+    "index.js"
+  ],
+  "scripts": {},
+  "dependencies": {
+    "@portofolio/tsconfig": "workspace:^"
+  },
+  "devDependencies": {
+    "prettier": "2.8.8",
+    "prettier-plugin-tailwindcss": "0.2.8",
+    "prettier-plugin-packagejson": "2.4.5",
+    "typescript": "5.1.5"
+  }
+}
