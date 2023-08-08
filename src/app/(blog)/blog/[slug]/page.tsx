@@ -64,7 +64,6 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
           <Author className="mt-6" />
           <div className="relative mt-6 h-fit min-h-[30rem] max-w-full overflow-hidden rounded">
             <Image src={image} alt="example" fill className="object-cover" />
-            AA
           </div>
         </div>
         <MDX code={body.code} />
