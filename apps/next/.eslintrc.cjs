@@ -1,6 +1,10 @@
 /** @type {import("eslint").Linter.Config} */
 const config = {
-  extends: [require.resolve('@portofolio/eslint-config/next')],
+  extends: [
+    '@portofolio/eslint-config/base',
+    '@portofolio/eslint-config/next',
+    '@portofolio/eslint-config/react'
+  ],
   root: true
 };
 
