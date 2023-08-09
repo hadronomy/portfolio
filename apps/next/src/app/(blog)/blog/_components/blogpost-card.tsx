@@ -1,9 +1,7 @@
 import * as React from 'react';
 import Link from 'next/link';
-import Balancer from 'react-wrap-balancer';
 import type { Post } from 'contentlayer/generated';
-
-import { cn } from '~/lib/utils';
+import Balancer from 'react-wrap-balancer';
 
 import {
   Card,
@@ -11,10 +9,11 @@ import {
   CardDescription,
   CardFooter,
   CardHeader,
-  CardTitle
+  CardTitle,
 } from '~/components/ui/card';
-import { PostDate } from './post-date';
+import { cn } from '~/lib/utils';
 import { Author } from './author';
+import { PostDate } from './post-date';
 
 export type BlogPostCardProps = React.ComponentProps<typeof Link> & {
   post: Post;

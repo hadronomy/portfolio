@@ -11,7 +11,7 @@ export function PostDate({ className, date, ...props }: PostDate) {
     <div
       className={cn(
         'inline-flex items-center space-x-2 align-middle text-sm font-extrabold text-muted-foreground',
-        className
+        className,
       )}
       {...props}
     >

@@ -9,31 +9,31 @@ import { cn } from '~/lib/utils';
 const links = [
   {
     label: 'Home',
-    href: '/'
+    href: '/',
   },
   {
     label: 'About',
-    href: '/#about'
+    href: '/#about',
   },
   {
     label: 'Contact',
-    href: '/#contact'
-  }
+    href: '/#contact',
+  },
 ];
 
 const socials = [
   {
     Icon: FaGithub,
-    link: 'https://github.com/Hadronomy'
+    link: 'https://github.com/Hadronomy',
   },
   {
     Icon: FaLinkedinIn,
-    link: 'https://linkedin.com/in/hadronomy'
+    link: 'https://linkedin.com/in/hadronomy',
   },
   {
     Icon: FaTwitter,
-    link: 'https://twitter.com/hadronomy'
-  }
+    link: 'https://twitter.com/hadronomy',
+  },
 ];
 
 export type NavbarProps = React.ComponentProps<'header'>;
@@ -57,8 +57,8 @@ export function Navbar({}: NavbarProps) {
               className={cn(
                 buttonVariants({
                   className: 'h-8 w-8 px-0 py-0',
-                  variant: 'link'
-                })
+                  variant: 'link',
+                }),
               )}
               href={link}
               target="_blank"

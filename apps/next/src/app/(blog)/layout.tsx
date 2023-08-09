@@ -1,11 +1,11 @@
-import { type Metadata } from 'next';
+import type { Metadata } from 'next';
 
 export const metadata = {
   title: {
     default: 'Blog',
-    template: '%s | Pablo Hernández'
+    template: '%s | Pablo Hernández',
   },
-  creator: 'Pablo Hernández'
+  creator: 'Pablo Hernández',
 } satisfies Metadata;
 
 type BlogLayoutProps = {

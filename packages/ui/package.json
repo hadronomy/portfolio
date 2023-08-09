@@ -1,0 +1,12 @@
+{
+  "name": "@portofolio/ui",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {},
+  "dependencies": {
+    "@portofolio/tsconfig": "workspace:^"
+  },
+  "devDependencies": {
+    "typescript": "5.1.5"
+  }
+}

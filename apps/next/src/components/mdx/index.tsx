@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Image from 'next/image';
-import { type MDXComponents } from 'mdx/types';
+import type { MDXComponents } from 'mdx/types';
 import { getMDXComponent } from 'next-contentlayer/hooks';
 
 import { MDXPre } from '~/components/mdx/pre';
@@ -13,9 +13,8 @@ import {
   TableCell,
   TableHead,
   TableHeader,
-  TableRow
+  TableRow,
 } from '~/components/ui/table';
-
 import { cn } from '~/lib/utils';
 
 export const components = {
@@ -24,7 +23,7 @@ export const components = {
       id={id}
       className={cn(
         'scroll-m-20 text-4xl font-extrabold tracking-tight before:content-["#"] lg:text-5xl',
-        className
+        className,
       )}
       {...props}
     >
@@ -38,7 +37,7 @@ export const components = {
       id={id}
       className={cn(
         'scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight transition-all before:absolute before:translate-x-[-2rem] before:opacity-0 before:transition-all before:content-["#"] first:mt-0 hover:before:opacity-100',
-        className
+        className,
       )}
       {...props}
     >
@@ -50,7 +49,7 @@ export const components = {
       id={id}
       className={cn(
         'mt-8 scroll-m-20 text-2xl font-semibold tracking-tight before:absolute before:float-left before:translate-x-[-2rem] before:opacity-0 before:transition-all before:content-["#"] hover:before:opacity-100',
-        className
+        className,
       )}
       {...props}
     >
@@ -61,7 +60,7 @@ export const components = {
     <p
       className={cn(
         'text-lg leading-7 text-foreground/80 [&:not(:first-child)]:mt-6',
-        className
+        className,
       )}
       {...props}
     />
@@ -89,7 +88,6 @@ export const components = {
     />
   ),
   img: ({ className, src, alt, id }: React.ComponentProps<'img'>) => (
-    // eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text
     <Image
       src={src ?? ''}
       alt={alt ?? ''}
@@ -116,7 +114,7 @@ export const components = {
   ),
   td: ({ className, children }: React.ComponentProps<'td'>) => (
     <TableCell className={cn('', className)}>{children}</TableCell>
-  )
+  ),
 } as const satisfies MDXComponents;
 
 type MDXProps = React.ComponentProps<'div'> & {

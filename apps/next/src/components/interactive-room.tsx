@@ -1,9 +1,9 @@
 'use client';
 
 import * as React from 'react';
+import { PerformanceMonitor } from '@react-three/drei';
 import { Canvas } from '@react-three/fiber';
 import { motion } from 'framer-motion-3d';
-import { PerformanceMonitor } from '@react-three/drei';
 
 import { RotatingCube } from '~/components/3d/rotating-cube';
 
@@ -23,7 +23,7 @@ export function InteractiveRoom({}: InteractiveRoomProps) {
         fov: 50,
         near: 0.1,
         far: 1000,
-        position: [0, 0, 0]
+        position: [0, 0, 0],
       }}
     >
       <PerformanceMonitor onDecline={() => degrade(true)} />

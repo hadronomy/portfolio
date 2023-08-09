@@ -1,13 +1,13 @@
 'use client';
 
 import React from 'react';
-import Editor, { useMonaco } from '@monaco-editor/react';
 import {
-  useActiveCode,
-  SandpackStack,
   FileTabs,
-  useSandpack
+  SandpackStack,
+  useActiveCode,
+  useSandpack,
 } from '@codesandbox/sandpack-react';
+import Editor, { useMonaco } from '@monaco-editor/react';
 
 import { getLanguageOfFile } from '~/lib/utils';
 
@@ -19,11 +19,11 @@ const options = {
   hideCursorInOverviewRuler: true,
   matchBrackets: 'always',
   minimap: {
-    enabled: false
+    enabled: false,
   },
   scrollbar: {
     horizontalSliderSize: 4,
-    verticalSliderSize: 18
+    verticalSliderSize: 18,
   },
   selectOnLineNumbers: true,
   roundedSelection: false,
@@ -32,7 +32,7 @@ const options = {
   cursorBlinking: 'expand',
   cursorSmoothCaretAnimation: 'on',
   automaticLayout: true,
-  bracketPairColorization: { enabled: true }
+  bracketPairColorization: { enabled: true },
 } as const;
 
 export function MonacoEditor() {
@@ -54,10 +54,10 @@ export function MonacoEditor() {
       resolveJsonModule: true,
       jsx: monaco.languages.typescript.JsxEmit.ReactJSX,
       paths: {
-        '~/*': ['./src/*']
+        '~/*': ['./src/*'],
       },
       strict: true,
-      esModuleInterop: true
+      esModuleInterop: true,
     });
   }, [monaco]);
 

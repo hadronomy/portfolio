@@ -7,7 +7,7 @@ export function RotatingCube({}: RotatingCubeProps) {
     <motion.mesh
       animate={{
         rotateX: 2 * Math.PI,
-        transition: { duration: 3, repeat: Infinity, ease: 'anticipate' }
+        transition: { duration: 3, repeat: Infinity, ease: 'anticipate' },
       }}
       position={[0.0, 0.25, -7.0]}
     >

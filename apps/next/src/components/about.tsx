@@ -1,26 +1,26 @@
 'use client';
 
 import * as React from 'react';
+import { cva } from 'class-variance-authority';
+import type { VariantProps } from 'class-variance-authority';
 import { Cake, FileCode, Flag, Languages } from 'lucide-react';
-import { cva, type VariantProps } from 'class-variance-authority';
 import { DateTime } from 'luxon';
 
-import {
-  Card,
-  CardHeader,
-  CardContent,
-  CardTitle,
-  CardDescription
-} from '~/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
-import { Separator } from '~/components/ui/separator';
 import { Badge } from '~/components/ui/badge';
 import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '~/components/ui/card';
+import {
   HoverCard,
+  HoverCardContent,
   HoverCardTrigger,
-  HoverCardContent
 } from '~/components/ui/hover-card';
-
+import { Separator } from '~/components/ui/separator';
 import { cn } from '~/lib/utils';
 
 export const aboutStyle = cva('flex h-full flex-col space-y-6 p-10');
@@ -33,7 +33,7 @@ export function About({ className }: AboutProps) {
   const now = DateTime.now();
   const birthDay = DateTime.fromObject(
     { year: 2003, month: 7, day: 11 },
-    { zone: 'Atlantic/Canary' }
+    { zone: 'Atlantic/Canary' },
   );
   const [age, setAge] = React.useState(now.diff(birthDay));
 
@@ -75,7 +75,7 @@ export function About({ className }: AboutProps) {
                   <HoverCardContent className="flex flex-col">
                     <div>
                       {age.toFormat(
-                        "yy 'years' dd 'days' hh 'hours' ss 'seconds'"
+                        "yy 'years' dd 'days' hh 'hours' ss 'seconds'",
                       )}
                     </div>
                   </HoverCardContent>
@@ -104,7 +104,9 @@ export function About({ className }: AboutProps) {
                   className="mb-auto ml-0 mt-auto"
                   orientation="horizontal"
                 />
-                <a className="capitalize text-muted-foreground">DESCRIPTION</a>
+                <span className="capitalize text-muted-foreground">
+                  DESCRIPTION
+                </span>
                 <Separator
                   className="mb-auto mr-0 mt-auto"
                   orientation="horizontal"

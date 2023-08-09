@@ -6,6 +6,7 @@
     "build": "next build",
     "dev": "next dev",
     "lint": "next lint",
+    "format": "prettier . --write --ignore-unknown --ignore-path ../../.gitignore",
     "lint-staged": "lint-staged",
     "start": "next start"
   },

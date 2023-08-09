@@ -19,7 +19,7 @@ export function Typewritter({}: TypewritterProps) {
           .pauseFor(1000)
           .deleteAll()
           .typeString(
-            '<span>Lover💕 of <b class="text-amber-300">EVERYTHING</b></span> related to code'
+            '<span>Lover💕 of <b class="text-amber-300">EVERYTHING</b></span> related to code',
           )
           .changeDeleteSpeed(50)
           .deleteAll()

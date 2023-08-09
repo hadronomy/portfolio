@@ -10,20 +10,20 @@ const nextConfig = withContentlayer(
         {
           protocol: 'https',
           hostname: 'images.unsplash.com',
-          pathname: '/*'
+          pathname: '/*',
         },
         {
           protocol: 'https',
           hostname: 'picsum.photos',
-          pathname: '/**/*'
+          pathname: '/**/*',
         },
         {
           protocol: 'https',
-          hostname: 'twemoji.maxcdn.com'
-        }
-      ]
-    }
-  })
+          hostname: 'twemoji.maxcdn.com',
+        },
+      ],
+    },
+  }),
 );
 
 export default nextConfig;

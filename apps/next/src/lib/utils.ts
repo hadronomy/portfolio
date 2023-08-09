@@ -1,8 +1,10 @@
-import { type ClassValue, clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import { clsx } from 'clsx';
+import type { ClassValue } from 'clsx';
 import { allPosts } from 'contentlayer/generated';
-import { Feed, type FeedOptions } from 'feed';
 import { parseISO } from 'date-fns';
+import { Feed } from 'feed';
+import type { FeedOptions } from 'feed';
+import { twMerge } from 'tailwind-merge';
 
 export async function delay(ms: number) {
   return new Promise((res) => setTimeout(res, ms));
@@ -34,8 +36,8 @@ export async function generateRssFeed() {
     copyright: `All rights reserved ${new Date().getFullYear()}, Pablo Hernández Jiménez`,
     generator: 'Feed for Node.js',
     feedLinks: {
-      rss2: `${siteUrl}/rss.xml`
-    }
+      rss2: `${siteUrl}/rss.xml`,
+    },
   } satisfies FeedOptions;
   const feed = new Feed(feedOptions);
   posts.forEach((post) => {
@@ -44,7 +46,7 @@ export async function generateRssFeed() {
       id: `${siteUrl}/blog${post.slug}`,
       link: `${siteUrl}/blog${post.slug}`,
       description: post.description,
-      date: parseISO(post.date)
+      date: parseISO(post.date),
     });
   });
   return feed;

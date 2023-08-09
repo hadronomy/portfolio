@@ -11,10 +11,6 @@ const config = {
     "plugin:@typescript-eslint/stylistic-type-checked",
     "prettier",
   ],
-  env: {
-    es2022: true,
-    node: true,
-  },
   rules: {
     "@typescript-eslint/no-misused-promises": "off",
     "@typescript-eslint/consistent-type-imports": [

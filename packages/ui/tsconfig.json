@@ -1,0 +1,4 @@
+{
+  "extends": "@portofolio/tsconfig",
+  "include": ["src", "*.ts", "*.cjs"]
+}

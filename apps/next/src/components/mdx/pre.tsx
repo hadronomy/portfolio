@@ -1,12 +1,11 @@
 'use client';
 
 import * as React from 'react';
-import { ClipboardCopy, ClipboardCheck } from 'lucide-react';
+import { ClipboardCheck, ClipboardCopy } from 'lucide-react';
+import { never } from 'zod';
 
 import { Button } from '~/components/ui/button';
-
 import { cn, delay } from '~/lib/utils';
-import { never } from 'zod';
 
 export type MDXPre = React.ComponentProps<'pre'>;
 
@@ -32,7 +31,7 @@ export function MDXPre({ className, children, ...props }: MDXPre) {
       ref={codeText}
       className={cn(
         'group relative rounded bg-muted [&(:first-child)]:my-6',
-        className
+        className,
       )}
       {...props}
     >
@@ -42,7 +41,7 @@ export function MDXPre({ className, children, ...props }: MDXPre) {
         variant="ghost"
         className={cn(
           'absolute right-6 top-6 z-10 h-8 w-8 border-[2px] border-muted-foreground from-transparent p-1.5 text-muted-foreground opacity-0 transition ease-in-out group-hover:opacity-100',
-          copied ? 'border-green-300 text-green-300 hover:text-green-300' : ''
+          copied ? 'border-green-300 text-green-300 hover:text-green-300' : '',
         )}
       >
         {copied && <ClipboardCheck />}

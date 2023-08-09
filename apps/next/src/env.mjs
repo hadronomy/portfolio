@@ -3,8 +3,8 @@ import { z } from 'zod';
 
 export const env = createEnv({
   server: {
-    ANALYTICS_ID: z.string()
+    ANALYTICS_ID: z.string(),
   },
   client: {},
-  experimental__runtimeEnv: {}
+  experimental__runtimeEnv: {},
 });

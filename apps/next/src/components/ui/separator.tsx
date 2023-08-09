@@ -1,7 +1,8 @@
 'use client';
 
 import * as RadixSeparator from '@radix-ui/react-separator';
-import { type VariantProps, cva } from 'class-variance-authority';
+import { cva } from 'class-variance-authority';
+import type { VariantProps } from 'class-variance-authority';
 
 import { cn } from '~/lib/utils';
 
@@ -9,17 +10,17 @@ export const separatorStyle = cva('bg-accent mx-[15px]', {
   variants: {
     orientation: {
       horizontal: 'h-px w-full',
-      vertical: 'h-full w-px'
+      vertical: 'h-full w-px',
     },
     skew: {
       none: '',
       left: '-rotate-[20deg]',
-      right: 'rotate-[20deg]'
-    }
+      right: 'rotate-[20deg]',
+    },
   },
   defaultVariants: {
-    skew: 'none'
-  }
+    skew: 'none',
+  },
 });
 
 export type SeparatorProps = VariantProps<typeof separatorStyle> &

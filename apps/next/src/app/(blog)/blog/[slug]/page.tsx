@@ -1,14 +1,15 @@
-import { type Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import type { Metadata } from 'next';
 import Image from 'next/image';
+import { notFound } from 'next/navigation';
 import { allPosts } from 'contentlayer/generated';
 import { Balancer } from 'react-wrap-balancer';
 
 import { MDX } from '~/components/mdx';
-import { Navbar } from '~/components/ui/navbar';
 import { Badge } from '~/components/ui/badge';
-import { PostDate } from '../_components/post-date';
+import { Navbar } from '~/components/ui/navbar';
 import { Author } from '../_components/author';
+import { PostDate } from '../_components/post-date';
+
 // import { Sandpack } from '~/components/sandpack';
 
 export type BlogPostPageProps = {
@@ -37,8 +38,8 @@ export function generateMetadata({ params }: BlogPostPageProps) {
       description: post.description,
       siteName: 'Pablo Hernández | Blog',
       images: [post.image],
-      authors: ['Pablo Hernández']
-    }
+      authors: ['Pablo Hernández'],
+    },
   } satisfies Metadata;
 }
 
