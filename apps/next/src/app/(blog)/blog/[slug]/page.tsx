@@ -4,9 +4,10 @@ import { notFound } from 'next/navigation';
 import { allPosts } from 'contentlayer/generated';
 import { Balancer } from 'react-wrap-balancer';
 
+import { Badge } from '@portofolio/ui/badge';
+import { Navbar } from '@portofolio/ui/navbar';
+
 import { MDX } from '~/components/mdx';
-import { Badge } from '~/components/ui/badge';
-import { Navbar } from '~/components/ui/navbar';
 import { Author } from '../_components/author';
 import { PostDate } from '../_components/post-date';
 

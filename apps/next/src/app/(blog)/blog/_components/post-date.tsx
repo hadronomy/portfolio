@@ -1,6 +1,6 @@
 import { format, parseISO } from 'date-fns';
 
-import { cn } from '~/lib/utils';
+import { cn } from '@portofolio/ui';
 
 export type PostDate = React.ComponentProps<'div'> & {
   date: string;

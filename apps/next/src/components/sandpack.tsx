@@ -10,7 +10,7 @@ import {
 } from '@codesandbox/sandpack-react';
 
 // import { MonacoEditor } from '~/components/monaco-editor';
-import { cn } from '~/lib/utils';
+import { cn } from '@portofolio/ui';
 
 export function SandpackCSS() {
   useServerInsertedHTML(() => {

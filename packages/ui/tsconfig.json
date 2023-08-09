@@ -1,4 +1,24 @@
 {
-  "extends": "@portofolio/tsconfig",
-  "include": ["src", "*.ts", "*.cjs"]
+  "extends": "@portofolio/tsconfig/base",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "esModuleInterop": false,
+    "allowSyntheticDefaultImports": true,
+    "incremental": false,
+    "jsx": "preserve",
+    "paths": {
+      "~/*": ["./src/*"]
+    }
+  },
+  "include": [
+    ".eslintrc.cjs",
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.cjs",
+    "**/*.mjs",
+    ".next/types/**/*.ts",
+    "contentlayer.config.js",
+    ".eslintrc.cjs"
+  ]
 }

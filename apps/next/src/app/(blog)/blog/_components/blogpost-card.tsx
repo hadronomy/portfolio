@@ -3,6 +3,7 @@ import Link from 'next/link';
 import type { Post } from 'contentlayer/generated';
 import Balancer from 'react-wrap-balancer';
 
+import { cn } from '@portofolio/ui';
 import {
   Card,
   CardContent,
@@ -10,8 +11,8 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '~/components/ui/card';
-import { cn } from '~/lib/utils';
+} from '@portofolio/ui/card';
+
 import { Author } from './author';
 import { PostDate } from './post-date';
 

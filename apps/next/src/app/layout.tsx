@@ -3,11 +3,12 @@ import type { Metadata } from 'next';
 import { Urbanist } from 'next/font/google';
 import Script from 'next/script';
 
-import { WebVitals } from '~/components/webvitals';
-import { env } from '~/env.mjs';
 // import { SandpackCSS } from '~/components/sandpack';
 
-import { cn } from '~/lib/utils';
+import { cn } from '@portofolio/ui';
+
+import { WebVitals } from '~/components/webvitals';
+import { env } from '~/env.mjs';
 
 import '~/styles/globals.css';
 

@@ -5,7 +5,7 @@ import Image from 'next/image';
 import type { MDXComponents } from 'mdx/types';
 import { getMDXComponent } from 'next-contentlayer/hooks';
 
-import { MDXPre } from '~/components/mdx/pre';
+import { cn } from '@portofolio/ui';
 import {
   Table,
   TableBody,
@@ -14,8 +14,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '~/components/ui/table';
-import { cn } from '~/lib/utils';
+} from '@portofolio/ui/table';
+
+import { MDXPre } from '~/components/mdx/pre';
 
 export const components = {
   h1: ({ className, id, children, ...props }: React.ComponentProps<'h1'>) => (

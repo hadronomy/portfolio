@@ -4,8 +4,10 @@ import * as React from 'react';
 import { ClipboardCheck, ClipboardCopy } from 'lucide-react';
 import { never } from 'zod';
 
-import { Button } from '~/components/ui/button';
-import { cn, delay } from '~/lib/utils';
+import { cn } from '@portofolio/ui';
+import { Button } from '@portofolio/ui/button';
+
+import { delay } from '~/lib/utils';
 
 export type MDXPre = React.ComponentProps<'pre'>;
 

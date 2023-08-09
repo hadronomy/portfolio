@@ -1,10 +1,11 @@
 'use client';
 
+import * as React from 'react';
 import * as RadixSeparator from '@radix-ui/react-separator';
 import { cva } from 'class-variance-authority';
 import type { VariantProps } from 'class-variance-authority';
 
-import { cn } from '~/lib/utils';
+import { cn } from '~/utils/cn';
 
 export const separatorStyle = cva('bg-accent mx-[15px]', {
   variants: {

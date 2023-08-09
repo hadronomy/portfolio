@@ -1,6 +1,7 @@
+import { Navbar } from '@portofolio/ui/navbar';
+
 import { About } from '~/components/about';
 import { Hero } from '~/components/hero';
-import { Navbar } from '~/components/ui/navbar';
 
 export const metadata = {
   title: 'Portofolio',

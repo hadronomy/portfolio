@@ -1,17 +1,10 @@
-import { clsx } from 'clsx';
-import type { ClassValue } from 'clsx';
 import { allPosts } from 'contentlayer/generated';
 import { parseISO } from 'date-fns';
 import { Feed } from 'feed';
 import type { FeedOptions } from 'feed';
-import { twMerge } from 'tailwind-merge';
 
 export async function delay(ms: number) {
   return new Promise((res) => setTimeout(res, ms));
-}
-
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
 }
 
 export function getBaseUrl() {

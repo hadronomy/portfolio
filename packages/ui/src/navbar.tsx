@@ -3,8 +3,8 @@ import Link from 'next/link';
 import { AlignLeft as Menu } from 'lucide-react';
 import { FaGithub, FaLinkedinIn, FaTwitter } from 'react-icons/fa';
 
-import { Button, buttonVariants } from '~/components/ui/button';
-import { cn } from '~/lib/utils';
+import { Button, buttonVariants } from '~/button';
+import { cn } from '~/utils/cn';
 
 const links = [
   {
