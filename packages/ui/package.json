@@ -1,0 +1,118 @@
+{
+  "name": "@portofolio/ui",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsup",
+    "clean": "git clean -xdf dist .turbo node_modules",
+    "dev": "tsup --watch",
+    "lint": "eslint src"
+  },
+  "devDependencies": {
+    "@portofolio/eslint-config": "0.1.0",
+    "@portofolio/prettier-config": "0.1.0",
+    "@portofolio/tailwind-config": "0.1.0",
+    "@portofolio/tsconfig": "0.1.0",
+    "@types/node": "18.15.11",
+    "@types/react": "18.0.33",
+    "autoprefixer": "10.4.14",
+    "esbuild-react18-useclient": "1.0.5",
+    "eslint": "8.45.0",
+    "fdir": "6.0.2",
+    "postcss": "8.4.21",
+    "prettier": "2.8.8",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "tailwindcss": "3.3.2",
+    "tailwindcss-animate": "1.0.6",
+    "tsup": "7.2.0",
+    "typescript": "5.1.5"
+  },
+  "peerDependencies": {
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "tailwindcss": "3.3.2",
+    "tailwindcss-animate": "1.0.6"
+  },
+  "dependencies": {
+    "@radix-ui/react-avatar": "1.0.3",
+    "@radix-ui/react-hover-card": "1.0.6",
+    "@radix-ui/react-separator": "1.0.3",
+    "class-variance-authority": "0.6.1",
+    "clsx": "1.2.1",
+    "lucide-react": "0.248.0",
+    "next": "13.4.7",
+    "react-icons": "4.10.1",
+    "tailwind-merge": "1.13.2"
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./avatar": {
+      "import": "./dist/avatar.js",
+      "types": "./dist/avatar.d.ts"
+    },
+    "./badge": {
+      "import": "./dist/badge.js",
+      "types": "./dist/badge.d.ts"
+    },
+    "./button": {
+      "import": "./dist/button.js",
+      "types": "./dist/button.d.ts"
+    },
+    "./card": {
+      "import": "./dist/card.js",
+      "types": "./dist/card.d.ts"
+    },
+    "./hover-card": {
+      "import": "./dist/hover-card.js",
+      "types": "./dist/hover-card.d.ts"
+    },
+    "./navbar": {
+      "import": "./dist/navbar.js",
+      "types": "./dist/navbar.d.ts"
+    },
+    "./separator": {
+      "import": "./dist/separator.js",
+      "types": "./dist/separator.d.ts"
+    },
+    "./table": {
+      "import": "./dist/table.js",
+      "types": "./dist/table.d.ts"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "table": [
+        "dist/table.d.ts"
+      ],
+      "avatar": [
+        "dist/avatar.d.ts"
+      ],
+      "badge": [
+        "dist/badge.d.ts"
+      ],
+      "button": [
+        "dist/button.d.ts"
+      ],
+      "card": [
+        "dist/card.d.ts"
+      ],
+      "hover-card": [
+        "dist/hover-card.d.ts"
+      ],
+      "navbar": [
+        "dist/navbar.d.ts"
+      ],
+      "separator": [
+        "dist/separator.d.ts"
+      ]
+    }
+  }
+}

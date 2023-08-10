@@ -1,0 +1,18 @@
+{
+  "name": "@portofolio/tailwind-config",
+  "version": "0.1.0",
+  "private": true,
+  "files": [
+    "index.ts",
+    "postcss.js"
+  ],
+  "devDependencies": {
+    "@portofolio/tsconfig": "0.1.0",
+    "@types/node": "18.15.11",
+    "autoprefixer": "10.4.14",
+    "postcss": "8.4.21",
+    "tailwindcss": "3.3.2",
+    "tailwindcss-animate": "1.0.6",
+    "typescript": "5.1.5"
+  }
+}
