@@ -50,7 +50,7 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
   return (
     <>
       <Navbar />
-      <article className="mt-10 grid grid-cols-[1fr_min(85ch,_calc(100%_-_1.5rem))_1fr] px-3 py-8 [&>*]:col-start-2">
+      <article className="mt-10 grid grid-cols-[1fr_min(75ch,_calc(100%_-_1.5rem))_1fr] px-3 py-8 [&>*]:col-start-2">
         <div className="mb-8 flex flex-col">
           <PostDate date={date} className="mb-6" />
           <h1 className="scroll-m-20 text-4xl font-extrabold leading-tight tracking-tight md:leading-loose lg:text-5xl">
