@@ -51,7 +51,7 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
     <>
       <Navbar />
       <article className="mt-10 grid grid-cols-[1fr_min(75ch,_calc(100%_-_1.5rem))_1fr] px-3 py-8 [&>*]:col-start-2">
-        <div className="mb-8 flex flex-col">
+        <header className="mb-8 flex flex-col">
           <PostDate date={date} className="mb-6" />
           <h1 className="scroll-m-20 text-4xl font-extrabold leading-tight tracking-tight md:leading-loose lg:text-5xl">
             <Balancer>{title}</Balancer>
@@ -67,7 +67,7 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
           <div className="relative mt-6 h-fit min-h-[30rem] max-w-full overflow-hidden rounded">
             <Image src={image} alt="example" fill className="object-cover" />
           </div>
-        </div>
+        </header>
         <MDX code={body.code} />
       </article>
     </>
