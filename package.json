@@ -5,6 +5,7 @@
     "prepare": "husky install"
   },
   "devDependencies": {
+    "@manypkg/cli": "0.21.0",
     "husky": "8.0.3",
     "turbo": "^1.10.12"
   },

@@ -14,6 +14,7 @@
   "devDependencies": {
     "@portofolio/eslint-config": "workspace:*",
     "@portofolio/prettier-config": "workspace:*",
+    "@portofolio/tailwind-config": "workspace:*",
     "@portofolio/tsconfig": "workspace:*",
     "@types/node": "18.15.11",
     "@types/react": "18.0.33",

@@ -1,5 +1,5 @@
 {
-  "name": "portofolio",
+  "name": "@portofolio/next",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -65,6 +65,7 @@
   "devDependencies": {
     "@portofolio/eslint-config": "workspace:^",
     "@portofolio/prettier-config": "workspace:^",
+    "@portofolio/tailwind-config": "workspace:*",
     "@types/eslint": "8.44.0",
     "@types/fs-extra": "11.0.1",
     "@types/luxon": "3.3.0",
