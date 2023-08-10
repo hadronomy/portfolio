@@ -27,10 +27,12 @@ export default defineConfig((options) => ({
   clean: !options.watch,
   dts: true,
   format: ['esm'],
-  minify: true,
+  // Set minify to false until I find the reason behind the
+  // undefined variable error
+  minify: false,
   outDir: 'dist',
   entry: entryPatterns,
-  external: ["react"],
+  external: ['react'],
   esbuildPlugins: [reactUseClient],
   async onSuccess() {
     const pkgJson = JSON.parse(

@@ -1,6 +1,5 @@
 'use client';
 
-import * as React from 'react';
 import * as RadixSeparator from '@radix-ui/react-separator';
 import { cva } from 'class-variance-authority';
 import type { VariantProps } from 'class-variance-authority';
