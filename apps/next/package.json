@@ -17,7 +17,7 @@
   "dependencies": {
     "@codesandbox/sandpack-react": "2.6.9",
     "@monaco-editor/react": "4.5.1",
-    "@portofolio/ui": "workspace:*",
+    "@portofolio/ui": "0.1.0",
     "@radix-ui/react-avatar": "1.0.3",
     "@radix-ui/react-hover-card": "1.0.6",
     "@radix-ui/react-separator": "1.0.3",
@@ -63,9 +63,9 @@
     "zod": "3.21.4"
   },
   "devDependencies": {
-    "@portofolio/eslint-config": "workspace:^",
-    "@portofolio/prettier-config": "workspace:^",
-    "@portofolio/tailwind-config": "workspace:*",
+    "@portofolio/eslint-config": "0.1.0",
+    "@portofolio/prettier-config": "0.1.0",
+    "@portofolio/tailwind-config": "0.1.0",
     "@types/eslint": "8.44.0",
     "@types/fs-extra": "11.0.1",
     "@types/luxon": "3.3.0",
@@ -77,6 +77,6 @@
     "@types/three": "0.150.2",
     "eslint": "8.45.0",
     "lint-staged": "13.2.3",
-    "turbo": "1.10.9"
+    "turbo": "^1.10.12"
   }
 }

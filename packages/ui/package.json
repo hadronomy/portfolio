@@ -12,10 +12,10 @@
     "lint": "eslint src"
   },
   "devDependencies": {
-    "@portofolio/eslint-config": "workspace:*",
-    "@portofolio/prettier-config": "workspace:*",
-    "@portofolio/tailwind-config": "workspace:*",
-    "@portofolio/tsconfig": "workspace:*",
+    "@portofolio/eslint-config": "0.1.0",
+    "@portofolio/prettier-config": "0.1.0",
+    "@portofolio/tailwind-config": "0.1.0",
+    "@portofolio/tsconfig": "0.1.0",
     "@types/node": "18.15.11",
     "@types/react": "18.0.33",
     "autoprefixer": "10.4.14",
