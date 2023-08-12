@@ -1,12 +1,13 @@
 'use client';
 
 import * as RadixSeparator from '@radix-ui/react-separator';
-import { cva } from 'class-variance-authority';
-import type { VariantProps } from 'class-variance-authority';
+import { tv } from 'tailwind-variants';
+import type { VariantProps } from 'tailwind-variants';
 
 import { cn } from '~/utils/cn';
 
-export const separatorStyle = cva('bg-accent mx-[15px]', {
+export const separatorStyle = tv({
+  base: 'bg-accent mx-[15px]',
   variants: {
     orientation: {
       horizontal: 'h-px w-full',

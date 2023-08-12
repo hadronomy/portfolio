@@ -18,12 +18,10 @@
     }
   },
   "include": [
-    ".eslintrc.cjs",
-    "**/*.ts",
-    "**/*.tsx",
-    "**/*.cjs",
-    "**/*.mjs",
-    "rollup.config.mjs"
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.cjs",
+    "src/**/*.mjs"
   ],
   "exclude": ["dist"]
 }

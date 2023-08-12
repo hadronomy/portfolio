@@ -1,0 +1,56 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+import { readFile } from 'fs/promises';
+import * as url from 'url';
+import { fdir } from 'fdir';
+import { defineRollupSwcOption, swc } from 'rollup-plugin-swc3';
+import swcPreserveDirectives from 'rollup-swc-preserve-directives';
+
+const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
+
+export const entryPatterns = ['./src/**/*.(ts|tsx)'];
+export const jsxEntries = new fdir()
+  .withBasePath()
+  .withDirs()
+  .glob(...entryPatterns)
+  .crawl('.')
+  .sync();
+
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+export const pkgJson = JSON.parse(
+  await readFile('./package.json', {
+    encoding: 'utf-8',
+  }),
+);
+
+/** @type {import('rollup').RollupOptions} */
+export default {
+  input: jsxEntries,
+  treeshake: true,
+  external: [
+    // @ts-ignore
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+    ...Object.keys(pkgJson.dependencies),
+    // @ts-ignore
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+    ...Object.keys(pkgJson.devDependencies),
+  ],
+  output: {
+    dir: 'dist',
+    preserveModules: true,
+    preserveModulesRoot: './src',
+    globals: {
+      react: 'React',
+    },
+  },
+  plugins: [
+    swc(
+      defineRollupSwcOption({
+        jsc: {
+          baseUrl: __dirname,
+          externalHelpers: true,
+        },
+      }),
+    ),
+    swcPreserveDirectives(),
+  ],
+};
