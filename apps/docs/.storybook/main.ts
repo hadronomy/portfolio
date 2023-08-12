@@ -11,20 +11,12 @@ function getAbsolutePath(value: string): any {
 const config: StorybookConfig = {
   stories: ['../**/*.mdx', '../**/*.stories.@(js|jsx|mjs|ts|tsx)'],
   addons: [
-    getAbsolutePath('@storybook/addon-links'),
-    getAbsolutePath('@storybook/addon-essentials'),
-    getAbsolutePath('@storybook/addon-onboarding'),
-    getAbsolutePath('@storybook/addon-interactions'),
-    {
-      name: '@storybook/addon-styling',
-      options: {
-        // Check out https://github.com/storybookjs/addon-styling/blob/main/docs/api.md
-        // For more details on this addon's options.
-        postCss: {
-          implementation: require.resolve('postcss'),
-        },
-      },
-    },
+    '@storybook/addon-links',
+    '@storybook/addon-essentials',
+    '@storybook/addon-onboarding',
+    '@storybook/addon-interactions',
+    '@storybook/addon-a11y',
+    '@storybook/addon-styling',
   ],
   framework: {
     name: getAbsolutePath('@storybook/react-vite'),

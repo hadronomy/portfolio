@@ -1,5 +1,4 @@
 import { readFile, writeFile } from 'fs/promises';
-import reactUseClient from 'esbuild-react18-useclient';
 import { fdir } from 'fdir';
 import { defineConfig } from 'tsup';
 
@@ -14,26 +13,26 @@ type PackageJson = {
   };
 };
 
-const entryPatterns = ['./src/*'];
+const entryPatterns = ['./src/**/*.(ts|tsx)'];
 const jsxEntries = new fdir()
   .withBasePath()
   .withDirs()
   .glob(...entryPatterns)
-  .filter((path, _) => path.endsWith('tsx'))
   .crawl('.')
   .sync();
 
 export default defineConfig((options) => ({
+  entry: entryPatterns,
   clean: !options.watch,
   dts: true,
-  format: ['esm'],
   // Set minify to false until I find the reason behind the
   // undefined variable error
-  minify: false,
+  minify: true,
+  treeshake: true,
+  splitting: true,
   outDir: 'dist',
-  entry: entryPatterns,
+  format: ['esm'],
   external: ['react'],
-  esbuildPlugins: [reactUseClient],
   async onSuccess() {
     const pkgJson = JSON.parse(
       await readFile('./package.json', {
@@ -48,7 +47,7 @@ export default defineConfig((options) => ({
       },
     };
     jsxEntries.forEach((entry) => {
-      const file = entry.replace('src/', '').replace('.tsx', '');
+      const file = entry.replace('src/', '').replace('.tsx', '').replace('.ts', '');
       pkgJson.exports[`./${file}`] = {
         import: `./dist/${file}.js`,
         types: `./dist/${file}.d.ts`,

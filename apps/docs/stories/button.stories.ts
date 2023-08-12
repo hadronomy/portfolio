@@ -10,8 +10,31 @@ const meta = {
     // Optional parameter to center the component in the Canvas. More info: https://storybook.js.org/docs/react/configure/story-layout
     layout: 'centered',
   },
+  argTypes: {
+    disabled: {
+      defaultValue: false,
+      control: 'boolean',
+    },
+    variant: {
+      defaultValue: 'default',
+      options: [
+        'default',
+        'destructive',
+        'outline',
+        'secondary',
+        'ghost',
+        'link',
+      ],
+      control: 'select',
+    },
+    size: {
+      defaultValue: 'default',
+      options: ['default', 'sm', 'lg'],
+      control: 'select',
+    },
+  },
   args: {
-    children: ['Button'],
+    children: 'Click me',
   },
   // This component will have an automatically generated Autodocs entry: https://storybook.js.org/docs/react/writing-docs/autodocs
   tags: ['autodocs'],
@@ -24,13 +47,13 @@ type Story = StoryObj<typeof meta>;
 export const Large: Story = {
   args: {
     size: 'lg',
-    children: ['Button'],
+    children: 'Click me',
   },
 };
 
 export const Small: Story = {
   args: {
     size: 'sm',
-    children: ['Button'],
+    children: 'Click me',
   },
 };

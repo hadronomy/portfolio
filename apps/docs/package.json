@@ -21,6 +21,8 @@
     "@portofolio/prettier-config": "0.1.0",
     "@portofolio/tailwind-config": "0.1.0",
     "@portofolio/tsconfig": "0.1.0",
+    "@storybook/addon-a11y": "7.2.3",
+    "@storybook/addon-docs": "7.2.3",
     "@storybook/addon-essentials": "^7.2.2",
     "@storybook/addon-interactions": "^7.2.2",
     "@storybook/addon-links": "^7.2.2",
