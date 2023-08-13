@@ -1,9 +1,11 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { readFile } from 'fs/promises';
 import * as url from 'url';
+import typescript from '@rollup/plugin-typescript';
 import { fdir } from 'fdir';
 import { defineRollupSwcOption, swc } from 'rollup-plugin-swc3';
 import swcPreserveDirectives from 'rollup-swc-preserve-directives';
+// import ttypescript from 'ttypescript';
 
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
@@ -33,6 +35,12 @@ export default {
     // @ts-ignore
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
     ...Object.keys(pkgJson.devDependencies),
+    // @ts-ignore
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+    ...Object.keys(pkgJson.peerDependencies),
+    'react/jsx-runtime',
+    'next/link',
+    'react-icons/fa',
   ],
   output: {
     dir: 'dist',
@@ -43,6 +51,7 @@ export default {
     },
   },
   plugins: [
+    typescript({ tsconfig: './tsconfig.build.json' }),
     swc(
       defineRollupSwcOption({
         jsc: {

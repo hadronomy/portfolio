@@ -4,7 +4,7 @@ import * as React from 'react';
 import { tv } from 'tailwind-variants';
 import type { VariantProps } from 'tailwind-variants';
 
-import { Ripple } from '~/ripple';
+import { Ripple } from './ripple';
 import { useRipple } from './ripple/use-ripple';
 
 const buttonVariants = tv({
