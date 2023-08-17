@@ -5,8 +5,8 @@ import Link from 'next/link';
 import { AlignLeft as Menu } from 'lucide-react';
 import { FaGithub, FaLinkedinIn, FaTwitter } from 'react-icons/fa';
 
+import { Button, button } from '~/button';
 import { cn } from './utils/cn';
-import { Button, buttonVariants } from '~/button';
 
 const links = [
   {
@@ -57,7 +57,7 @@ export function Navbar({}: NavbarProps) {
           {socials.map(({ Icon, link }) => (
             <Link
               className={cn(
-                buttonVariants({
+                button({
                   className: 'h-8 w-8 px-0 py-0',
                   variant: 'link',
                 }),

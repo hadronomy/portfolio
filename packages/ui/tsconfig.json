@@ -5,6 +5,7 @@
     "noEmit": false,
     "declaration": true,
     "declarationDir": "dist",
+    "outDir": "dist",
     "emitDeclarationOnly": true,
     "target": "es2020",
     "lib": ["dom", "dom.iterable", "esnext"],

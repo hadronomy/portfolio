@@ -1,13 +1,13 @@
 'use client';
 
 import * as React from 'react';
-import { tv } from 'tailwind-variants';
 import type { VariantProps } from 'tailwind-variants';
+import { tv } from 'tailwind-variants';
 
 import { Ripple } from './ripple';
 import { useRipple } from './ripple/use-ripple';
 
-const buttonVariants = tv({
+export const button = tv({
   base: 'inline-flex overflow-hidden items-center relative group z-0 justify-center rounded-md text-sm font-medium transition duration-300 active:scale-[.95] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background',
   variants: {
     variant: {
@@ -33,15 +33,14 @@ const buttonVariants = tv({
 });
 
 export type ButtonProps = React.ComponentProps<'button'> &
-  VariantProps<typeof buttonVariants>;
+  VariantProps<typeof button>;
 
-const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+export const Button = React.forwardRef<React.ComponentRef<'button'>, ButtonProps>(
   ({ className, variant, size, onClick, children, ...props }, ref) => {
     const { ripples, onClick: onClickRipple } = useRipple();
-
     return (
       <button
-        className={buttonVariants({ variant, size, className })}
+        className={button({ variant, size, className })}
         ref={ref}
         onClick={(e) => {
           onClickRipple(e);
@@ -56,5 +55,3 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   },
 );
 Button.displayName = 'Button';
-
-export { Button, buttonVariants };

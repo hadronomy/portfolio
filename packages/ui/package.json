@@ -22,7 +22,6 @@
     "@swc/helpers": "0.5.1",
     "@types/node": "18.15.11",
     "@types/react": "18.0.33",
-    "@zerollup/ts-transform-paths": "1.7.18",
     "autoprefixer": "10.4.14",
     "eslint": "8.45.0",
     "fdir": "6.0.2",
@@ -37,9 +36,6 @@
     "tailwindcss-animate": "1.0.6",
     "ts-node": "10.9.1",
     "tslib": "2.6.1",
-    "tsup": "7.2.0",
-    "ttypescript": "1.5.15",
-    "type-fest": "4.2.0",
     "typescript": "5.1.6"
   },
   "peerDependencies": {
