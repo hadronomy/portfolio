@@ -6,8 +6,6 @@ import { fdir } from 'fdir';
 import { defineRollupSwcOption, swc } from 'rollup-plugin-swc3';
 import swcPreserveDirectives from 'rollup-swc-preserve-directives';
 
-// import ttypescript from 'ttypescript';
-
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
 export const entryPatterns = ['./src/**/*.(ts|tsx)'];
