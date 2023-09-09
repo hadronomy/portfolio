@@ -21,13 +21,17 @@ export type BlogPostCardProps = React.ComponentProps<typeof Link> & {
 };
 
 export function BlogPostCard({ className, post, ...props }: BlogPostCardProps) {
-  const { title, description, date } = post;
+  const { title, description, date, body } = post;
+
+  const wordsPerMinute = 200;
+  const wordCount = body.raw.split(' ').length;
+  const time = Math.ceil(wordCount / wordsPerMinute);
 
   return (
     <Link {...props}>
       <Card className={cn('', className)}>
         <CardHeader>
-          <PostDate date={date} />
+          <PostDate date={date} time={time} />
           <CardTitle className="text-3xl">
             <Balancer>{title}</Balancer>
           </CardTitle>
