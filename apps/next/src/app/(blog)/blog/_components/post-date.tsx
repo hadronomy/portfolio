@@ -4,9 +4,10 @@ import { cn } from '@portofolio/ui';
 
 export type PostDate = React.ComponentProps<'div'> & {
   date: string;
+  time: number;
 };
 
-export function PostDate({ className, date, ...props }: PostDate) {
+export function PostDate({ className, date, time, ...props }: PostDate) {
   return (
     <div
       className={cn(
@@ -16,8 +17,8 @@ export function PostDate({ className, date, ...props }: PostDate) {
       {...props}
     >
       <time dateTime={date}>{format(parseISO(date), 'LLLL d, yyyy')}</time>
-      {/* <span hidden>•</span>
-      <span hidden>10 min</span> */}
+      <span>•</span>
+      <span>{time} min</span>
     </div>
   );
 }
