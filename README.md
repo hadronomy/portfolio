@@ -1,1 +1,1 @@
-![Mockup](img/mockup.png)
+![Mockup](.github/img/mockup.png)
