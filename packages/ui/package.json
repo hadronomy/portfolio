@@ -6,9 +6,9 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "tsup",
+    "build": "SWC_NODE_PROJECT=./tsconfig.json ts-node --esm -r @swc-node/register scripts/build.ts",
     "clean": "git clean -xdf dist .turbo node_modules",
-    "dev": "tsup --watch",
+    "dev": "rollup -c --watch",
     "lint": "eslint src"
   },
   "devDependencies": {
@@ -16,19 +16,26 @@
     "@portofolio/prettier-config": "0.1.0",
     "@portofolio/tailwind-config": "0.1.0",
     "@portofolio/tsconfig": "0.1.0",
+    "@rollup/plugin-typescript": "11.1.2",
+    "@swc-node/register": "1.6.6",
+    "@swc/core": "1.3.76",
+    "@swc/helpers": "0.5.1",
     "@types/node": "18.15.11",
     "@types/react": "18.0.33",
     "autoprefixer": "10.4.14",
-    "esbuild-react18-useclient": "1.0.5",
     "eslint": "8.45.0",
     "fdir": "6.0.2",
     "postcss": "8.4.21",
-    "prettier": "2.8.8",
+    "prettier": "3.0.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "rollup": "3.28.0",
+    "rollup-plugin-swc3": "0.9.1",
+    "rollup-swc-preserve-directives": "0.3.2",
     "tailwindcss": "3.3.3",
     "tailwindcss-animate": "1.0.6",
-    "tsup": "7.2.0",
+    "ts-node": "10.9.1",
+    "tslib": "2.6.1",
     "typescript": "5.1.6"
   },
   "peerDependencies": {
@@ -38,15 +45,18 @@
     "tailwindcss-animate": "1.0.6"
   },
   "dependencies": {
+    "@nextui-org/button": "2.0.9",
     "@radix-ui/react-avatar": "1.0.3",
     "@radix-ui/react-hover-card": "1.0.6",
     "@radix-ui/react-separator": "1.0.3",
     "class-variance-authority": "0.6.1",
     "clsx": "1.2.1",
+    "framer-motion": "10.12.17",
     "lucide-react": "0.248.0",
     "next": "13.4.7",
     "react-icons": "4.10.1",
-    "tailwind-merge": "1.13.2"
+    "tailwind-merge": "1.13.2",
+    "tailwind-variants": "0.1.13"
   },
   "exports": {
     "./package.json": "./package.json",
@@ -74,9 +84,25 @@
       "import": "./dist/hover-card.js",
       "types": "./dist/hover-card.d.ts"
     },
+    "./index": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
     "./navbar": {
       "import": "./dist/navbar.js",
       "types": "./dist/navbar.d.ts"
+    },
+    "./ripple/index": {
+      "import": "./dist/ripple/index.js",
+      "types": "./dist/ripple/index.d.ts"
+    },
+    "./ripple/ripple": {
+      "import": "./dist/ripple/ripple.js",
+      "types": "./dist/ripple/ripple.d.ts"
+    },
+    "./ripple/use-ripple": {
+      "import": "./dist/ripple/use-ripple.js",
+      "types": "./dist/ripple/use-ripple.d.ts"
     },
     "./separator": {
       "import": "./dist/separator.js",
@@ -85,6 +111,10 @@
     "./table": {
       "import": "./dist/table.js",
       "types": "./dist/table.d.ts"
+    },
+    "./utils/cn": {
+      "import": "./dist/utils/cn.js",
+      "types": "./dist/utils/cn.d.ts"
     }
   },
   "typesVersions": {
@@ -112,6 +142,39 @@
       ],
       "separator": [
         "dist/separator.d.ts"
+      ],
+      "index": [
+        "dist/index.d.ts"
+      ],
+      "ripple/index": [
+        "dist/ripple/index.d.ts"
+      ],
+      "ripple/use-ripple": [
+        "dist/ripple/use-ripple.d.ts"
+      ],
+      "index.ts": [
+        "dist/index.ts.d.ts"
+      ],
+      "ripple/index.ts": [
+        "dist/ripple/index.ts.d.ts"
+      ],
+      "ripple/use-ripple.ts": [
+        "dist/ripple/use-ripple.ts.d.ts"
+      ],
+      "ripple/": [
+        "dist/ripple/.d.ts"
+      ],
+      "ripple/ripple": [
+        "dist/ripple/ripple.d.ts"
+      ],
+      "utils/": [
+        "dist/utils/.d.ts"
+      ],
+      "utils/cn": [
+        "dist/utils/cn.d.ts"
+      ],
+      "button.client": [
+        "dist/button.client.d.ts"
       ]
     }
   }
