@@ -1,6 +1,5 @@
+import { Card, CardContent, CardHeader } from '@portfolio/ui/card';
 import type { Meta, StoryObj } from '@storybook/react';
-
-import { Card, CardContent, CardHeader } from '@portofolio/ui/card';
 
 // More on how to set up stories at: https://storybook.js.org/docs/react/writing-stories/introduction#default-export
 const meta = {

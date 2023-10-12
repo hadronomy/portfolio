@@ -1,7 +1,7 @@
 import * as React from 'react';
 
-import { cn } from '@portofolio/ui';
-import { Avatar, AvatarFallback, AvatarImage } from '@portofolio/ui/avatar';
+import { cn } from '@portfolio/ui';
+import { Avatar, AvatarFallback, AvatarImage } from '@portfolio/ui/avatar';
 
 export type AuthorProps = React.ComponentProps<'div'>;
 

@@ -5,7 +5,7 @@ import Script from 'next/script';
 
 // import { SandpackCSS } from '~/components/sandpack';
 
-import { cn } from '@portofolio/ui';
+import { cn } from '@portfolio/ui';
 
 import { WebVitals } from '~/components/webvitals';
 import { env } from '~/env.mjs';
@@ -19,8 +19,9 @@ const urbanist = Urbanist({
 });
 
 export const metadata = {
+  metadataBase: new URL('https://hadronomy.com'),
   title: {
-    default: 'Portofolio | Pablo Hernández',
+    default: 'Portfolio | Pablo Hernández',
     template: '%s | Pablo Hernández',
   },
   creator: 'Pablo Hernández',

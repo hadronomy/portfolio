@@ -1,5 +1,5 @@
 {
-  "name": "@portofolio/docs",
+  "name": "@portfolio/docs",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -9,15 +9,15 @@
     "build": "storybook build"
   },
   "dependencies": {
-    "@portofolio/ui": "0.1.0",
+    "@portfolio/ui": "0.1.0",
     "react": "18.2.0",
     "react-dom": "18.2.0"
   },
   "devDependencies": {
-    "@portofolio/eslint-config": "0.1.0",
-    "@portofolio/prettier-config": "0.1.0",
-    "@portofolio/tailwind-config": "0.1.0",
-    "@portofolio/tsconfig": "0.1.0",
+    "@portfolio/eslint-config": "0.1.0",
+    "@portfolio/prettier-config": "0.1.0",
+    "@portfolio/tailwind-config": "0.1.0",
+    "@portfolio/tsconfig": "0.1.0",
     "@storybook/addon-a11y": "7.2.3",
     "@storybook/addon-docs": "7.2.3",
     "@storybook/addon-essentials": "^7.2.2",

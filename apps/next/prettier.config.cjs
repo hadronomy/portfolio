@@ -1,1 +1,1 @@
-module.exports = '@portofolio/prettier-config';
+module.exports = '@portfolio/prettier-config';

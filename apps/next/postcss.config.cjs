@@ -1,2 +1,2 @@
 // @ts-ignore
-module.exports = require('@portofolio/tailwind-config/postcss');
+module.exports = require('@portfolio/tailwind-config/postcss');

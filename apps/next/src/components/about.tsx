@@ -6,22 +6,22 @@ import type { VariantProps } from 'class-variance-authority';
 import { Cake, FileCode, Flag, Languages } from 'lucide-react';
 import { DateTime } from 'luxon';
 
-import { cn } from '@portofolio/ui';
-import { Avatar, AvatarFallback, AvatarImage } from '@portofolio/ui/avatar';
-import { Badge } from '@portofolio/ui/badge';
+import { cn } from '@portfolio/ui';
+import { Avatar, AvatarFallback, AvatarImage } from '@portfolio/ui/avatar';
+import { Badge } from '@portfolio/ui/badge';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@portofolio/ui/card';
+} from '@portfolio/ui/card';
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
-} from '@portofolio/ui/hover-card';
-import { Separator } from '@portofolio/ui/separator';
+} from '@portfolio/ui/hover-card';
+import { Separator } from '@portfolio/ui/separator';
 
 export const aboutStyle = cva('flex h-full flex-col space-y-6 p-10');
 

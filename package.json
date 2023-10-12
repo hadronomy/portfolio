@@ -1,5 +1,5 @@
 {
-  "name": "@hadronomy/portofolio",
+  "name": "@hadronomy/portfolio",
   "private": true,
   "scripts": {
     "prepare": "husky install",

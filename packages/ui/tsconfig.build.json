@@ -1,5 +1,5 @@
 {
-  "extends": "@portofolio/tsconfig/base",
+  "extends": "@portfolio/tsconfig/base",
   "compilerOptions": {
     "baseUrl": "./",
     "noEmit": false,

@@ -1,5 +1,5 @@
 {
-  "name": "@portofolio/next",
+  "name": "@portfolio/next",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -17,7 +17,7 @@
   "dependencies": {
     "@codesandbox/sandpack-react": "2.6.9",
     "@monaco-editor/react": "4.5.1",
-    "@portofolio/ui": "0.1.0",
+    "@portfolio/ui": "0.1.0",
     "@radix-ui/react-avatar": "1.0.3",
     "@radix-ui/react-hover-card": "1.0.6",
     "@radix-ui/react-separator": "1.0.3",
@@ -63,9 +63,9 @@
     "zod": "3.21.4"
   },
   "devDependencies": {
-    "@portofolio/eslint-config": "0.1.0",
-    "@portofolio/prettier-config": "0.1.0",
-    "@portofolio/tailwind-config": "0.1.0",
+    "@portfolio/eslint-config": "0.1.0",
+    "@portfolio/prettier-config": "0.1.0",
+    "@portfolio/tailwind-config": "0.1.0",
     "@types/eslint": "8.44.0",
     "@types/fs-extra": "11.0.1",
     "@types/luxon": "3.3.0",

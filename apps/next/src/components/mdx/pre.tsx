@@ -4,8 +4,8 @@ import * as React from 'react';
 import { ClipboardCheck, ClipboardCopy } from 'lucide-react';
 import { never } from 'zod';
 
-import { cn } from '@portofolio/ui';
-import { Button } from '@portofolio/ui/button';
+import { cn } from '@portfolio/ui';
+import { Button } from '@portfolio/ui/button';
 
 import { delay } from '~/lib/utils';
 

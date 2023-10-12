@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Bellota } from 'next/font/google';
 
-import { cn } from '@portofolio/ui';
+import { cn } from '@portfolio/ui';
 
 import { InteractiveRoom } from '~/components/interactive-room';
 import { Typewritter } from '~/components/typewritter';

@@ -26,7 +26,7 @@ importers:
 
   apps/docs:
     dependencies:
-      '@portofolio/ui':
+      '@portfolio/ui':
         specifier: 0.1.0
         version: link:../../packages/ui
       react:
@@ -36,16 +36,16 @@ importers:
         specifier: 18.2.0
         version: 18.2.0(react@18.2.0)
     devDependencies:
-      '@portofolio/eslint-config':
+      '@portfolio/eslint-config':
         specifier: 0.1.0
         version: link:../../tooling/eslint-config
-      '@portofolio/prettier-config':
+      '@portfolio/prettier-config':
         specifier: 0.1.0
         version: link:../../tooling/prettier-config
-      '@portofolio/tailwind-config':
+      '@portfolio/tailwind-config':
         specifier: 0.1.0
         version: link:../../tooling/tailwind-config
-      '@portofolio/tsconfig':
+      '@portfolio/tsconfig':
         specifier: 0.1.0
         version: link:../../tooling/tsconfig
       '@storybook/addon-a11y':
@@ -135,7 +135,7 @@ importers:
       '@monaco-editor/react':
         specifier: 4.5.1
         version: 4.5.1(monaco-editor@0.43.0)(react-dom@18.2.0)(react@18.2.0)
-      '@portofolio/ui':
+      '@portfolio/ui':
         specifier: 0.1.0
         version: link:../../packages/ui
       '@radix-ui/react-avatar':
@@ -268,13 +268,13 @@ importers:
         specifier: 3.21.4
         version: 3.21.4
     devDependencies:
-      '@portofolio/eslint-config':
+      '@portfolio/eslint-config':
         specifier: 0.1.0
         version: link:../../tooling/eslint-config
-      '@portofolio/prettier-config':
+      '@portfolio/prettier-config':
         specifier: 0.1.0
         version: link:../../tooling/prettier-config
-      '@portofolio/tailwind-config':
+      '@portfolio/tailwind-config':
         specifier: 0.1.0
         version: link:../../tooling/tailwind-config
       '@types/eslint':
@@ -353,16 +353,16 @@ importers:
         specifier: 0.1.13
         version: 0.1.13(tailwindcss@3.3.3)
     devDependencies:
-      '@portofolio/eslint-config':
+      '@portfolio/eslint-config':
         specifier: 0.1.0
         version: link:../../tooling/eslint-config
-      '@portofolio/prettier-config':
+      '@portfolio/prettier-config':
         specifier: 0.1.0
         version: link:../../tooling/prettier-config
-      '@portofolio/tailwind-config':
+      '@portfolio/tailwind-config':
         specifier: 0.1.0
         version: link:../../tooling/tailwind-config
-      '@portofolio/tsconfig':
+      '@portfolio/tsconfig':
         specifier: 0.1.0
         version: link:../../tooling/tsconfig
       '@rollup/plugin-typescript':
@@ -471,7 +471,7 @@ importers:
 
   tooling/prettier-config:
     dependencies:
-      '@portofolio/tsconfig':
+      '@portfolio/tsconfig':
         specifier: 0.1.0
         version: link:../tsconfig
     devDependencies:
@@ -493,7 +493,7 @@ importers:
 
   tooling/tailwind-config:
     devDependencies:
-      '@portofolio/tsconfig':
+      '@portfolio/tsconfig':
         specifier: 0.1.0
         version: link:../tsconfig
       '@types/node':

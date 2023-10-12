@@ -1,4 +1,4 @@
 {
-  "extends": ["@portofolio/tsconfig/base"],
+  "extends": ["@portfolio/tsconfig/base"],
   "include": ["."]
 }

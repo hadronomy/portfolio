@@ -5,7 +5,7 @@ import Image from 'next/image';
 import type { MDXComponents } from 'mdx/types';
 import { getMDXComponent } from 'next-contentlayer/hooks';
 
-import { cn } from '@portofolio/ui';
+import { cn } from '@portfolio/ui';
 import {
   Table,
   TableBody,
@@ -14,7 +14,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@portofolio/ui/table';
+} from '@portfolio/ui/table';
 
 import { MDXPre } from '~/components/mdx/pre';
 

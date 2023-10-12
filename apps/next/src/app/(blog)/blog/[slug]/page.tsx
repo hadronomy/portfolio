@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { allPosts } from 'contentlayer/generated';
 
-import { Navbar } from '@portofolio/ui/navbar';
+import { Navbar } from '@portfolio/ui/navbar';
 
 import { BlogArticle } from '../_components/blog-article';
 

@@ -1,10 +1,10 @@
-import { Navbar } from '@portofolio/ui/navbar';
+import { Navbar } from '@portfolio/ui/navbar';
 
 import { About } from '~/components/about';
 import { Hero } from '~/components/hero';
 
 export const metadata = {
-  title: 'Portofolio',
+  title: 'Portfolio',
 };
 
 export default function HomePage() {

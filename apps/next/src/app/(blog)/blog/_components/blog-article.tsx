@@ -3,7 +3,7 @@ import Image from 'next/image';
 import type { Post } from 'contentlayer/generated';
 import Balancer from 'react-wrap-balancer';
 
-import { Badge } from '@portofolio/ui/badge';
+import { Badge } from '@portfolio/ui/badge';
 
 import { MDX } from '~/components/mdx';
 import { Author } from './author';

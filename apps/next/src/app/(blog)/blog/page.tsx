@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import { allPosts } from 'contentlayer/generated';
 import { isAfter, parseISO } from 'date-fns';
 
-import { Badge } from '@portofolio/ui/badge';
-import { Navbar } from '@portofolio/ui/navbar';
+import { Badge } from '@portfolio/ui/badge';
+import { Navbar } from '@portfolio/ui/navbar';
 
 import { BlogPostCard } from './_components/blogpost-card';
 
