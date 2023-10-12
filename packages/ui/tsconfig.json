@@ -1,1 +1,30 @@
-/home/hadronomy/repos/portofolio/apps/next/prettier.config.cjs
+{
+  "extends": "@portfolio/tsconfig/base",
+  "compilerOptions": {
+    "baseUrl": "./",
+    "noEmit": false,
+    "declaration": true,
+    "declarationDir": "dist",
+    "outDir": "dist",
+    "emitDeclarationOnly": true,
+    "target": "es2020",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "module": "esnext",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "incremental": false,
+    "jsx": "react-jsx",
+    "paths": {
+      "~/*": ["./src/*"]
+    }
+  },
+  "include": [
+    ".eslintrc.cjs",
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.cjs",
+    "**/*.mjs",
+    "rollup.config.mjs"
+  ],
+  "exclude": ["dist"]
+}
