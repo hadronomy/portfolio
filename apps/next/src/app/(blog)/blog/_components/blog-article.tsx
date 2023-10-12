@@ -42,6 +42,13 @@ export function BlogArticle({ post }: BlogArticleProps) {
         </div>
       </header>
       <MDX code={body.code} />
+      <footer className="my-8 flex h-[75vh] ring-4 ring-muted rounded-md place-items-center justify-center">
+        <h1 className="scroll-m-20 text-lg text-muted font-extrabold text-center leading-tight tracking-tight md:leading-loose lg:text-xl">
+          <Balancer>
+            This margin is intentional for mantaining eye level when reading
+          </Balancer>
+        </h1>
+      </footer>
     </article>
   );
 }
