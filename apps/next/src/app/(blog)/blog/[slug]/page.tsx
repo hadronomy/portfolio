@@ -31,6 +31,7 @@ export function generateMetadata({ params }: BlogPostPageProps) {
     title: post.title,
     openGraph: {
       title: post.title,
+      type: 'article',
       description: post.description,
       siteName: 'Pablo Hernández | Blog',
       images: [post.image],
