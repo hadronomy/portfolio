@@ -23,7 +23,7 @@ export const components = {
     <h1
       id={id}
       className={cn(
-        'scroll-m-20 text-4xl font-extrabold tracking-tight before:content-["#"] lg:text-5xl',
+        'scroll-m-20 text-4xl font-extrabold tracking-tight after:content-["#"] lg:text-5xl',
         className,
       )}
       {...props}
@@ -37,7 +37,7 @@ export const components = {
     <h2
       id={id}
       className={cn(
-        'scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight transition-all before:absolute before:translate-x-[-2rem] before:opacity-0 before:transition-all before:content-["#"] first:mt-0 hover:before:opacity-100',
+        'scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight transition-all after:absolute after:translate-x-[1rem] after:opacity-0 after:transition-all after:content-["#"] first:mt-0 hover:after:opacity-100',
         className,
       )}
       {...props}
@@ -49,7 +49,7 @@ export const components = {
     <h3
       id={id}
       className={cn(
-        'mt-8 scroll-m-20 text-2xl font-semibold tracking-tight before:absolute before:float-left before:translate-x-[-2rem] before:opacity-0 before:transition-all before:content-["#"] hover:before:opacity-100',
+        'mt-8 scroll-m-20 text-2xl font-semibold tracking-tight after:absolute after:translate-x-[1rem] after:opacity-0 after:transition-all after:content-["#"] hover:after:opacity-100',
         className,
       )}
       {...props}
