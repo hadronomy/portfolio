@@ -80,6 +80,10 @@
       "import": "./dist/card.js",
       "types": "./dist/card.d.ts"
     },
+    "./footer": {
+      "import": "./dist/footer.js",
+      "types": "./dist/footer.d.ts"
+    },
     "./hover-card": {
       "import": "./dist/hover-card.js",
       "types": "./dist/hover-card.d.ts"
@@ -175,6 +179,9 @@
       ],
       "button.client": [
         "dist/button.client.d.ts"
+      ],
+      "footer": [
+        "dist/footer.d.ts"
       ]
     }
   }

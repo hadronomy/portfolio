@@ -6,6 +6,7 @@ import Script from 'next/script';
 // import { SandpackCSS } from '~/components/sandpack';
 
 import { cn } from '@portfolio/ui';
+import { Footer } from '@portfolio/ui/footer';
 
 import { WebVitals } from '~/components/webvitals';
 import { env } from '~/env.mjs';
@@ -44,6 +45,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
       <body>
         {children}
         <WebVitals />
+        <Footer />
       </body>
     </html>
   );
