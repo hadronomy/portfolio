@@ -67,7 +67,7 @@ export const components = {
     />
   ),
   strong: ({ className, ...props }: React.ComponentProps<'strong'>) => (
-    <b className={cn('text-foreground/100', className)} {...props} />
+    <strong className={cn('text-foreground/100', className)} {...props} />
   ),
   em: ({ className, ...props }: React.ComponentProps<'em'>) => (
     <em
