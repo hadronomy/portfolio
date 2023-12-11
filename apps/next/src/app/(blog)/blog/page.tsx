@@ -30,7 +30,7 @@ export default function BlogPage({}: BlogPage) {
     <>
       <Navbar />
       <div className="flex flex-col"></div>
-      <main className="mx-auto mt-6 grid w-full max-w-screen-xl grid-cols-[min(85ch,_100%)_1fr] grid-rows-2 gap-6 px-6">
+      <main className="mx-auto min-h-screen mt-6 grid w-full max-w-screen-xl grid-cols-[min(85ch,_100%)_1fr] grid-rows-2 gap-6 px-6">
         <section className="row-span-2 flex flex-col gap-y-6">
           <h1 className="scroll-m-20 text-xl font-extrabold capitalize tracking-tight text-accent-foreground">
             RECENTLY PUBLISHED
