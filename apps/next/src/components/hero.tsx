@@ -3,7 +3,7 @@ import { Bellota } from 'next/font/google';
 
 import { cn } from '@portfolio/ui';
 
-import { InteractiveRoom } from '~/components/interactive-room';
+// import { InteractiveRoom } from '~/components/interactive-room';
 import { Typewritter } from '~/components/typewritter';
 
 const bellota = Bellota({
@@ -38,7 +38,7 @@ export function Hero({ className, ...props }: HeroProps) {
         </div>
       </div>
       <div className="bottom-0 right-0 hidden h-full w-full overflow-clip rounded-2xl md:flex">
-        <InteractiveRoom />
+        {/* <InteractiveRoom /> */}
       </div>
     </div>
   );
