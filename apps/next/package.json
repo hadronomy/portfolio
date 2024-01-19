@@ -78,5 +78,14 @@
     "eslint": "8.45.0",
     "lint-staged": "13.2.3",
     "turbo": "^1.10.12"
-  }
+  },
+  "eslintConfig": {
+    "root": true,
+    "extends": [
+      "@portfolio/eslint-config/base",
+      "@portfolio/eslint-config/next",
+      "@portfolio/eslint-config/react"
+    ]
+  },
+  "prettier": "@portfolio/prettier-config"
 }
