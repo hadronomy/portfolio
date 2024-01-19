@@ -23,6 +23,7 @@ const nextConfig = withContentlayer(
         },
       ],
     },
+    transpilePackages: ['@portfolio/ui'],
   }),
 );
 

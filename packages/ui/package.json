@@ -6,9 +6,6 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "SWC_NODE_PROJECT=./tsconfig.json ts-node --esm -r @swc-node/register scripts/build.ts",
-    "clean": "git clean -xdf dist .turbo node_modules",
-    "dev": "rollup -c --watch",
     "lint": "eslint src"
   },
   "devDependencies": {
@@ -60,128 +57,22 @@
   },
   "exports": {
     "./package.json": "./package.json",
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    },
-    "./avatar": {
-      "import": "./dist/avatar.js",
-      "types": "./dist/avatar.d.ts"
-    },
-    "./badge": {
-      "import": "./dist/badge.js",
-      "types": "./dist/badge.d.ts"
-    },
-    "./button": {
-      "import": "./dist/button.js",
-      "types": "./dist/button.d.ts"
-    },
-    "./card": {
-      "import": "./dist/card.js",
-      "types": "./dist/card.d.ts"
-    },
-    "./footer": {
-      "import": "./dist/footer.js",
-      "types": "./dist/footer.d.ts"
-    },
-    "./hover-card": {
-      "import": "./dist/hover-card.js",
-      "types": "./dist/hover-card.d.ts"
-    },
-    "./index": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    },
-    "./navbar": {
-      "import": "./dist/navbar.js",
-      "types": "./dist/navbar.d.ts"
-    },
-    "./ripple/index": {
-      "import": "./dist/ripple/index.js",
-      "types": "./dist/ripple/index.d.ts"
-    },
-    "./ripple/ripple": {
-      "import": "./dist/ripple/ripple.js",
-      "types": "./dist/ripple/ripple.d.ts"
-    },
-    "./ripple/use-ripple": {
-      "import": "./dist/ripple/use-ripple.js",
-      "types": "./dist/ripple/use-ripple.d.ts"
-    },
-    "./separator": {
-      "import": "./dist/separator.js",
-      "types": "./dist/separator.d.ts"
-    },
-    "./table": {
-      "import": "./dist/table.js",
-      "types": "./dist/table.d.ts"
-    },
-    "./utils/cn": {
-      "import": "./dist/utils/cn.js",
-      "types": "./dist/utils/cn.d.ts"
-    }
+    ".": "./src/index.ts",
+    "./avatar": "./src/avatar.tsx",
+    "./badge": "./src/badge.tsx",
+    "./button": "./src/button.tsx",
+    "./card": "./src/card.tsx",
+    "./footer": "./src/footer.tsx",
+    "./hover-card": "./src/hover-card.tsx",
+    "./navbar": "./src/navbar.tsx",
+    "./separator": "./src/separator.tsx",
+    "./table": "./src/table.tsx",
+    "./ripple": "./src/ripple/index.ts"
   },
   "typesVersions": {
     "*": {
-      "table": [
-        "dist/table.d.ts"
-      ],
-      "avatar": [
-        "dist/avatar.d.ts"
-      ],
-      "badge": [
-        "dist/badge.d.ts"
-      ],
-      "button": [
-        "dist/button.d.ts"
-      ],
-      "card": [
-        "dist/card.d.ts"
-      ],
-      "hover-card": [
-        "dist/hover-card.d.ts"
-      ],
-      "navbar": [
-        "dist/navbar.d.ts"
-      ],
-      "separator": [
-        "dist/separator.d.ts"
-      ],
-      "index": [
-        "dist/index.d.ts"
-      ],
-      "ripple/index": [
-        "dist/ripple/index.d.ts"
-      ],
-      "ripple/use-ripple": [
-        "dist/ripple/use-ripple.d.ts"
-      ],
-      "index.ts": [
-        "dist/index.ts.d.ts"
-      ],
-      "ripple/index.ts": [
-        "dist/ripple/index.ts.d.ts"
-      ],
-      "ripple/use-ripple.ts": [
-        "dist/ripple/use-ripple.ts.d.ts"
-      ],
-      "ripple/": [
-        "dist/ripple/.d.ts"
-      ],
-      "ripple/ripple": [
-        "dist/ripple/ripple.d.ts"
-      ],
-      "utils/": [
-        "dist/utils/.d.ts"
-      ],
-      "utils/cn": [
-        "dist/utils/cn.d.ts"
-      ],
-      "button.client": [
-        "dist/button.client.d.ts"
-      ],
-      "footer": [
-        "dist/footer.d.ts"
+      "*": [
+        "src/*"
       ]
     }
   }

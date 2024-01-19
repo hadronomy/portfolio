@@ -24,7 +24,6 @@
     "**/*.tsx",
     "**/*.cjs",
     "**/*.mjs",
-    "rollup.config.mjs"
   ],
   "exclude": ["dist"]
 }

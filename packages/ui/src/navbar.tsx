@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { AlignLeft as Menu } from 'lucide-react';
 import { FaGithub, FaLinkedinIn, FaTwitter } from 'react-icons/fa';
 
-import { Button, button } from '~/button';
+import { Button, button } from './button';
 import { cn } from './utils/cn';
 
 const links = [
