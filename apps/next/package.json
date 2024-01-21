@@ -37,7 +37,7 @@
     "lucide-react": "0.248.0",
     "luxon": "3.3.0",
     "maath": "0.5.3",
-    "next": "13.5.1",
+    "next": "14.1.0",
     "next-axiom": "0.18.0",
     "next-contentlayer": "0.3.4",
     "postcss": "8.4.31",
@@ -78,6 +78,11 @@
     "eslint": "8.45.0",
     "lint-staged": "13.2.3",
     "turbo": "^1.10.12"
+  },
+  "overrides": {
+    "next-contentlayer": {
+      "next": "$next"
+    }
   },
   "eslintConfig": {
     "root": true,
