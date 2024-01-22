@@ -1,6 +1,6 @@
 import { Navbar } from '@portfolio/ui/navbar';
 
-import { Hero } from '~/components/hero';
+import { Hero } from './_components/hero';
 
 export const metadata = {
   title: 'Portfolio',
@@ -11,12 +11,7 @@ export default function HomePage() {
     <>
       <Navbar />
       <main className="mx-auto flex w-full max-w-screen-xl flex-col">
-        <section id="hero" className="flex h-screen flex-col">
-          <Hero />
-        </section>
-        <section id="contact" className="flex h-screen flex-col">
-          {/* Contact */}
-        </section>
+        <Hero id="hero" className="h-screen" />
       </main>
     </>
   );
