@@ -58,7 +58,7 @@ export function Navbar({ className, pages = links }: NavbarProps) {
   return (
     <header className={cn('sticky pt-5 top-0 z-20 w-full', className)}>
       <nav className="mx-auto max-w-fit px-8 py-3 bg-transparent backdrop-blur-xl border-white/10 border-2 rounded-full overflow-hidden">
-        <ul className="flex w-full h-full gap-x-5 capitalize flex-row p-0">
+        <ul className="flex w-full h-full gap-x-0 capitalize flex-row p-0">
           {pages.map(({ label, href }) => (
             <li key={label}>
               <Link
