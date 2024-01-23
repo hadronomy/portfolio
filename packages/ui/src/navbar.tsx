@@ -55,8 +55,6 @@ export function Navbar({ className, pages = links }: NavbarProps) {
     setPathname(new_pathname);
   }, [params, url_pathname]);
 
-  console.log(pathname, hoveredPath);
-
   return (
     <header className={cn('sticky pt-10 top-0 z-20 w-full', className)}>
       <nav className="mx-auto max-w-fit px-8 py-3 bg-transparent backdrop-blur-xl border-white/10 border-2 rounded-full overflow-hidden">
