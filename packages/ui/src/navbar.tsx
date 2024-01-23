@@ -89,9 +89,6 @@ export function Navbar({ className, pages = links }: NavbarProps) {
                     }}
                     transition={{
                       type: 'tween',
-                      bounce: 0.25,
-                      stiffness: 130,
-                      damping: 9,
                       duration: 0.3,
                     }}
                   />
