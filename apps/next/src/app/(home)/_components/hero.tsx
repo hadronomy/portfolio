@@ -69,10 +69,10 @@ export function Hero({ className, ...props }: HeroProps) {
         <path
           d="M0 268L56 268L56 255L113 255L113 387L169 387L169 289L225 289L225 501L281 501L281 409L338 409L338 376L394 376L394 229L450 229L450 394L506 394L506 361L563 361L563 175L619 175L619 275L675 275L675 398L731 398L731 161L788 161L788 237L844 237L844 300L900 300"
           fill="none"
-          stroke-linecap="square"
-          stroke-linejoin="miter"
+          strokeLinecap="square"
+          strokeLinejoin="miter"
           stroke="#b3eaff"
-          stroke-width="40"
+          strokeWidth="40"
         />
       </svg>
     </section>

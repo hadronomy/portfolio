@@ -1,17 +1,21 @@
 'use client';
 
+import path from 'path';
 import * as React from 'react';
 import Link from 'next/link';
-import { AlignLeft as Menu } from 'lucide-react';
-import { FaGithub, FaLinkedinIn, FaTwitter } from 'react-icons/fa';
+import { useParams, usePathname } from 'next/navigation';
+import { motion } from 'framer-motion';
 
-import { Button, button } from './button';
 import { cn } from './utils/cn';
 
 const links = [
   {
     label: 'Home',
     href: '/',
+  },
+  {
+    label: 'Projects',
+    href: '/#projects',
   },
   {
     label: 'About',
@@ -21,73 +25,83 @@ const links = [
     label: 'Contact',
     href: '/#contact',
   },
-];
-
-const socials = [
   {
-    Icon: FaGithub,
-    link: 'https://github.com/Hadronomy',
-  },
-  {
-    Icon: FaLinkedinIn,
-    link: 'https://linkedin.com/in/hadronomy',
-  },
-  {
-    Icon: FaTwitter,
-    link: 'https://twitter.com/hadronomy',
+    label: 'Blog',
+    href: '/blog',
   },
 ];
 
-export type NavbarProps = React.ComponentProps<'header'>;
+function startsWithAndNotHome(str: string, prefix: string) {
+  return (str.startsWith(prefix) && prefix !== '/') || prefix === str;
+}
 
-export function Navbar({}: NavbarProps) {
+export type NavbarProps = React.ComponentProps<'header'> & {
+  pages?: typeof links;
+};
+
+export function Navbar({ className, pages = links }: NavbarProps) {
+  const params = useParams();
+  const url_pathname = usePathname();
+  const [pathname, setPathname] = React.useState('/');
+  const [hoveredPath, setHoveredPath] = React.useState('/');
+
+  React.useEffect(() => {
+    const new_pathname = path.join(url_pathname, window.location.hash) || '/';
+    setHoveredPath(new_pathname);
+  }, [url_pathname]);
+
+  React.useEffect(() => {
+    const new_pathname = path.join(url_pathname, window.location.hash) || '/';
+    setPathname(new_pathname);
+  }, [params, url_pathname]);
+
+  console.log(pathname, hoveredPath);
+
   return (
-    <header className="sticky top-0 z-20 w-full border-b-[1px] border-white/20 bg-background/90 backdrop-blur-[8px]">
-      <nav className="mx-auto grid max-w-screen-xl grid-cols-4 px-6 py-4">
-        <div className="flex md:order-2 md:hidden">
-          <Button
-            variant="ghost"
-            className="inline-flex h-10 w-10 items-center rounded-lg p-3 text-sm text-white ring-slate-50/60 transition-all hover:ring-2 after:hover:ring-slate-50/30 focus:ring-2 active:ring-slate-50 md:hidden"
-          >
-            <span className="sr-only">Open main menu</span>
-            <Menu className="h-full w-full" />
-          </Button>
-        </div>
-        <div className="col-span-2 mx-auto flex max-h-10 items-center justify-between gap-x-2 align-middle md:col-span-1 md:ml-0 md:mr-auto">
-          {socials.map(({ Icon, link }) => (
-            <Link
-              className={cn(
-                button({
-                  className: 'h-8 w-8 px-0 py-0',
-                  variant: 'link',
-                }),
-              )}
-              href={link}
-              target="_blank"
-              key={link}
-            >
-              <Icon />
-            </Link>
+    <header className={cn('sticky pt-10 top-0 z-20 w-full', className)}>
+      <nav className="mx-auto max-w-fit px-8 py-3 bg-transparent backdrop-blur-xl border-white/10 border-2 rounded-full overflow-hidden">
+        <ul className="flex w-full h-full gap-x-5 capitalize flex-row p-0">
+          {pages.map(({ label, href }) => (
+            <li key={label}>
+              <Link
+                href={href}
+                className={cn(
+                  'rounded-md transition-all inline-block relative px-5 py-2 font-bold hover:text-foreground/80 dark:hover:drop-shadow-[0.3_0.3_1.2rem_#ffffff80]',
+                  {
+                    'text-foreground': startsWithAndNotHome(pathname, href),
+                    'text-muted-foreground': !startsWithAndNotHome(
+                      pathname,
+                      href,
+                    ),
+                  },
+                )}
+                aria-label={label}
+                onMouseOver={() => setHoveredPath(href)}
+                onMouseLeave={() => setHoveredPath(pathname)}
+                onClick={() => setHoveredPath(href)}
+              >
+                <span className="text-center">{label}</span>
+                {startsWithAndNotHome(hoveredPath, href) && (
+                  <motion.div
+                    className="absolute bottom-0 left-0 h-full bg-stone-800/80 rounded-md -z-10"
+                    layoutId="navbar"
+                    aria-hidden="true"
+                    style={{
+                      width: '100%',
+                    }}
+                    transition={{
+                      type: 'tween',
+                      bounce: 0.25,
+                      stiffness: 130,
+                      damping: 9,
+                      duration: 0.3,
+                    }}
+                  />
+                )}
+              </Link>
+            </li>
           ))}
-        </div>
-        <div
-          id="navbar-menu"
-          className="col-span-2 mx-auto hidden w-full items-center justify-center md:order-1 md:flex md:w-auto"
-        >
-          <ul className="flex w-full flex-col gap-x-10 p-4 capitalize md:flex-row md:p-0">
-            {links.map(({ label, href }) => (
-              <li key={label}>
-                <Link
-                  href={href}
-                  className="font-bold text-muted-foreground hover:text-foreground/80 dark:hover:drop-shadow-[0.3_0.3_1.2rem_#ffffff80]"
-                  aria-label={label}
-                >
-                  {label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
+        </ul>
       </nav>
     </header>
   );
