@@ -12,6 +12,7 @@ const links = [
   {
     label: 'Home',
     href: '/',
+    default: true,
   },
   {
     label: 'Projects',
@@ -31,7 +32,8 @@ const links = [
   },
 ];
 
-function startsWithAndNotHome(str: string, prefix: string) {
+function startsWithAndNotHome(str: string | undefined, prefix: string) {
+  if (str === undefined) return false;
   return (str.startsWith(prefix) && prefix !== '/') || prefix === str;
 }
 
@@ -42,8 +44,8 @@ export type NavbarProps = React.ComponentProps<'header'> & {
 export function Navbar({ className, pages = links }: NavbarProps) {
   const params = useParams();
   const url_pathname = usePathname();
-  const [pathname, setPathname] = React.useState('/');
-  const [hoveredPath, setHoveredPath] = React.useState('/');
+  const [pathname, setPathname] = React.useState<string | undefined>();
+  const [hoveredPath, setHoveredPath] = React.useState<string | undefined>();
 
   React.useEffect(() => {
     const new_pathname = path.join(url_pathname, window.location.hash) || '/';
@@ -59,7 +61,7 @@ export function Navbar({ className, pages = links }: NavbarProps) {
     <header className={cn('sticky pt-5 top-0 z-20 w-full', className)}>
       <nav className="mx-auto max-w-fit px-8 py-3 bg-transparent backdrop-blur-xl border-white/10 border-2 rounded-full overflow-hidden">
         <ul className="flex w-full h-full gap-x-0 capitalize flex-row p-0">
-          {pages.map(({ label, href }) => (
+          {pages.map(({ label, href, default: isDefault }) => (
             <li key={label}>
               <Link
                 href={href}
@@ -79,19 +81,11 @@ export function Navbar({ className, pages = links }: NavbarProps) {
                 onClick={() => setHoveredPath(href)}
               >
                 <span className="text-center">{label}</span>
+                {hoveredPath === undefined && isDefault && (
+                  <AnimatedHighlight layoutId="navbar" style={{ opacity: 0 }} />
+                )}
                 {startsWithAndNotHome(hoveredPath, href) && (
-                  <motion.div
-                    className="absolute bottom-0 left-0 h-full bg-stone-800/80 rounded-md -z-10"
-                    layoutId="navbar"
-                    aria-hidden="true"
-                    style={{
-                      width: '100%',
-                    }}
-                    transition={{
-                      type: 'tween',
-                      duration: 0.3,
-                    }}
-                  />
+                  <AnimatedHighlight layoutId="navbar" style={{ opacity: 1 }} />
                 )}
               </Link>
             </li>
@@ -99,5 +93,36 @@ export function Navbar({ className, pages = links }: NavbarProps) {
         </ul>
       </nav>
     </header>
+  );
+}
+
+type AnimatedHighlightProps = React.ComponentProps<typeof motion.div>;
+
+function AnimatedHighlight({
+  className,
+  style,
+  layoutId,
+  ...props
+}: AnimatedHighlightProps) {
+  return (
+    <motion.div
+      className={cn(
+        'absolute bottom-0 left-0 h-full bg-stone-800/80 rounded-md -z-10',
+        className,
+      )}
+      layoutId={layoutId}
+      aria-hidden="true"
+      style={Object.assign(
+        {
+          width: '100%',
+        },
+        style,
+      )}
+      transition={{
+        type: 'tween',
+        duration: 0.3,
+      }}
+      {...props}
+    />
   );
 }
