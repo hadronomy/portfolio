@@ -16,7 +16,7 @@ export type HeroProps = React.ComponentProps<'div'>;
 export function Hero({ className, ...props }: HeroProps) {
   return (
     <section
-      className={cn('relative flex flex-grow p-5', className)}
+      className={cn('relative flex flex-grow py-5 px-5 md:px-20', className)}
       {...props}
     >
       <div className="mt-10 flex h-fit w-full justify-center rounded-2xl text-left md:mt-0 md:h-full">
