@@ -77,7 +77,7 @@
     "@types/three": "0.150.2",
     "eslint": "8.45.0",
     "lint-staged": "13.2.3",
-    "turbo": "^1.10.12"
+    "turbo": "1.12.2"
   },
   "overrides": {
     "next-contentlayer": {
