@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Metadata } from 'next';
-import { Urbanist } from 'next/font/google';
+import { Onest } from 'next/font/google';
 import Script from 'next/script';
 
 // import { SandpackCSS } from '~/components/sandpack';
@@ -13,7 +13,7 @@ import { env } from '~/env.mjs';
 
 import '~/styles/globals.css';
 
-const urbanist = Urbanist({
+const onest = Onest({
   subsets: ['latin'],
   weight: ['100', '300', '400', '500', '700', '900'],
   variable: '--font-sans',
@@ -34,7 +34,7 @@ type RootLayoutProps = {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html className={cn('dark antialiased', urbanist.variable)} lang="en">
+    <html className={cn('dark antialiased', onest.variable)} lang="en">
       {process.env.NODE_ENV === 'production' && (
         <Script
           async

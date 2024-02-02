@@ -35,7 +35,7 @@ export function Hero({ className, ...props }: HeroProps) {
               Hernandez
             </h1>
           </div>
-          <h2 className="h-[80px] max-w-[13ch] text-4xl md:max-w-[20ch]">
+          <h2 className="h-[80px] max-w-[12ch] text-4xl md:max-w-[19ch]">
             <Typewritter />
           </h2>
         </div>
