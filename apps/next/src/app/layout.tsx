@@ -13,6 +13,7 @@ import { WebVitals } from '~/components/webvitals';
 import { env } from '~/env.mjs';
 
 import '~/styles/globals.css';
+import '~/styles/twoslash.css';
 
 const onest = Onest({
   subsets: ['latin'],

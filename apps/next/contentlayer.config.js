@@ -1,5 +1,7 @@
 import fs from 'fs';
 import path from 'path';
+import rehypeShiki from '@shikijs/rehype';
+import { rendererRich, transformerTwoslash } from '@shikijs/twoslash';
 import { defineDocumentType, makeSource } from 'contentlayer/source-files';
 import { rehypeAccessibleEmojis } from 'rehype-accessible-emojis';
 import rehypePrettyCode from 'rehype-pretty-code';
@@ -80,7 +82,19 @@ export default makeSource({
     remarkPlugins: [remarkGfm, remarkGemoji],
     rehypePlugins: [
       rehypeSlug,
-      [rehypePrettyCode, prettyCodeOptions],
+      [
+        // @ts-ignore
+        rehypeShiki,
+        /** @type {import('@shikijs/rehype').RehypeShikiOptions} */
+        {
+          themes: {
+            light: 'catppuccin-latte',
+            dark: 'catppuccin-mocha',
+          },
+          transformers: [transformerTwoslash({ renderer: rendererRich() })],
+        },
+      ],
+      // [rehypePrettyCode, prettyCodeOptions],
       rehypeAccessibleEmojis,
       // [
       //   rehypeAutolinkHeadings,

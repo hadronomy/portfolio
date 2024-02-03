@@ -32,7 +32,7 @@ export function MDXPre({ className, children, ...props }: MDXPre) {
     <pre
       ref={codeText}
       className={cn(
-        'group relative rounded bg-muted [&(:first-child)]:my-6',
+        'group relative overflow-hidden rounded bg-muted [&(:first-child)]:my-6',
         className,
       )}
       {...props}

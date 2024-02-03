@@ -120,58 +120,11 @@
   }
 
   pre > code {
-    @apply grid py-6;
+    @apply grid px-6 py-6 text-[18px] font-[600];
     counter-reset: line;
   }
 
   :not(pre) > code {
     @apply rounded-lg border-2 bg-muted px-1 text-foreground/100;
-  }
-
-  code {
-    counter-reset: line;
-  }
-
-  code[data-line-numbers] > [data-line]::before {
-    counter-increment: line;
-    content: counter(line);
-    position: sticky;
-
-    /* Other styling */
-    display: inline-block;
-    width: 1rem;
-    margin-right: 2rem;
-    text-align: right;
-    color: gray;
-  }
-
-  code[data-line-numbers-max-digits='2'] > [data-line]::before {
-    @apply w-[2rem];
-  }
-
-  code[data-line-numbers-max-digits='3'] > [data-line]::before {
-    @apply w-[3rem];
-  }
-
-  [data-line] {
-    @apply border-l-2 border-l-2 border-l-transparent border-l-transparent px-6;
-  }
-
-  [data-highlighted-line] {
-    background: rgba(200, 200, 255, 0.1);
-    @apply border-l-blue-400;
-  }
-
-  [data-highlighted-chars] {
-    @apply rounded bg-zinc-600/50;
-    box-shadow: 0 0 0 4px rgb(82 82 91 / 0.5);
-  }
-
-  [data-chars-id] {
-    @apply border-b-2 p-1 shadow-none;
-  }
-
-  [data-chars-id] span {
-    @apply !text-inherit;
   }
 }
