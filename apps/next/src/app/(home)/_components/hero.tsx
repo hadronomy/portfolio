@@ -20,7 +20,7 @@ export function Hero({ className, ...props }: HeroProps) {
       {...props}
     >
       <div className="mt-10 flex h-fit w-full justify-center rounded-2xl text-left md:mt-0 md:h-full">
-        <div className="mx-auto mt-52 flex flex-col space-y-5">
+        <div className="mx-auto md:mt-52 flex flex-col space-y-5">
           <div className="flex w-fit flex-col">
             <h2 className="text-2xl font-thin uppercase tracking-widest">
               @hadronomy

@@ -59,14 +59,14 @@ export function Navbar({ className, pages = links }: NavbarProps) {
 
   return (
     <header className={cn('sticky pt-5 top-0 z-20 w-full', className)}>
-      <nav className="mx-auto max-w-fit px-8 py-3 bg-transparent backdrop-blur-xl border-white/10 border-2 rounded-full overflow-hidden">
+      <nav className="mx-auto max-w-fit px-3 md:px-8 py-3 bg-transparent backdrop-blur-xl border-white/10 border-2 md:rounded-full rounded-3xl overflow-hidden">
         <ul className="flex w-full h-full gap-x-0 capitalize flex-row p-0">
           {pages.map(({ label, href, default: isDefault }) => (
             <li key={label}>
               <Link
                 href={href}
                 className={cn(
-                  'rounded-md transition-all inline-block relative px-5 py-2 font-bold hover:text-foreground/80 dark:hover:drop-shadow-[0.3_0.3_1.2rem_#ffffff80]',
+                  'rounded-md transition-all h-full inline-block relative px-5 py-2 font-bold hover:text-foreground/80 dark:hover:drop-shadow-[0.3_0.3_1.2rem_#ffffff80]',
                   {
                     'text-foreground': startsWithAndNotHome(pathname, href),
                     'text-muted-foreground': !startsWithAndNotHome(

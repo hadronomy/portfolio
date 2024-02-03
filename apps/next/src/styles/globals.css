@@ -91,6 +91,14 @@
     background-size: 10%;
   }
 
+  input,
+  textarea,
+  button,
+  select,
+  a {
+    -webkit-tap-highlight-color: transparent;
+  }
+
   /* width */
   ::-webkit-scrollbar {
     @apply h-1 w-1;
