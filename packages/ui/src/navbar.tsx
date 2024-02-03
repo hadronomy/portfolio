@@ -23,10 +23,6 @@ const links = [
     href: '/#about',
   },
   {
-    label: 'Contact',
-    href: '/#contact',
-  },
-  {
     label: 'Blog',
     href: '/blog',
   },

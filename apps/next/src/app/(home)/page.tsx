@@ -10,8 +10,8 @@ export default function HomePage() {
   return (
     <>
       <Navbar />
-      <main className="mx-auto flex w-full max-w-screen-xl flex-col">
-        <Hero id="hero" className="h-screen" />
+      <main className="mx-auto flex w-full min-h-screen max-w-screen-xl flex-col">
+        <Hero id="hero" className="md:h-screen" />
       </main>
     </>
   );
