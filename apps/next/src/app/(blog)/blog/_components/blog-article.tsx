@@ -26,7 +26,7 @@ export function BlogArticle({ post }: BlogArticleProps) {
     <article className="mt-10 grid grid-cols-[1fr_min(75ch,_calc(100%_-_1.5rem))_1fr] px-3 py-8 [&>*]:col-start-2">
       <header className="mb-8 flex flex-col">
         <PostDate date={date} time={readingTime} className="mb-6" />
-        <h1 className="scroll-m-20 text-4xl font-extrabold leading-tight tracking-tight md:leading-loose lg:text-5xl">
+        <h1 className="scroll-m-20 text-4xl font-extrabold leading-tight tracking-tight lg:text-5xl">
           <Balancer>{title}</Balancer>
         </h1>
         <div className="mt-6 flex space-x-3">
