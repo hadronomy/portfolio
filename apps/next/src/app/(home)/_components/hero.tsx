@@ -25,7 +25,7 @@ export function Hero({ className, ...props }: HeroProps) {
             <h2 className="text-2xl font-thin uppercase tracking-widest">
               @hadronomy
             </h2>
-            <h1 className="mt-2 flex justify-between text-6xl md:text-8xl">
+            <h1 className="mt-2 text-6xl md:text-8xl">
               <span className={`${bellota.className} `}>I&apos;m </span>
               <span className="font-semibold">Pablo</span>
             </h1>
