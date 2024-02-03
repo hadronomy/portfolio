@@ -55,7 +55,7 @@ export function Navbar({ className, pages = links }: NavbarProps) {
 
   return (
     <header className={cn('sticky pt-5 top-0 z-20 w-full', className)}>
-      <nav className="mx-auto max-w-fit px-3 md:px-8 py-3 bg-transparent backdrop-blur-xl border-white/10 border-2 md:rounded-full rounded-3xl overflow-hidden">
+      <nav className="mx-auto max-w-fit px-3 md:px-8 py-3 bg-transparent backdrop-blur-xl border-foreground/10 border-2 md:rounded-full rounded-3xl overflow-hidden">
         <ul className="flex w-full h-full gap-x-0 capitalize flex-row p-0">
           {pages.map(({ label, href, default: isDefault }) => (
             <li key={label}>
@@ -103,7 +103,7 @@ function AnimatedHighlight({
   return (
     <motion.div
       className={cn(
-        'absolute bottom-0 left-0 h-full bg-stone-800/80 rounded-md -z-10',
+        'absolute bottom-0 left-0 h-full bg-muted rounded-md -z-10',
         className,
       )}
       layoutId={layoutId}
