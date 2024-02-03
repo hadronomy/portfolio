@@ -26,7 +26,7 @@ export function BlogArticle({ post }: BlogArticleProps) {
     <article className="mt-10 grid grid-cols-[1fr_min(75ch,_calc(100%_-_1.5rem))_1fr] px-3 py-8 [&>*]:col-start-2">
       <header className="mb-8 flex flex-col">
         <PostDate date={date} time={readingTime} className="mb-6" />
-        <h1 className="scroll-m-20 text-4xl font-extrabold leading-tight tracking-tight md:leading-loose lg:text-5xl">
+        <h1 className="scroll-m-20 text-4xl font-extrabold leading-tight tracking-tight lg:text-5xl">
           <Balancer>{title}</Balancer>
         </h1>
         <div className="mt-6 flex space-x-3">
@@ -37,9 +37,9 @@ export function BlogArticle({ post }: BlogArticleProps) {
           ))}
         </div>
         <Author className="mt-6" />
-        <div className="relative mt-6 h-fit min-h-[30rem] max-w-full overflow-hidden rounded">
+        <picture className="relative mt-6 h-fit min-h-[30rem] max-w-full overflow-hidden rounded">
           <Image src={image} alt="example" fill className="object-cover" />
-        </div>
+        </picture>
       </header>
       <MDX code={body.code} />
       <footer className="my-8 flex h-[75vh] ring-4 ring-muted rounded-md place-items-center justify-center">

@@ -15,14 +15,10 @@
     "**/*.{js,jsx,ts,tsx,json}": "prettier --write --ignore-unknown"
   },
   "dependencies": {
-    "@codesandbox/sandpack-react": "2.6.9",
-    "@monaco-editor/react": "4.5.1",
     "@portfolio/ui": "0.1.0",
     "@radix-ui/react-avatar": "1.0.3",
     "@radix-ui/react-hover-card": "1.0.6",
     "@radix-ui/react-separator": "1.0.3",
-    "@react-three/drei": "9.80.0",
-    "@react-three/fiber": "8.13.6",
     "@t3-oss/env-nextjs": "0.6.0",
     "autoprefixer": "10.4.14",
     "class-variance-authority": "0.6.1",
@@ -31,9 +27,7 @@
     "date-fns": "2.30.0",
     "feed": "4.2.2",
     "framer-motion": "10.12.17",
-    "framer-motion-3d": "10.12.16",
     "fs-extra": "11.1.1",
-    "glslify": "7.1.1",
     "lucide-react": "0.248.0",
     "luxon": "3.3.0",
     "maath": "0.5.3",
@@ -57,7 +51,6 @@
     "tailwind-merge": "1.13.2",
     "tailwindcss": "3.3.3",
     "tailwindcss-animate": "1.0.6",
-    "three": "0.155.0",
     "typescript": "5.1.6",
     "typewriter-effect": "2.20.1",
     "zod": "3.22.3"

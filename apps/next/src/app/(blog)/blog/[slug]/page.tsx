@@ -2,8 +2,6 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { allPosts } from 'contentlayer/generated';
 
-import { Navbar } from '@portfolio/ui/navbar';
-
 import { BlogArticle } from '../_components/blog-article';
 
 // import { Sandpack } from '~/components/sandpack';
@@ -45,7 +43,6 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
 
   return (
     <>
-      <Navbar />
       <BlogArticle post={post} />
     </>
   );
