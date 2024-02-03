@@ -37,9 +37,9 @@ export function BlogArticle({ post }: BlogArticleProps) {
           ))}
         </div>
         <Author className="mt-6" />
-        <div className="relative mt-6 h-fit min-h-[30rem] max-w-full overflow-hidden rounded">
+        <picture className="relative mt-6 h-fit min-h-[30rem] max-w-full overflow-hidden rounded">
           <Image src={image} alt="example" fill className="object-cover" />
-        </div>
+        </picture>
       </header>
       <MDX code={body.code} />
       <footer className="my-8 flex h-[75vh] ring-4 ring-muted rounded-md place-items-center justify-center">
