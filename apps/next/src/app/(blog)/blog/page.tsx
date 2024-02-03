@@ -3,7 +3,6 @@ import { allPosts } from 'contentlayer/generated';
 import { isAfter, parseISO } from 'date-fns';
 
 import { Badge } from '@portfolio/ui/badge';
-import { Navbar } from '@portfolio/ui/navbar';
 
 import { BlogPostCard } from './_components/blogpost-card';
 
@@ -28,7 +27,6 @@ export default function BlogPage({}: BlogPage) {
 
   return (
     <>
-      <Navbar />
       <div className="flex flex-col"></div>
       <main className="mx-auto min-h-screen mt-6 grid w-full max-w-screen-xl grid-cols-[min(85ch,_100%)_1fr] grid-rows-2 gap-6 px-6">
         <section className="row-span-2 flex flex-col gap-y-6">

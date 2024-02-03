@@ -7,6 +7,7 @@ import Script from 'next/script';
 
 import { cn } from '@portfolio/ui';
 import { Footer } from '@portfolio/ui/footer';
+import { Navbar } from '@portfolio/ui/navbar';
 
 import { WebVitals } from '~/components/webvitals';
 import { env } from '~/env.mjs';
@@ -18,6 +19,26 @@ const onest = Onest({
   weight: ['100', '300', '400', '500', '700', '900'],
   variable: '--font-sans',
 });
+
+const LINKS = [
+  {
+    label: 'Home',
+    href: '/',
+    default: true,
+  },
+  {
+    label: 'Projects',
+    href: '/#projects',
+  },
+  {
+    label: 'About',
+    href: '/#about',
+  },
+  {
+    label: 'Blog',
+    href: '/blog',
+  },
+];
 
 export const metadata = {
   metadataBase: new URL('https://hadronomy.com'),
@@ -43,6 +64,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         />
       )}
       <body>
+        <Navbar pages={LINKS} />
         {children}
         <WebVitals />
         <Footer />
