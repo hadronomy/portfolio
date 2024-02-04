@@ -42,7 +42,7 @@ export function MDXPre({ className, children, ...props }: MDXPre) {
         onPointerLeave={handleLeaveButton}
         variant="ghost"
         className={cn(
-          'absolute right-6 top-6 z-10 h-8 w-8 border-[2px] border-muted-foreground from-transparent p-1.5 text-muted-foreground opacity-0 transition ease-in-out group-hover:opacity-100',
+          'absolute right-6 top-6 z-10 h-9 w-9 border-[2px] border-muted-foreground from-transparent p-1.5 text-muted-foreground opacity-0 transition ease-in-out group-hover:opacity-100',
           copied ? 'border-green-300 text-green-300 hover:text-green-300' : '',
         )}
       >
