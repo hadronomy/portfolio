@@ -10,7 +10,7 @@
     "@portfolio/tsconfig": "0.1.0"
   },
   "devDependencies": {
-    "@ianvs/prettier-plugin-sort-imports": "4.1.0",
+    "@ianvs/prettier-plugin-sort-imports": "4.1.1",
     "prettier": "3.0.1",
     "prettier-plugin-tailwindcss": "0.5.2",
     "tailwindcss": "3.3.3",
