@@ -2,26 +2,11 @@
 title: Multiple Reasons As To Why This Is A Hello World
 description: Explore the magic of 'Hello, World!' in our blog post - its origins, symbolism, and enduring relevance in programming.
 image: https://images.unsplash.com/photo-1578699183408-1258e0398a2e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1471&q=80
-date: 2023-08-05
+date: 2023-07-27
 tags:
   - 'hello world'
   - 'react'
-  - 'copy'
 ---
-
-```tsx twoslash
-import * as React from 'react';
-
-export type HelloWorldProps = React.ComponentProps<'div'>;
-
-export function HelloWorld({ className }: HelloWorldProps) {
-  //            ^^^^^^^^^^
-  const hello = () => {
-    console.log('Hello, World!');
-  };
-  return <div className={className}>Hello World!</div>;
-}
-```
 
 ## This is an `<h2/>`
 
@@ -29,25 +14,8 @@ export function HelloWorld({ className }: HelloWorldProps) {
 In gravida massa eget velit venenatis pretium. Cras hendrerit diam sit amet libero feugiat, sit amet pharetra mi mollis.
 Donec vel mollis lectus. Mauris vulputate pharetra odio vel sollicitudin. Nullam dui lectus, consectetur nec erat a, blandit vulputate massa.
 
-### Code Examples
-
-```tsx twoslash
-// @errors: 2322 2588
-const str: string = 1;
-str = 'Hello';
-```
-
-```tsx twoslash
-// import { getHighlighterCore } from 'shiki/core';
-
-// const highlighter = await getHighlighterCore({});
-// @log: Custom log message
-const a = 1;
-// @error: Custom error message
-const b = 1;
-// @warn: Custom warning message
-const c = 1;
-// @annotate: Custom annotation message
+```ts twoslash
+const hello = 'hey';
 ```
 
 Aliquam sed purus imperdiet, `rutrum justo quis, mattis tellus`. `import { Button } from '~/components/ui/button'{:js}` . Nunc semper vitae nisl ut consectetur. Fusce nisi neque, accumsan vitae facilisis ut, bibendum quis nulla.
