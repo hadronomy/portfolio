@@ -52,7 +52,6 @@
     "zod": "3.22.3"
   },
   "devDependencies": {
-    "@portfolio/eslint-config": "0.1.0",
     "@portfolio/tailwind-config": "0.1.0",
     "@types/eslint": "8.44.0",
     "@types/fs-extra": "11.0.1",
