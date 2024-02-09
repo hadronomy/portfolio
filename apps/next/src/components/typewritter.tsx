@@ -1,10 +1,11 @@
 'use client';
 
+import type * as React from 'react';
 import TypewritterEffect from 'typewriter-effect';
 
-export type TypewritterProps = Record<string, never>;
+export type TypewritterProps = React.ComponentProps<typeof TypewritterEffect>;
 
-export function Typewritter({}: TypewritterProps) {
+export function Typewritter({ ...props }: TypewritterProps) {
   return (
     <TypewritterEffect
       options={{ loop: true }}
@@ -25,6 +26,7 @@ export function Typewritter({}: TypewritterProps) {
           .deleteAll()
           .start();
       }}
+      {...props}
     />
   );
 }

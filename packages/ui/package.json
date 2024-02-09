@@ -7,7 +7,6 @@
     "lint": "eslint src"
   },
   "devDependencies": {
-    "@portfolio/eslint-config": "0.1.0",
     "@portfolio/tailwind-config": "0.1.0",
     "@portfolio/tsconfig": "0.1.0",
     "@rollup/plugin-typescript": "11.1.2",
@@ -47,13 +46,6 @@
     "react-icons": "4.10.1",
     "tailwind-merge": "1.13.2",
     "tailwind-variants": "0.1.13"
-  },
-  "eslintConfig": {
-    "root": true,
-    "extends": [
-      "@portfolio/eslint-config/base",
-      "@portfolio/eslint-config/react"
-    ]
   },
   "exports": {
     "./package.json": "./package.json",

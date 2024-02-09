@@ -3,6 +3,23 @@
   "organizeImports": {
     "enabled": true
   },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "a11y": {
+        "noSvgWithoutTitle": "off",
+        "useButtonType": "off"
+      },
+      "complexity": {
+        "noBannedTypes": "off"
+      },
+      "nursery": {
+        "useImportType": "error",
+        "useExportType": "error"
+      }
+    }
+  },
   "formatter": {
     "enabled": true,
     "indentWidth": 2,

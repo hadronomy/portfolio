@@ -33,7 +33,7 @@ export async function generateRssFeed() {
     },
   } satisfies FeedOptions;
   const feed = new Feed(feedOptions);
-  posts.forEach((post) => {
+  for (const post of posts) {
     feed.addItem({
       title: post.title,
       id: `${siteUrl}/blog${post.slug}`,
@@ -41,7 +41,7 @@ export async function generateRssFeed() {
       description: post.description,
       date: parseISO(post.date),
     });
-  });
+  }
   return feed;
 }
 

@@ -1,4 +1,4 @@
-import * as React from 'react';
+import type * as React from 'react';
 
 import { cn } from '@portfolio/ui';
 import { Avatar, AvatarFallback, AvatarImage } from '@portfolio/ui/avatar';

@@ -42,7 +42,7 @@ export function Ripple({ ripples = [], color, style, ...props }: RippleProps) {
               }}
               transition={{ duration }}
               {...props}
-            ></motion.span>
+            />
           </AnimatePresence>
         );
       })}

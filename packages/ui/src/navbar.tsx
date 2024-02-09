@@ -48,6 +48,10 @@ export function Navbar({ className, pages = links }: NavbarProps) {
     setHoveredPath(new_pathname);
   }, [url_pathname]);
 
+  /**
+   * biome-ignore lint/correctness/useExhaustiveDependencies: We need to update the pathname
+   * when the params changes
+   */
   React.useEffect(() => {
     const new_pathname = path.join(url_pathname, window.location.hash) || '/';
     setPathname(new_pathname);

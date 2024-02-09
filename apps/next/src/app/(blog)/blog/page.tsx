@@ -10,9 +10,7 @@ export const metadata = {
   title: 'Blog',
 } satisfies Metadata;
 
-export type BlogPage = Record<string, never>;
-
-export default function BlogPage({}: BlogPage) {
+export default function BlogPage() {
   const posts = allPosts.filter(({ published }) => {
     return process.env.NODE_ENV !== 'production' || published;
   });
@@ -27,7 +25,7 @@ export default function BlogPage({}: BlogPage) {
 
   return (
     <>
-      <div className="flex flex-col"></div>
+      <div className="flex flex-col" />
       <main className="mx-auto min-h-screen mt-6 grid w-full max-w-screen-xl grid-cols-[min(85ch,_100%)_1fr] grid-rows-2 gap-6 px-6">
         <section className="row-span-2 flex flex-col gap-y-6">
           <h1 className="scroll-m-20 text-xl font-extrabold capitalize tracking-tight text-accent-foreground">
