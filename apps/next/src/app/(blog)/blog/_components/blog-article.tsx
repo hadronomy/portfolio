@@ -1,4 +1,4 @@
-import * as React from 'react';
+import type * as React from 'react';
 import Image from 'next/image';
 import type { Post } from 'contentlayer/generated';
 import Balancer from 'react-wrap-balancer';

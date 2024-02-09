@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import type { Metadata } from 'next';
 import { Onest } from 'next/font/google';
 import Script from 'next/script';
