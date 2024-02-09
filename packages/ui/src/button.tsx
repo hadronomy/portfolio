@@ -35,23 +35,24 @@ export const button = tv({
 export type ButtonProps = React.ComponentProps<'button'> &
   VariantProps<typeof button>;
 
-export const Button = React.forwardRef<React.ComponentRef<'button'>, ButtonProps>(
-  ({ className, variant, size, onClick, children, ...props }, ref) => {
-    const { ripples, onClick: onClickRipple } = useRipple();
-    return (
-      <button
-        className={button({ variant, size, className })}
-        ref={ref}
-        onClick={(e) => {
-          onClickRipple(e);
-          if (onClick !== undefined) onClick(e);
-        }}
-        {...props}
-      >
-        {children}
-        <Ripple ripples={ripples} />
-      </button>
-    );
-  },
-);
+export const Button = React.forwardRef<
+  React.ComponentRef<'button'>,
+  ButtonProps
+>(({ className, variant, size, onClick, children, ...props }, ref) => {
+  const { ripples, onClick: onClickRipple } = useRipple();
+  return (
+    <button
+      className={button({ variant, size, className })}
+      ref={ref}
+      onClick={(e) => {
+        onClickRipple(e);
+        if (onClick !== undefined) onClick(e);
+      }}
+      {...props}
+    >
+      {children}
+      <Ripple ripples={ripples} />
+    </button>
+  );
+});
 Button.displayName = 'Button';

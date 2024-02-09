@@ -3,6 +3,8 @@
   "private": true,
   "scripts": {
     "prepare": "lefthook install",
+    "format": "pnpm biome format --write .",
+    "ci:format": "pnpm biome format --write --changed .",
     "fix": "manypkg fix"
   },
   "packageManager": "pnpm@8.6.6",

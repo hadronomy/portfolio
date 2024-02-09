@@ -2,11 +2,14 @@
 [pre-commit]
 parallel = true
 
-[pre-commit.commands.lint]
-run = "pnpm turbo lint-staged"
+# [pre-commit.commands.lint]
+# run = "pnpm turbo lint-staged"
 
 [pre-commit.commands.fix]
 run = "pnpm fix"
+
+[pre-commit.commands.format]
+run = "pnpm ci:format"
 
 [commit-msg.scripts."commitlint.sh"]
 runner = "bash"
