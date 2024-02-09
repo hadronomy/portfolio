@@ -3,9 +3,7 @@
   "version": "0.1.0",
   "type": "module",
   "private": true,
-  "scripts": {
-    "lint": "eslint src"
-  },
+  "scripts": {},
   "devDependencies": {
     "@portfolio/tailwind-config": "0.1.0",
     "@portfolio/tsconfig": "0.1.0",
@@ -16,7 +14,6 @@
     "@types/node": "18.15.11",
     "@types/react": "18.0.33",
     "autoprefixer": "10.4.14",
-    "eslint": "8.45.0",
     "fdir": "6.0.2",
     "postcss": "8.4.31",
     "react": "18.2.0",
