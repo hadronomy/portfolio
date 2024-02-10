@@ -1,6 +1,6 @@
+import { allPosts } from 'contentlayer/generated';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { allPosts } from 'contentlayer/generated';
 
 import { BlogArticle } from '../_components/blog-article';
 

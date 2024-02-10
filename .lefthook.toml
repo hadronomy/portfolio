@@ -2,14 +2,12 @@
 [pre-commit]
 parallel = true
 
-[pre-commit.commands.lint]
-run = "pnpm ci:lint"
+[pre-commit.commands.check]
+glob = "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"
+run = "pnpm run ci {staged_files}"
 
 [pre-commit.commands.fix]
 run = "pnpm fix"
-
-[pre-commit.commands.format]
-run = "pnpm ci:format"
 
 [commit-msg.scripts."commitlint.sh"]
 runner = "bash"

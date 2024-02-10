@@ -1,5 +1,5 @@
-import type * as React from 'react';
 import { Bellota } from 'next/font/google';
+import type * as React from 'react';
 
 import { cn } from '@portfolio/ui';
 

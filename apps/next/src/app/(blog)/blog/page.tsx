@@ -1,6 +1,6 @@
-import type { Metadata } from 'next';
 import { allPosts } from 'contentlayer/generated';
 import { isAfter, parseISO } from 'date-fns';
+import type { Metadata } from 'next';
 
 import { Badge } from '@portfolio/ui/badge';
 

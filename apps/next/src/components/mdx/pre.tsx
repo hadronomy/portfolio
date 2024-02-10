@@ -1,7 +1,7 @@
 'use client';
 
-import * as React from 'react';
 import { ClipboardCheck, ClipboardCopy } from 'lucide-react';
+import * as React from 'react';
 import { never } from 'zod';
 
 import { cn } from '@portfolio/ui';

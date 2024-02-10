@@ -1,10 +1,10 @@
 'use client';
 
-import type * as React from 'react';
-import Image from 'next/image';
 import { Popup, PopupContent, PopupTrigger } from 'fumadocs-ui/twoslash/popup';
 import type { MDXComponents } from 'mdx/types';
 import { getMDXComponent } from 'next-contentlayer/hooks';
+import Image from 'next/image';
+import type * as React from 'react';
 
 import { cn } from '@portfolio/ui';
 import {

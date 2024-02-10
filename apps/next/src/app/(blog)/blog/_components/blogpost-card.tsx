@@ -1,6 +1,6 @@
-import type * as React from 'react';
-import Link from 'next/link';
 import type { Post } from 'contentlayer/generated';
+import Link from 'next/link';
+import type * as React from 'react';
 import Balancer from 'react-wrap-balancer';
 
 import { cn } from '@portfolio/ui';

@@ -1,10 +1,10 @@
 'use client';
 
 import path from 'path';
-import * as React from 'react';
+import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useParams, usePathname } from 'next/navigation';
-import { motion } from 'framer-motion';
+import * as React from 'react';
 
 import { cn } from './utils/cn';
 

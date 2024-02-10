@@ -1,6 +1,6 @@
-import type * as React from 'react';
-import Image from 'next/image';
 import type { Post } from 'contentlayer/generated';
+import Image from 'next/image';
+import type * as React from 'react';
 import Balancer from 'react-wrap-balancer';
 
 import { Badge } from '@portfolio/ui/badge';

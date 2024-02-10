@@ -5,8 +5,7 @@
     "prepare": "lefthook install",
     "format": "pnpm biome format --write .",
     "lint": "pnpm biome lint --apply .",
-    "ci:format": "pnpm biome format --write --changed .",
-    "ci:lint": "pnpm biome lint --apply --changed .",
+    "ci": "pnpm biome check --apply --no-errors-on-unmatched",
     "fix": "manypkg fix"
   },
   "packageManager": "pnpm@8.6.6",
