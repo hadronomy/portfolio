@@ -38,39 +38,41 @@
     --radius: 0.5rem;
   }
 
-  .dark {
-    --background: 0 0% 4%;
-    --foreground: 213 31% 91%;
-
-    --muted: 223 0% 11%;
-    --muted-foreground: 215.4 0% 56.9%;
-
-    --popover: 224 0% 4%;
-    --popover-foreground: 215 0% 65.1%;
-
-    --card: 0 100% 0%;
-    --card-foreground: 213 0% 91%;
-
-    --border: 216 0% 17%;
-    --input: 216 0% 17%;
-
-    --primary: 210 0% 98%;
-    --primary-foreground: 222.2 0% 1.2%;
-
-    --secondary: 222.2 0% 11.2%;
-    --secondary-foreground: 210 0% 98%;
-
-    --accent: 216 0% 17%;
-    --accent-foreground: 210 0% 98%;
-
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 210 40% 98%;
-
-    --selection: 233, 12%, 39%;
-
-    --ring: 216 0% 17%;
-
-    --radius: 0.5rem;
+  @media not print {
+    .dark {
+      --background: 0 0% 4%;
+      --foreground: 213 31% 91%;
+  
+      --muted: 223 0% 11%;
+      --muted-foreground: 215.4 0% 56.9%;
+  
+      --popover: 224 0% 4%;
+      --popover-foreground: 215 0% 65.1%;
+  
+      --card: 0 100% 0%;
+      --card-foreground: 213 0% 91%;
+  
+      --border: 216 0% 17%;
+      --input: 216 0% 17%;
+  
+      --primary: 210 0% 98%;
+      --primary-foreground: 222.2 0% 1.2%;
+  
+      --secondary: 222.2 0% 11.2%;
+      --secondary-foreground: 210 0% 98%;
+  
+      --accent: 216 0% 17%;
+      --accent-foreground: 210 0% 98%;
+  
+      --destructive: 0 63% 31%;
+      --destructive-foreground: 210 40% 98%;
+  
+      --selection: 233, 12%, 39%;
+  
+      --ring: 216 0% 17%;
+  
+      --radius: 0.5rem;
+    }
   }
 }
 
@@ -98,6 +100,8 @@
   a {
     -webkit-tap-highlight-color: transparent;
   }
+
+  /* Scrollbar */
 
   /* width */
   ::-webkit-scrollbar {
