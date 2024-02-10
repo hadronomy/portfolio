@@ -62,7 +62,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         />
       )}
       <body>
-        <Navbar pages={LINKS} />
+        <Navbar className="print:hidden" pages={LINKS} />
         {children}
         <WebVitals />
         <Footer />
