@@ -4,6 +4,7 @@ import type * as React from 'react';
 import Balancer from 'react-wrap-balancer';
 
 import { Badge } from '@portfolio/ui/badge';
+import { Meteors } from '@portfolio/ui/meteors';
 
 import { MDX } from '~/components/mdx';
 import { Author } from './author';
@@ -42,12 +43,18 @@ export function BlogArticle({ post }: BlogArticleProps) {
         </picture>
       </header>
       <MDX code={body.code} />
-      <footer className="my-8 flex h-[75vh] ring-4 ring-muted rounded-md place-items-center justify-center">
-        <small className="scroll-m-20 text-lg text-muted font-extrabold text-center leading-tight tracking-tight md:leading-loose lg:text-xl">
+      <footer className="relative group overflow-hidden my-8 flex h-[75vh] hover:ring-4 transition-all ring-muted rounded-md place-items-center justify-center">
+        <small
+          aria-hidden
+          className="scroll-m-20 transition-all opacity-0 group-hover:opacity-100 group-hover:block text-lg text-foreground/60 font-extrabold text-center leading-tight tracking-tight md:leading-loose lg:text-xl"
+        >
           <Balancer>
-            This margin is intentional for mantaining eye level when reading
+            This margin is intentional
+            <br />
+            for mantaining eye level when reading
           </Balancer>
         </small>
+        <Meteors number={20} />
       </footer>
     </article>
   );
