@@ -43,7 +43,7 @@ export function BlogArticle({ post }: BlogArticleProps) {
         </picture>
       </header>
       <MDX code={body.code} />
-      <footer className="relative group overflow-hidden my-8 flex h-[75vh] hover:ring-4 transition-all ring-muted rounded-md place-items-center justify-center">
+      <footer className="relative print:hidden group overflow-hidden my-8 flex h-[75vh] hover:ring-4 transition-all ring-muted rounded-md place-items-center justify-center">
         <small
           aria-hidden
           className="scroll-m-20 transition-all opacity-0 group-hover:opacity-100 group-hover:block text-lg text-foreground/60 font-extrabold text-center leading-tight tracking-tight md:leading-loose lg:text-xl"
