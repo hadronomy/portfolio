@@ -1,5 +1,6 @@
 import { allPosts } from 'contentlayer/generated';
 import type { Metadata } from 'next';
+import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 
 import { BlogArticle } from '../_components/blog-article';
@@ -40,10 +41,11 @@ export function generateMetadata({ params }: BlogPostPageProps) {
 
 export default function BlogPostPage({ params }: BlogPostPageProps) {
   const post = getPostFromSlug(params.slug);
-
+  const referer = headers().get('referer');
   return (
-    <>
-      <BlogArticle post={post} />
-    </>
+    <BlogArticle
+      post={post}
+      url={new URL(referer ?? 'https://hadronomy.com')}
+    />
   );
 }

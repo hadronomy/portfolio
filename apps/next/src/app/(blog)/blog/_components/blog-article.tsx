@@ -1,6 +1,7 @@
 import type { Post } from 'contentlayer/generated';
 import Image from 'next/image';
 import type * as React from 'react';
+import QRCode from 'react-qr-code';
 import Balancer from 'react-wrap-balancer';
 
 import { Badge } from '@portfolio/ui/badge';
@@ -12,9 +13,10 @@ import { PostDate } from './post-date';
 
 export type BlogArticleProps = React.ComponentProps<'article'> & {
   post: Post;
+  url: URL;
 };
 
-export function BlogArticle({ post }: BlogArticleProps) {
+export function BlogArticle({ post, url }: BlogArticleProps) {
   const { title, image, date, tags, body } = post;
 
   const wordsPerMinute = 200;
@@ -27,9 +29,15 @@ export function BlogArticle({ post }: BlogArticleProps) {
     <article className="mt-10 grid grid-cols-[1fr_min(75ch,_calc(100%_-_1.5rem))_1fr] px-3 py-8 [&>*]:col-start-2">
       <header className="mb-8 flex flex-col">
         <PostDate date={date} time={readingTime} className="mb-6" />
-        <h1 className="scroll-m-20 text-4xl font-extrabold leading-tight tracking-tight lg:text-5xl">
-          <Balancer>{title}</Balancer>
-        </h1>
+        <div className="flex flex-row justify-between">
+          <h1 className="scroll-m-20 text-4xl font-extrabold leading-tight tracking-tight lg:text-5xl">
+            <Balancer>{title}</Balancer>
+          </h1>
+          <QRCode
+            className="hidden print:inline-block max-h-20 max-w-[5rem]"
+            value={url.href}
+          />
+        </div>
         <div className="mt-6 flex space-x-3">
           {tags.map((tag) => (
             <Badge key={tag} className="text-sm font-extrabold">
