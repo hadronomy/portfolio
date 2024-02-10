@@ -70,11 +70,25 @@ export default {
         ripple: {
           to: { transform: 'scale(4)', opacity: '0' },
         },
+        meteor: {
+          '0%': { transform: 'rotate(215deg) translateX(0)', opacity: '1' },
+          '70%': { opacity: '1' },
+          '100%': {
+            transform: 'rotate(215deg) translateX(-500px)',
+            opacity: '0',
+          },
+        },
+        shine: {
+          from: { backgroundPosition: '200% 0' },
+          to: { backgroundPosition: '-200% 0' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
         ripple: 'ripple 600ms linear',
+        'meteor-effect': 'meteor 5s linear infinite',
+        shine: 'shine 8s ease-in-out infinite',
       },
     },
   },
