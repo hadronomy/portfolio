@@ -101,6 +101,13 @@
     -webkit-tap-highlight-color: transparent;
   }
 
+  /* Print */
+  @media print {
+    div, code, pre {
+      page-break-inside: avoid;
+    }
+  }
+
   /* Scrollbar */
 
   /* width */
