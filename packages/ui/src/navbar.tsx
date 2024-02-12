@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { useParams, usePathname } from 'next/navigation';
 import * as React from 'react';
 
+import { NextThemeToggle } from './next-theme-toggle';
+import { Separator } from './separator';
 import { cn } from './utils/cn';
 
 const links = [
@@ -59,7 +61,7 @@ export function Navbar({ className, pages = links }: NavbarProps) {
 
   return (
     <header className={cn('sticky pt-5 top-0 z-20 w-full', className)}>
-      <nav className="mx-auto max-w-fit px-3 md:px-8 py-3 bg-transparent backdrop-blur-xl border-foreground/10 border-2 md:rounded-full rounded-3xl overflow-hidden">
+      <nav className="mx-auto gap-x-2 flex flex-row justify-between items-center max-w-fit px-3 md:px-8 py-3 bg-transparent backdrop-blur-xl border-foreground/10 border-2 md:rounded-full rounded-3xl overflow-hidden">
         <ul className="flex w-full h-full gap-x-0 capitalize flex-row p-0">
           {pages.map(({ label, href, default: isDefault }) => (
             <li key={label}>
@@ -91,6 +93,8 @@ export function Navbar({ className, pages = links }: NavbarProps) {
             </li>
           ))}
         </ul>
+        <Separator orientation="vertical" className="h-5" />
+        <NextThemeToggle />
       </nav>
     </header>
   );

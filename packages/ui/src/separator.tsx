@@ -7,11 +7,11 @@ import type { VariantProps } from 'tailwind-variants';
 import { cn } from './utils/cn';
 
 export const separatorStyle = tv({
-  base: 'bg-accent mx-[15px]',
+  base: 'bg-border shrink-0',
   variants: {
     orientation: {
-      horizontal: 'h-px w-full',
-      vertical: 'h-full w-px',
+      horizontal: 'h-[1px] w-full',
+      vertical: 'h-full w-[1px]',
     },
     skew: {
       none: '',
@@ -36,6 +36,7 @@ export function Separator({
   return (
     <RadixSeparator.Root
       className={cn(separatorStyle({ className, orientation, skew }))}
+      decorative
       orientation={orientation}
       {...props}
     />

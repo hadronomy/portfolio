@@ -11,6 +11,7 @@ import { Navbar } from '@portfolio/ui/navbar';
 import { WebVitals } from '~/components/webvitals';
 import { env } from '~/env.mjs';
 import { neon, onest } from '~/fonts';
+import { Providers } from './providers';
 
 import '~/styles/globals.css';
 import '~/styles/twoslash.css';
@@ -20,14 +21,6 @@ const LINKS = [
     label: 'Home',
     href: '/',
     default: true,
-  },
-  {
-    label: 'Projects',
-    href: '/#projects',
-  },
-  {
-    label: 'About',
-    href: '/#about',
   },
   {
     label: 'Blog',
@@ -53,6 +46,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
     <html
       className={cn('dark antialiased', onest.variable, neon.variable)}
       lang="en"
+      suppressHydrationWarning
     >
       {process.env.NODE_ENV === 'production' && (
         <Script
@@ -62,10 +56,12 @@ export default function RootLayout({ children }: RootLayoutProps) {
         />
       )}
       <body>
-        <Navbar className="print:hidden" pages={LINKS} />
-        {children}
-        <WebVitals />
-        <Footer />
+        <Providers attribute="class" defaultTheme="system" enableSystem>
+          <Navbar className="print:hidden" pages={LINKS} />
+          {children}
+          <WebVitals />
+          <Footer />
+        </Providers>
       </body>
     </html>
   );
