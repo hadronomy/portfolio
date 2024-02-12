@@ -44,7 +44,7 @@ type RootLayoutProps = {
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html
-      className={cn('dark antialiased', onest.variable, neon.variable)}
+      className={cn('antialiased', onest.variable, neon.variable)}
       lang="en"
       suppressHydrationWarning
     >
@@ -56,7 +56,12 @@ export default function RootLayout({ children }: RootLayoutProps) {
         />
       )}
       <body>
-        <Providers attribute="class" defaultTheme="system" enableSystem>
+        <Providers
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
           <Navbar className="print:hidden" pages={LINKS} />
           {children}
           <WebVitals />
