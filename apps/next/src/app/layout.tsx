@@ -34,6 +34,15 @@ export const metadata = {
     default: 'Portfolio | Pablo Hernández',
     template: '%s | Pablo Hernández',
   },
+  description:
+    'I am passionate about programming and love to create innovative solutions. Get to know me and explore my coding journey.',
+  openGraph: {
+    title: 'Portfolio | Pablo Hernández',
+    description: 'Learn more about me and about code',
+    siteName: 'Portfolio | Pablo Hernández',
+    type: 'website',
+    locale: 'en_US',
+  },
   creator: 'Pablo Hernández',
 } satisfies Metadata;
 
