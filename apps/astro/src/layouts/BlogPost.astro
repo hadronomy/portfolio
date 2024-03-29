@@ -1,7 +1,6 @@
 ---
 import type { CollectionEntry } from 'astro:content';
 import BaseHead from '~/components/BaseHead.astro';
-import Header from '~/components/Header.astro';
 import Footer from '~/components/Footer.astro';
 import FormattedDate from '~/components/FormattedDate.astro';
 
@@ -10,74 +9,52 @@ type Props = CollectionEntry<'blog'>['data'];
 const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 ---
 
-<html lang="en">
+<html class="dark" lang="en">
 	<head>
 		<BaseHead title={title} description={description} />
-		<style>
-			main {
-				width: calc(100% - 2em);
-				max-width: 100%;
-				margin: 0;
-			}
-			.hero-image {
-				width: 100%;
-			}
-			.hero-image img {
-				display: block;
-				margin: 0 auto;
-				border-radius: 12px;
-				box-shadow: var(--box-shadow);
-			}
-			.prose {
-				width: 720px;
-				max-width: calc(100% - 2em);
-				margin: auto;
-				padding: 1em;
-				color: rgb(var(--gray-dark));
-			}
-			.title {
-				margin-bottom: 1em;
-				padding: 1em 0;
-				text-align: center;
-				line-height: 1;
-			}
-			.title h1 {
-				margin: 0 0 0.5em 0;
-			}
-			.date {
-				margin-bottom: 0.5em;
-				color: rgb(var(--gray));
-			}
-			.last-updated-on {
-				font-style: italic;
-			}
-		</style>
 	</head>
 
 	<body>
-		<Header />
 		<main>
-			<article>
-				<div class="hero-image">
-					{heroImage && <img width={1020} height={510} src={heroImage} alt="" />}
-				</div>
-				<div class="prose">
-					<div class="title">
-						<div class="date">
-							<FormattedDate date={pubDate} />
-							{
-								updatedDate && (
-									<div class="last-updated-on">
-										Last updated on <FormattedDate date={updatedDate} />
-									</div>
-								)
-							}
-						</div>
-						<h1>{title}</h1>
-						<hr />
+			<article class="mt-10 grid grid-cols-[1fr_min(75ch,_calc(100%_-_1.5rem))_1fr] px-3 py-8 [&>*]:col-start-2">
+				<header class="mb-8 flex flex-col">
+					<!-- <PostDate date={date} time={readingTime} class="mb-6" /> -->
+					<div class="flex flex-row justify-between">
+						<h1 class="scroll-m-20 text-4xl font-extrabold leading-tight tracking-tight lg:text-5xl">
+							<!-- <Balancer>{title}</Balancer> -->
+							{title}
+						</h1>
+						<!-- <QRCode
+							class="hidden print:inline-block max-h-20 max-w-[5rem]"
+							value={url.href}
+						/> -->
 					</div>
-					<slot />
-				</div>
+					<div class="mt-6 flex space-x-3">
+						<!-- {tags.map((tag) => (
+							<Badge key={tag} class="text-sm font-extrabold">
+								#{tag}
+							</Badge>
+						))} -->
+					</div>
+					<!-- <Author class="mt-6" /> -->
+					<picture class="relative mt-6 h-fit min-h-[30rem] max-w-full overflow-hidden rounded">
+						<!-- <Image src={image} alt="example" fill class="object-cover" /> -->
+					</picture>
+				</header>
+				<slot />
+				<footer class="relative print:hidden group overflow-hidden my-8 flex h-[75vh] hover:ring-4 transition-all ring-muted rounded-md place-items-center justify-center">
+					<small
+						aria-hidden
+						class="scroll-m-20 transition-all opacity-0 group-hover:opacity-100 group-hover:block text-lg text-foreground/60 font-extrabold text-center leading-tight tracking-tight md:leading-loose lg:text-xl"
+					>
+						<!-- <Balancer>
+							This margin is intentional
+							<br />
+							for mantaining eye level when reading
+						</Balancer> -->
+					</small>
+					<!-- <Meteors number={20} /> -->
+				</footer>
 			</article>
 		</main>
 		<Footer />

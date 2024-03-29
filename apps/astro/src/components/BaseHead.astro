@@ -3,7 +3,8 @@
 // all pages through the use of the <BaseHead /> component.
 import '@fontsource/bellota';
 import '@fontsource-variable/onest';
-import '../styles/global.css';
+import '~/styles/global.css';
+import '~/styles/twoslash.css';
 
 import { getImage } from 'astro:assets';
 import { ViewTransitions } from "astro:transitions";
@@ -38,7 +39,7 @@ const { title, description, image = '/blog-placeholder-1.jpg' } = Astro.props;
 <meta name="generator" content={Astro.generator} />
 
 <!-- Font preloads -->
-<link rel="preload" href="/fonts/monaspace-neon.woff" as="font" type="font/woff" crossorigin />
+<!-- <link rel="preload" href="/fonts/monaspace-neon.woff" as="font" type="font/woff" crossorigin /> -->
 
 <!-- Canonical URL -->
 <link rel="canonical" href={canonicalURL} />

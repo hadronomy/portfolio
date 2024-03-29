@@ -40,38 +40,38 @@
 
   @media not print {
     .dark {
-      --background-image: url('/noise.png');
+      --background-image: url("/noise.png");
       --background: 0 0% 4%;
       --foreground: 213 31% 91%;
-  
+
       --muted: 223 0% 11%;
       --muted-foreground: 215.4 0% 56.9%;
-  
+
       --popover: 224 0% 4%;
       --popover-foreground: 215 0% 65.1%;
-  
+
       --card: 0 100% 0%;
       --card-foreground: 213 0% 91%;
-  
+
       --border: 216 0% 17%;
       --input: 216 0% 17%;
-  
+
       --primary: 210 0% 98%;
       --primary-foreground: 222.2 0% 1.2%;
-  
+
       --secondary: 222.2 0% 11.2%;
       --secondary-foreground: 210 0% 98%;
-  
+
       --accent: 216 0% 17%;
       --accent-foreground: 210 0% 98%;
-  
+
       --destructive: 0 63% 31%;
       --destructive-foreground: 210 40% 98%;
-  
+
       --selection: 233, 12%, 39%;
-  
+
       --ring: 216 0% 17%;
-  
+
       --radius: 0.5rem;
     }
   }
@@ -85,9 +85,7 @@
 
   body {
     @apply bg-background text-foreground;
-    font-feature-settings:
-      'rlig' 1,
-      'calt' 1;
+    font-feature-settings: "rlig" 1, "calt" 1;
     background-image: var(--background-image);
     background-repeat: repeat;
     background-blend-mode: overlay;
@@ -104,7 +102,9 @@
 
   /* Print */
   @media print {
-    div, code, pre {
+    div,
+    code,
+    pre {
       page-break-inside: avoid;
     }
   }
@@ -131,12 +131,12 @@
     background: #555;
   }
 
-  pre > code {
+  pre code {
     @apply grid px-6 py-6 text-[18px] font-[600];
     counter-reset: line;
   }
 
-  :not(pre) > code {
+  :not(pre) > * > code {
     @apply rounded-lg border-2 bg-muted px-1 text-foreground/100;
   }
 }
