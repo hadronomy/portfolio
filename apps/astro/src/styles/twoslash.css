@@ -10,7 +10,6 @@
   --twoslash-tag-annotate-bg: #1ba67320;
 }
 
-
 @media not print {
   html.dark .shiki,
   html.dark .shiki span,
@@ -24,6 +23,17 @@
   }
 }
 
+html.dark pre,
+html.dark pre code,
+html.dark span {
+  color: var(--shiki-dark) !important;
+  background-color: var(--shiki-dark-bg) !important;
+  /* Optional, if you also want font styles */
+  font-style: var(--shiki-dark-font-style) !important;
+  font-weight: 500 !important;
+  text-decoration: var(--shiki-dark-text-decoration) !important;
+}
+
 .twoslash-query-presisted .twoslash-popup-container,
 .twoslash-completion-list {
   user-select: none;
@@ -35,9 +45,7 @@
   width: 20rem;
   flex-direction: column;
   white-space: normal;
-  box-shadow:
-    0 4px 6px -1px rgb(0 0 0 / 0.1),
-    0 2px 4px -2px rgb(0 0 0 / 0.1);
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   border-width: 1px;
   border-radius: 6px;
   padding: 8px;
@@ -134,7 +142,7 @@
   top: -1.2em;
   height: 1em;
   left: -1px;
-  content: ' ';
+  content: " ";
   background-color: hsl(var(--foreground));
 }
 
@@ -221,6 +229,6 @@
     margin-right: 1.5rem;
     display: inline-block;
     text-align: right;
-    color: rgba(115,138,148,.4)
+    color: rgba(115, 138, 148, 0.4);
   }
 }
