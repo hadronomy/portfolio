@@ -1,0 +1,80 @@
+---
+// Import the global.css file here so that it is included on
+// all pages through the use of the <BaseHead /> component.
+import '@fontsource/bellota';
+import '@fontsource-variable/onest';
+import '../styles/global.css';
+
+import { getImage } from 'astro:assets';
+import { ViewTransitions } from "astro:transitions";
+import favicon from '../favicon.png';
+
+
+interface Props {
+	title: string;
+	description: string;
+	image?: string;
+}
+
+const appleTouchIcon = await getImage({
+	src: favicon,
+	width: 460,
+	height: 460,
+	format: 'png',
+});
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+
+const { title, description, image = '/blog-placeholder-1.jpg' } = Astro.props;
+---
+
+<!-- Hello There! -->
+
+<!-- Global Metadata -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<link rel="icon" href="/favicon.ico" type="image/x-icon" sizes="16x16 32x32" />
+<link rel="apple-touch-icon" href={appleTouchIcon.src} />
+<meta name="generator" content={Astro.generator} />
+
+<!-- Font preloads -->
+<link rel="preload" href="/fonts/monaspace-neon.woff" as="font" type="font/woff" crossorigin />
+
+<!-- Canonical URL -->
+<link rel="canonical" href={canonicalURL} />
+
+<!-- Primary Meta Tags -->
+<title>{title}</title>
+<meta name="title" content={title} />
+<meta name="description" content={description} />
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="website" />
+<meta property="og:url" content={Astro.url} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:image" content={new URL(image, Astro.url)} />
+
+<!-- Twitter -->
+<meta property="twitter:card" content="summary_large_image" />
+<meta property="twitter:url" content={Astro.url} />
+<meta property="twitter:title" content={title} />
+<meta property="twitter:description" content={description} />
+<meta property="twitter:image" content={new URL(image, Astro.url)} />
+
+<ViewTransitions />
+
+
+<style is:global>
+	:root {
+		--font-sans: 'Onest Variable', sans-serif;
+		--font-mono: 'MonaspaceNeon', monospace;
+	}
+
+	@font-face {
+		font-family: 'MonaspaceNeon';
+		src: url('/fonts/monaspace-neon.woff') format('woff');
+		font-weight: 100 900;
+		font-style: normal;
+	}
+</style>

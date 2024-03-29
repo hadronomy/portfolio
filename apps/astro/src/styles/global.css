@@ -1,0 +1,142 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 47.4% 11.2%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 47.4% 11.2%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 210 40% 98%;
+
+    --selection: 233, 12%, 39%;
+
+    --ring: 215 20.2% 65.1%;
+
+    --radius: 0.5rem;
+  }
+
+  @media not print {
+    .dark {
+      --background-image: url('/noise.png');
+      --background: 0 0% 4%;
+      --foreground: 213 31% 91%;
+  
+      --muted: 223 0% 11%;
+      --muted-foreground: 215.4 0% 56.9%;
+  
+      --popover: 224 0% 4%;
+      --popover-foreground: 215 0% 65.1%;
+  
+      --card: 0 100% 0%;
+      --card-foreground: 213 0% 91%;
+  
+      --border: 216 0% 17%;
+      --input: 216 0% 17%;
+  
+      --primary: 210 0% 98%;
+      --primary-foreground: 222.2 0% 1.2%;
+  
+      --secondary: 222.2 0% 11.2%;
+      --secondary-foreground: 210 0% 98%;
+  
+      --accent: 216 0% 17%;
+      --accent-foreground: 210 0% 98%;
+  
+      --destructive: 0 63% 31%;
+      --destructive-foreground: 210 40% 98%;
+  
+      --selection: 233, 12%, 39%;
+  
+      --ring: 216 0% 17%;
+  
+      --radius: 0.5rem;
+    }
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+    min-width: 0;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings:
+      'rlig' 1,
+      'calt' 1;
+    background-image: var(--background-image);
+    background-repeat: repeat;
+    background-blend-mode: overlay;
+    background-size: 10%;
+  }
+
+  input,
+  textarea,
+  button,
+  select,
+  a {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Print */
+  @media print {
+    div, code, pre {
+      page-break-inside: avoid;
+    }
+  }
+
+  /* Scrollbar */
+
+  /* width */
+  ::-webkit-scrollbar {
+    @apply h-1 w-1;
+  }
+
+  /* Track */
+  ::-webkit-scrollbar-track {
+    @apply rounded bg-muted;
+  }
+
+  /* Handle */
+  ::-webkit-scrollbar-thumb {
+    @apply rounded bg-muted-foreground;
+  }
+
+  /* Handle on hover */
+  ::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+
+  pre > code {
+    @apply grid px-6 py-6 text-[18px] font-[600];
+    counter-reset: line;
+  }
+
+  :not(pre) > code {
+    @apply rounded-lg border-2 bg-muted px-1 text-foreground/100;
+  }
+}
