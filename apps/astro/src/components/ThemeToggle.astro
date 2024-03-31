@@ -1,8 +1,14 @@
 ---
+import type { HTMLAttributes } from 'astro/types';
 import { Icon } from 'astro-icon/components';
+
+interface Props extends HTMLAttributes<'button'> {};
+
+const { class: className, ...props } = Astro.props;
+
 ---
 
-<button class="flex relative">
+<button class:list={["flex relative", className]} {...props}>
   <Icon name="ph:moon-fill" class="h-4 w-4 scale-0 dark:scale-100 hidden dark:block" />
   <Icon name="ph:sun-fill" class="h-4 w-4 scale-100 dark:scale-0 dark:hidden" />
 </button>
