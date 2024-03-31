@@ -15,8 +15,6 @@ import {
   TableRow,
 } from '@portfolio/ui/table';
 
-import { MDXPre } from '~/components/react/mdx/pre';
-
 export const components = {
   h1: ({ className, id, children, ...props }: React.ComponentProps<'h1'>) => (
     <h1
@@ -36,7 +34,7 @@ export const components = {
     <h2
       id={id}
       className={cn(
-        'scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight transition-all after:absolute after:translate-x-[1rem] after:opacity-0 after:transition-all after:content-["#"] first:mt-0 hover:after:opacity-100',
+        'scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight transition-all after:absolute after:translate-x-[1rem] after:opacity-0 after:transition-all after:content-["#"] first:mt-0 mt-4 hover:after:opacity-100',
         className,
       )}
       {...props}

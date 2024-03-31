@@ -1,21 +1,9 @@
 ---
-import { Navbar } from '@portfolio/ui/navbar';
+import Navbar from '~/components/Navbar.astro';
 
 import BaseHead from '~/components/BaseHead.astro';
 import { Hero } from '~/components/react/home-hero';
 import { SITE_TITLE, SITE_DESCRIPTION } from '~/consts';
-
-const LINKS = [
-  {
-    label: 'Home',
-    href: '/',
-    default: true,
-  },
-  {
-    label: 'Blog',
-    href: '/blog',
-  },
-];
 
 ---
 
@@ -25,7 +13,7 @@ const LINKS = [
 		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
 	</head>
 	<body>
-		<Navbar client:load pages={LINKS} />
+		<Navbar />
 		<main class="mx-auto flex w-full min-h-screen max-w-screen-xl flex-col">
 			<Hero client:load id="hero" className="md:h-screen" />
 		</main>

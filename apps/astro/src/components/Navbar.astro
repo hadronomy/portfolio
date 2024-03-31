@@ -1,0 +1,63 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+import { Separator } from '@portfolio/ui/separator';
+
+import ThemeToggle from '~/components/ThemeToggle.astro';
+
+
+interface Props extends HTMLAttributes<'header'> {
+  pages?: Page[];
+};
+
+console.log(Astro.url.pathname);
+
+const defaultPages = [
+  { label: 'Home', href: '/' },
+  { label: 'Blog', href: '/blog' },
+  { label: 'Experiments', href: 'experiments', disabled: true }
+].map((page) => ({ ...page, active: page.href === Astro.url.pathname }));
+
+type Page = typeof defaultPages[number];
+
+const { pages: inputPages = defaultPages, class: className, ...props } = Astro.props;
+
+---
+
+<header class="sticky pt-5 top-0 z-20 w-full" transition:name="navbar" transition:animate="none" {...props}>
+  <nav class="mx-auto gap-x-2 flex flex-row justify-between items-center max-w-fit px-3 md:px-8 py-3 bg-transparent backdrop-blur-xl border-foreground/10 border-2 md:rounded-full rounded-3xl overflow-hidden">
+    <ul class="flex w-full h-full gap-x-0 capitalize flex-row p-0">
+      {defaultPages.map(({ label, href, active, disabled }) => (
+        <li>
+          <a
+            href={href}
+            class:list={[
+              'rounded-md transition-all h-full inline-block relative px-5 py-2 font-bold hover:text-foreground/80 dark:hover:drop-shadow-[0.3_0.3_1.2rem_#ffffff80]',
+              { 'current-page text-foreground': active },
+              { 'text-muted-foreground': !active },
+              { 'pointer-events-none': disabled }
+            ]}
+            aria-label={label}
+          >
+            <span class="text-center">{label}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+    <Separator orientation="vertical" className="h-5" />
+    <ThemeToggle />
+    <!-- <NextThemeToggle /> -->
+  </nav>
+</header>
+
+<style>
+  .current-page::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    height: 2px;
+    background-color: var(--foreground);
+  }
+</style>
