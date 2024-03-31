@@ -41,6 +41,11 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 					<!-- <Author class="mt-6" /> -->
 					<picture class="relative mt-6 h-fit min-h-[30rem] max-w-full overflow-hidden rounded">
 						<!-- <Image src={image} alt="example" fill class="object-cover" /> -->
+						<img
+							src={heroImage}
+							alt={`visual for ${title}`}
+							class="object-cover w-full h-full"
+						/>
 					</picture>
 				</header>
 				<slot />
