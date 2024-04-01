@@ -18,35 +18,42 @@ const defaultPages = [
 
 type Page = typeof defaultPages[number];
 
+const isReact = true;
+
 const { pages: inputPages = defaultPages, class: className, ...props } = Astro.props;
 
 ---
 
-<!-- <header class="sticky pt-5 top-0 z-20 w-full" {...props}>
-  <nav class="mx-auto gap-x-2 flex flex-row justify-between items-center max-w-fit px-3 md:px-8 py-3 bg-background/5 backdrop-blur-x border-foreground/10 border-2 md:rounded-full rounded-3xl overflow-hidden">
-    <ul class="flex w-full h-full gap-x-0 capitalize flex-row p-0">
-      {defaultPages.map(({ label, href, active, disabled }) => (
-        <li>
-          <a
-            href={href}
-            class:list={[
-              'rounded-md transition-all h-full inline-block relative px-5 py-2 font-bold hover:text-foreground/80 dark:hover:drop-shadow-[0.3_0.3_1.2rem_#ffffff80]',
-              { 'current-page text-foreground': active },
-              { 'text-muted-foreground': !active },
-              { 'pointer-events-none': disabled }
-            ]}
-            aria-label={label}
-          >
-            <span class="text-center">{label}</span>
-          </a>
-        </li>
-      ))}
-    </ul>
-    <Separator orientation="vertical" className="h-5" />
-    <ThemeToggle class="ml-4" />
-  </nav>
-</header> -->
-
-<Header client:load pages={inputPages}>
-  <ThemeToggle class="ml-4" />
-</Header>
+{
+  isReact && (
+    <Header client:load pages={inputPages} >
+      <ThemeToggle class="ml-4" />  
+    </Header>
+  ) ||
+  (
+    <header class="sticky pt-5 top-0 z-20 w-full" {...props}>
+      <nav class="mx-auto gap-x-2 flex flex-row justify-between items-center max-w-fit px-3 md:px-8 py-3 bg-background/5 backdrop-blur-x border-foreground/10 border-2 md:rounded-full rounded-3xl overflow-hidden">
+        <ul class="flex w-full h-full gap-x-0 capitalize flex-row p-0">
+          {defaultPages.map(({ label, href, active, disabled }) => (
+            <li>
+              <a
+                href={href}
+                class:list={[
+                  'rounded-md transition-all h-full inline-block relative px-5 py-2 font-bold hover:text-foreground/80 dark:hover:drop-shadow-[0.3_0.3_1.2rem_#ffffff80]',
+                  { 'current-page text-foreground': active },
+                  { 'text-muted-foreground': !active },
+                  { 'pointer-events-none': disabled }
+                ]}
+                aria-label={label}
+              >
+                <span class="text-center">{label}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+        <Separator orientation="vertical" className="h-5" />
+        <ThemeToggle class="ml-4" />
+      </nav>
+    </header>
+  )
+}
