@@ -1,5 +1,6 @@
 ---
 import type { HTMLAttributes } from 'astro/types';
+import { Navbar as Header } from '~/components/react/navbar';
 import { Separator } from '@portfolio/ui/separator';
 
 import ThemeToggle from '~/components/ThemeToggle.astro';
@@ -21,8 +22,8 @@ const { pages: inputPages = defaultPages, class: className, ...props } = Astro.p
 
 ---
 
-<header class="sticky pt-5 top-0 z-20 w-full" transition:name="navbar" transition:animate="none" {...props}>
-  <nav class="mx-auto gap-x-2 flex flex-row justify-between items-center max-w-fit px-3 md:px-8 py-3 bg-transparent backdrop-blur-xl border-foreground/10 border-2 md:rounded-full rounded-3xl overflow-hidden">
+<!-- <header class="sticky pt-5 top-0 z-20 w-full" {...props}>
+  <nav class="mx-auto gap-x-2 flex flex-row justify-between items-center max-w-fit px-3 md:px-8 py-3 bg-background/5 backdrop-blur-x border-foreground/10 border-2 md:rounded-full rounded-3xl overflow-hidden">
     <ul class="flex w-full h-full gap-x-0 capitalize flex-row p-0">
       {defaultPages.map(({ label, href, active, disabled }) => (
         <li>
@@ -43,6 +44,9 @@ const { pages: inputPages = defaultPages, class: className, ...props } = Astro.p
     </ul>
     <Separator orientation="vertical" className="h-5" />
     <ThemeToggle class="ml-4" />
-    <!-- <NextThemeToggle /> -->
   </nav>
-</header>
+</header> -->
+
+<Header client:load pages={inputPages}>
+  <ThemeToggle class="ml-4" />
+</Header>

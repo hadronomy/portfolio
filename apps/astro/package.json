@@ -23,6 +23,7 @@
     "@portfolio/ui": "0.1.0",
     "astro": "^4.5.10",
     "astro-icon": "^1.1.0",
+    "framer-motion": "10.12.17",
     "fumadocs-twoslash": "^1.0.1",
     "fumadocs-ui": "^8.1.1",
     "lucide-react": "0.248.0",
