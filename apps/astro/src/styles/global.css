@@ -139,4 +139,13 @@
   :not(pre) > * > code {
     @apply rounded-lg border-2 bg-muted px-1 text-foreground/100;
   }
+
+  /* KBD */
+  kbd:has(kbd) {
+    @apply inline-flex flex-wrap items-center gap-x-1 text-sm;
+  }
+
+  kbd > kbd {
+    @apply min-h-[30px] inline-flex justify-center items-center py-1 px-1.5 bg-muted border border-muted-foreground font-mono text-sm text-foreground rounded-md shadow-[0px_4px_0px_0px_rgba(0,0,0,0.5)] dark:shadow-[0px_4px_0px_0px_rgba(255,255,255,0.5)];
+  }
 }
