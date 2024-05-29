@@ -2,7 +2,7 @@
 import Navbar from '~/components/Navbar.astro';
 
 import BaseHead from '~/components/BaseHead.astro';
-import { Hero } from '~/components/react/home-hero';
+import Hero from '~/components/HomeHero.astro';
 import { SITE_TITLE, SITE_DESCRIPTION } from '~/consts';
 
 ---
@@ -15,7 +15,7 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '~/consts';
 	<body>
 		<Navbar />
 		<main class="mx-auto flex w-full min-h-screen max-w-screen-xl flex-col">
-			<Hero client:load id="hero" className="md:h-screen" />
+			<Hero id="hero" className="md:h-screen" />
 		</main>
 	</body>
 </html>
