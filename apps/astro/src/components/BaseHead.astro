@@ -7,21 +7,20 @@ import '~/styles/global.css';
 import '~/styles/twoslash.css';
 
 import { getImage } from 'astro:assets';
-import { ViewTransitions } from "astro:transitions";
+import { ViewTransitions } from 'astro:transitions';
 import favicon from '../favicon.png';
 
-
 interface Props {
-	title: string;
-	description: string;
-	image?: string;
+  title: string;
+  description: string;
+  image?: string;
 }
 
 const appleTouchIcon = await getImage({
-	src: favicon,
-	width: 460,
-	height: 460,
-	format: 'png',
+  src: favicon,
+  width: 460,
+  height: 460,
+  format: 'png',
 });
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
@@ -29,9 +28,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const { title, description, image = '/blog-placeholder-1.jpg' } = Astro.props;
 ---
 
-<!-- Hello There! -->
-
-<!-- Global Metadata -->
+<!-- Hello There! --><!-- Global Metadata -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <link rel="icon" href="/favicon.ico" type="image/x-icon" sizes="16x16 32x32" />
@@ -65,17 +62,16 @@ const { title, description, image = '/blog-placeholder-1.jpg' } = Astro.props;
 
 <ViewTransitions />
 
-
 <style is:global>
-	:root {
-		--font-sans: 'Onest Variable', sans-serif;
-		--font-mono: 'MonaspaceNeon', monospace;
-	}
+  :root {
+    --font-sans: 'Onest Variable', sans-serif;
+    --font-mono: 'MonaspaceNeon', monospace;
+  }
 
-	@font-face {
-		font-family: 'MonaspaceNeon';
-		src: url('/fonts/monaspace-neon.woff') format('woff');
-		font-weight: 100 900;
-		font-style: normal;
-	}
+  @font-face {
+    font-family: 'MonaspaceNeon';
+    src: url('/fonts/monaspace-neon.woff') format('woff');
+    font-weight: 100 900;
+    font-style: normal;
+  }
 </style>

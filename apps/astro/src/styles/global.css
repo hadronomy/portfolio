@@ -40,7 +40,7 @@
 
   @media not print {
     .dark {
-      --background-image: url("/noise.png");
+      --background-image: url('/noise.png');
       --background: 0 0% 4%;
       --foreground: 213 31% 91%;
 
@@ -85,7 +85,9 @@
 
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-feature-settings:
+      'rlig' 1,
+      'calt' 1;
     background-image: var(--background-image);
     background-repeat: repeat;
     background-blend-mode: overlay;

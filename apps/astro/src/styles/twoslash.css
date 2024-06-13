@@ -45,7 +45,9 @@ html.dark span {
   width: 20rem;
   flex-direction: column;
   white-space: normal;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  box-shadow:
+    0 4px 6px -1px rgb(0 0 0 / 0.1),
+    0 2px 4px -2px rgb(0 0 0 / 0.1);
   border-width: 1px;
   border-radius: 6px;
   padding: 8px;
@@ -142,7 +144,7 @@ html.dark span {
   top: -1.2em;
   height: 1em;
   left: -1px;
-  content: " ";
+  content: ' ';
   background-color: hsl(var(--foreground));
 }
 

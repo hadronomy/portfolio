@@ -5,11 +5,11 @@ import { components } from '~/components/react/mdx';
 import pre from '~/components/mdx/pre.astro';
 
 export async function getStaticPaths() {
-	const posts = await getCollection('blog');
-	return posts.map((post) => ({
-		params: { slug: post.slug },
-		props: post,
-	}));
+  const posts = await getCollection('blog');
+  return posts.map((post) => ({
+    params: { slug: post.slug },
+    props: post,
+  }));
 }
 type Props = CollectionEntry<'blog'>;
 
@@ -18,5 +18,5 @@ const { Content } = await post.render();
 ---
 
 <BlogPost {...post.data}>
-	<Content components={{ ...components, pre}} />
+  <Content components={{ ...components, pre }} />
 </BlogPost>

@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "prepare": "lefthook install",
-    "format": "pnpm biome format --write .",
+    "format": "pnpm biome format --write .; pnpm prettier --write .",
     "lint": "pnpm biome lint --apply .",
     "ci": "pnpm biome check --apply --no-errors-on-unmatched",
     "fix": "manypkg fix"
@@ -15,6 +15,8 @@
     "@commitlint/config-conventional": "17.7.0",
     "@manypkg/cli": "0.21.0",
     "lefthook": "^1.6.1",
+    "prettier": "^3.3.2",
+    "prettier-plugin-astro": "^0.14.0",
     "turbo": "2.0.3"
   }
 }

@@ -4,18 +4,17 @@ import Navbar from '~/components/Navbar.astro';
 import BaseHead from '~/components/BaseHead.astro';
 import Hero from '~/components/HomeHero.astro';
 import { SITE_TITLE, SITE_DESCRIPTION } from '~/consts';
-
 ---
 
 <!doctype html>
 <html lang="en" class="dark antialiased">
-	<head>
-		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
-	</head>
-	<body>
-		<Navbar />
-		<main class="mx-auto flex w-full min-h-screen max-w-screen-xl flex-col">
-			<Hero id="hero" className="md:h-screen" />
-		</main>
-	</body>
+  <head>
+    <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+  </head>
+  <body>
+    <Navbar />
+    <main class="mx-auto flex w-full min-h-screen max-w-screen-xl flex-col">
+      <Hero id="hero" className="md:h-screen" />
+    </main>
+  </body>
 </html>
