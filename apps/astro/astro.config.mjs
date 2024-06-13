@@ -1,28 +1,29 @@
 import mdx from '@astrojs/mdx';
+import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
 import tailwind from '@astrojs/tailwind';
+import { pluginLineNumbers } from '@expressive-code/plugin-line-numbers';
+import expressiveCode from 'astro-expressive-code';
 import icon from 'astro-icon';
 import { defineConfig } from 'astro/config';
 import { rehypeAccessibleEmojis } from 'rehype-accessible-emojis';
 // import { transformerTwoslash } from 'fumadocs-twoslash';
 import remarkGemoji from 'remark-gemoji';
 
-import react from '@astrojs/react';
-
 // https://astro.build/config
 export default defineConfig({
   site: 'https://hadronomy.com',
   integrations: [
-    mdx({
-      shikiConfig: {
-        themes: {
-          light: 'catppuccin-latte',
-          dark: 'catppuccin-mocha',
-        },
-        // transformers: [transformerTwoslash()],
+    expressiveCode({
+      plugins: [pluginLineNumbers()],
+      themes: ['catppuccin-mocha', 'catppuccin-latte'],
+      defaultProps: {
+        showLineNumbers: false,
       },
+    }),
+    mdx({
       remarkPlugins: [remarkGemoji],
-      rehypePlugins: [rehypeAccessibleEmojis],
+      // rehypePlugins: [rehypeAccessibleEmojis],
     }),
     sitemap(),
     tailwind(),
@@ -31,7 +32,7 @@ export default defineConfig({
   ],
   vite: {
     ssr: {
-      noExternal: ['fumadocs-ui', 'typewriter-effect'],
+      noExternal: ['fumadocs-ui'],
     },
   },
 });

@@ -4,7 +4,7 @@
 import '@fontsource/bellota';
 import '@fontsource-variable/onest';
 import '~/styles/global.css';
-import '~/styles/twoslash.css';
+// import '~/styles/twoslash.css';
 
 import { getImage } from 'astro:assets';
 import { ViewTransitions } from 'astro:transitions';
@@ -70,8 +70,8 @@ const { title, description, image = '/blog-placeholder-1.jpg' } = Astro.props;
 
   @font-face {
     font-family: 'MonaspaceNeon';
-    src: url('/fonts/monaspace-neon.woff') format('woff');
+    src: url('/fonts/monaspace-neon.woff2') format('woff2');
     font-weight: 100 900;
-    font-style: normal;
+    font-style: oblique -11 0deg;
   }
 </style>

@@ -5,18 +5,22 @@ pubDate: 'Jul 01 2022'
 heroImage: '/blog-placeholder-1.jpg'
 ---
 
-```tsx twoslash
+```tsx {8}
+// src/hello-world.tsx
 import * as React from 'react';
 
 export type HelloWorldProps = React.ComponentProps<'div'>;
 
 export function HelloWorld({ className }: HelloWorldProps) {
-  //            ^^^^^^^^^^
   const hello = () => {
     console.log('Hello, World!');
   };
   return <div className={className}>Hello World!</div>;
 }
+```
+
+```bash
+echo "Hello World!"
 ```
 
 ## This is an `<h2/>`

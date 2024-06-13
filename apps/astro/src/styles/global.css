@@ -79,7 +79,7 @@
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-border monaspace-settings;
     min-width: 0;
   }
 
@@ -134,12 +134,16 @@
   }
 
   pre code {
-    @apply grid px-6 py-6 text-[18px] font-[600];
-    counter-reset: line;
+    @apply grid text-[16px] font-[500] font-mono !important;
+    font-variant-ligatures: additional-ligatures !important;
   }
 
-  :not(pre) > * > code {
-    @apply rounded-lg border-2 bg-muted px-1 text-foreground/100;
+  * :not(pre) > code {
+    @apply rounded-lg border-2 px-1 bg-muted text-foreground/100 !important;
+  }
+
+  figure {
+    @apply my-2 !important;
   }
 
   /* KBD */
@@ -149,5 +153,9 @@
 
   kbd > kbd {
     @apply min-h-[30px] inline-flex justify-center items-center py-1 px-1.5 bg-muted border border-muted-foreground font-mono text-sm text-foreground rounded-md shadow-[0px_4px_0px_0px_rgba(0,0,0,0.5)] dark:shadow-[0px_4px_0px_0px_rgba(255,255,255,0.5)];
+  }
+
+  .monaspace-settings {
+    font-feature-settings: "calt" 1, "liga" 1, "ss01" 1, "ss09" 1;
   }
 }
