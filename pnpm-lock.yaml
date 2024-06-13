@@ -52,7 +52,7 @@ importers:
         version: 3.1.5
       '@astrojs/tailwind':
         specifier: ^5.1.0
-        version: 5.1.0(astro@4.10.2)(tailwindcss@3.3.3)(ts-node@10.9.1)
+        version: 5.1.0(astro@4.10.2)(tailwindcss@3.4.4)(ts-node@10.9.1)
       '@fontsource-variable/onest':
         specifier: ^5.0.3
         version: 5.0.3
@@ -102,8 +102,8 @@ importers:
         specifier: ^0.1.5
         version: 0.1.5
       tailwindcss:
-        specifier: 3.3.3
-        version: 3.3.3(ts-node@10.9.1)
+        specifier: 3.4.4
+        version: 3.4.4(ts-node@10.9.1)
       typescript:
         specifier: 5.1.6
         version: 5.1.6
@@ -444,7 +444,7 @@ packages:
       zod: 3.23.8
     dev: false
 
-  /@astrojs/tailwind@5.1.0(astro@4.10.2)(tailwindcss@3.3.3)(ts-node@10.9.1):
+  /@astrojs/tailwind@5.1.0(astro@4.10.2)(tailwindcss@3.4.4)(ts-node@10.9.1):
     resolution: {integrity: sha512-BJoCDKuWhU9FT2qYg+fr6Nfb3qP4ShtyjXGHKA/4mHN94z7BGcmauQK23iy+YH5qWvTnhqkd6mQPQ1yTZTe9Ig==}
     peerDependencies:
       astro: ^3.0.0 || ^4.0.0
@@ -454,7 +454,7 @@ packages:
       autoprefixer: 10.4.19(postcss@8.4.31)
       postcss: 8.4.31
       postcss-load-config: 4.0.2(postcss@8.4.31)(ts-node@10.9.1)
-      tailwindcss: 3.3.3(ts-node@10.9.1)
+      tailwindcss: 3.4.4(ts-node@10.9.1)
     transitivePeerDependencies:
       - ts-node
     dev: false
