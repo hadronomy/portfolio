@@ -5,9 +5,11 @@
     "jsx": "react-jsx",
     "jsxImportSource": "react",
     "baseUrl": ".",
+    "outDir": "dist",
     "paths": {
       "~/*": ["./src/*"],
       "react": ["./node_modules/@types/react"]
     }
-  }
+  },
+  "exclude": ["node_modules", ".astro", "dist"]
 }

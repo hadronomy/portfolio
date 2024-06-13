@@ -31,7 +31,7 @@ export default defineConfig({
   ],
   vite: {
     ssr: {
-      noExternal: ['fumadocs-ui'],
+      noExternal: ['fumadocs-ui', 'typewriter-effect'],
     },
   },
 });
