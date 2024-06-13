@@ -8,13 +8,13 @@
     "ci": "pnpm biome check --apply --no-errors-on-unmatched",
     "fix": "manypkg fix"
   },
-  "packageManager": "pnpm@8.6.6",
+  "packageManager": "pnpm@8.15.1",
   "dependencies": {
     "@biomejs/biome": "^1.5.3",
     "@commitlint/cli": "17.7.1",
     "@commitlint/config-conventional": "17.7.0",
     "@manypkg/cli": "0.21.0",
     "lefthook": "^1.6.1",
-    "turbo": "1.12.2"
+    "turbo": "2.0.3"
   }
 }

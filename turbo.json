@@ -1,7 +1,8 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "globalDependencies": ["**/.env*.local"],
-  "pipeline": {
+  "globalEnv": ["NODE_ENV", "VERCEL_URL", "PORT"],
+  "tasks": {
     "start": {
       "dependsOn": ["^start", "build"],
       "persistent": true
@@ -21,6 +22,5 @@
     "lint-staged": {
       "dependsOn": ["^lint-staged"]
     }
-  },
-  "globalEnv": ["NODE_ENV", "VERCEL_URL", "PORT"]
+  }
 }
