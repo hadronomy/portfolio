@@ -13,6 +13,10 @@ import remarkGemoji from 'remark-gemoji';
 // https://astro.build/config
 export default defineConfig({
   site: 'https://hadronomy.com',
+  markdown: {
+    remarkPlugins: [remarkGemoji],
+    rehypePlugins: [rehypeAccessibleEmojis],
+  },
   integrations: [
     expressiveCode({
       plugins: [pluginLineNumbers()],
@@ -21,10 +25,7 @@ export default defineConfig({
         showLineNumbers: false,
       },
     }),
-    mdx({
-      remarkPlugins: [remarkGemoji],
-      // rehypePlugins: [rehypeAccessibleEmojis],
-    }),
+    mdx(),
     sitemap(),
     tailwind(),
     icon(),
