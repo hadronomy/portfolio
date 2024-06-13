@@ -1,4 +1,5 @@
 ---
+import { Image } from 'astro:assets';
 import type { CollectionEntry } from 'astro:content';
 import BaseHead from '~/components/BaseHead.astro';
 import Footer from '~/components/Footer.astro';
@@ -44,8 +45,12 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
           <!-- <Author class="mt-6" /> -->
           <picture class="relative mt-6 h-fit min-h-[30rem] max-w-full overflow-hidden rounded">
             <!-- <Image src={image} alt="example" fill class="object-cover" /> -->
-            <img
+            <Image
               src={heroImage}
+              width={1200}
+              height={630}
+              decoding="async"
+              loading="eager"
               alt={`visual for ${title}`}
               transition:name={`img-${Astro.url.pathname}`}
               class="object-cover w-full h-full"
