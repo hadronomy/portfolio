@@ -7,7 +7,7 @@
     "postcss.js"
   ],
   "devDependencies": {
-    "@portfolio/tsconfig": "0.1.0",
+    "@portfolio/tsconfig": "workspace:0.1.0",
     "@types/node": "18.15.11",
     "autoprefixer": "10.4.14",
     "postcss": "8.4.31",

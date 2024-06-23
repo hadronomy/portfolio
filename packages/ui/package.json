@@ -5,8 +5,8 @@
   "private": true,
   "scripts": {},
   "devDependencies": {
-    "@portfolio/tailwind-config": "0.1.0",
-    "@portfolio/tsconfig": "0.1.0",
+    "@portfolio/tailwind-config": "workspace:0.1.0",
+    "@portfolio/tsconfig": "workspace:0.1.0",
     "@rollup/plugin-typescript": "11.1.2",
     "@swc-node/register": "1.6.6",
     "@swc/core": "1.3.76",
