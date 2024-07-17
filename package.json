@@ -8,7 +8,7 @@
     "ci": "pnpm biome check --apply --no-errors-on-unmatched",
     "fix": "manypkg fix"
   },
-  "packageManager": "pnpm@8.6.6",
+  "packageManager": "pnpm@8.15.9",
   "dependencies": {
     "@biomejs/biome": "^1.5.3",
     "@commitlint/cli": "17.7.1",
