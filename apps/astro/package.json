@@ -41,10 +41,13 @@
     "zod": "3.23.8"
   },
   "devDependencies": {
+    "@astrojs/language-server": "^2.12.1",
     "@iconify-json/iconoir": "^1.1.42",
     "@iconify-json/ph": "^1.1.11",
     "@types/mdx": "2.0.6",
     "@types/react": "18.0.33",
-    "@types/react-dom": "^18.2.23"
+    "@types/react-dom": "^18.2.23",
+    "prettier": "^3.3.2",
+    "prettier-plugin-astro": "^0.14.0"
   }
 }

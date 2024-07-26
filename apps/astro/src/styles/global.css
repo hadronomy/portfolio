@@ -155,7 +155,16 @@
     @apply min-h-[30px] inline-flex justify-center items-center py-1 px-1.5 bg-muted border border-muted-foreground font-mono text-sm text-foreground rounded-md shadow-[0px_4px_0px_0px_rgba(0,0,0,0.5)] dark:shadow-[0px_4px_0px_0px_rgba(255,255,255,0.5)];
   }
 
+  /* Monaspace Settings */
   .monaspace-settings {
-    font-feature-settings: "calt" 1, "liga" 1, "ss01" 1, "ss09" 1;
+    font-feature-settings:
+      'calt' 1,
+      'liga' 1,
+      'ss01' 1,
+      'ss09' 1;
+  }
+
+  article {
+    @apply break-words;
   }
 }

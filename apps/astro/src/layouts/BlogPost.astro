@@ -2,13 +2,11 @@
 import { Image } from 'astro:assets';
 import type { CollectionEntry } from 'astro:content';
 import BaseHead from '~/components/BaseHead.astro';
-import Footer from '~/components/Footer.astro';
-import FormattedDate from '~/components/FormattedDate.astro';
 import Navbar from '~/components/Navbar.astro';
 
 type Props = CollectionEntry<'blog'>['data'];
 
-const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
+const { title, description, heroImage } = Astro.props;
 ---
 
 <html class="dark" lang="en">
@@ -24,38 +22,26 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
       >
         <header class="mb-8 flex flex-col">
           <!-- <PostDate date={date} time={readingTime} class="mb-6" /> -->
+          <!-- <picture class="relative mt-6 h-fit min-h-[30rem] max-w-full overflow-hidden rounded"> -->
+          <!--   <Image -->
+          <!--     src={heroImage} -->
+          <!--     width={1200} -->
+          <!--     height={630} -->
+          <!--     decoding="async" -->
+          <!--     loading="eager" -->
+          <!--     alt={`visual for ${title}`} -->
+          <!--     transition:name={`img-${Astro.url.pathname}`} -->
+          <!--     class="object-cover w-full h-full" -->
+          <!--   /> -->
+          <!-- </picture> -->
           <div class="flex flex-row justify-between">
             <h1
               class="scroll-m-20 text-4xl font-extrabold leading-tight tracking-tight lg:text-5xl text-balance"
             >
               {title}
             </h1>
-            <!-- <QRCode
-							class="hidden print:inline-block max-h-20 max-w-[5rem]"
-							value={url.href}
-						/> -->
-          </div>
-          <div class="mt-6 flex space-x-3">
-            <!-- {tags.map((tag) => (
-							<Badge key={tag} class="text-sm font-extrabold">
-								#{tag}
-							</Badge>
-						))} -->
           </div>
           <!-- <Author class="mt-6" /> -->
-          <picture class="relative mt-6 h-fit min-h-[30rem] max-w-full overflow-hidden rounded">
-            <!-- <Image src={image} alt="example" fill class="object-cover" /> -->
-            <Image
-              src={heroImage}
-              width={1200}
-              height={630}
-              decoding="async"
-              loading="eager"
-              alt={`visual for ${title}`}
-              transition:name={`img-${Astro.url.pathname}`}
-              class="object-cover w-full h-full"
-            />
-          </picture>
         </header>
         <slot />
         <footer
@@ -75,6 +61,6 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
         </footer>
       </article>
     </main>
-    <Footer />
+    <!-- <Footer /> -->
   </body>
 </html>

@@ -2,7 +2,7 @@
 import { getCollection } from 'astro:content';
 
 import BaseHead from '~/components/BaseHead.astro';
-import Footer from '~/components/Footer.astro';
+import { Card, CardHeader, CardTitle } from '@portfolio/ui/card';
 import { SITE_TITLE, SITE_DESCRIPTION } from '~/consts';
 import FormattedDate from '~/components/FormattedDate.astro';
 import Navbar from '~/components/Navbar.astro';
@@ -19,26 +19,32 @@ const posts = (await getCollection('blog')).sort(
   </head>
   <body>
     <Navbar />
-    <main>
-      <section>
-        <ul>
+    <main
+      class="grid mx-auto min-h-screen mt-6 w-full max-w-screen-xl grid-cols-[1fr_min(75ch,_calc(100%_-_1.5rem))_1fr] py-8 [&>*]:col-start-2 gap-6 px-6"
+    >
+      <section class="row-span-1 flex flex-col gap-y-6">
+        <ul class="flex flex-col gap-y-6">
           {
             posts.map((post) => {
               const pathname = `/blog/${post.slug}/`;
               return (
                 <li>
                   <a href={pathname}>
-                    <img
-                      width={720}
-                      height={360}
-                      src={post.data.heroImage}
-                      alt=""
-                      transition:name={`img-${pathname}`}
-                    />
-                    <h4 class="title">{post.data.title}</h4>
-                    <p class="date">
-                      <FormattedDate date={post.data.pubDate} />
-                    </p>
+                    <Card className="">
+                      <CardHeader className="flex flex-col">
+                        <CardTitle>{post.data.title}</CardTitle>
+                        <date>
+                          <FormattedDate date={post.data.pubDate} />
+                        </date>
+                        <img
+                          width={720}
+                          height={360}
+                          src={post.data.heroImage}
+                          alt=""
+                          transition:name={`img-${pathname}`}
+                        />
+                      </CardHeader>
+                    </Card>
                   </a>
                 </li>
               );
@@ -47,6 +53,6 @@ const posts = (await getCollection('blog')).sort(
         </ul>
       </section>
     </main>
-    <Footer />
+    <!-- <Footer /> -->
   </body>
 </html>
