@@ -61,7 +61,7 @@
     "@types/node": "18.15.11",
     "@types/react": "18.0.33",
     "@types/react-dom": "^18.2.7",
-    "@types/three": "0.150.2",
+    "@types/three": "0.169.0",
     "esbuild": "0.18.x",
     "markdown-wasm": "1.x",
     "turbo": "1.12.2"
