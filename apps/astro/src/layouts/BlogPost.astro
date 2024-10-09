@@ -1,13 +1,26 @@
 ---
-import type { CollectionEntry } from 'astro:content';
 import monaspaceNeonWoff2 from '@fontsource/monaspace-neon/files/monaspace-neon-latin-400-normal.woff2?url';
+
+import type { CollectionEntry } from 'astro:content';
+
+import { format } from 'date-fns';
+import { Icon } from 'astro-icon/components';
 
 import BaseHead from '~/components/BaseHead.astro';
 import Navbar from '~/components/Navbar.astro';
 
-type Props = CollectionEntry<'blog'>['data'];
+type Props = CollectionEntry<'blog'>['data'] & {
+  remarkPluginFrontmatter: Record<string, any>;
+};
 
-const { title, description } = Astro.props;
+const { title, description, pubDate, remarkPluginFrontmatter } = Astro.props;
+const { duration } = remarkPluginFrontmatter;
+
+function formatDuration(duration: number) {
+  const seconds = Math.ceil(duration / 1000);
+  const minutes = Math.ceil(seconds / 60);
+  return `${minutes} min read`;
+}
 ---
 
 <html class="dark" lang="en">
@@ -29,27 +42,22 @@ const { title, description } = Astro.props;
       <article
         class="mt-10 grid grid-cols-[1fr_min(75ch,_calc(100%_-_1.5rem))_1fr] px-3 py-8 [&>*]:col-start-2"
       >
-        <header class="mb-8 flex flex-col">
-          <!-- <PostDate date={date} time={readingTime} class="mb-6" /> -->
-          <!-- <picture class="relative mt-6 h-fit min-h-[30rem] max-w-full overflow-hidden rounded"> -->
-          <!--   <Image -->
-          <!--     src={heroImage} -->
-          <!--     width={1200} -->
-          <!--     height={630} -->
-          <!--     decoding="async" -->
-          <!--     loading="eager" -->
-          <!--     alt={`visual for ${title}`} -->
-          <!--     transition:name={`img-${Astro.url.pathname}`} -->
-          <!--     class="object-cover w-full h-full" -->
-          <!--   /> -->
-          <!-- </picture> -->
-          <div class="flex flex-row justify-between">
-            <h1
-              class="scroll-m-20 text-4xl font-extrabold leading-tight tracking-tight lg:text-5xl text-balance"
-            >
-              {title}
-            </h1>
+        <header class="mb-8 flex flex-col gap-y-2 text-lg">
+          <div class="flex flex-row gap-x-2">
+            <time datetime={format(pubDate, 'yyyy-MM-dd')} class="text-foreground/60">
+              {format(new Date(pubDate), 'MMMM eo, yyyy')}
+            </time>
+            <span class="text-foreground/60"> &middot; </span>
+            <div class="flex flex-row gap-x-2">
+              <Icon name="tabler:clock" class="text-foreground/60 h-full" />
+              <span class="text-foreground/60">{formatDuration(duration)}</span>
+            </div>
           </div>
+          <h1
+            class="scroll-m-20 text-4xl font-extrabold leading-tight tracking-tight lg:text-5xl text-balance"
+          >
+            {title}
+          </h1>
           <!-- <Author class="mt-6" /> -->
         </header>
         <slot />

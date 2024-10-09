@@ -65,6 +65,9 @@ importers:
       '@fontsource/monaspace-neon':
         specifier: ^5.1.0
         version: 5.1.0
+      '@iconify-json/tabler':
+        specifier: ^1.2.5
+        version: 1.2.5
       '@portfolio/tailwind-config':
         specifier: workspace:0.1.0
         version: link:../../tooling/tailwind-config
@@ -80,6 +83,9 @@ importers:
       astro-icon:
         specifier: ^1.1.0
         version: 1.1.0
+      date-fns:
+        specifier: ^4.1.0
+        version: 4.1.0
       framer-motion:
         specifier: 10.12.17
         version: 10.12.17(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
@@ -92,12 +98,18 @@ importers:
       lucide-react:
         specifier: 0.248.0
         version: 0.248.0(react@18.2.0)
+      mdast-util-to-string:
+        specifier: ^4.0.0
+        version: 4.0.0
       react:
         specifier: 18.2.0
         version: 18.2.0
       react-dom:
         specifier: 18.2.0
         version: 18.2.0(react@18.2.0)
+      reading-time:
+        specifier: ^1.5.0
+        version: 1.5.0
       rehype-accessible-emojis:
         specifier: 0.3.2
         version: 0.3.2
@@ -910,6 +922,9 @@ packages:
   '@iconify-json/ph@1.1.11':
     resolution: {integrity: sha512-izLvLZrU7WM03zNwNWNrAySv3i45hM3D3K6USjCGBSQMUG0HB8zxwrMf4O0leDrganmuQBH7Z0DWTgyH1ET/fg==}
 
+  '@iconify-json/tabler@1.2.5':
+    resolution: {integrity: sha512-BDDLgDCbJ2btwi6cPmBL04QyPyNmWy6H13ynUAX48xxpxqUuG+hT+yrqL+RCugFimrvuhcecbSfEKnFc0BW1Ng==}
+
   '@iconify/tools@3.0.7':
     resolution: {integrity: sha512-DxfhFLMnooS34dHelpGUnnYrxLZHs0czC1CgrBhAbuL8ddVzBb2VEQm8kh9qGh7A34qeXAB5iSHH3A72rAaFrg==}
 
@@ -1050,10 +1065,6 @@ packages:
 
   '@jridgewell/gen-mapping@0.3.5':
     resolution: {integrity: sha512-IzL8ZoEDIBRWEzlCcRhOaCupYyN5gdIK+Q6fbFdPDg6HqX6jpkItn7DFIpW9LQzXG6Df9sA7+OKnq0qlz/GaQg==}
-    engines: {node: '>=6.0.0'}
-
-  '@jridgewell/resolve-uri@3.1.1':
-    resolution: {integrity: sha512-dSYZh7HhCDtCKm4QakX0xFpsRDqjjtZf/kjI/v3T3Nwt5r8/qz/M19F9ySyOqU94SXBmeG9ttTul+YnR4LOxFA==}
     engines: {node: '>=6.0.0'}
 
   '@jridgewell/resolve-uri@3.1.2':
@@ -2463,9 +2474,6 @@ packages:
   caniuse-lite@1.0.30001519:
     resolution: {integrity: sha512-0QHgqR+Jv4bxHMp8kZ1Kn8CH55OikjKJ6JmKkZYP1F3D7w+lnFXF70nG5eNfsZS89jadi5Ywy5UCSKLAglIRkg==}
 
-  caniuse-lite@1.0.30001579:
-    resolution: {integrity: sha512-u5AUVkixruKHJjw/pj9wISlcMpgFWzSrczLZbrqBSxukQixmg0SJ5sZTpvaFvxU0HoQKd4yoyAogyrAz9pzJnA==}
-
   caniuse-lite@1.0.30001600:
     resolution: {integrity: sha512-+2S9/2JFhYmYaDpZvo0lKkfvuKIglrx68MwOBqMGHhQsNkLjB5xtc/TGoEPs+MxjSyN/72qer2g97nzR641mOQ==}
 
@@ -2696,6 +2704,9 @@ packages:
   dargs@7.0.0:
     resolution: {integrity: sha512-2iy1EkLdlBzQGvbweYRFxmFath8+K7+AKB0TlhHWkNuH+TmovaMH/Wp7V7R4u7f4SnX3OgLsU9t1NI9ioDnUpg==}
     engines: {node: '>=8'}
+
+  date-fns@4.1.0:
+    resolution: {integrity: sha512-Ukq0owbQXxa/U3EGtsdVBkR1w7KOQ5gIBqdH2hkvknzZPYvBxb/aa6E8L7tmjFtkwZBu3UXBbjIgPo/Ez4xaNg==}
 
   debug@4.3.4:
     resolution: {integrity: sha512-PRWFHuSU3eDtQJPvnNY7Jcket1j0t5OuOsFzPPzsekD52Zl8qUfFIPEiswXqIvHWGVHOgX+7G/vCNNhehwxfkQ==}
@@ -4393,6 +4404,9 @@ packages:
   readdirp@3.6.0:
     resolution: {integrity: sha512-hOS089on8RduqdbhvQ5Z37A0ESjsqz6qnRcffsMU3495FuTdqSm+7bhJ29JvIOsBDEEnan5DPu9t3To9VRlMzA==}
     engines: {node: '>=8.10.0'}
+
+  reading-time@1.5.0:
+    resolution: {integrity: sha512-onYyVhBNr4CmAxFsKS7bz+uTLRakypIe4R+5A824vBSkQy/hB3fZepoVEf8OVAxzLvK+H/jm9TzpI3ETSm64Kg==}
 
   redent@3.0.0:
     resolution: {integrity: sha512-6tDA8g98We0zd0GvVeMT9arEOnTw9qM03L9cJXaCjrip1OO764RDBLBfrB4cwzNGDj5OA5ioymC9GkizgWJDUg==}
@@ -6168,6 +6182,10 @@ snapshots:
     dependencies:
       '@iconify/types': 2.0.0
 
+  '@iconify-json/tabler@1.2.5':
+    dependencies:
+      '@iconify/types': 2.0.0
+
   '@iconify/tools@3.0.7':
     dependencies:
       '@iconify/types': 2.0.0
@@ -6304,8 +6322,6 @@ snapshots:
       '@jridgewell/sourcemap-codec': 1.5.0
       '@jridgewell/trace-mapping': 0.3.25
 
-  '@jridgewell/resolve-uri@3.1.1': {}
-
   '@jridgewell/resolve-uri@3.1.2': {}
 
   '@jridgewell/set-array@1.2.1': {}
@@ -6319,7 +6335,7 @@ snapshots:
 
   '@jridgewell/trace-mapping@0.3.9':
     dependencies:
-      '@jridgewell/resolve-uri': 3.1.1
+      '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.0
 
   '@manypkg/cli@0.21.0':
@@ -7988,8 +8004,6 @@ snapshots:
 
   caniuse-lite@1.0.30001519: {}
 
-  caniuse-lite@1.0.30001579: {}
-
   caniuse-lite@1.0.30001600: {}
 
   caniuse-lite@1.0.30001662: {}
@@ -8219,6 +8233,8 @@ snapshots:
   csstype@3.1.2: {}
 
   dargs@7.0.0: {}
+
+  date-fns@4.1.0: {}
 
   debug@4.3.4:
     dependencies:
@@ -9797,7 +9813,7 @@ snapshots:
       '@next/env': 14.1.0
       '@swc/helpers': 0.5.2
       busboy: 1.6.0
-      caniuse-lite: 1.0.30001579
+      caniuse-lite: 1.0.30001662
       graceful-fs: 4.2.11
       postcss: 8.4.31
       react: 18.2.0
@@ -10301,6 +10317,8 @@ snapshots:
   readdirp@3.6.0:
     dependencies:
       picomatch: 2.3.1
+
+  reading-time@1.5.0: {}
 
   redent@3.0.0:
     dependencies:

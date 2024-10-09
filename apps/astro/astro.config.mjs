@@ -1,4 +1,3 @@
-import icon from 'astro-icon';
 import { defineConfig } from 'astro/config';
 
 import mdx from '@astrojs/mdx';
@@ -9,9 +8,12 @@ import tailwind from '@astrojs/tailwind';
 import { pluginLineNumbers } from '@expressive-code/plugin-line-numbers';
 import { imageService } from '@unpic/astro/service';
 import expressiveCode from 'astro-expressive-code';
+import icon from 'astro-icon';
 import { rehypeAccessibleEmojis } from 'rehype-accessible-emojis';
 // import { transformerTwoslash } from 'fumadocs-twoslash';
 import remarkGemoji from 'remark-gemoji';
+
+import { remarkReadingTime } from './plugins/remark-reading-time.mjs';
 
 // https://astro.build/config
 export default defineConfig({
@@ -21,7 +23,7 @@ export default defineConfig({
     layout: 'constrained',
   }),
   markdown: {
-    remarkPlugins: [remarkGemoji],
+    remarkPlugins: [remarkGemoji, remarkReadingTime],
     rehypePlugins: [rehypeAccessibleEmojis],
   },
   integrations: [
@@ -35,7 +37,11 @@ export default defineConfig({
     mdx(),
     sitemap(),
     tailwind(),
-    icon(),
+    icon({
+      include: {
+        tabler: ['*'],
+      },
+    }),
     react(),
   ],
   vite: {
