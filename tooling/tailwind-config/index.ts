@@ -3,7 +3,7 @@ import { fontFamily } from 'tailwindcss/defaultTheme';
 
 export default {
   darkMode: ['class'],
-  content: ['./src/**/*.{js,ts,jsx,tsx}'],
+  content: ['./src/**/*.{js,ts,jsx,tsx,astro}'],
   theme: {
     container: {
       center: true,
@@ -57,6 +57,7 @@ export default {
       fontFamily: {
         sans: ['var(--font-sans)', ...fontFamily.sans],
         mono: ['var(--font-mono)', ...fontFamily.mono],
+        bellota: ['Bellota', ...fontFamily.sans],
       },
       keyframes: {
         'accordion-down': {
