@@ -1,5 +1,6 @@
 ---
 import { getCollection } from 'astro:content';
+import { Image } from 'astro:assets';
 
 import BaseHead from '~/components/BaseHead.astro';
 import { Card, CardHeader, CardTitle } from '@portfolio/ui/card';
@@ -36,7 +37,7 @@ const posts = (await getCollection('blog')).sort(
                         <date>
                           <FormattedDate date={post.data.pubDate} />
                         </date>
-                        <img
+                        <Image
                           width={720}
                           height={360}
                           src={post.data.heroImage}
