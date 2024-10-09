@@ -20,6 +20,7 @@
     "@expressive-code/plugin-line-numbers": "^0.35.3",
     "@fontsource-variable/onest": "^5.0.3",
     "@fontsource/bellota": "^5.0.12",
+    "@fontsource/monaspace-neon": "^5.1.0",
     "@portfolio/tailwind-config": "workspace:0.1.0",
     "@portfolio/ui": "workspace:0.1.0",
     "astro": "^4.15.8",

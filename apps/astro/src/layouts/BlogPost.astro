@@ -1,6 +1,8 @@
 ---
 import { Image } from 'astro:assets';
 import type { CollectionEntry } from 'astro:content';
+import monaspaceNeonWoff2 from '@fontsource/monaspace-neon/files/monaspace-neon-latin-400-normal.woff2?url';
+
 import BaseHead from '~/components/BaseHead.astro';
 import Navbar from '~/components/Navbar.astro';
 
@@ -12,6 +14,14 @@ const { title, description, heroImage } = Astro.props;
 <html class="dark" lang="en">
   <head>
     <BaseHead title={title} description={description} />
+    <!-- Preload Monospace Font -->
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      href={monaspaceNeonWoff2}
+      crossorigin="anonymous"
+    />
   </head>
 
   <body>

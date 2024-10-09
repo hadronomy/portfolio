@@ -62,6 +62,9 @@ importers:
       '@fontsource/bellota':
         specifier: ^5.0.12
         version: 5.0.12
+      '@fontsource/monaspace-neon':
+        specifier: ^5.1.0
+        version: 5.1.0
       '@portfolio/tailwind-config':
         specifier: workspace:0.1.0
         version: link:../../tooling/tailwind-config
@@ -876,6 +879,9 @@ packages:
 
   '@fontsource/bellota@5.0.12':
     resolution: {integrity: sha512-THsenQWmLHdeHTdwsCxtTrOwnAP5S7zNbxS4clJG2VZYS3JtW4W71aLDuV6e/Feus6oUuvP3zVCcJhLxwOZtTA==}
+
+  '@fontsource/monaspace-neon@5.1.0':
+    resolution: {integrity: sha512-nW56kEvbPwNHHYfouTEI6KR2BAcXhqjGc/KkQdDvC+bcpRFc9olZTBd+Jw+l8MhcbnFwX+GWE5VP8EUrAcshew==}
 
   '@formatjs/ecma402-abstract@1.17.0':
     resolution: {integrity: sha512-6ueQTeJZtwKjmh23bdkq/DMqH4l4bmfvtQH98blOSbiXv/OUiyijSW6jU22IT8BNM1ujCaEvJfTtyCYVH38EMQ==}
@@ -6084,6 +6090,8 @@ snapshots:
   '@fontsource-variable/onest@5.0.3': {}
 
   '@fontsource/bellota@5.0.12': {}
+
+  '@fontsource/monaspace-neon@5.1.0': {}
 
   '@formatjs/ecma402-abstract@1.17.0':
     dependencies:

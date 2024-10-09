@@ -36,6 +36,9 @@
     --ring: 215 20.2% 65.1%;
 
     --radius: 0.5rem;
+    
+    --font-sans: 'Onest Variable', sans-serif;
+    --font-mono: 'Monaspace Neon', monospace;
   }
 
   @media not print {
