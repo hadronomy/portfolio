@@ -2,6 +2,7 @@
   "$schema": "https://turbo.build/schema.json",
   "globalDependencies": ["**/.env*.local"],
   "globalEnv": ["NODE_ENV", "VERCEL_URL", "PORT"],
+  "ui": "tui",
   "tasks": {
     "start": {
       "dependsOn": ["^start", "build"],
