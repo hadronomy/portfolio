@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle } from '@portfolio/ui/card';
 import { SITE_TITLE, SITE_DESCRIPTION } from '~/consts';
 import FormattedDate from '~/components/FormattedDate.astro';
 import Navbar from '~/components/Navbar.astro';
+import { getImage } from '~/lib/utils';
 
 const posts = (await getCollection('blog')).sort(
   (a, b) => a.data.pubDate.valueOf() - b.data.pubDate.valueOf()
@@ -40,7 +41,7 @@ const posts = (await getCollection('blog')).sort(
                         <Image
                           width={720}
                           height={360}
-                          src={post.data.heroImage}
+                          src={getImage(post.data.heroImage)}
                           alt=""
                           transition:name={`img-${pathname}`}
                         />
