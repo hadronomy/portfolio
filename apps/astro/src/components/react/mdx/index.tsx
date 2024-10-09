@@ -1,6 +1,5 @@
 'use client';
 
-import { Popup, PopupContent, PopupTrigger } from 'fumadocs-ui/twoslash/popup';
 import type { MDXComponents } from 'mdx/types';
 import type * as React from 'react';
 

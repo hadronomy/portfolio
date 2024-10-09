@@ -1,5 +1,4 @@
 ---
-import { Image } from 'astro:assets';
 import type { CollectionEntry } from 'astro:content';
 import monaspaceNeonWoff2 from '@fontsource/monaspace-neon/files/monaspace-neon-latin-400-normal.woff2?url';
 
@@ -8,7 +7,7 @@ import Navbar from '~/components/Navbar.astro';
 
 type Props = CollectionEntry<'blog'>['data'];
 
-const { title, description, heroImage } = Astro.props;
+const { title, description } = Astro.props;
 ---
 
 <html class="dark" lang="en">
