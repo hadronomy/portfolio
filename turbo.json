@@ -18,9 +18,6 @@
     },
     "format": {
       "dependsOn": ["^format"]
-    },
-    "lint-staged": {
-      "dependsOn": ["^lint-staged"]
     }
   }
 }
