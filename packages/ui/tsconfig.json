@@ -1,5 +1,5 @@
 {
-  "extends": "@portfolio/tsconfig/base",
+  "extends": "@portfolio/tsconfig/internal-package",
   "buildOptions": {
     "tsBuildInfoFile": "node_modules/.cache/.tsbuildinfo"
   },

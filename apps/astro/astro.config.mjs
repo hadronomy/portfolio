@@ -1,9 +1,12 @@
+import path from 'node:path';
+
 import { defineConfig } from 'astro/config';
 
 import mdx from '@astrojs/mdx';
 import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
 import tailwind from '@astrojs/tailwind';
+import preserveDirectives from 'rollup-preserve-directives';
 
 import { pluginLineNumbers } from '@expressive-code/plugin-line-numbers';
 import { imageService } from '@unpic/astro/service';
@@ -47,8 +50,17 @@ export default defineConfig({
     react(),
   ],
   vite: {
+    plugins: [preserveDirectives()],
     ssr: {
       noExternal: ['fumadocs-ui'],
+    },
+    resolve: {
+      alias: {
+        '@portfolio/ui': path.resolve(
+          import.meta.dirname,
+          '../../packages/ui/src',
+        ),
+      },
     },
   },
 });

@@ -16,7 +16,7 @@
     "@manypkg/cli": "catalog:",
     "lefthook": "catalog:",
     "prettier": "catalog:",
-    "prettier-plugin-astro": "catalog:",
+    "prettier-plugin-astro": "catalog:astro4",
     "turbo": "catalog:"
   }
 }

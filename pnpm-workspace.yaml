@@ -3,13 +3,6 @@ packages:
   - packages/*
   - tooling/*
 catalog:
-  "@astrojs/check": ^0.9.3
-  "@astrojs/language-server": ^2.14.2
-  "@astrojs/mdx": ^3.1.7
-  "@astrojs/react": ^3.6.2
-  "@astrojs/rss": ^4.0.7
-  "@astrojs/sitemap": ^3.1.6
-  "@astrojs/tailwind": ^5.1.1
   "@biomejs/biome": ^1.5.3
   "@commitlint/cli": 17.7.1
   "@commitlint/config-conventional": 17.7.0
@@ -34,10 +27,6 @@ catalog:
   "@types/node": 18.15.11
   "@types/react": 18.0.33
   "@types/react-dom": ^18.2.23
-  "@unpic/astro": ^0.0.47
-  astro: ^4.15.8
-  astro-expressive-code: ^0.35.3
-  astro-icon: ^1.1.0
   autoprefixer: 10.4.14
   class-variance-authority: 0.6.1
   clsx: 1.2.1
@@ -54,7 +43,6 @@ catalog:
   next-themes: ^0.2.1
   postcss: 8.4.31
   prettier: ^3.3.2
-  prettier-plugin-astro: ^0.14.0
   react: 18.2.0
   react-dom: 18.2.0
   react-icons: 4.10.1
@@ -71,3 +59,20 @@ catalog:
   turbo: 2.1.3
   typewriter-effect: 2.20.1
   zod: 3.23.8
+  typescript: 5.6.3
+  tailwindcss: 3.4.14
+
+catalogs:
+  astro4:
+    astro: ^4.16.6
+    astro-expressive-code: ^0.35.3
+    astro-icon: ^1.1.0
+    prettier-plugin-astro: ^0.14.0
+    "@unpic/astro": ^0.0.47
+    "@astrojs/check": ^0.9.3
+    "@astrojs/language-server": ^2.14.2
+    "@astrojs/mdx": ^3.1.7
+    "@astrojs/react": ^3.6.2
+    "@astrojs/rss": ^4.0.7
+    "@astrojs/sitemap": ^3.1.6
+    "@astrojs/tailwind": ^5.1.1

@@ -11,12 +11,12 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/check": "catalog:",
-    "@astrojs/mdx": "catalog:",
-    "@astrojs/react": "catalog:",
-    "@astrojs/rss": "catalog:",
-    "@astrojs/sitemap": "catalog:",
-    "@astrojs/tailwind": "catalog:",
+    "@astrojs/check": "catalog:astro4",
+    "@astrojs/mdx": "catalog:astro4",
+    "@astrojs/react": "catalog:astro4",
+    "@astrojs/rss": "catalog:astro4",
+    "@astrojs/sitemap": "catalog:astro4",
+    "@astrojs/tailwind": "catalog:astro4",
     "@expressive-code/plugin-line-numbers": "catalog:",
     "@fontsource-variable/onest": "catalog:",
     "@fontsource/bellota": "catalog:",
@@ -24,9 +24,9 @@
     "@iconify-json/tabler": "catalog:",
     "@portfolio/tailwind-config": "workspace:",
     "@portfolio/ui": "workspace:",
-    "astro": "catalog:",
-    "astro-expressive-code": "catalog:",
-    "astro-icon": "catalog:",
+    "astro": "catalog:astro4",
+    "astro-expressive-code": "catalog:astro4",
+    "astro-icon": "catalog:astro4",
     "date-fns": "catalog:",
     "framer-motion": "catalog:",
     "fumadocs-twoslash": "catalog:",
@@ -40,20 +40,21 @@
     "remark-gemoji": "catalog:",
     "sharp": "catalog:",
     "sharp-ico": "catalog:",
-    "tailwindcss": "3.4.4",
+    "tailwindcss": "catalog:",
     "typewriter-effect": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@astrojs/language-server": "catalog:",
+    "@astrojs/language-server": "catalog:astro4",
     "@iconify-json/iconoir": "catalog:",
     "@iconify-json/ph": "catalog:",
     "@types/mdx": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "@unpic/astro": "catalog:",
+    "@unpic/astro": "catalog:astro4",
     "prettier": "catalog:",
-    "prettier-plugin-astro": "catalog:",
-    "typescript": "5.6.3"
+    "prettier-plugin-astro": "catalog:astro4",
+    "rollup-preserve-directives": "^1.1.2",
+    "typescript": "catalog:"
   }
 }
