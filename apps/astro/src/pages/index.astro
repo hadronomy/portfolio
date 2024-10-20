@@ -1,0 +1,21 @@
+---
+import '~/styles/global.css';
+import Navbar from '~/components/Navbar.astro';
+
+import Metadata from '~/components/Metadata.astro';
+import Hero from '~/components/HomeHero.astro';
+import { SITE_TITLE, SITE_DESCRIPTION } from '~/consts';
+---
+
+<!doctype html>
+<html lang="en" class="dark antialiased">
+  <head>
+    <Metadata title={SITE_TITLE} description={SITE_DESCRIPTION} />
+  </head>
+  <body>
+    <Navbar />
+    <main class="mx-auto flex w-full min-h-dvh max-w-screen-xl flex-col">
+      <Hero id="hero" className="md:h-dvh max-h-dvh" />
+    </main>
+  </body>
+</html>

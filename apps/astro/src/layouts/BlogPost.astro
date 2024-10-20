@@ -1,0 +1,83 @@
+---
+import monaspaceNeonWoff2 from '@fontsource/monaspace-neon/files/monaspace-neon-latin-400-normal.woff2?url';
+
+import type { CollectionEntry } from 'astro:content';
+
+import { format } from 'date-fns';
+import { Icon } from 'astro-icon/components';
+
+import Metadata from '~/components/Metadata.astro';
+import Navbar from '~/components/Navbar.astro';
+
+type Props = CollectionEntry<'blog'>['data'] & {
+  remarkPluginFrontmatter: Record<string, any>;
+};
+
+const { title, description, pubDate, remarkPluginFrontmatter } = Astro.props;
+const { duration } = remarkPluginFrontmatter;
+
+function formatDuration(duration: number) {
+  const seconds = Math.ceil(duration / 1000);
+  const minutes = Math.ceil(seconds / 60);
+  return `${minutes} min read`;
+}
+---
+
+<html class="dark" lang="en">
+  <head>
+    <Metadata title={title} description={description} />
+    <!-- Preload Monospace Font -->
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      href={monaspaceNeonWoff2}
+      crossorigin="anonymous"
+    />
+  </head>
+
+  <body>
+    <Navbar />
+    <main>
+      <article
+        class="mt-10 grid grid-cols-[1fr_min(75ch,_calc(100%_-_1.5rem))_1fr] px-3 py-8 [&>*]:col-start-2"
+      >
+        <header class="mb-8 flex flex-col gap-y-2 text-lg">
+          <div class="flex flex-row gap-x-2">
+            <time datetime={format(pubDate, 'yyyy-MM-dd')} class="text-foreground/60">
+              {format(new Date(pubDate), 'MMMM eo, yyyy')}
+            </time>
+            <span class="text-foreground/60"> &middot; </span>
+            <div class="flex flex-row gap-x-2">
+              <Icon name="tabler:clock" class="text-foreground/60 h-full" />
+              <span class="text-foreground/60">{formatDuration(duration)}</span>
+            </div>
+          </div>
+          <h1
+            class="scroll-m-20 text-4xl font-extrabold leading-tight tracking-tight lg:text-5xl text-balance"
+          >
+            {title}
+          </h1>
+          <!-- <Author class="mt-6" /> -->
+        </header>
+        <slot />
+        <footer
+          class="relative print:hidden group overflow-hidden my-8 flex h-[75vh] hover:ring-4 transition-all ring-muted rounded-md place-items-center justify-center"
+        >
+          <small
+            aria-hidden
+            class="scroll-m-20 transition-all opacity-0 group-hover:opacity-100 group-hover:block text-lg text-foreground/60 font-extrabold text-center leading-tight tracking-tight md:leading-loose lg:text-xl"
+          >
+            <!-- <Balancer>
+							This margin is intentional
+							<br />
+							for mantaining eye level when reading
+						</Balancer> -->
+          </small>
+          <!-- <Meteors number={20} /> -->
+        </footer>
+      </article>
+    </main>
+    <!-- <Footer /> -->
+  </body>
+</html>

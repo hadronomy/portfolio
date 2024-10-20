@@ -1,0 +1,13 @@
+---
+import { MDXPre } from '~/components/react/mdx/pre';
+
+type Props = MDXPre & {
+  tabindex?: number;
+};
+
+const { tabindex, ...props } = Astro.props;
+---
+
+<MDXPre client:visible tabIndex={tabindex} {...props}>
+  <slot />
+</MDXPre>

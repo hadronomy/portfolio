@@ -23,7 +23,8 @@
   "formatter": {
     "enabled": true,
     "indentWidth": 2,
-    "indentStyle": "space"
+    "indentStyle": "space",
+    "ignore": [".astro"]
   },
   "javascript": {
     "formatter": {
