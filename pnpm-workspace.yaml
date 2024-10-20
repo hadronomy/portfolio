@@ -2,6 +2,7 @@ packages:
   - apps/*
   - packages/*
   - tooling/*
+
 catalog:
   "@biomejs/biome": ^1.5.3
   "@commitlint/cli": 17.7.1
