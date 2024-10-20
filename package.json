@@ -10,14 +10,13 @@
     "prepare": "lefthook install",
     "format": "pnpm biome format --write .; pnpm prettier --write .",
     "lint": "pnpm biome lint --apply .",
-    "ci": "pnpm biome check --apply --no-errors-on-unmatched",
-    "fix": "manypkg fix"
+    "lint:ws": "pnpm dlx sherif@latest",
+    "ci": "pnpm biome check --apply --no-errors-on-unmatched"
   },
-  "dependencies": {
+  "devDependencies": {
     "@biomejs/biome": "catalog:",
     "@commitlint/cli": "catalog:",
     "@commitlint/config-conventional": "catalog:",
-    "@manypkg/cli": "catalog:",
     "lefthook": "catalog:",
     "prettier": "catalog:",
     "prettier-plugin-astro": "catalog:astro4",
