@@ -6,7 +6,7 @@ import type { CollectionEntry } from 'astro:content';
 import { format } from 'date-fns';
 import { Icon } from 'astro-icon/components';
 
-import BaseHead from '~/components/BaseHead.astro';
+import Metadata from '~/components/Metadata.astro';
 import Navbar from '~/components/Navbar.astro';
 
 type Props = CollectionEntry<'blog'>['data'] & {
@@ -25,7 +25,7 @@ function formatDuration(duration: number) {
 
 <html class="dark" lang="en">
   <head>
-    <BaseHead title={title} description={description} />
+    <Metadata title={title} description={description} />
     <!-- Preload Monospace Font -->
     <link
       rel="preload"

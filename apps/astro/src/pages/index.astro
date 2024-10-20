@@ -2,7 +2,7 @@
 import '~/styles/global.css';
 import Navbar from '~/components/Navbar.astro';
 
-import BaseHead from '~/components/BaseHead.astro';
+import Metadata from '~/components/Metadata.astro';
 import Hero from '~/components/HomeHero.astro';
 import { SITE_TITLE, SITE_DESCRIPTION } from '~/consts';
 ---
@@ -10,7 +10,7 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '~/consts';
 <!doctype html>
 <html lang="en" class="dark antialiased">
   <head>
-    <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+    <Metadata title={SITE_TITLE} description={SITE_DESCRIPTION} />
   </head>
   <body>
     <Navbar />
