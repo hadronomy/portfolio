@@ -22,10 +22,17 @@ import { remarkReadingTime } from './plugins/remark-reading-time.mjs';
 // https://astro.build/config
 export default defineConfig({
   site: 'https://hadronomy.com',
-  image: imageService({
-    placeholder: 'blurhash',
-    layout: 'constrained',
-  }),
+  image: {
+    service: imageService({
+      placeholder: 'blurhash',
+      layout: 'constrained',
+      cdnOptions: {
+        vercel: {
+          domain: 'hadronomy.com',
+        },
+      },
+    }),
+  },
   markdown: {
     // syntaxHighlight: false,
     remarkPlugins: [remarkGemoji, remarkReadingTime],
