@@ -31,6 +31,7 @@ export default defineConfig({
           domain: 'hadronomy.com',
         },
       },
+      fallbackService: 'astro',
     }),
   },
   markdown: {
