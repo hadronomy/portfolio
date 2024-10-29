@@ -33,8 +33,6 @@ catalog:
   date-fns: ^4.1.0
   fdir: 6.0.2
   framer-motion: 10.12.17
-  fumadocs-twoslash: ^1.0.1
-  fumadocs-ui: ^8.1.1
   iconoir-react: ^7.4.0
   lefthook: ^1.6.1
   lucide-react: 0.248.0

@@ -1,0 +1,25 @@
+---
+import { cn } from '@portfolio/ui';
+import { CodeBlock, Pre as CodeBlockPre } from '~/components/react/codeblock';
+
+type Props = Omit<typeof CodeBlock, 'className' | 'children' | 'tabIndex'> & {
+  class?: string;
+  tabindex?: number;
+};
+
+const { class: className, tabindex, ...props } = Astro.props;
+---
+
+<CodeBlock
+  client:visible
+  className={cn(
+    className,
+    'group lg:col-span-3 col-span-1 col-start-2 lg:w-3/4 w-full md:max-w-screen-xl md:place-self-center lg:!col-start-[1] relative overflow-hidden rounded bg-muted [&(:first-child)]:my-6'
+  )}
+  tabIndex={tabindex}
+  {...props}
+>
+  <CodeBlockPre client:visible>
+    <slot />
+  </CodeBlockPre>
+</CodeBlock>

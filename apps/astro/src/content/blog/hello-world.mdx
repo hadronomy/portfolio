@@ -5,7 +5,7 @@ pubDate: 'Jul 01 2022'
 heroImage: '/blog-placeholder-1.jpg'
 ---
 
-```tsx {8}
+```js {2} showLineNumbers
 // src/hello-world.tsx
 import * as React from 'react';
 
@@ -20,7 +20,7 @@ export function HelloWorld({ className }: HelloWorldProps) {
 ```
 
 ```bash
-echo "Hello World!"
+echo "Hello World!" // [!code highlight]
 ```
 
 ## This is an `<h2/>`
@@ -41,13 +41,9 @@ str = 'Hello';
 // import { getHighlighterCore } from 'shiki/core';
 
 // const highlighter = await getHighlighterCore({});
-// @log: Custom log message
 const a = 1;
-// @error: Custom error message
 const b = 1;
-// @warn: Custom warning message
 const c = 1;
-// @annotate: Custom annotation message
 ```
 
 Aliquam sed purus imperdiet, `rutrum justo quis, mattis tellus`. `import { Button } from '~/components/ui/button'{:js}` . Nunc semper vitae nisl ut consectetur. Fusce nisi neque, accumsan vitae facilisis ut, bibendum quis nulla.

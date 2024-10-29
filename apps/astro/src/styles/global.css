@@ -141,7 +141,7 @@
     font-variant-ligatures: additional-ligatures !important;
   }
 
-  * :not(pre) > code {
+  code:not(pre code):not(pre * code) {
     @apply rounded-lg border-2 px-1 bg-muted text-foreground/100 !important;
   }
 
@@ -169,5 +169,36 @@
 
   article {
     @apply break-words;
+  }
+
+  /* Line Numbers */
+
+  code[data-line-numbers] {
+    counter-reset: line;
+  }
+   
+  code[data-line-numbers] > [data-line]::before {
+    counter-increment: line;
+    content: counter(line);
+   
+    /* Other styling */
+    display: inline-block;
+    width: 0.75rem;
+    margin-right: 2rem;
+    text-align: right;
+    color: var(--muted-foreground);
+    opacity: 40%;
+  }
+   
+  code[data-line-numbers-max-digits="2"] > [data-line]::before {
+    width: 1.25rem;
+  }
+   
+  code[data-line-numbers-max-digits="3"] > [data-line]::before {
+    width: 1.75rem;
+  }
+   
+  code[data-line-numbers-max-digits="4"] > [data-line]::before {
+    width: 2.25rem;
   }
 }

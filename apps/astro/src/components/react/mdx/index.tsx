@@ -14,6 +14,8 @@ import {
   TableRow,
 } from '@portfolio/ui/table';
 
+import Pre from '~/components/mdx/Pre.astro';
+
 export const components = {
   h1: ({ className, id, children, ...props }: React.ComponentProps<'h1'>) => (
     <h1
@@ -77,7 +79,8 @@ export const components = {
       {...props}
     />
   ),
-  // pre: MDXPre,
+  // @ts-ignore
+  pre: Pre,
   code: ({ className, ...props }: React.ComponentProps<'code'>) => (
     <code
       className={cn('relative overflow-x-auto font-mono', className)}
@@ -112,12 +115,4 @@ export const components = {
   td: ({ className, children }: React.ComponentProps<'td'>) => (
     <TableCell className={cn('', className)}>{children}</TableCell>
   ),
-  // Popup,
-  // PopupContent: ({
-  //   className,
-  //   ...props
-  // }: React.ComponentProps<typeof PopupContent>) => (
-  //   <PopupContent className={cn('max-w-[70ch] p-3', className)} {...props} />
-  // ),
-  // PopupTrigger,
 } as const satisfies MDXComponents;
