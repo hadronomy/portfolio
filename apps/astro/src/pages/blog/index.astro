@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
-import { Image } from 'astro:assets';
+import { Image } from '@unpic/astro';
+import { blurhashToCssGradientString } from '@unpic/placeholder';
 
 import Metadata from '~/components/Metadata.astro';
 import { Card, CardHeader, CardTitle } from '@portfolio/ui/card';
@@ -12,6 +13,8 @@ import { getImage } from '~/lib/utils';
 const posts = (await getCollection('blog')).sort(
   (a, b) => a.data.pubDate.valueOf() - b.data.pubDate.valueOf()
 );
+
+const blurhashes = await fetch(new URL('/blurhash.json', Astro.url)).then((res) => res.json());
 ---
 
 <!doctype html>
@@ -27,8 +30,10 @@ const posts = (await getCollection('blog')).sort(
       <section class="row-span-1 flex flex-col gap-y-6">
         <ul class="flex flex-col gap-y-6">
           {
-            posts.map((post) => {
+            posts.map(async (post) => {
+              const placeholder = blurhashToCssGradientString(blurhashes[post.data.heroImage]);
               const pathname = `/blog/${post.slug}/`;
+              const image = await getImage(post.data.heroImage);
               return (
                 <li>
                   <a href={pathname}>
@@ -41,7 +46,8 @@ const posts = (await getCollection('blog')).sort(
                         <Image
                           width={720}
                           height={360}
-                          src={getImage(post.data.heroImage)}
+                          src={image.default}
+                          background={placeholder}
                           alt=""
                           transition:name={`img-${pathname}`}
                         />

@@ -5,7 +5,7 @@ export async function delay(ms: number) {
   return new Promise((res) => setTimeout(res, ms));
 }
 
-const images = import.meta.glob<{ default: ImageMetadata }>(
+export const images = import.meta.glob<{ default: ImageMetadata }>(
   '/src/assets/images/*.{jpeg,jpg,png,gif}',
 );
 
