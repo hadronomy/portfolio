@@ -1,15 +1,21 @@
 import path from 'path';
-import type { ImageMetadata } from 'astro';
 import { encode } from 'blurhash';
 import sharp from 'sharp';
 import { getImage, images } from '~/lib/utils';
 
-// Generate blurhash for a single image using sharp and blurhash
 async function getBlurhash(imagePath: string): Promise<string> {
-  const imageModule = await getImage(path.basename(imagePath));
-  const { default: image } = imageModule;
-
-  const buffer = await sharp(image.src.split('?')[0].substring(4))
+  const image_module = await getImage(path.basename(imagePath));
+  const { default: image } = image_module;
+  const environment = process.env.NODE_ENV || 'development';
+  const directory = environment === 'development' ? 'src' : 'dist';
+  const source_prefix = '/@fs';
+  const image_source = image.src.startsWith(source_prefix)
+    ? image.src.replace(source_prefix, '')
+    : image.src;
+  const image_path = image.src.startsWith(source_prefix)
+    ? image_source.split('?')[0]
+    : path.join(process.cwd(), directory, image.src.split('?')[0]);
+  const buffer = await sharp(image_path)
     .toBuffer()
     .catch((error) => {
       throw new Error(`Failed to read image buffer: ${error}`);
@@ -29,7 +35,11 @@ async function generateBlurhashes() {
   for (const imagePath in images) {
     const filename = path.basename(imagePath);
     try {
-      const blurhash = await getBlurhash(filename);
+      const blurhash = await getBlurhash(filename).catch((error) => {
+        throw new Error(
+          `Failed to generate blurhash for ${filename}: ${error}`,
+        );
+      });
       blurhashes[`/${filename}`] = blurhash;
     } catch (error) {
       console.error(`Failed to generate blurhash for ${filename}:`, error);
@@ -39,7 +49,10 @@ async function generateBlurhashes() {
 }
 
 export async function GET() {
-  const blurhashes = await generateBlurhashes();
+  const blurhashes = await generateBlurhashes().catch((error) => {
+    console.error('Failed to generate blurhashes:', error);
+    return {};
+  });
 
   return new Response(JSON.stringify(blurhashes), {
     headers: { 'Content-Type': 'application/json' },

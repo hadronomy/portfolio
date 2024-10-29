@@ -9,12 +9,13 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '~/consts';
 import FormattedDate from '~/components/FormattedDate.astro';
 import Navbar from '~/components/Navbar.astro';
 import { getImage } from '~/lib/utils';
+import { GET as getBlurhashes } from '~/pages/blurhash.json';
 
 const posts = (await getCollection('blog')).sort(
   (a, b) => a.data.pubDate.valueOf() - b.data.pubDate.valueOf()
 );
 
-const blurhashes = await fetch(new URL('/blurhash.json', Astro.url)).then((res) => res.json());
+const blurhashes = await getBlurhashes().then((res) => res.json());
 ---
 
 <!doctype html>
