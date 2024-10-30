@@ -1,6 +1,6 @@
 ---
 import { getCollection } from 'astro:content';
-import { Image } from '@unpic/astro';
+import { Image } from 'astro:assets';
 import { blurhashToCssGradientString } from '@unpic/placeholder';
 
 import Metadata from '~/components/Metadata.astro';
@@ -44,14 +44,22 @@ const blurhashes = await getBlurhashes().then((res) => res.json());
                         <date>
                           <FormattedDate date={post.data.pubDate} />
                         </date>
-                        <Image
-                          width={720}
-                          height={360}
-                          src={image.default}
-                          background={placeholder}
-                          alt=""
-                          transition:name={`img-${pathname}`}
-                        />
+                        <div class="relative w-full h-72 overflow-hidden">
+                          <div
+                            class="absolute inset-0 w-[720px] h-full transition-all duration-500 ease-in-out"
+                            style={{ background: placeholder }}
+                          />
+                          <Image
+                            class="absolute opacity-100 inset-0 w-full h-full transition-all duration-500 ease-in-out"
+                            width={720}
+                            height={360}
+                            src={image.default}
+                            alt={`Image for ${post.data.title}`}
+                            loading="lazy"
+                            transition:name={`img-${pathname}`}
+                            data-transition-name={`img-${pathname}`}
+                          />
+                        </div>
                       </CardHeader>
                     </Card>
                   </a>
@@ -61,7 +69,26 @@ const blurhashes = await getBlurhashes().then((res) => res.json());
           }
         </ul>
       </section>
+      <script>
+        function handleImageLoad() {
+          const images = document.querySelectorAll<HTMLImageElement>('img[data-transition-name]');
+          images.forEach((img) => {
+            img.style.opacity = '0';
+            img.onload = () => {
+              img.style.opacity = '1';
+            };
+            if (img.complete) {
+              img.onload(new Event('load'));
+            }
+          });
+        }
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', handleImageLoad);
+        } else {
+          handleImageLoad();
+        }
+      </script>
     </main>
-    <!-- <Footer /> -->
   </body>
 </html>
