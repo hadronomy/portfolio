@@ -73,4 +73,25 @@ const {
 <meta property="twitter:description" content={description} />
 <meta property="twitter:image" content={new URL(image, Astro.url)} />
 
+<script>
+  function handleImageLoad() {
+    const images = document.querySelectorAll<HTMLImageElement>('img[data-transition-name]');
+    images.forEach((img) => {
+      img.style.opacity = '0';
+      img.onload = () => {
+        img.style.opacity = '1';
+      };
+      if (img.complete) {
+        img.onload(new Event('load'));
+      }
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', handleImageLoad);
+  } else {
+    handleImageLoad();
+  }
+</script>
+
 <ViewTransitions />

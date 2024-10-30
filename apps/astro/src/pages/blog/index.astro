@@ -1,15 +1,13 @@
 ---
 import { getCollection } from 'astro:content';
-import { Image } from 'astro:assets';
 import { blurhashToCssGradientString } from '@unpic/placeholder';
 
 import Metadata from '~/components/Metadata.astro';
-import { Card, CardHeader, CardTitle } from '@portfolio/ui/card';
 import { SITE_TITLE, SITE_DESCRIPTION } from '~/consts';
-import FormattedDate from '~/components/FormattedDate.astro';
 import Navbar from '~/components/Navbar.astro';
 import { getImage } from '~/lib/utils';
 import { GET as getBlurhashes } from '~/pages/blurhash.json';
+import BlogPostCard from '~/components/BlogPostCard.astro';
 
 const posts = (await getCollection('blog')).sort(
   (a, b) => a.data.pubDate.valueOf() - b.data.pubDate.valueOf()
@@ -26,69 +24,21 @@ const blurhashes = await getBlurhashes().then((res) => res.json());
   <body>
     <Navbar />
     <main
-      class="grid mx-auto min-h-screen mt-6 w-full max-w-screen-xl grid-cols-[1fr_min(75ch,_calc(100%_-_1.5rem))_1fr] py-8 [&>*]:col-start-2 gap-6 px-6"
+      class="grid mx-auto min-h-screen mt-6 w-full max-w-screen-xl grid-cols-[1fr_min(75ch,_calc(100%_-_1.5rem))_1fr] py-8 [&>*]:col-start-2 px-6"
     >
       <section class="row-span-1 flex flex-col gap-y-6">
         <ul class="flex flex-col gap-y-6">
           {
             posts.map(async (post) => {
-              const placeholder = blurhashToCssGradientString(blurhashes[post.data.heroImage]);
-              const pathname = `/blog/${post.slug}/`;
-              const image = await getImage(post.data.heroImage);
               return (
                 <li>
-                  <a href={pathname}>
-                    <Card className="">
-                      <CardHeader className="flex flex-col">
-                        <CardTitle>{post.data.title}</CardTitle>
-                        <date>
-                          <FormattedDate date={post.data.pubDate} />
-                        </date>
-                        <div class="relative w-full h-72 overflow-hidden">
-                          <div
-                            class="absolute inset-0 w-[720px] h-full transition-all duration-500 ease-in-out"
-                            style={{ background: placeholder }}
-                          />
-                          <Image
-                            class="absolute opacity-100 inset-0 w-full h-full transition-all duration-500 ease-in-out"
-                            width={720}
-                            height={360}
-                            src={image.default}
-                            alt={`Image for ${post.data.title}`}
-                            loading="lazy"
-                            transition:name={`img-${pathname}`}
-                            data-transition-name={`img-${pathname}`}
-                          />
-                        </div>
-                      </CardHeader>
-                    </Card>
-                  </a>
+                  <BlogPostCard post={post} blurhashes={blurhashes} />
                 </li>
               );
             })
           }
         </ul>
       </section>
-      <script>
-        function handleImageLoad() {
-          const images = document.querySelectorAll<HTMLImageElement>('img[data-transition-name]');
-          images.forEach((img) => {
-            img.style.opacity = '0';
-            img.onload = () => {
-              img.style.opacity = '1';
-            };
-            if (img.complete) {
-              img.onload(new Event('load'));
-            }
-          });
-        }
-
-        if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', handleImageLoad);
-        } else {
-          handleImageLoad();
-        }
-      </script>
     </main>
   </body>
 </html>
