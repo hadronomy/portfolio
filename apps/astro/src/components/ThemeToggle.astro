@@ -7,18 +7,46 @@ interface Props extends HTMLAttributes<'button'> {}
 const { class: className, ...props } = Astro.props;
 ---
 
-<button class:list={['flex relative theme-toggle-button', className]} {...props}>
-  <Icon name="ph:moon-fill" class="h-4 w-4 scale-0 dark:scale-100 hidden dark:block" />
-  <Icon name="ph:sun-fill" class="h-4 w-4 scale-100 dark:scale-0 dark:hidden" />
+<button
+  class:list={[
+    'flex relative h-8 w-8 theme-toggle-button overflow-hidden justify-center items-center',
+    className,
+  ]}
+  {...props}
+>
+  <canvas class="absolute h-8 w-8 theme-toggle"></canvas>
 </button>
 
 <script>
+  import { Rive } from '@rive-app/canvas';
+
+  let r: Rive;
+
+  const getTrigger = (name: string) =>
+    r.stateMachineInputs('theme').find((input) => input.name === name);
+
+  const isDark = () => document.documentElement.classList.contains('dark');
+
   const toggleTheme = () => {
-    const isDark = document.documentElement.classList.contains('dark');
-    document.documentElement.classList[isDark ? 'remove' : 'add']('dark');
+    document.documentElement.classList[isDark() ? 'remove' : 'add']('dark');
+    getTrigger('toggleTheme')?.fire();
   };
+
   document.addEventListener('astro:page-load', () => {
     const buttons = document.querySelectorAll<HTMLButtonElement>('button.theme-toggle-button');
     buttons.forEach((button) => button.addEventListener('click', toggleTheme));
+
+    const canvas = document.querySelector<HTMLCanvasElement>('canvas.theme-toggle');
+    if (!canvas) throw new Error('Canvas not found');
+
+    r = new Rive({
+      src: '/rive/animated-theme-icon.riv',
+      canvas: canvas,
+      autoplay: true,
+      stateMachines: 'theme',
+      onLoad: () => {
+        r.resizeDrawingSurfaceToCanvas();
+      },
+    });
   });
 </script>
