@@ -24,6 +24,7 @@
     "@iconify-json/tabler": "catalog:",
     "@portfolio/tailwind-config": "workspace:",
     "@portfolio/ui": "workspace:",
+    "@rive-app/canvas": "^2.23.2",
     "@unpic/placeholder": "^0.1.2",
     "astro": "catalog:astro4",
     "astro-icon": "catalog:astro4",

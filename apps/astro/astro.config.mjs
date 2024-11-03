@@ -74,6 +74,7 @@ export default defineConfig({
   ],
   vite: {
     plugins: [preserveDirectives()],
+    assetsInclude: ['**/*.riv'],
     ssr: {
       noExternal: ['fumadocs-ui'],
     },
