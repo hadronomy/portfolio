@@ -39,6 +39,8 @@
     
     --font-sans: 'Onest Variable', sans-serif;
     --font-mono: 'Monaspace Neon', monospace;
+
+    --halftone: rgba(255, 255, 255, 0.260);
   }
 
   @media not print {
@@ -76,6 +78,8 @@
       --ring: 216 0% 17%;
 
       --radius: 0.5rem;
+      
+      --halftone: rgba(15, 17, 21, 0.700);
     }
   }
 }
@@ -197,5 +201,30 @@
    
   code[data-line-numbers-max-digits="4"] > [data-line]::before {
     width: 2.25rem;
+  }
+
+  /* Halftone */
+
+  .bg-halftone {
+    --bg-size: 0.3rem;
+    --bg-position: calc(var(--bgSize) / 2);
+    --stop1: 3%;
+    --stop2: 65%;
+  }
+
+  .bg-halftone::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+
+    background-color: transparent;
+    background-image: 
+      radial-gradient(circle at center, transparent var(--stop1), var(--halftone) var(--stop2)),
+      radial-gradient(circle at center, transparent var(--stop1), var(--halftone) var(--stop2));
+    background-position: 0 0, var(--bg-position) var(--bg-position);
+    background-repeat: round;
+    background-size: var(--bg-size) var(--bg-size);
+    backdrop-filter: blur(3px);
+    mask: linear-gradient(rgb(0, 0, 0) 40%, rgba(0, 0, 0, 0) 100%);
   }
 }

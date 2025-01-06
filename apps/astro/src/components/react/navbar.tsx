@@ -59,7 +59,9 @@ export function Navbar({ className, pages = links, children }: NavbarProps) {
   );
 
   return (
-    <header className={cn('fixed pt-5 top-0 z-20 w-full', className)}>
+    <header
+      className={cn('fixed py-5 top-0 z-20 w-full bg-halftone', className)}
+    >
       <nav className="mx-auto gap-x-2 flex flex-row justify-between items-center max-w-fit px-3 md:px-8 py-3 bg-transparent backdrop-blur-xl border-foreground/10 border-2 md:rounded-full rounded-3xl overflow-hidden">
         <ul className="flex w-full h-full gap-x-0 capitalize flex-row p-0">
           {pages.map(({ label, href, active: currentActive, disabled }) => (
