@@ -313,3 +313,22 @@
   border-left: 3px solid var(--twoslash-tag-annotate-color);
   color: var(--twoslash-tag-annotate-color);
 }
+
+pre * code {
+  overflow-x: visible !important;
+}
+
+pre {
+  overflow-x: auto;
+}
+
+pre:after {
+  content: "";
+  position: absolute;
+  right: -3px;
+  top: 0;
+  bottom: 0;
+  width: 2rem;
+  pointer-events: none;
+  background: linear-gradient(to left, hsl(var(--muted)), transparent);
+}

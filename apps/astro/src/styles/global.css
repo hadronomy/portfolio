@@ -139,7 +139,7 @@
   }
 
   code:not(pre code):not(pre * code) {
-    @apply rounded-lg border-2 px-1 bg-muted text-foreground/100 !important;
+    @apply rounded-lg border-2 px-1 py-1 pt-2 bg-muted text-foreground/100 !important;
   }
 
   figure {

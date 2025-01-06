@@ -8,14 +8,12 @@ import sitemap from '@astrojs/sitemap';
 import tailwind from '@astrojs/tailwind';
 import preserveDirectives from 'rollup-preserve-directives';
 
-import { transformerTwoslash } from '@shikijs/twoslash';
 import { imageService } from '@unpic/astro/service';
 import icon from 'astro-icon';
 import { rehypeAccessibleEmojis } from 'rehype-accessible-emojis';
-import { rehypePrettyCode } from 'rehype-pretty-code';
 import remarkGemoji from 'remark-gemoji';
 
-import { rehypeCodeDefaultOptions } from 'fumadocs-core/mdx-plugins';
+import { rehypeCode } from 'fumadocs-core/mdx-plugins';
 
 import { remarkReadingTime } from './plugins/remark-reading-time.mjs';
 
@@ -35,29 +33,20 @@ export default defineConfig({
     }),
   },
   markdown: {
-    // syntaxHighlight: false,
+    syntaxHighlight: false,
     remarkPlugins: [remarkGemoji, remarkReadingTime],
     rehypePlugins: [
       rehypeAccessibleEmojis,
-      // [
-      //   rehypePrettyCode,
-      //   {
-      //     theme: 'catppuccin-mocha',
-      //   },
-      // ],
-    ],
-    shikiConfig: {
-      themes: {
-        light: 'catppuccin-frappe',
-        dark: 'catppuccin-mocha',
-      },
-      transformers: [
-        ...rehypeCodeDefaultOptions.transformers,
-        transformerTwoslash({
-          explicitTrigger: false,
-        }),
+      [
+        rehypeCode,
+        {
+          themes: {
+            light: 'catppuccin-frappe',
+            dark: 'catppuccin-mocha',
+          },
+        },
       ],
-    },
+    ],
   },
   integrations: [
     mdx(),

@@ -2568,6 +2568,9 @@ packages:
   '@types/normalize-package-data@2.4.4':
     resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
 
+  '@types/pngjs@6.0.5':
+    resolution: {integrity: sha512-0k5eKfrA83JOZPppLtS2C7OUtyNAl2wKNxfyYl9Q5g9lPkgBl/9hNyAu6HuEH2J4XmIv2znEpkDd0SaZVxW6iQ==}
+
   '@types/prop-types@15.7.5':
     resolution: {integrity: sha512-JCB8C6SnDoQf0cNycqd/35A7MjcnK+ZTqE7judS6o7utxUCg6imJg3QK2qzHKszlTjcj2cn+NwMB2i96ubpj7w==}
 
@@ -2611,8 +2614,8 @@ packages:
   '@unpic/core@0.0.49':
     resolution: {integrity: sha512-tAqeJRMPF2TrZbSQe74OZ9O5DzKDDUoFwFbZUpjvLcgwGQ/8aleDCb2Iy3bHFJfzzYZ9iHN0hN1VpTlAGQd+ZA==}
 
-  '@unpic/pixels@1.2.2':
-    resolution: {integrity: sha512-zQWLcz/HX6IF1xQPyo1RtxW5aBkK470p8ZpRTtPidOZ26YAoxJhcW8Y59KzwRQSLdQV9B50V4m30TMgdFNxq1A==}
+  '@unpic/pixels@1.3.0':
+    resolution: {integrity: sha512-Xe3J4KU9m2NWCDZ9iwIIRYFe7VwkWEqGCy4yoKMEkjoxpcQ7TPxD+QmdTphv3yiTmrDMMIWYEEH+j4mT6dILTA==}
 
   '@unpic/placeholder@0.1.2':
     resolution: {integrity: sha512-O++tS97biojo5sqn5TeTt+jUjl5gWOdIQuOXe8YluTJWq4L0GM6VuTkaspNpsmxHfioJw/6YBirzOpG4t87l8Q==}
@@ -4314,9 +4317,6 @@ packages:
     resolution: {integrity: sha512-RSn9F68PjH9HqtltsSnqYC1XXoWe9Bju5+213R98cNGttag9q9yAOTzdbsqvIa7aNm5WffBZFpWYr2aWrklWAw==}
     engines: {node: '>= 6'}
 
-  ofetch@1.3.3:
-    resolution: {integrity: sha512-s1ZCMmQWXy4b5K/TW9i/DtiN8Ku+xCiHcjQ6/J/nDdssirrQNOoB165Zu8EqLMA2lln1JUth9a0aW9Ap2ctrUg==}
-
   ofetch@1.4.1:
     resolution: {integrity: sha512-QZj2DfGplQAr2oj9KzceK9Hwz6Whxazmn85yYeVuS3u9XTMOGMRx0kO95MQ+vLsj/S/NwBDMMLU5hpxvI6Tklw==}
 
@@ -5307,8 +5307,8 @@ packages:
     resolution: {integrity: sha512-gptHNQghINnc/vTGIk0SOFGFNXw7JVrlRUtConJRlvaw6DuX0wO5Jeko9sWrMBhh+PsYAZ7oXAiOnf/UKogyiw==}
     engines: {node: '>= 10.0.0'}
 
-  unpic@3.18.0:
-    resolution: {integrity: sha512-JemzuG3nyKpEQ/DArrYM0l+LDSLLPYiUQvDfGXJY35+r0J0C984vPB4Zh8DyMVip102YSnTeZtZ6Q8OQegQDRQ==}
+  unpic@3.22.0:
+    resolution: {integrity: sha512-NFhB8HgHHWkNzTxwWg6KHx8+3RZnhWFm4Axdqp9iI176iY3wskzfP16NRSJ2SSTfXzyK4W6GsBqs8iOOdvOB3g==}
 
   unstorage@1.14.4:
     resolution: {integrity: sha512-1SYeamwuYeQJtJ/USE1x4l17LkmQBzg7deBJ+U9qOBoHo15d1cDxG4jM31zKRgF7pG0kirZy4wVMX6WL6Zoscg==}
@@ -7916,6 +7916,10 @@ snapshots:
 
   '@types/normalize-package-data@2.4.4': {}
 
+  '@types/pngjs@6.0.5':
+    dependencies:
+      '@types/node': 22.7.7
+
   '@types/prop-types@15.7.5': {}
 
   '@types/react-dom@18.2.23':
@@ -7960,19 +7964,19 @@ snapshots:
   '@unpic/astro@0.0.47(astro@5.1.2(@types/node@22.7.7)(jiti@1.21.0)(rollup@4.24.0)(typescript@5.6.3)(yaml@2.5.1))':
     dependencies:
       '@unpic/core': 0.0.49
-      '@unpic/pixels': 1.2.2
+      '@unpic/pixels': 1.3.0
       '@unpic/placeholder': 0.1.2
       astro: 5.1.2(@types/node@22.7.7)(jiti@1.21.0)(rollup@4.24.0)(typescript@5.6.3)(yaml@2.5.1)
       blurhash: 2.0.5
 
   '@unpic/core@0.0.49':
     dependencies:
-      unpic: 3.18.0
+      unpic: 3.22.0
 
-  '@unpic/pixels@1.2.2':
+  '@unpic/pixels@1.3.0':
     dependencies:
+      '@types/pngjs': 6.0.5
       jpeg-js: 0.4.4
-      ofetch: 1.3.3
       pngjs: 7.0.0
 
   '@unpic/placeholder@0.1.2':
@@ -10170,12 +10174,6 @@ snapshots:
 
   object-hash@3.0.0: {}
 
-  ofetch@1.3.3:
-    dependencies:
-      destr: 2.0.3
-      node-fetch-native: 1.6.4
-      ufo: 1.5.3
-
   ofetch@1.4.1:
     dependencies:
       destr: 2.0.3
@@ -11501,7 +11499,7 @@ snapshots:
 
   universalify@2.0.1: {}
 
-  unpic@3.18.0: {}
+  unpic@3.22.0: {}
 
   unstorage@1.14.4:
     dependencies:
