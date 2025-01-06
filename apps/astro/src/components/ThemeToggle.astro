@@ -16,8 +16,16 @@ const { class: className, ...props } = Astro.props;
   const toggleTheme = () => {
     const isDark = document.documentElement.classList.contains('dark');
     document.documentElement.classList[isDark ? 'remove' : 'add']('dark');
+    localStorage.setItem('theme', isDark ? 'light' : 'dark');
   };
+
+  const initTheme = () => {
+    const theme = localStorage.getItem('theme') ?? 'dark';
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+  };
+
   document.addEventListener('astro:page-load', () => {
+    initTheme();
     const buttons = document.querySelectorAll<HTMLButtonElement>('button.theme-toggle-button');
     buttons.forEach((button) => button.addEventListener('click', toggleTheme));
   });
