@@ -11,27 +11,32 @@ import { Icon } from 'astro-icon/components';
 
 type Props = {
   post: CollectionEntry<'blog'>;
-  blurhashes: Record<string, string>;
 };
 
-const { post, blurhashes } = Astro.props;
+const { post } = Astro.props;
 const { data, slug } = post;
-const placeholder = blurhashToCssGradientString(blurhashes[data.heroImage]);
 const pathname = `/blog/${slug}/`;
 const image = await getImage(data.heroImage).then((res) => res.default);
+
+// Format date
+const formattedDate = new Date(data.pubDate).toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
 ---
 
 <a href={pathname} class="block h-full transition-transform duration-300 hover:scale-105">
   <Card className="h-full flex flex-col bg-muted overflow-hidden group">
-    <div class="relative h-48 overflow-hidden">
-      <div class="absolute inset-0 w-full h-full" style={{ background: placeholder }}></div>
-      <img src={image.src} alt={data.title} loading="lazy" />
+    <div class="relative w-full aspect-[16/9] overflow-hidden">
       <Image
         class="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
         src={image.src}
         alt={data.title}
-        inferSize
-        data-transition-name="fade"
+        width={800}
+        height={450}
+        loading="eager"
+        decoding="async"
       />
       <div
         class="absolute inset-0 bg-black bg-opacity-40 transition-opacity duration-300 opacity-0 group-hover:opacity-100 flex items-center justify-center"
@@ -49,12 +54,6 @@ const image = await getImage(data.heroImage).then((res) => res.default);
     >
       <div class="flex items-center">
         <Icon name="tabler:tag" class="mr-1 h-4 w-4" />
-      </div>
-      <div class="flex items-center">
-        <Icon name="tabler:calendar" class="mr-1 h-4 w-4" />
-      </div>
-      <div class="flex items-center">
-        <Icon name="tabler:clock" class="mr-1 h-4 w-4" />
       </div>
     </CardFooter>
   </Card>

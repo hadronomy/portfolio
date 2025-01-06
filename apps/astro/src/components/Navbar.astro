@@ -28,7 +28,7 @@ const { pages: inputPages = defaultPages, class: className, ...props } = Astro.p
       <ThemeToggle class="ml-4" />
     </Header>
   )) || (
-    <header class="sticky pt-5 top-0 z-20 w-full" {...props}>
+    <header class="sticky flex pt-5 top-0 z-20 w-full" {...props}>
       <nav class="mx-auto gap-x-2 flex flex-row justify-between items-center max-w-fit px-3 md:px-8 py-3 bg-background/5 backdrop-blur-x border-foreground/10 border-2 md:rounded-full rounded-3xl overflow-hidden">
         <ul class="flex w-full h-full gap-x-0 capitalize flex-row p-0">
           {defaultPages.map(({ label, href, active, disabled }) => (

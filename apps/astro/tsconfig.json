@@ -11,5 +11,6 @@
       "react": ["./node_modules/@types/react"]
     }
   },
-  "exclude": ["node_modules", ".astro", "dist"]
+  "exclude": ["node_modules", ".astro", "dist"],
+  "include": [".astro/types.d.ts", "**/*"]
 }

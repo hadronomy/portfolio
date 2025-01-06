@@ -8,7 +8,7 @@ import '~/styles/global.css';
 import '~/styles/twoslash.css';
 
 import { getImage } from 'astro:assets';
-import { ViewTransitions } from 'astro:transitions';
+import { ClientRouter } from 'astro:transitions';
 import favicon from '../favicon.png';
 
 interface Props {
@@ -113,4 +113,4 @@ const {
   }
 </script>
 
-<ViewTransitions />
+<ClientRouter />

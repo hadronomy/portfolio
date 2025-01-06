@@ -1,0 +1,20 @@
+---
+import Metadata from '~/components/Metadata.astro';
+import BlurBackground from '~/components/BlurBackground.astro';
+import Navbar from '~/components/Navbar.astro';
+
+import { SITE_TITLE, SITE_DESCRIPTION } from '~/consts';
+---
+
+<html lang="en" class="dark antialiased">
+  <head>
+    <Metadata title={SITE_TITLE} description={SITE_DESCRIPTION} />
+  </head>
+  <body>
+    <div class="box-border min-h-screen m-0 p-0">
+      <Navbar />
+      <slot class="mx-auto flex w-full min-h-dvh max-w-screen-xl flex-col" />
+      <BlurBackground />
+    </div>
+  </body>
+</html>
