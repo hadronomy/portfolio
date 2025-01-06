@@ -77,6 +77,8 @@ export function Navbar({ className, pages = links, children }: NavbarProps) {
                   },
                 )}
                 aria-label={label}
+                aria-disabled={disabled}
+                tabIndex={disabled ? -1 : 0}
                 onMouseOver={() => setHoveredPath(href)}
                 onMouseLeave={() => setHoveredPath(active?.href)}
                 onFocus={() => setHoveredPath(href)}
