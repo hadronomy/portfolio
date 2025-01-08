@@ -40,7 +40,7 @@
     --font-sans: 'Onest Variable', sans-serif;
     --font-mono: 'Monaspace Neon', monospace;
 
-    --halftone: rgba(255, 255, 255, 0.260);
+    --halftone: rgba(0, 0, 0, 0.260);
   }
 
   @media not print {
@@ -79,7 +79,7 @@
 
       --radius: 0.5rem;
       
-      --halftone: rgba(15, 17, 21, 0.700);
+      --halftone: rgba(15, 16, 18, 0.700);
     }
   }
 }
