@@ -8,7 +8,7 @@ import { Icon } from 'astro-icon/components';
 
 import Metadata from '~/components/Metadata.astro';
 import Navbar from '~/components/Navbar.astro';
-import BlurBackground from '~/components/BlurBackground.astro';
+import HalftoneEffect from '~/components/HalftoneEffect.astro';
 
 type Props = CollectionEntry<'blog'>['data'] & {
   remarkPluginFrontmatter: Record<string, any>;
@@ -72,7 +72,7 @@ function formatDuration(duration: number) {
         </footer>
       </article>
     </main>
-    <BlurBackground />
+    <HalftoneEffect />
     <!-- <Footer /> -->
   </body>
 </html>
