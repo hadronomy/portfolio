@@ -28,7 +28,7 @@ export default defineConfig({
         rehypeCode,
         {
           themes: {
-            light: 'catppuccin-frappe',
+            light: 'catppuccin-latte',
             dark: 'catppuccin-mocha',
           },
         },
