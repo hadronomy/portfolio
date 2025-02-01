@@ -60,7 +60,7 @@
     --font-sans: 'Onest Variable', sans-serif;
     --font-mono: 'Monaspace Neon', monospace;
 
-    --halftone: rgba(198, 198, 198, 0.26);
+    --halftone: rgba(255, 255, 255, 0.26);
 
     color-scheme: light;
   }
