@@ -5,13 +5,13 @@
     "node": ">=20.18.0",
     "pnpm": "^9.11.0"
   },
-  "packageManager": "pnpm@9.12.1",
+  "packageManager": "pnpm@9.15.4",
   "scripts": {
     "prepare": "lefthook install",
     "format": "pnpm biome format --write .; pnpm prettier --write .",
     "lint": "pnpm biome lint --apply .",
     "lint:ws": "pnpm dlx sherif@latest",
-    "ci": "pnpm biome check --apply --no-errors-on-unmatched"
+    "ci": "pnpm biome check --write --no-errors-on-unmatched"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",

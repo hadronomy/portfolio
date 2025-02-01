@@ -3,13 +3,10 @@
   "version": "0.1.0",
   "type": "module",
   "private": true,
-  "files": [
-    "index.ts",
-    "postcss.config.js"
-  ],
+  "files": ["index.ts", "postcss.config.js"],
   "devDependencies": {
     "@portfolio/tsconfig": "workspace:",
-    "@tailwindcss/postcss": "^4.0.0",
+    "@tailwindcss/postcss": "^4.0.3",
     "@types/node": "catalog:",
     "postcss": "catalog:",
     "tailwindcss": "catalog:",
