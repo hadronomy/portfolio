@@ -3,12 +3,12 @@ import monaspaceNeonWoff2 from '@fontsource/monaspace-neon/files/monaspace-neon-
 
 import type { CollectionEntry } from 'astro:content';
 
-import { format } from 'date-fns';
 import { Icon } from 'astro-icon/components';
+import { format } from 'date-fns';
 
+import HalftoneEffect from '~/components/HalftoneEffect.astro';
 import Metadata from '~/components/Metadata.astro';
 import Navbar from '~/components/Navbar.astro';
-import HalftoneEffect from '~/components/HalftoneEffect.astro';
 
 type Props = CollectionEntry<'blog'>['data'] & {
   remarkPluginFrontmatter: Record<string, any>;

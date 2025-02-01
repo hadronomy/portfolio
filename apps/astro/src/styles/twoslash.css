@@ -323,7 +323,7 @@ pre {
 }
 
 pre:after {
-  content: "";
+  content: '';
   position: absolute;
   right: -3px;
   top: 0;

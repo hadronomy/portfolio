@@ -74,24 +74,21 @@ const {
 <meta property="twitter:image" content={new URL(image, Astro.url)} />
 
 <script is:inline>
-  const html = document.querySelector("html");
+  const html = document.querySelector('html');
   const theme = (() => {
-    if (
-      typeof localStorage !== "undefined" &&
-      localStorage.getItem("theme")
-    ) {
-      return localStorage.getItem("theme");
+    if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
+      return localStorage.getItem('theme');
     }
-    if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-      return "dark";
+    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      return 'dark';
     }
-    return "light";
+    return 'light';
   })();
 
-  if (theme === "light") {
-    html.classList.remove("dark");
+  if (theme === 'light') {
+    html.classList.remove('dark');
   } else {
-    html.classList.add("dark");
+    html.classList.add('dark');
   }
 </script>
 
