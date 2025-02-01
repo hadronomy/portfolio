@@ -6,7 +6,7 @@
   "files": ["index.ts", "postcss.config.js"],
   "devDependencies": {
     "@portfolio/tsconfig": "workspace:",
-    "@tailwindcss/postcss": "^4.0.3",
+    "@tailwindcss/postcss": "catalog:",
     "@types/node": "catalog:",
     "postcss": "catalog:",
     "tailwindcss": "catalog:",
