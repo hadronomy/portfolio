@@ -11,7 +11,9 @@
     "format": "pnpm biome format --write .; pnpm prettier --write .",
     "lint": "pnpm biome lint --apply .",
     "lint:ws": "pnpm dlx sherif@latest",
-    "ci": "pnpm biome check --write --no-errors-on-unmatched"
+    "ci": "pnpm biome check --write --no-errors-on-unmatched",
+    "update:plan": "pnpm taze",
+    "update:write": "pnpm taze --write"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
