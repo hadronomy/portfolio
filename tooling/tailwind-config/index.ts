@@ -1,8 +1,8 @@
 import type { Config } from 'tailwindcss';
-import { fontFamily } from 'tailwindcss/defaultTheme';
+import defaultTheme from 'tailwindcss/defaultTheme';
 
 export default {
-  darkMode: ['class'],
+  darkMode: 'class',
   content: ['./src/**/*.{js,ts,jsx,tsx,astro}'],
   theme: {
     container: {
@@ -55,9 +55,9 @@ export default {
         sm: 'calc(var(--radius) - 4px)',
       },
       fontFamily: {
-        sans: ['var(--font-sans)', ...fontFamily.sans],
-        mono: ['var(--font-mono)', ...fontFamily.mono],
-        bellota: ['Bellota', ...fontFamily.sans],
+        sans: ['var(--font-sans)', ...defaultTheme.fontFamily.sans],
+        mono: ['var(--font-mono)', ...defaultTheme.fontFamily.mono],
+        bellota: ['Bellota', ...defaultTheme.fontFamily.sans],
       },
       keyframes: {
         'accordion-down': {

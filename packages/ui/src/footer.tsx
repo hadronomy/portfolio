@@ -15,7 +15,7 @@ export function Footer({ className, ...props }: FooterProps) {
       )}
       {...props}
     >
-      <nav className="mx-auto grid max-w-screen-xl grid-cols-3 px-6 py-4">
+      <nav className="mx-auto grid max-w-(--breakpoint-xl) grid-cols-3 px-6 py-4">
         <small className="col-start-2 text-center text-muted-foreground">
           @ 2023 Pablo Hernández Jiménez
         </small>

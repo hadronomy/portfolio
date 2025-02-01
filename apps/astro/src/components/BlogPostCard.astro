@@ -1,11 +1,7 @@
 ---
 import { Image } from 'astro:assets';
-import { CalendarIcon, Tag } from 'lucide-react';
-import { blurhashToCssGradientString } from '@unpic/placeholder';
 
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@portfolio/ui/card';
-import { Button } from '@portfolio/ui/button';
-import { getImage } from '~/lib/utils';
 import type { CollectionEntry } from 'astro:content';
 import { Icon } from 'astro-icon/components';
 
@@ -14,24 +10,17 @@ type Props = {
 };
 
 const { post } = Astro.props;
-const { data, slug } = post;
-const pathname = `/blog/${slug}/`;
-const image = await getImage(data.heroImage).then((res) => res.default);
-
-// Format date
-const formattedDate = new Date(data.pubDate).toLocaleDateString('en-US', {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
-});
+const { data, id } = post;
+const pathname = `/blog/${id}/`;
+const image = data.heroImage;
 ---
 
 <a href={pathname} class="block h-full transition-transform duration-300 hover:scale-105">
   <Card className="h-full flex flex-col bg-muted overflow-hidden group">
-    <div class="relative w-full aspect-[16/9] overflow-hidden">
+    <div class="relative w-full aspect-16/9 overflow-hidden">
       <Image
         class="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-        src={image.src}
+        src={image}
         alt={data.title}
         width={800}
         height={450}
@@ -39,14 +28,14 @@ const formattedDate = new Date(data.pubDate).toLocaleDateString('en-US', {
         decoding="async"
       />
       <div
-        class="absolute inset-0 bg-black bg-opacity-40 transition-opacity duration-300 opacity-0 group-hover:opacity-100 flex items-center justify-center"
+        class="absolute inset-0 bg-black/40 transition-opacity duration-300 opacity-0 group-hover:opacity-100 flex items-center justify-center"
       >
       </div>
     </div>
     <CardHeader className="flex bg-muted flex-col p-4">
       <CardTitle className="text-xl bg-muted text-balance font-semibold">{data.title}</CardTitle>
     </CardHeader>
-    <CardContent className="flex-grow bg-muted">
+    <CardContent className="grow bg-muted">
       <p class="text-muted-foreground line-clamp-3">{data.description}</p>
     </CardContent>
     <CardFooter

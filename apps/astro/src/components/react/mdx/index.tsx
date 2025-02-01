@@ -58,7 +58,7 @@ export const components = {
   p: ({ className, ...props }: React.ComponentProps<'p'>) => (
     <p
       className={cn(
-        'text-xl leading-8 text-foreground/80 [&:not(:first-child)]:mt-6',
+        'text-xl leading-8 text-foreground/80 not-first:mt-6',
         className,
       )}
       {...props}

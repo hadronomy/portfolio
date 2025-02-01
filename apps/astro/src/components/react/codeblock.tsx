@@ -73,11 +73,11 @@ export const CodeBlock = React.forwardRef<HTMLPreElement, CodeBlockProps>(
           </div>
         ) : (
           <CopyButton
-            className="absolute top-2 right-2 z-[2] backdrop-blur-md"
+            className="absolute top-2 right-2 z-2 backdrop-blur-md"
             onCopy={onCopy}
           />
         )}
-        <ScrollArea className="!overflow-y-visible" ref={areaRef} dir="ltr">
+        <ScrollArea className="overflow-y-visible!" ref={areaRef} dir="ltr">
           <ScrollViewport>{children}</ScrollViewport>
           <ScrollBar orientation="horizontal" />
         </ScrollArea>

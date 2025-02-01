@@ -1,15 +1,16 @@
 {
   "name": "@portfolio/tailwind-config",
   "version": "0.1.0",
+  "type": "module",
   "private": true,
   "files": [
     "index.ts",
-    "postcss.js"
+    "postcss.config.js"
   ],
   "devDependencies": {
     "@portfolio/tsconfig": "workspace:",
+    "@tailwindcss/postcss": "^4.0.0",
     "@types/node": "catalog:",
-    "autoprefixer": "catalog:",
     "postcss": "catalog:",
     "tailwindcss": "catalog:",
     "tailwindcss-animate": "catalog:",

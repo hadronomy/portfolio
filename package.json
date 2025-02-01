@@ -19,7 +19,7 @@
     "@commitlint/config-conventional": "catalog:",
     "lefthook": "catalog:",
     "prettier": "catalog:",
-    "prettier-plugin-astro": "catalog:astro4",
+    "prettier-plugin-astro": "0.14.1",
     "turbo": "catalog:"
   }
 }

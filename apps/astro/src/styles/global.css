@@ -1,6 +1,26 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+@import 'fumadocs-ui/css/neutral.css';
+@import 'fumadocs-ui/css/preset.css';
+
+@config '../../tailwind.config.ts';
+
+/*
+  The default border color has changed to `currentColor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+}
 
 @layer base {
   :root {
@@ -40,7 +60,7 @@
     --font-sans: 'Onest Variable', sans-serif;
     --font-mono: 'Monaspace Neon', monospace;
 
-    --halftone: rgba(0, 0, 0, 0.260);
+    --halftone: rgba(198, 198, 198, 0.26);
   }
 
   @media not print {
@@ -86,8 +106,13 @@
 
 @layer base {
   * {
-    @apply border-border monaspace-settings;
+    @apply border-border;
     min-width: 0;
+    font-feature-settings:
+      'calt' 1,
+      'liga' 1,
+      'ss01' 1,
+      'ss09' 1;
   }
 
   body {
@@ -138,16 +163,16 @@
   }
 
   pre code {
-    @apply grid text-[16px] font-[500] font-mono !important;
+    @apply grid! text-[16px]! font-[500]! font-mono!;
     font-variant-ligatures: additional-ligatures !important;
   }
 
   code:not(pre code):not(pre * code) {
-    @apply rounded-lg border-2 px-1 py-1 pt-2 bg-muted text-foreground/100 !important;
+    @apply rounded-lg! border-2! px-1! py-1! pt-2! bg-muted! text-foreground/100!;
   }
 
   figure {
-    @apply my-2 !important;
+    @apply my-2!;
   }
 
   /* KBD */
@@ -157,15 +182,6 @@
 
   kbd > kbd {
     @apply min-h-[30px] inline-flex justify-center items-center py-1 px-1.5 bg-muted border border-muted-foreground font-mono text-sm text-foreground rounded-md shadow-[0px_4px_0px_0px_rgba(0,0,0,0.5)] dark:shadow-[0px_4px_0px_0px_rgba(255,255,255,0.5)];
-  }
-
-  /* Monaspace Settings */
-  .monaspace-settings {
-    font-feature-settings:
-      'calt' 1,
-      'liga' 1,
-      'ss01' 1,
-      'ss09' 1;
   }
 
   article {
