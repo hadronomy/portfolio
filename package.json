@@ -20,6 +20,7 @@
     "lefthook": "catalog:",
     "prettier": "catalog:",
     "prettier-plugin-astro": "0.14.1",
+    "taze": "^18.3.0",
     "turbo": "catalog:"
   }
 }
