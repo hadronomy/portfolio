@@ -6,7 +6,23 @@ import MainLayout from '~/layouts/Main.astro';
 ---
 
 <MainLayout>
-  <main class="mx-auto flex w-full min-h-dvh max-w-(--breakpoint-xl) flex-col">
+  <div class="h-30"></div>
+  <main class="flex gap-y-10 flex-col">
     <Hero id="hero" />
+    <section>
+      <a href="#skills">
+        <h2 class="text-3xl">Skills</h2>
+      </a>
+    </section>
+    <section>
+      <a href="#projects">
+        <h2 class="text-3xl">Projects</h2>
+      </a>
+    </section>
+    <section>
+      <a href="#experience">
+        <h2 class="text-3xl">Experience</h2>
+      </a>  
+    </section>      
   </main>
 </MainLayout>
