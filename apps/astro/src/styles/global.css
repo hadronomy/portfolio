@@ -63,6 +63,8 @@
     --halftone: rgba(255, 255, 255, 0.26);
 
     color-scheme: light;
+
+    --animate-sparkle: sparkle 700ms forwards
   }
 
   @media not print {
@@ -262,4 +264,20 @@
     backdrop-filter: blur(3px);
     mask: linear-gradient(rgb(0, 0, 0) 40%, rgba(0, 0, 0, 0) 100%);
   }
+}
+
+@keyframes sparkle {
+  0% {
+    transform: scale(0) rotate(0deg);
+  }
+  50% {
+    transform: scale(1) rotate(90deg);
+  }
+  100% {
+    transform: scale(0) rotate(180deg);
+  }
+}
+
+@utility animate-sparkle {
+  animation: var(--animate-sparkle);
 }

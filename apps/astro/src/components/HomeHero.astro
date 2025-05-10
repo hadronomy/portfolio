@@ -1,8 +1,8 @@
 ---
 import { Button } from '@portfolio/ui/button';
 
-import Github from "./svg/Github.astro";
-import LinkedIn from "./svg/LinkedIn.astro";
+import Github from "~/components/svg/Github.astro";
+import LinkedIn from "~/components/svg/LinkedIn.astro";
 
 const { class: string, ...props } = Astro.props;
 ---
@@ -18,8 +18,8 @@ const { class: string, ...props } = Astro.props;
   <div class="flex w-fit flex-col justify-center mx-auto md:mx-0 text-center md:text-left mb-6 md:mb-0">
     <div class="flex flex-row items-center justify-center md:justify-start w-full gap-x-4">
       <h2 class="text-sm md:text-xl font-thin uppercase tracking-widest">@hadronomy</h2>
-      <Github class="w-5" />
-      <LinkedIn class="w-5 text-foreground" />
+      <a href="https://github.com/hadronomy" target="_blank"><Github class="w-5" /></a>
+      <a href="https://www.linkedin.com/in/hadronomy/" target="_blank"><LinkedIn class="w-5 text-foreground" /></a>
     </div>
     <h1 class="mt-2 text-4xl sm:text-5xl md:text-6xl">
       <span class="font-bellota">I&apos;m </span>

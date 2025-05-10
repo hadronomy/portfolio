@@ -2,6 +2,7 @@
 import '~/styles/global.css';
 
 import Hero from '~/components/HomeHero.astro';
+import { Sparkles } from '~/components/react/sparkle';
 import MainLayout from '~/layouts/Main.astro';
 ---
 
@@ -11,17 +12,23 @@ import MainLayout from '~/layouts/Main.astro';
     <Hero id="hero" />
     <section>
       <a href="#skills">
-        <h2 class="text-3xl">Skills</h2>
+        <Sparkles client:load>
+          <h2 class="text-3xl uppercase tracking-widest">Skills</h2>
+        </Sparkles>
       </a>
     </section>
     <section>
       <a href="#projects">
-        <h2 class="text-3xl">Projects</h2>
+        <Sparkles client:load>
+          <h2 class="text-3xl uppercase tracking-widest">Projects</h2>
+        </Sparkles>
       </a>
     </section>
     <section>
-      <a href="#experience">
-        <h2 class="text-3xl">Experience</h2>
+      <a href="#experience relative">
+        <Sparkles client:load>
+          <h2 class="text-3xl uppercase tracking-widest">Experience</h2>
+        </Sparkles>
       </a>  
     </section>      
   </main>
