@@ -13,6 +13,8 @@ import { rehypeAccessibleEmojis } from 'rehype-accessible-emojis';
 import remarkGemoji from 'remark-gemoji';
 
 import { rehypeCode } from 'fumadocs-core/mdx-plugins';
+import rehypeKatex from 'rehype-katex';
+import remarkMath from 'remark-math';
 
 import { remarkReadingTime } from './plugins/remark-reading-time.mjs';
 
@@ -21,9 +23,10 @@ export default defineConfig({
   site: 'https://hadronomy.com',
   markdown: {
     syntaxHighlight: false,
-    remarkPlugins: [remarkGemoji, remarkReadingTime],
+    remarkPlugins: [remarkGemoji, remarkReadingTime, remarkMath],
     rehypePlugins: [
       rehypeAccessibleEmojis,
+      rehypeKatex,
       [
         rehypeCode,
         {
