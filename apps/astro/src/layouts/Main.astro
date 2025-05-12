@@ -14,8 +14,11 @@ import { SITE_DESCRIPTION, SITE_TITLE } from '~/consts';
     <div class="box-border min-h-screen m-0 p-0">
       <Navbar />
       <div class="grid mx-auto w-full min-h-dvh max-w-(--breakpoint-xl) grid-cols-[1fr_min(75ch,calc(100%-1.5rem))_1fr] px-6">
-        <div class="col-start-2 flex flex-col">
+        <div class="col-start-2 flex flex-col gap-y-20">
           <slot />
+          <hr class="w-full h-1"/>
+          <footer class="w-full mt-20">
+          </footer>
         </div>
       </div>
       <HalftoneEffect />

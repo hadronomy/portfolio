@@ -1,0 +1,82 @@
+---
+import { cn } from "@portfolio/ui/utils/cn";
+import type { HTMLAttributes } from 'astro/types';
+
+interface Props extends HTMLAttributes<'div'> {
+  position?: "down" | "up" | "right-down" | "right-up";
+  isHoverable?: boolean;
+  isControl?: boolean;
+  noSelection?: boolean;
+  textColor?: string;
+  borderColor?: string;
+  backgroundColor?: string;
+  shadowColor?: string;
+  hoverTextColor?: string;
+  hoverBorderColor?: string;
+  hoverBackgroundColor?: string;
+  hoverShadowColor?: string;
+  // 'class' prop is implicitly handled by Astro and can be accessed via Astro.props.class
+  // 'children' are rendered via <slot />
+}
+
+const {
+  position = "down",
+  isHoverable = false,
+  isControl = false,
+  noSelection = false,
+  textColor = "#000",
+  borderColor = "#000",
+  backgroundColor = "#fff",
+  shadowColor = "#aaa",
+  hoverTextColor = "#000",
+  hoverBorderColor = "#7BC8A4",
+  hoverBackgroundColor = "#eee",
+  hoverShadowColor = "#d5f0e5", // Lightened version of #7BC8A4
+  class: classFromProps, // Captures the 'class' attribute passed to the component
+  ...restProps // Captures any other HTML attributes
+} = Astro.props;
+
+// Create CSS variables for colors
+const cssVariablesStyle = {
+  "--tc": textColor,
+  "--bdc": borderColor,
+  "--bkc": backgroundColor,
+  "--sc": shadowColor,
+  "--htc": hoverTextColor,
+  "--hbdc": hoverBorderColor,
+  "--hbkc": hoverBackgroundColor,
+  "--hsc": hoverShadowColor,
+};
+
+const combinedClasses = cn(
+  "relative inline-block text-center font-bold transition-all duration-300 ease-in-out box-border",
+  "px-[5px] py-[5px]",
+  // Base positioning and margins
+  position === "down" && "my-[10px] mx-[9px] mb-[29px] ml-[6px]",
+  position === "up" && "my-[29px] mx-[9px] mt-[29px] ml-[6px]",
+  position === "right-down" && "my-[10px] mx-[9px] mb-[29px] ml-[6px]",
+  position === "right-up" && "my-[29px] mx-[9px] mt-[29px] ml-[6px]",
+  // Base styling
+  "before:content-[''] before:block before:absolute before:transition-all before:duration-300 before:ease-in-out before:box-border",
+  "after:content-[''] after:block after:absolute after:transition-all after:duration-300 after:ease-in-out after:box-border",
+  // Pixelated border and shadow effect
+  "comic-bubble",
+  // Position specific styles
+  position === "up" && "comic-bubble-up",
+  (position === "right-down" || position === "right-up") && "comic-bubble-right",
+  position === "right-up" && "comic-bubble-up",
+  // Optional modifiers
+  isHoverable && "comic-bubble-hover",
+  isControl && "comic-bubble-control cursor-pointer",
+  noSelection && "select-none",
+  classFromProps // Include classes passed from the parent component
+);
+---
+
+<div
+  class:list={[combinedClasses]}
+  style={cssVariablesStyle}
+  {...restProps}
+>
+  <slot />
+</div>

@@ -3,6 +3,7 @@ import { Button } from '@portfolio/ui/button';
 
 import Github from "~/components/svg/Github.astro";
 import LinkedIn from "~/components/svg/LinkedIn.astro";
+import ComicBubble from './ComicBubble.astro';
 
 const { class: string, ...props } = Astro.props;
 ---
@@ -36,7 +37,16 @@ const { class: string, ...props } = Astro.props;
         </div>
         <span class="text-sm font-medium">Open to work</span>
       </div>
-      <Button className="cursor-pointer" variant="linkHover2">Download CV</Button>
+      <Button className="cursor-pointer relative" variant="linkHover2">
+        <ComicBubble class="hidden md:block absolute top-2 left-24 pointer-events-none" position="right-up">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width={1.5} stroke="currentColor" class="size-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.042 21.672 13.684 16.6m0 0-2.51 2.225.569-9.47 5.227 7.917-3.286-.672ZM12 2.25V4.5m5.834.166-1.591 1.591M20.25 10.5H18M7.757 14.743l-1.59 1.59M6 10.5H3.75m4.007-4.243-1.59-1.59" />
+          </svg>          
+        </ComicBubble>
+        <span>
+          Download CV
+        </span>
+      </Button>
     </div>
   </div>
   <div class="flex items-center p-3 justify-center relative overflow-visible">
