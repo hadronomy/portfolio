@@ -11,14 +11,11 @@ import MainLayout from '~/layouts/Main.astro';
   <main class="flex gap-y-10 flex-col">
     <Hero id="hero" />
     <section>
-      <div class="relative">
-        <div class="absolute left-0 bottom-30" id="skills" />
-        <a href="#skills">
-          <Sparkles client:load>
-            <h2 class="text-3xl uppercase tracking-widest">Skills</h2>
-          </Sparkles>
-        </a>
-      </div>
+      <a href="#skills">
+        <Sparkles client:load>
+          <h2 id="skills" class="text-3xl uppercase tracking-widest scroll-m-20">Skills</h2>
+        </Sparkles>
+      </a>
       <div class="flex-col w-full p-4 mt-4 rounded-2xl">
         <div class="flex flex-wrap gap-4 justify-start md:justify-between">
           <div class="h-20 w-20 bg-muted ring-2 ring-muted-foreground rounded-2xl">
@@ -77,27 +74,21 @@ import MainLayout from '~/layouts/Main.astro';
       </div>
     </section>
     <section>
-      <div class="relative">
-        <div class="absolute left-0 bottom-30" id="projects" />
-        <a href="#projects">
-          <Sparkles client:load>
-            <h2 class="text-3xl uppercase tracking-widest">Projects</h2>
-          </Sparkles>
-        </a>
-      </div>
+      <a href="#projects">
+        <Sparkles client:load>
+          <h2 id="projects" class="text-3xl uppercase tracking-widest scroll-m-20">Projects</h2>
+        </Sparkles>
+      </a>
       <div class="w-full h-60 p-4 mt-4 ring-1 rounded-2xl">
         <!-- Projects section -->
       </div>
     </section>
     <section>
-      <div class="relative">
-        <div class="absolute left-0 bottom-30" id="experience" />
-        <a href="#experience">
-          <Sparkles client:load>
-            <h2 class="text-3xl uppercase tracking-widest">Experience</h2>
-          </Sparkles>
-        </a>
-      </div>
+      <a href="#experience">
+        <Sparkles client:load>
+          <h2 id="experience" class="text-3xl uppercase tracking-widest scroll-m-20">Experience</h2>
+        </Sparkles>
+      </a>
       <div class="w-full h-60 p-4 mt-4 ring-1 rounded-2xl">
         <!-- Experience section -->
       </div>
