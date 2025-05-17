@@ -46,6 +46,7 @@ export default defineConfig({
         tabler: ['*'],
         icons: ['*'],
         'simple-icons': ['*'],
+        octicon: ['*'],
       },
     }),
     react(),
