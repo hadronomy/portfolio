@@ -1,9 +1,54 @@
 ---
 import '~/styles/global.css';
 
+import ExperienceTimeline from '~/components/ExperienceTimeline.astro';
 import Hero from '~/components/HomeHero.astro';
+import ProjectGrid from '~/components/ProjectGrid.astro';
 import { Sparkles } from '~/components/react/sparkle';
+import SkillGrid from '~/components/SkillGrid.astro';
 import MainLayout from '~/layouts/Main.astro';
+
+// Define the skills array
+const skills = [
+  { name: 'TypeScript', icon: 'logos:typescript-icon' },
+  { name: 'JavaScript', icon: 'logos:javascript' },
+  { name: 'React', icon: 'logos:react' },
+  { name: 'Astro', icon: 'logos:astro-icon' },
+  { name: 'Tailwind CSS', icon: 'logos:tailwindcss-icon' },
+  { name: 'Next.js', icon: 'logos:nextjs-icon' },
+  { name: 'Node.js', icon: 'logos:nodejs-icon' },
+  { name: 'Rust', icon: 'logos:rust' }
+];
+
+// Define experience data
+const experiences = [
+  {
+    title: 'Software Developer',
+    organization: 'ABC Tech',
+    period: 'Jan 2023 - Present',
+    description: 'Developing modern web applications using React, TypeScript, and Next.js. Contributing to open-source projects and implementing CI/CD pipelines.',
+    tags: ['React', 'TypeScript', 'Next.js', 'CI/CD']
+  },
+  {
+    title: 'Frontend Developer Intern',
+    organization: 'XYZ Company',
+    period: 'Jun 2022 - Dec 2022',
+    description: 'Built responsive interfaces and implemented UI components using modern JavaScript frameworks. Optimized application performance and collaborated with UX designers.',
+    tags: ['JavaScript', 'React', 'Tailwind CSS']
+  },
+  {
+    title: 'Computer Science Student',
+    organization: 'University of Technology',
+    period: '2020 - 2023',
+    description: 'Studied advanced algorithms, software architecture, and full-stack development. Participated in coding competitions and led student projects.',
+    tags: ['Algorithms', 'Software Design', 'Full-stack']
+  }
+];
+
+// Fetch GitHub projects data
+const username = 'hadronomy'; // Replace with your actual GitHub username
+const response = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=6`);
+const projects = await response.json();
 ---
 
 <MainLayout>
@@ -16,56 +61,7 @@ import MainLayout from '~/layouts/Main.astro';
           <h2 id="skills" class="text-3xl uppercase tracking-widest scroll-m-20">Skills</h2>
         </Sparkles>
       </a>
-      <div class="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 w-full p-4 mt-4 rounded-2xl">
-        <div class="h-20 w-20 bg-muted ring-2 ring-muted-foreground rounded-2xl">
-        </div>
-        <div class="h-20 w-20 bg-muted ring-2 ring-muted-foreground rounded-2xl">
-        </div>
-        <div class="h-20 w-20 bg-muted ring-2 ring-muted-foreground rounded-2xl">
-        </div>
-        <div class="h-20 w-20 bg-muted ring-2 ring-muted-foreground rounded-2xl">
-        </div>
-        <div class="h-20 w-20 bg-muted ring-2 ring-muted-foreground rounded-2xl">
-        </div>
-        <div class="h-20 w-20 bg-muted ring-2 ring-muted-foreground rounded-2xl">
-        </div>
-        <div class="h-20 w-20 bg-muted ring-2 ring-muted-foreground rounded-2xl">
-        </div>
-        <div class="h-20 w-20 bg-muted ring-2 ring-muted-foreground rounded-2xl">
-        </div>
-        <div class="h-20 w-20 bg-muted ring-2 ring-muted-foreground rounded-2xl">
-        </div>
-        <div class="h-20 w-20 bg-muted ring-2 ring-muted-foreground rounded-2xl">
-        </div>
-        <div class="h-20 w-20 bg-muted ring-2 ring-muted-foreground rounded-2xl">
-        </div>
-        <div class="h-20 w-20 bg-muted ring-2 ring-muted-foreground rounded-2xl">
-        </div>
-        <div class="h-20 w-20 bg-muted ring-2 ring-muted-foreground rounded-2xl">
-        </div>
-        <div class="h-20 w-20 bg-muted ring-2 ring-muted-foreground rounded-2xl">
-        </div>
-        <div class="h-20 w-20 bg-muted ring-2 ring-muted-foreground rounded-2xl">
-        </div>
-        <div class="h-20 w-20 bg-muted ring-2 ring-muted-foreground rounded-2xl">
-        </div>
-        <div class="h-20 w-20 bg-muted ring-2 ring-muted-foreground rounded-2xl">
-        </div>
-        <div class="h-20 w-20 bg-muted ring-2 ring-muted-foreground rounded-2xl">
-        </div>
-        <div class="h-20 w-20 bg-muted ring-2 ring-muted-foreground rounded-2xl">
-        </div>
-        <div class="h-20 w-20 bg-muted ring-2 ring-muted-foreground rounded-2xl">
-        </div>
-        <div class="h-20 w-20 bg-muted ring-2 ring-muted-foreground rounded-2xl">
-        </div>
-        <div class="h-20 w-20 bg-muted ring-2 ring-muted-foreground rounded-2xl">
-        </div>
-        <div class="h-20 w-20 bg-muted ring-2 ring-muted-foreground rounded-2xl">
-        </div>
-        <div class="h-20 w-20 bg-muted ring-2 ring-muted-foreground rounded-2xl">
-        </div>
-      </div>
+      <SkillGrid skills={skills} />
     </section>
     <section>
       <a href="#projects">
@@ -73,9 +69,7 @@ import MainLayout from '~/layouts/Main.astro';
           <h2 id="projects" class="text-3xl uppercase tracking-widest scroll-m-20">Projects</h2>
         </Sparkles>
       </a>
-      <div class="w-full h-60 p-4 mt-4 ring-1 rounded-2xl">
-        <!-- Projects section -->
-      </div>
+      <ProjectGrid projects={projects} />
     </section>
     <section>
       <a href="#experience">
@@ -83,8 +77,8 @@ import MainLayout from '~/layouts/Main.astro';
           <h2 id="experience" class="text-3xl uppercase tracking-widest scroll-m-20">Experience</h2>
         </Sparkles>
       </a>
-      <div class="w-full h-60 p-4 mt-4 ring-1 rounded-2xl">
-        <!-- Experience section -->
+      <div class="w-full mt-4">
+        <ExperienceTimeline items={experiences} />
       </div>
     </section>
     <hr class="w-full h-2 "/>

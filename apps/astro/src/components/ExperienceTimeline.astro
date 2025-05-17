@@ -1,0 +1,76 @@
+---
+export interface TimelineItem {
+  title: string;
+  organization: string;
+  period: string;
+  description: string;
+  tags?: string[];
+}
+
+interface Props {
+  items: TimelineItem[];
+}
+
+const { items } = Astro.props;
+
+// Helper function to parse period string into date
+const getISODate = (period: string) => {
+  // Assuming period format like "Jan 2023 - Present" or "Jun 2022 - Dec 2022"
+  const startDate = period.split('-')[0].trim();
+  try {
+    // Try to parse the date or return original text for display
+    return new Date(startDate).toISOString().split('T')[0];
+  } catch {
+    return '';
+  }
+};
+---
+
+<div class="relative w-full">
+  <!-- Gradient ruler line design positioned at 1/3 width -->
+  <div class="absolute left-4 w-2 md:left-1/3 h-full" style="transform: translateX(-50%);">
+    <div class="absolute h-full w-2 bg-gradient-to-b from-muted-foreground/30 from-50% to-50% to-transparent bg-[length:100%_5px] bg-repeat-y"></div>
+  </div>
+  
+  <div class="space-y-12">
+    {items.map((item, index) => (
+      <div class="relative flex flex-col md:flex-row md:items-start">
+        <!-- Date on the left side (only visible on md screens and above) - positioned to align with tick -->
+        <div class="hidden md:block md:w-1/3 font-mono md:pr-8 text-right">
+          <time 
+            datetime={getISODate(item.period)} 
+            class="text-md font-medium text-muted-foreground inline-block md:mt-[15px]">
+            {item.period}
+          </time>
+        </div>
+
+        <!-- Timeline major tick - guaranteed to be centered with the ruler -->
+        <div class="absolute left-4 md:left-1/3 top-7 md:top-6 w-5 h-0.5 bg-muted-foreground" style="transform: translateX(-50%);"></div>
+        
+        <!-- Content on the right side with adjusted mobile margin -->
+        <div class="ml-10 md:ml-8 md:w-2/3 rounded-lg border border-muted bg-background p-4">
+          <!-- Mobile-only date display -->
+          <time 
+            datetime={getISODate(item.period)} 
+            class="block md:hidden text-sm text-muted-foreground mb-2">
+            {item.period}
+          </time>
+          
+          <h3 class="text-xl font-bold text-foreground">{item.title}</h3>
+          <p class="text-lg text-muted-foreground">{item.organization}</p>
+          <p class="mt-2 text-foreground">{item.description}</p>
+          
+          {item.tags && (
+            <div class="mt-3 flex flex-wrap gap-2">
+              {item.tags.map(tag => (
+                <span class="rounded-full bg-muted px-3 py-1 text-sm text-muted-foreground">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    ))}
+  </div>
+</div>

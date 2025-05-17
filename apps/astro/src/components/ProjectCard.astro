@@ -1,0 +1,39 @@
+---
+import { Icon } from 'astro-icon/components';
+import { Sparkles } from './react/sparkle';
+
+interface Props {
+  name: string;
+  description: string;
+  url: string;
+  language: string;
+  stars: number;
+}
+
+const { name, description, url, language, stars } = Astro.props;
+---
+
+<li class="list-none">
+  <a href={url} target="_blank" rel="noopener noreferrer" class="block h-full">
+    <div class="h-full p-4 ring-1 rounded-2xl hover:ring-2 transition-all duration-300 flex flex-col justify-between">
+      <div>
+        <h3 class="text-xl font-bold mb-2">{name}</h3>
+        <p class="text-sm text-gray-400 mb-4">{description || "No description available"}</p>
+      </div>
+      
+      <div class="flex justify-between items-center mt-auto">
+        {language && (
+          <div class="flex items-center">
+            <span class="text-sm">{language}</span>
+          </div>
+        )}
+        <div class="flex items-center">
+          <Icon name="mdi:star" class="h-4 w-4 mr-1" />
+          <Sparkles color="white" client:load>
+            <span class="text-sm">{stars}</span>
+          </Sparkles>
+        </div>
+      </div>
+    </div>
+  </a>
+</li>

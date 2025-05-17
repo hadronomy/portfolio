@@ -33,12 +33,14 @@ interface Sparkle {
   };
 }
 
-interface SparklesProps extends React.ComponentProps<'span'> {}
+interface SparklesProps extends React.ComponentProps<'span'> {
+  color?: string;
+}
 
-export function Sparkles({ children }: SparklesProps) {
+export function Sparkles({ children, color = DEFAULT_COLOR }: SparklesProps) {
   const prefersReducedMotion = usePrefersReducedMotion();
   const [sparkles, setSparkles] = React.useState<Sparkle[]>(() => {
-    return range(3).map(() => generateSparkle());
+    return range(3).map(() => generateSparkle(color));
   });
 
   useRandomInterval(
@@ -49,7 +51,7 @@ export function Sparkles({ children }: SparklesProps) {
       const now = Date.now();
 
       // Create a new sparkle
-      const sparkle = generateSparkle();
+      const sparkle = generateSparkle(color);
 
       // Clean up any "expired" sparkles
       const nextSparkles = sparkles.filter((s: Sparkle) => {
