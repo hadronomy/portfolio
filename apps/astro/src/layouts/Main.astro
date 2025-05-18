@@ -1,4 +1,5 @@
 ---
+import Footer from '~/components/Footer.astro';
 import HalftoneEffect from '~/components/HalftoneEffect.astro';
 import Metadata from '~/components/Metadata.astro';
 import Navbar from '~/components/Navbar.astro';
@@ -17,22 +18,9 @@ import { SITE_DESCRIPTION, SITE_TITLE } from '~/consts';
         <div class="col-start-2 flex flex-col gap-y-20">
           <slot />
           <hr class="w-full h-1"/>
-            <footer class="w-full my-20 flex justify-center">
-              <small class="font-mono text-center">
-                <span class="text-muted-foreground">(C) 2025 Pablo Hernández.</span> Made with 
-                <span class="sr-only">love</span>
-                <div class="inline-block relative mx-1 h-2 w-2 align-[-0.125em]">
-                  {/* Static heart (top layer) */}
-                  <div class="absolute inset-0 z-10 bg-red-600 rotate-[-45deg] shadow-[0_0_8px_2px_theme(colors.red.400)] before:content-[''] before:absolute before:h-2 before:w-2 before:bg-red-600 before:rounded-full before:left-0 before:-top-1/2 after:content-[''] after:absolute after:h-2 after:w-2 after:bg-red-600 after:rounded-full after:top-0 after:left-1/2">
-                  </div>
-                  {/* Pinging heart (bottom layer) */}
-                  <div class="absolute inset-0 z-0 bg-red-600 rotate-[-45deg] shadow-red-500 shadow-lg animate-ping before:content-[''] before:absolute before:h-2 before:w-2 before:bg-red-600 before:rounded-full before:left-0 before:-top-1/2 after:content-[''] after:absolute after:h-2 after:w-2 after:bg-red-600 after:rounded-full after:top-0 after:left-1/2">
-                  </div>
-                </div>
-              </small>
-            </footer>
         </div>
       </div>
+      <Footer />
       <HalftoneEffect />
     </div>
   </body>
