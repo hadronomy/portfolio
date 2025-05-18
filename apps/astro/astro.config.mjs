@@ -1,6 +1,6 @@
 import path from 'node:path';
 
-import { defineConfig } from 'astro/config';
+import { defineConfig, envField } from 'astro/config';
 
 import mdx from '@astrojs/mdx';
 import react from '@astrojs/react';
@@ -37,6 +37,11 @@ export default defineConfig({
         },
       ],
     ],
+  },
+  env: {
+    schema: {
+      GITHUB_TOKEN: envField.string({ context: 'server', access: 'secret' }),
+    },
   },
   integrations: [
     mdx(),
