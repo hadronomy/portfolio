@@ -1,29 +1,34 @@
 // eslint-disable jsx-no-undef
+import { OrbitControls, Stats, useGLTF } from '@react-three/drei';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import type React from 'react';
 import { Suspense, useMemo, useRef } from 'react';
-import { usePaneInput, useTweakpane } from 'react-tweakpane';
 import { createNoise2D } from 'simplex-noise';
 import * as THREE from 'three';
+
 import './GrassMaterial';
-import { OrbitControls } from '@react-three/drei';
+
 const noise2D = createNoise2D(Math.random);
 
-export interface GrassViewProps extends React.ComponentProps<typeof Canvas> {}
+export interface GrassViewProps extends React.ComponentProps<typeof Canvas> {
+  showStats?: boolean;
+}
 
 export function GrassView(props: GrassViewProps) {
   const {
     children,
     camera = { position: [0, 30, 0], fov: 35 },
+    showStats,
     ...rest
   } = props;
 
   return (
-    <Canvas camera={camera} {...rest}>
+    <Canvas gl={{ antialias: true }} camera={camera} {...rest}>
       <ambientLight intensity={10} />
+      {showStats && <Stats />}
       <directionalLight position={[10, 10, 5]} intensity={1} />
       <Suspense>
-        <Grass width={100} instances={500000} />
+        <Grass instances={90000} />
       </Suspense>
       {children}
       <OrbitControls />
@@ -32,24 +37,15 @@ export function GrassView(props: GrassViewProps) {
 }
 
 interface GrassProps {
-  width?: number;
   instances?: number;
-  bladeWidth?: number;
-  bladeHeight?: number;
-  joints?: number;
 }
 
-export function Grass({
-  width = 100,
-  instances = 5000,
-  // Make blades wider and taller for better visibility
-  bladeWidth = 0.3,
-  bladeHeight = 1.5,
-  joints = 5,
-}: GrassProps) {
+export function Grass({ instances = 5000 }: GrassProps) {
   // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   const materialRef = useRef<any>(null);
   const { viewport } = useThree();
+  const { nodes, materials } = useGLTF('/anime-grass.glb');
+  const bladeMesh = nodes.GrassBlade as THREE.Mesh;
 
   // Adjust width based on viewport
   const actualWidth = useMemo(() => {
@@ -57,12 +53,29 @@ export function Grass({
     return Math.max(viewWidth / 2.5, height) * 2;
   }, [viewport]);
 
-  // Create base blade geometry
+  // Use model geometry instead of plane geometry
   const baseGeometry = useMemo(() => {
-    const geo = new THREE.PlaneGeometry(bladeWidth, bladeHeight, 1, joints);
-    geo.translate(0, bladeHeight / 2, 0);
-    return geo;
-  }, [bladeWidth, bladeHeight, joints]);
+    // Get the blade geometry from the loaded model
+    const modelGeometry = bladeMesh.geometry.clone();
+
+    // Center the geometry at the bottom for proper rotation
+    const box = new THREE.Box3().setFromObject(new THREE.Mesh(modelGeometry));
+    const center = box.getCenter(new THREE.Vector3());
+
+    // Adjust position so bottom is at origin and blade grows upward
+    modelGeometry.translate(-center.x, -box.min.y, -center.z);
+
+    return modelGeometry;
+  }, [bladeMesh.geometry]);
+
+  // Extract texture from the model material if available
+  const modelTexture = useMemo(() => {
+    const groundMaterial = materials.Ground as THREE.MeshStandardMaterial;
+    if (groundMaterial.map) {
+      return groundMaterial.map;
+    }
+    return null;
+  }, [materials]);
 
   // Generate ground geometry with noise
   const groundGeo = useMemo(() => {
@@ -103,6 +116,7 @@ export function Grass({
           index={baseGeometry.index}
           attributes-position={baseGeometry.attributes.position}
           attributes-uv={baseGeometry.attributes.uv}
+          attributes-normal={baseGeometry.attributes.normal}
         >
           <instancedBufferAttribute
             attach={'attributes-offset'}
@@ -113,8 +127,8 @@ export function Grass({
             args={[new Float32Array(attributeData.orientations), 4]}
           />
           <instancedBufferAttribute
-            attach={'attributes-stretch'}
-            args={[new Float32Array(attributeData.stretches), 1]}
+            attach={'attributes-size'}
+            args={[new Float32Array(attributeData.sizes), 1]}
           />
           <instancedBufferAttribute
             attach={'attributes-halfRootAngleSin'}
@@ -125,22 +139,32 @@ export function Grass({
             args={[new Float32Array(attributeData.halfRootAngleCos), 1]}
           />
         </instancedBufferGeometry>
-        <grassMaterial ref={materialRef} toneMapped={false} />
+        <grassMaterial
+          ref={materialRef}
+          toneMapped={false}
+          map={modelTexture}
+        />
       </mesh>
 
       {/* Ground */}
       <mesh position={[0, 0, 0]} geometry={groundGeo}>
-        <meshStandardMaterial color="#0a3200" roughness={0.8} />
+        <meshStandardMaterial color="#0a3200" roughness={0.8} side={2} />
       </mesh>
     </group>
   );
+}
+
+useGLTF.preload('/anime-grass.glb');
+
+export function isMeshType(object?: THREE.Object3D): object is THREE.Mesh {
+  return object?.type === 'Mesh';
 }
 
 // Helper functions
 function getAttributeData(instances: number, width: number) {
   const offsets: number[] = [];
   const orientations: number[] = [];
-  const stretches: number[] = [];
+  const sizes: number[] = [];
   const halfRootAngleSin: number[] = [];
   const halfRootAngleCos: number[] = [];
 
@@ -205,16 +229,16 @@ function getAttributeData(instances: number, width: number) {
 
     // Add variety in height
     if (i < instances / 3) {
-      stretches.push(Math.random() * 1.8);
+      sizes.push(Math.random() * 1.8);
     } else {
-      stretches.push(Math.random());
+      sizes.push(Math.random());
     }
   }
 
   return {
     offsets,
     orientations,
-    stretches,
+    sizes,
     halfRootAngleCos,
     halfRootAngleSin,
   };
