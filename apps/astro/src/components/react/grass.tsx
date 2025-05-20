@@ -1,12 +1,13 @@
 // eslint-disable jsx-no-undef
 import { OrbitControls, Stats, useGLTF } from '@react-three/drei';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { Canvas, extend, useThree } from '@react-three/fiber';
 import type React from 'react';
-import { Suspense, useMemo, useRef } from 'react';
+import { Suspense, useMemo } from 'react';
 import { createNoise2D } from 'simplex-noise';
-import * as THREE from 'three';
+import * as THREE from 'three/webgpu';
 
 import './GrassMaterial';
+import { grassNodeMaterial } from './GrassMaterial';
 
 const noise2D = createNoise2D(Math.random);
 
@@ -23,7 +24,17 @@ export function GrassView(props: GrassViewProps) {
   } = props;
 
   return (
-    <Canvas gl={{ antialias: true }} camera={camera} {...rest}>
+    <Canvas
+      gl={(props) => {
+        // @ts-ignore: needed
+        extend(THREE);
+        // @ts-ignore: needed
+        const renderer = new THREE.WebGPURenderer(props);
+        return renderer.init().then(() => renderer);
+      }}
+      camera={camera}
+      {...rest}
+    >
       <ambientLight intensity={10} />
       {showStats && <Stats />}
       <directionalLight position={[10, 10, 5]} intensity={1} />
@@ -41,10 +52,9 @@ interface GrassProps {
 }
 
 export function Grass({ instances = 5000 }: GrassProps) {
-  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-  const materialRef = useRef<any>(null);
+  // Use a more specific type for materialRef
   const { viewport } = useThree();
-  const { nodes, materials } = useGLTF('/anime-grass.glb');
+  const { nodes, materials: _ } = useGLTF('/anime-grass.glb');
   const bladeMesh = nodes.GrassBlade as THREE.Mesh;
 
   // Adjust width based on viewport
@@ -68,15 +78,6 @@ export function Grass({ instances = 5000 }: GrassProps) {
     return modelGeometry;
   }, [bladeMesh.geometry]);
 
-  // Extract texture from the model material if available
-  const modelTexture = useMemo(() => {
-    const groundMaterial = materials.Ground as THREE.MeshStandardMaterial;
-    if (groundMaterial.map) {
-      return groundMaterial.map;
-    }
-    return null;
-  }, [materials]);
-
   // Generate ground geometry with noise
   const groundGeo = useMemo(() => {
     const geo = new THREE.PlaneGeometry(actualWidth, actualWidth, 32, 32);
@@ -95,18 +96,13 @@ export function Grass({ instances = 5000 }: GrassProps) {
     return geo;
   }, [actualWidth]);
 
+  const material = useMemo(() => grassNodeMaterial(), []);
+
   // Get attribute data for all instances
   const attributeData = useMemo(
     () => getAttributeData(instances, actualWidth),
     [instances, actualWidth],
   );
-
-  // Update shader time uniform for animation
-  useFrame((state) => {
-    if (materialRef.current) {
-      materialRef.current.uniforms.time.value = state.clock.getElapsedTime();
-    }
-  });
 
   return (
     <group>
@@ -114,6 +110,7 @@ export function Grass({ instances = 5000 }: GrassProps) {
       <mesh>
         <instancedBufferGeometry
           index={baseGeometry.index}
+          instanceCount={instances}
           attributes-position={baseGeometry.attributes.position}
           attributes-uv={baseGeometry.attributes.uv}
           attributes-normal={baseGeometry.attributes.normal}
@@ -139,11 +136,7 @@ export function Grass({ instances = 5000 }: GrassProps) {
             args={[new Float32Array(attributeData.halfRootAngleCos), 1]}
           />
         </instancedBufferGeometry>
-        <grassMaterial
-          ref={materialRef}
-          toneMapped={false}
-          map={modelTexture}
-        />
+        <nodeMaterial {...material} />
       </mesh>
 
       {/* Ground */}

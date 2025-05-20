@@ -1,398 +1,478 @@
-import { shaderMaterial } from '@react-three/drei';
-import { type ReactThreeFiber, extend } from '@react-three/fiber';
-import * as THREE from 'three';
+import {
+  Fn,
+  If,
+  Loop,
+  abs,
+  attribute,
+  cameraProjectionMatrix,
+  color,
+  cos,
+  cross,
+  dot,
+  float,
+  floor,
+  fract,
+  max,
+  mix,
+  modelViewMatrix,
+  normalLocal,
+  normalView,
+  normalize,
+  positionView,
+  pow,
+  sin,
+  smoothstep,
+  time,
+  uniform,
+  uv,
+  varying,
+  vec2,
+  vec3,
+  vec4,
+} from 'three/tsl';
+import * as THREE from 'three/webgpu';
 
-// Create custom grass blade material using shaderMaterial
-interface GrassMaterialUniforms {
-  time: number;
-  map: THREE.Texture | null;
-  alphaMap: THREE.Texture | null;
-  ambient_strength: number;
-  diffuse_strength: number;
-  specular_strength: number;
-  translucency_strength: number;
-  shininess: number;
-  sunColour: THREE.Color;
-  lightDirection: THREE.Vector3;
+function createNodeMaterial(
+  callback: (material: THREE.NodeMaterial) => THREE.NodeMaterial,
+): () => THREE.NodeMaterial {
+  return () => callback(new THREE.NodeMaterial());
+}
 
-  // Grass color gradient parameters
-  bottomColor: THREE.Color;
-  topColor: THREE.Color;
+type Node = THREE.TSL.ShaderNodeObject<THREE.Node>;
 
-  // Patch color parameters
-  darkPatchColor: THREE.Color;
-  lightPatchColor: THREE.Color;
+// Create TSL-based grass material
+export const grassNodeMaterial = createNodeMaterial((material) => {
+  const position = attribute('position', 'vec3');
+  const offset = attribute('offset', 'vec3');
+  const orientation = attribute('orientation', 'vec4');
+  const size = attribute('size', 'float');
+  const halfRootAngleSin = attribute('halfRootAngleSin', 'float');
+  const halfRootAngleCos = attribute('halfRootAngleCos', 'float');
+
+  const vPosition = varying(vec3(), 'vPosition');
+  const vNormal = varying(vec3(), 'vNormal');
+  const vUv = varying(vec3(), 'vUv');
+
+  // Define uniforms
+  const ambientStrength = uniform(0.7);
+  const diffuseStrength = uniform(1.5);
+  const specularStrength = uniform(1.0);
+  const translucencyStrength = uniform(1.5);
+  const shininess = uniform(120);
+  const sunColour = uniform(new THREE.Color(1.0, 1.0, 1.0));
+  const lightDirection = uniform(new THREE.Vector3(1.0, 0.0, 0.0).normalize());
+
+  // Grass color parameters
+  const bottomColor = uniform(color('#339933'));
+  const topColor = uniform(color('#66a61a'));
+  1;
+  const darkPatchColor = uniform(color('#1a801a'));
+  const lightPatchColor = uniform(color('#8cbf00'));
 
   // Noise control parameters
-  noiseScale: number; // Controls the size of the color patches
-  noiseQuantize: number; // Controls the number of distinct color levels
-  noiseMixStrength: number; // Controls strength of noise influence on color
-  edgeHighlightStrength: number; // Controls visibility of patch edges
+  const noiseScale = uniform(0.05);
+  const noiseQuantize = uniform(4.0);
+  const noiseMixStrength = uniform(0.5);
+  const edgeHighlightStrength = uniform(0.01);
+  const colorVariation = uniform(0.8);
 
-  // Variation control
-  colorVariation: number; // Controls how much the noise affects color
+  // Quaternion multiplication function
+  const qmul = Fn<[Node, Node]>(([q1, q2]) => {
+    return vec4(
+      q1.w
+        .mul(q2.x)
+        .add(q1.x.mul(q2.w))
+        .add(q1.z.mul(q2.y))
+        .sub(q1.y.mul(q2.z)),
+      q1.w
+        .mul(q2.y)
+        .add(q1.y.mul(q2.w))
+        .add(q1.x.mul(q2.z))
+        .sub(q1.z.mul(q2.x)),
+      q1.w
+        .mul(q2.z)
+        .add(q1.z.mul(q2.w))
+        .add(q1.y.mul(q2.x))
+        .sub(q1.x.mul(q2.y)),
+      q1.w
+        .mul(q2.w)
+        .sub(q1.x.mul(q2.x))
+        .sub(q1.y.mul(q2.y))
+        .sub(q1.z.mul(q2.z)),
+    );
+  });
 
-  // biome-ignore lint/suspicious/noExplicitAny: required here
-  [key: string]: any;
-}
+  // Rotate a vector using a quaternion
+  const applyQuaternion = Fn<[Node, Node]>(([v, q]) => {
+    const temp = cross(q.xyz, v).mul(2.0);
+    return v.add(temp.mul(q.w)).add(cross(q.xyz, temp));
+  });
 
-export const GrassMaterial = shaderMaterial<
-  GrassMaterialUniforms,
-  GrassMaterialUniforms & THREE.ShaderMaterial
->(
-  {
-    time: 0,
-    map: null,
-    alphaMap: null,
-    ambient_strength: 0.7,
-    diffuse_strength: 1.5,
-    specular_strength: 1.0,
-    translucency_strength: 1.5,
-    shininess: 256,
-    sunColour: new THREE.Color(1.0, 1.0, 1.0),
-    lightDirection: new THREE.Vector3(0.0, 0.0, 0.0).normalize(),
+  // Noise function for wind influence
+  const noise2D = Fn<[Node]>(([p]) => {
+    return sin(p.x.mul(10.0))
+      .mul(sin(p.y.mul(10.0)))
+      .mul(0.5)
+      .add(0.5);
+  });
 
-    // Default grass color gradient
-    bottomColor: new THREE.Color(0.2, 0.8, 0.2), // Base green color
-    topColor: new THREE.Color(0.4, 0.65, 0.1), // Yellowish green for tips
+  // Simplex noise functions
+  const permute = Fn<[Node]>(([x]) => {
+    return x.mul(34.0).add(1.0).mul(x).mod(289.0);
+  });
 
-    // Default patch colors
-    darkPatchColor: new THREE.Color(0.1, 0.5, 0.1), // Dark green patches
-    lightPatchColor: new THREE.Color(0.55, 0.75, 0.0), // Light yellow-green patches
+  const snoise = Fn<[Node]>(([v]) => {
+    const C = vec4(
+      0.211324865405187, // (3.0-sqrt(3.0))/6.0
+      0.366025403784439, // 0.5*(sqrt(3.0)-1.0)
+      -0.577350269189626, // -1.0 + 2.0 * C.x
+      0.024390243902439, // 1.0/41.0
+    );
+    const i = v.add(dot(v, C.yy)).floor();
+    const x0 = v.sub(i).add(dot(i, C.xx));
 
-    // Noise control parameters with default values
-    noiseScale: 0.03, // Scale for noise (lower = larger patches)
-    noiseQuantize: 4.0, // Number of distinct color levels
-    noiseMixStrength: 0.5, // Strength of noise influence on final color
-    edgeHighlightStrength: 0.1, // Strength of highlights at patch edges
+    const i1 = vec2(0.0, 0.0).toVar();
 
-    // Variation control
-    colorVariation: 0.8, // Strength of the patch color variation
-  },
-  /* Vertex shader */
-  `
-    attribute vec3 offset;
-    attribute vec4 orientation;
-    attribute float size;
-    attribute float halfRootAngleSin;
-    attribute float halfRootAngleCos;
+    If(x0.x.greaterThan(x0.y), () => {
+      i1.assign(vec2(1.0, 0.0));
+    }).Else(() => {
+      i1.assign(vec2(0.0, 1.0));
+    });
 
-    uniform float time;
+    const x12 = x0.xyxy.add(C.xxzz).toVar();
+    x12.xy.subAssign(i1);
 
-    varying vec2 vUv;
-    varying vec3 vNormal;
-    varying vec3 vPosition;
+    const iMod = i.mod(289.0);
+    const p = permute(
+      permute(iMod.y.add(vec3(0.0, i1.y, 1.0)))
+        .add(iMod.x)
+        .add(vec3(0.0, i1.x, 1.0)),
+    );
 
-    // Quaternion multiplication
-    vec4 qmul(vec4 q1, vec4 q2) {
-      return vec4(
-        q1.w * q2.x + q1.x * q2.w + q1.z * q2.y - q1.y * q2.z,
-        q1.w * q2.y + q1.y * q2.w + q1.x * q2.z - q1.z * q2.x,
-        q1.w * q2.z + q1.z * q2.w + q1.y * q2.x - q1.x * q2.y,
-        q1.w * q2.w - q1.x * q2.x - q1.y * q2.y - q1.z * q2.z
-      );
-    }
+    const m = max(
+      float(0.5).sub(
+        vec3(dot(x0, x0), dot(x12.xy, x12.xy), dot(x12.zw, x12.zw)),
+      ),
+      0.0,
+    );
 
-    // Rotate a vector using a quaternion
-    vec3 applyQuaternion(vec3 v, vec4 q) {
-      vec3 temp = 2.0 * cross(q.xyz, v);
-      return v + q.w * temp + cross(q.xyz, temp);
-    }
+    const m4 = m.mul(m).mul(m).mul(m);
 
-    // Noise function for wind influence
-    float noise(vec2 p) {
-      return sin(p.x * 10.0) * sin(p.y * 10.0) * 0.5 + 0.5;
-    }
+    const x = fract(p.mul(C.www)).mul(2.0).sub(1.0);
+    const h = abs(x).sub(0.5);
+    const ox = floor(x.add(0.5));
+    const a0 = x.sub(ox);
 
-    void main() {
-      vUv = uv;
-      
-      // Root rotation based on the angle attributes
-      vec4 rootQ = vec4(0.0, halfRootAngleSin, 0.0, halfRootAngleCos);
+    const g = vec3(
+      a0.x.mul(x0.x).add(h.x.mul(x0.y)),
+      a0.y.mul(x12.x).add(h.y.mul(x12.y)),
+      a0.z.mul(x12.z).add(h.z.mul(x12.w)),
+    );
 
-      // Rotate the blade around the Y axis
-      vec4 combinedQ = qmul(orientation, rootQ);
+    const falloff_factor = float(1.79284291400159).sub(
+      float(0.85373472095314).mul(a0.mul(a0).add(h.mul(h))),
+    );
+    const weighted_m = m4.mul(falloff_factor);
+    return dot(weighted_m, g).mul(130.0);
+  });
 
-      // Scale and position the blade
-      vec3 transformedPosition = position.xyz * vec3(size, size, size);
-      vPosition = applyQuaternion(transformedPosition, combinedQ) + offset;
+  // Helper functions for Perlin Noise
+  // eslint-disable-next-line no-unused-vars
+  const mod289Vec2 = Fn<[Node]>(([x_vec2]) => {
+    return x_vec2.sub(floor(x_vec2.mul(1.0 / 289.0)).mul(289.0));
+  });
 
-      // Apply wind effect
-      float windStrength = 0.3;
-      float windFrequency = 0.5;
-      float windEffect = pow(position.y, 2.0) * windStrength;
-      float windTime = time * windFrequency;
-      
-      // Calculate noise for more natural movement
-      float noiseValue = noise(vec2(vPosition.x + windTime, vPosition.z + windTime * 0.5));
-      
-      // Apply wind displacement in x and z directions
-      vec3 windDisplacement = vec3(
-        sin(windTime + vPosition.x * 0.5) * noiseValue * windEffect,
-        0.0,
-        cos(windTime * 0.7 + vPosition.z * 0.5) * noiseValue * windEffect
-      );
-      
-      // Only apply wind to the middle and upper part of the blade
-      vPosition += windDisplacement * smoothstep(0.2, 0.6, position.y);
-      
-      // Transform the normal
-      vNormal = applyQuaternion(normal, combinedQ);
-      
-      gl_Position = projectionMatrix * modelViewMatrix * vec4(vPosition, 1.0);
-    }
-  `,
-  /* Fragment shader */
-  `
-    uniform vec3 lightDirection;
-    uniform vec3 sunColour;
-    uniform float ambient_strength;
-    uniform float diffuse_strength;
-    uniform float specular_strength;
-    uniform float translucency_strength;
-    uniform float shininess;
-    uniform sampler2D map;
-    uniform sampler2D alphaMap;
-    uniform float time;
-    
-    // Grass color uniforms
-    uniform vec3 bottomColor;
-    uniform vec3 topColor;
-    uniform vec3 darkPatchColor;
-    uniform vec3 lightPatchColor;
-    
-    // Noise control uniforms
-    uniform float noiseScale;
-    uniform float noiseQuantize;
-    uniform float noiseMixStrength;
-    uniform float edgeHighlightStrength;
-    uniform float colorVariation;
+  const mod289Vec4 = Fn<[Node]>(([x_vec4]) => {
+    return x_vec4.sub(floor(x_vec4.mul(1.0 / 289.0)).mul(289.0));
+  });
 
-    varying vec2 vUv;
-    varying vec3 vNormal;
-    varying vec3 vPosition;
-    
-    // Simplex 2D noise
-    vec3 permute(vec3 x) { return mod(((x*34.0)+1.0)*x, 289.0); }
-    
-    float snoise(vec2 v) {
-      const vec4 C = vec4(0.211324865405187, 0.366025403784439,
-                -0.577350269189626, 0.024390243902439);
-      vec2 i  = floor(v + dot(v, C.yy));
-      vec2 x0 = v -   i + dot(i, C.xx);
-      vec2 i1;
-      i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
-      vec4 x12 = x0.xyxy + C.xxzz;
-      x12.xy -= i1;
-      i = mod(i, 289.0);
-      vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0))
-        + i.x + vec3(0.0, i1.x, 1.0 ));
-      vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy),
-        dot(x12.zw,x12.zw)), 0.0);
-      m = m*m;
-      m = m*m;
-      vec3 x = 2.0 * fract(p * C.www) - 1.0;
-      vec3 h = abs(x) - 0.5;
-      vec3 ox = floor(x + 0.5);
-      vec3 a0 = x - ox;
-      m *= 1.79284291400159 - 0.85373472095314 * (a0*a0 + h*h);
-      vec3 g;
-      g.x  = a0.x  * x0.x  + h.x  * x0.y;
-      g.yz = a0.yz * x12.xz + h.yz * x12.yw;
-      return 130.0 * dot(m, g);
-    }
-    
-    // Advanced Perlin noise functions
-    vec2 mod289_2(vec2 x) { return x - floor(x * (1.0/289.0)) * 289.0; }
-    vec4 mod289_4(vec4 x) { return x - floor(x * (1.0/289.0)) * 289.0; }
-    vec4 permute_4(vec4 x) { return mod289_4(((x*34.0)+1.0)*x); }
-    vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472090914 * r; }
-    
-    // Enhanced Perlin Noise 2D
-    float perlinNoise2D(vec2 P) {
-      vec4 Pi = floor(P.xyxy) + vec4(0.0, 0.0, 1.0, 1.0);
-      vec4 Pf = fract(P.xyxy) - vec4(0.0, 0.0, 1.0, 1.0);
-      Pi = mod289_4(Pi); // Avoid truncation effects
-      vec4 ix = Pi.xzxz;
-      vec4 iy = Pi.yyww;
-      vec4 fx = Pf.xzxz;
-      vec4 fy = Pf.yyww;
+  const permuteVec4 = Fn<[Node]>(([x_perm]) => {
+    return mod289Vec4(x_perm.mul(34.0).add(1.0).mul(x_perm));
+  });
 
-      vec4 i = permute_4(permute_4(ix) + iy);
+  const taylorInvSqrtVec4 = Fn<[Node]>(([r_taylor]) => {
+    return float(1.79284291400159).sub(float(0.85373472090914).mul(r_taylor));
+  });
 
-      vec4 gx = fract(i * (1.0/41.0)) * 2.0 - 1.0;
-      vec4 gy = abs(gx) - 0.5;
-      vec4 tx = floor(gx + 0.5);
-      gx = gx - tx;
+  // Enhanced Perlin Noise 2D
+  const perlinNoise2D = Fn<[Node]>(([P_noise]) => {
+    // P_noise is vec2
+    const Pi = floor(P_noise.xyxy.add(vec4(0.0, 0.0, 1.0, 1.0))).toVar();
 
-      vec2 g00 = vec2(gx.x, gy.x);
-      vec2 g10 = vec2(gx.y, gy.y);
-      vec2 g01 = vec2(gx.z, gy.z);
-      vec2 g11 = vec2(gx.w, gy.w);
+    // --- Corrected Pf Calculation ---
+    const P_noise_fract_xyxy = fract(P_noise.xyxy);
+    const Pf = P_noise_fract_xyxy.sub(vec4(0.0, 0.0, 1.0, 1.0));
+    // Now Pf will be (fract(P_noise.x), fract(P_noise.y), fract(P_noise.x)-1, fract(P_noise.y)-1)
 
-      vec4 norm = taylorInvSqrt(vec4(dot(g00, g00), dot(g01, g01), dot(g10, g10), dot(g11, g11)));
-      g00 *= norm.x;
-      g01 *= norm.y;
-      g10 *= norm.z;
-      g11 *= norm.w;
+    Pi.assign(mod289Vec4(Pi));
 
-      float n00 = dot(g00, vec2(fx.x, fy.x));
-      float n10 = dot(g10, vec2(fx.y, fy.y));
-      float n01 = dot(g01, vec2(fx.z, fy.z));
-      float n11 = dot(g11, vec2(fx.w, fy.w));
+    const ix = Pi.xzxz;
+    const iy = Pi.yyww;
+    const fx = Pf.xzxz;
+    const fy = Pf.yyww;
 
-      vec2 fade_xy = Pf.xy * Pf.xy * Pf.xy * (Pf.xy * (Pf.xy * 6.0 - 15.0) + 10.0);
-      vec2 n_x = mix(vec2(n00, n01), vec2(n10, n11), fade_xy.x);
-      float n_xy = mix(n_x.x, n_x.y, fade_xy.y);
-      return 2.3 * n_xy;
-    }
+    const i_perm = permuteVec4(permuteVec4(ix).add(iy));
 
-    // Fractal Brownian Motion (FBM)
-    float fbm(vec2 p, int octaves, float lacunarity, float persistence) {
-      float total = 0.0;
-      float frequency = 1.0;
-      float amplitude = 1.0;
-      float maxValue = 0.0;
+    const gx = fract(i_perm.mul(1.0 / 41.0))
+      .mul(2.0)
+      .sub(1.0);
+    const gy = abs(gx).sub(0.5);
+    const tx = floor(gx.add(0.5));
+    const gx_updated = gx.sub(tx);
 
-      for (int i = 0; i < octaves; i++) {
-        if (i >= octaves) break; // Prevents loop issues in some GLSL implementations
-        total += perlinNoise2D(p * frequency) * amplitude;
-        maxValue += amplitude;
-        amplitude *= persistence;
-        frequency *= lacunarity;
-      }
+    const g00 = vec2(gx_updated.x, gy.x);
+    const g10 = vec2(gx_updated.y, gy.y);
+    const g01 = vec2(gx_updated.z, gy.z);
+    const g11 = vec2(gx_updated.w, gy.w);
 
-      return (total / maxValue + 1.0) * 0.5; // Normalize to [0, 1]
-    }
+    const norm = taylorInvSqrtVec4(
+      vec4(dot(g00, g00), dot(g01, g01), dot(g10, g10), dot(g11, g11)),
+    );
 
-    void main() {
-      // Calculate moving noise pattern
-      float noiseScale = 0.05; // Scale for the noise pattern
-      float moveSpeed = 0.2; // Speed of pattern movement
-      
-      // Create moving coordinates for the noise
-      vec2 noisePos = vec2(
-        vPosition.x * noiseScale + time * moveSpeed,
-        vPosition.z * noiseScale + time * moveSpeed * 0.7
-      );
-      
-      // Generate multi-layered noise for more natural variation
-      float noise1 = snoise(noisePos);
-      float noise2 = snoise(noisePos * 2.0) * 0.5;
-      float noise3 = snoise(noisePos * 4.0) * 0.25;
-      
-      // Combined noise value in [-1,1] range
-      float combinedNoise = noise1 + noise2 + noise3;
-      
-      // Add static noise for additional texture detail
-      float staticNoiseScale = 0.1; // Different scale for static component
-      vec2 staticNoisePos = vec2(
-        vPosition.x * staticNoiseScale,
-        vPosition.z * staticNoiseScale
-      );
-      
-      // Generate multi-layered static noise
-      float staticNoise1 = snoise(staticNoisePos);
-      float staticNoise2 = snoise(staticNoisePos * 3.0) * 0.4;
-      float staticNoise3 = snoise(staticNoisePos * 6.0) * 0.2;
-      
-      // Combined static noise
-      float combinedStaticNoise = staticNoise1 + staticNoise2 + staticNoise3;
-      
-      // Blend moving and static noise (60% moving, 40% static)
-      float finalNoise = combinedNoise * 0.6 + combinedStaticNoise * 0.4;
-      
-      // Convert to brightness variation factor
-      float brightnessVariation = finalNoise * 0.2 + 0.9; // Range [0.7, 1.1]
-      
-      // Add advanced color variation using FBM noise
-      vec2 fbmCoord = vec2(vPosition.x * noiseScale, vPosition.z * noiseScale) + vec2(15.5, 7.2);
-      float fbmNoise = fbm(fbmCoord, 5, 2.0, 0.5); // 5 octaves
-      
-      // Apply quantization with configurable levels for more distinct patches
-      float quantizedNoise = floor(fbmNoise * noiseQuantize) / noiseQuantize;
-      
-      // Create vertical gradient - greener at base, yellower at tip
-      float heightGradient = vUv.y; // Use UV.y to get vertical position along blade
-      
-      // Modify colors based on quantized noise with configurable effect strength
-      vec3 baseBottomColor = mix(bottomColor, darkPatchColor, quantizedNoise * colorVariation);
-      vec3 baseTopColor = mix(topColor, lightPatchColor, quantizedNoise * colorVariation);
-      
-      // Calculate the gradient color
-      vec3 gradientColor = mix(baseTopColor, baseBottomColor, heightGradient);
-      
-      // Apply configurable color variance based on the FBM noise
-      vec3 noiseColor = mix(darkPatchColor, lightPatchColor, fbmNoise);
-      gradientColor = mix(gradientColor, noiseColor, noiseMixStrength);
-      
-      // Add edge highlighting between patches to make boundaries more visible
-      float edgeHighlight = smoothstep(0.2, 0.3, abs(fbmNoise - 0.5) * 2.0) * edgeHighlightStrength;
-      gradientColor += vec3(edgeHighlight);
-      
-      // Apply both texture and gradient
-      vec3 grassColor = gradientColor;
-      
-      // Apply brightness variation to the grass color
-      grassColor *= brightnessVariation;
-      
-      // Apply subtle darkening near the very bottom for root effect
-      float rootDarkening = 1.0 - pow(max(0.0, vUv.y * 1.3), 2.0) * 0.5;
-      grassColor *= rootDarkening;
-      
-      vec3 normal = normalize(vNormal);
-      vec3 lightDir = normalize(lightDirection);
-      
-      // Ambient component
-      vec3 ambient = ambient_strength * grassColor;
-      
-      // Diffuse component (Lambert)
-      float diff = max(dot(normal, lightDir), 0.0);
-      vec3 diffuse = diffuse_strength * diff * sunColour * grassColor;
-      
-      // Specular component (Blinn-Phong)
-      vec3 viewDir = normalize(-vPosition);
-      vec3 halfDir = normalize(lightDir + viewDir);
-      float spec = pow(max(dot(normal, halfDir), 0.0), shininess);
-      vec3 specular = specular_strength * spec * sunColour;
-      
-      // Translucency effect (light passing through the blades)
-      float translucency = max(0.0, -dot(normal, lightDir)) * translucency_strength;
-      vec3 transLight = translucency * sunColour * grassColor;
-      
-      // Combine all lighting components
-      vec3 result = ambient + diffuse + specular + transLight;
-      
-      // Alpha from texture or gradient falloff
-      float alpha = texture2D(alphaMap, vUv).r;
-      if (alpha < 0.1) {
-        alpha = smoothstep(0.0, 0.5, vUv.y); // Gradient alpha if no texture
-      }
-      
-      gl_FragColor = vec4(result, alpha);
-    }
-  `,
-  (self) => {
-    if (!self) return;
-    self.side = THREE.DoubleSide;
-    self.transparent = false;
-  },
-);
+    const g00_norm = g00.mul(norm.x);
+    const g01_norm = g01.mul(norm.y);
+    const g10_norm = g10.mul(norm.z);
+    const g11_norm = g11.mul(norm.w);
 
-extend({ GrassMaterial });
+    // These dot products will now use the correct fx and fy components
+    const n00 = dot(g00_norm, vec2(fx.x, fy.x));
+    const n10 = dot(g10_norm, vec2(fx.y, fy.y));
+    const n01 = dot(g01_norm, vec2(fx.z, fy.z));
+    const n11 = dot(g11_norm, vec2(fx.w, fy.w));
 
-interface GrassMaterialElements {
-  grassMaterial: ReactThreeFiber.ThreeElement<typeof GrassMaterial>;
-}
+    const fade_xy = Pf.xy // Use Pf.xy for fade, which is (u_frac, v_frac) - this is correct
+      .mul(Pf.xy)
+      .mul(Pf.xy)
+      .mul(Pf.xy.mul(Pf.xy.mul(6.0).sub(15.0)).add(10.0));
+    const n_x = mix(vec2(n00, n01), vec2(n10, n11), fade_xy.x);
+    const n_xy = mix(n_x.x, n_x.y, fade_xy.y);
 
-declare module 'react' {
-  namespace JSX {
-    interface IntrinsicElements extends GrassMaterialElements {}
-  }
-}
+    return float(2.3).mul(n_xy);
+  });
 
-declare module 'react/jsx-runtime' {
-  namespace JSX {
-    interface IntrinsicElements extends GrassMaterialElements {}
-  }
-}
+  // Advanced FBM noise function
+  const fbm = Fn<[Node, Node, Node, Node]>(
+    ([p, octaves, lacunarity, persistence]) => {
+      const total = float(0.0).toVar();
+      const frequency = float(1.0).toVar();
+      const amplitude = float(1.0).toVar();
+      const maxValue = float(0.0).toVar();
+
+      // Use loop with custom index
+
+      Loop(octaves, () => {
+        total.addAssign(perlinNoise2D(p.mul(frequency)).mul(amplitude));
+        maxValue.addAssign(amplitude);
+        amplitude.mulAssign(persistence);
+        frequency.mulAssign(lacunarity);
+      });
+
+      return total.div(maxValue).add(1.0).mul(0.5);
+    },
+  );
+
+  // Position transformation for vertex shader
+  const transformPosition = Fn(() => {
+    vUv.assign(uv());
+
+    // Root rotation based on angle attributes
+    const rootQ = vec4(0.0, halfRootAngleSin, 0.0, halfRootAngleCos);
+
+    // Combine with orientation quaternion
+    const combinedQ = qmul(orientation, rootQ);
+
+    // Scale and transform position
+    const scaledPosition = position.xyz.mul(vec3(size, size, size));
+    const transformedPos = applyQuaternion(scaledPosition, combinedQ).add(
+      offset,
+    );
+
+    vPosition.assign(transformedPos);
+
+    // Apply wind effect
+    const windStrength = float(0.3);
+    const windFrequency = float(0.5);
+    const windEffect = pow(position.y, 2.0).mul(windStrength);
+    const windTime = time.mul(windFrequency);
+
+    // Calculate noise for natural movement
+    const noiseValue = noise2D(
+      vec2(vPosition.x.add(windTime), vPosition.z.add(windTime.mul(0.5))),
+    );
+
+    // Wind displacement
+    const windDisplacement = vec3(
+      sin(windTime.add(vPosition.x.mul(0.5)))
+        .mul(noiseValue)
+        .mul(windEffect),
+      0.0,
+      cos(windTime.mul(0.7).add(vPosition.z.mul(0.5)))
+        .mul(noiseValue)
+        .mul(windEffect),
+    );
+
+    // Apply wind only to upper parts of blade
+    const windFactor = smoothstep(0.2, 0.6, position.y);
+    vPosition.assign(vPosition.add(windDisplacement.mul(windFactor)));
+
+    vNormal.assign(applyQuaternion(normalLocal, combinedQ));
+
+    return cameraProjectionMatrix
+      .mul(modelViewMatrix)
+      .mul(vec4(vPosition, 1.0));
+  });
+
+  // Color calculation for fragment shader
+  const calculateColor = Fn(() => {
+    const uvValue = vUv;
+
+    // Calculate moving noise pattern
+    const moveSpeed = float(0.2);
+    const position = vPosition;
+
+    // return fract(vPosition);
+
+    // Create coordinates for noise - only using X and Z to keep color consistent throughout the blade height
+    const noisePos = vec2(
+      position.x.mul(noiseScale).add(time.mul(moveSpeed)),
+      position.z.mul(noiseScale).add(time.mul(moveSpeed).mul(0.7)),
+    );
+
+    // Multi-layered noise
+    const noise1 = snoise(noisePos);
+    const noise2 = snoise(noisePos.mul(2.0)).mul(0.5);
+    const noise3 = snoise(noisePos.mul(4.0)).mul(0.25);
+
+    // Combined noise
+    const combinedNoise = noise1.add(noise2).add(noise3);
+
+    // Static noise - also using world position
+    const staticNoiseScale = float(0.1);
+    const staticNoisePos = vec2(
+      position.x.mul(staticNoiseScale),
+      position.z.mul(staticNoiseScale),
+    );
+
+    // Multi-layered static noise
+    const staticNoise1 = snoise(staticNoisePos);
+    const staticNoise2 = snoise(staticNoisePos.mul(3.0)).mul(0.4);
+    const staticNoise3 = snoise(staticNoisePos.mul(6.0)).mul(0.2);
+
+    // Combine static noise
+    const combinedStaticNoise = staticNoise1
+      .add(staticNoise2)
+      .add(staticNoise3);
+
+    // Blend moving and static noise
+    const finalNoise = combinedNoise.mul(0.6).add(combinedStaticNoise.mul(0.4));
+
+    // Brightness variation
+    const brightnessVariation = finalNoise.mul(0.2).add(0.9);
+
+    // FBM noise for color variation
+    const fbmCoord = vec2(
+      position.x.mul(noiseScale),
+      position.z.mul(noiseScale),
+    ).add(vec2(15.5, 7.2));
+    const fbmValue = fbm(fbmCoord, float(5), float(2.0), float(0.5));
+
+    // Quantize noise
+    const quantizedNoise = floor(fbmValue.mul(noiseQuantize)).div(
+      noiseQuantize,
+    );
+
+    // Height gradient
+    const heightGradient = uvValue.y;
+
+    // Base colors with noise
+    const baseBottomColor = mix(
+      bottomColor,
+      darkPatchColor,
+      quantizedNoise.mul(colorVariation),
+    );
+    const baseTopColor = mix(
+      topColor,
+      lightPatchColor,
+      quantizedNoise.mul(colorVariation),
+    );
+
+    // Gradient color
+    const gradientColor = mix(
+      baseTopColor,
+      baseBottomColor,
+      heightGradient,
+    ).toVar();
+
+    // Apply noise-based color
+    const noiseColor = mix(darkPatchColor, lightPatchColor, fbmValue).toVar();
+    gradientColor.assign(mix(gradientColor, noiseColor, noiseMixStrength));
+
+    // Edge highlighting
+    const edgeHighlight = smoothstep(
+      0.2,
+      0.3,
+      abs(fbmValue.sub(0.5)).mul(2.0),
+    ).mul(edgeHighlightStrength);
+    gradientColor.addAssign(vec3(edgeHighlight));
+
+    const grassColor = gradientColor.toVar();
+    grassColor.mulAssign(brightnessVariation);
+
+    // Root darkening
+    const rootDarkening = float(1.0).sub(
+      pow(max(0.0, uvValue.y.mul(1.3)), 2.0).mul(0.5),
+    );
+    grassColor.mulAssign(rootDarkening);
+
+    // Final base color
+    return grassColor;
+  });
+
+  // Lighting calculation
+  const calculateLighting = Fn<[Node]>(([baseColor]) => {
+    // Normalize vectors
+    const normal = normalize(normalView);
+    const lightDir = normalize(lightDirection);
+
+    // Ambient light
+    const ambient = baseColor.mul(ambientStrength);
+
+    // Diffuse (Lambert)
+    const diff = max(dot(normal, lightDir), 0.0);
+    const diffuse = diff.mul(diffuseStrength).mul(sunColour).mul(baseColor);
+
+    // Specular (Blinn-Phong)
+    const viewDir = normalize(positionView.negate());
+    const halfDir = normalize(lightDir.add(viewDir));
+    const spec = pow(max(dot(normal, halfDir), 0.0), shininess);
+    const specular = spec.mul(specularStrength).mul(sunColour);
+
+    // Translucency
+    const translucency = max(0.0, dot(normal, lightDir).negate()).mul(
+      translucencyStrength,
+    );
+    const transLight = translucency.mul(sunColour).mul(baseColor);
+
+    // Combine lighting
+    return ambient.add(diffuse).add(specular).add(transLight);
+  });
+
+  // Apply the transformations
+  const transformedPosition = transformPosition();
+  material.vertexNode = transformedPosition;
+
+  // Get base color and lighting
+  const baseColor = calculateColor();
+  const finalColor = calculateLighting(baseColor);
+
+  // Set material properties
+  // TODO: Implement alpha handling similar to GLSL (alphaMap + fallback) instead of hardcoded 1.0
+  material.fragmentNode = vec4(finalColor, 1.0);
+  material.alphaTestNode = float(0.1);
+
+  // Material settings
+  material.side = THREE.DoubleSide;
+  material.transparent = false;
+
+  return material;
+});
