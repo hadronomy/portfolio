@@ -1,8 +1,14 @@
 // eslint-disable jsx-no-undef
-import { OrbitControls, Stats, useGLTF } from '@react-three/drei';
+import {
+  AdaptiveDpr,
+  OrbitControls,
+  PerformanceMonitor,
+  Stats,
+  useGLTF,
+} from '@react-three/drei';
 import { Canvas, extend, useThree } from '@react-three/fiber';
 import type React from 'react';
-import { Suspense, useMemo } from 'react';
+import { Suspense, useMemo, useState } from 'react';
 import { createNoise2D } from 'simplex-noise';
 import * as THREE from 'three/webgpu';
 
@@ -23,6 +29,9 @@ export function GrassView(props: GrassViewProps) {
     ...rest
   } = props;
 
+  const [grassCount, _setGrassCount] = useState(50000);
+  const [dpr, setDpr] = useState(1);
+
   return (
     <Canvas
       gl={(props) => {
@@ -33,13 +42,24 @@ export function GrassView(props: GrassViewProps) {
         return renderer.init().then(() => renderer);
       }}
       camera={camera}
+      dpr={dpr}
       {...rest}
     >
-      <ambientLight intensity={10} />
+      <PerformanceMonitor
+        onDecline={(_fps) => {
+          // Reduce grass count when performance drops
+          // setGrassCount((prevCount) => Math.max(5000, prevCount * 0.75));
+          setDpr((prevDpr) => Math.max(0.5, prevDpr * 0.75));
+        }}
+        bounds={(_) => [30, 60]}
+        factor={0.5} // Smoothing factor
+      />
+      <AdaptiveDpr pixelated />
+      <ambientLight intensity={1} />
       {showStats && <Stats />}
       <directionalLight position={[10, 10, 5]} intensity={1} />
       <Suspense>
-        <Grass instances={90000} />
+        <Grass instances={grassCount} />
       </Suspense>
       {children}
       <OrbitControls />
@@ -141,7 +161,7 @@ export function Grass({ instances = 5000 }: GrassProps) {
 
       {/* Ground */}
       <mesh position={[0, 0, 0]} geometry={groundGeo}>
-        <meshStandardMaterial color="#0a3200" roughness={0.8} side={2} />
+        <meshStandardMaterial color="#66a61a" roughness={1.0} side={2} />
       </mesh>
     </group>
   );
@@ -171,9 +191,26 @@ function getAttributeData(instances: number, width: number) {
   // For each instance of the grass blade
   for (let i = 0; i < instances; i++) {
     // Position of the roots
-    const offsetX = Math.random() * width - width / 2;
-    const offsetZ = Math.random() * width - width / 2;
+    // Calculate grid dimensions to distribute grass more evenly
+    const cellsPerSide = Math.ceil(Math.sqrt(instances));
+    const cellSize = width / cellsPerSide;
+
+    // Determine grid position for this instance
+    const gridX = Math.floor(i / cellsPerSide);
+    const gridZ = i % cellsPerSide;
+
+    // Calculate base position (center of grid cell)
+    const baseX = gridX * cellSize - width / 2 + cellSize / 2;
+    const baseZ = gridZ * cellSize - width / 2 + cellSize / 2;
+
+    // Add random offset within the cell (80% of cell size to prevent overlap with adjacent cells)
+    const jitterSize = cellSize * 0.8;
+    const offsetX = baseX + (Math.random() * jitterSize - jitterSize / 2);
+    const offsetZ = baseZ + (Math.random() * jitterSize - jitterSize / 2);
+
+    // Calculate height using noise function
     const offsetY = getYPosition(offsetX, offsetZ);
+
     offsets.push(offsetX, offsetY, offsetZ);
 
     // Random growth directions
@@ -221,10 +258,11 @@ function getAttributeData(instances: number, width: number) {
     );
 
     // Add variety in height
-    if (i < instances / 3) {
-      sizes.push(Math.random() * 1.8);
+    if (Math.random() < 0.33) {
+      // Approximately 1/3 of instances
+      sizes.push(0.8 + Math.random() * 1.0); // Range from 0.8 to 1.8
     } else {
-      sizes.push(Math.random());
+      sizes.push(0.8 + Math.random() * 0.2); // Range from 0.8 to 1.0
     }
   }
 
