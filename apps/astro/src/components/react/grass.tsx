@@ -80,7 +80,7 @@ export function Grass({ instances = 5000 }: GrassProps) {
   // Adjust width based on viewport
   const actualWidth = useMemo(() => {
     const { width: viewWidth, height } = viewport.getCurrentViewport();
-    return Math.max(viewWidth / 2.5, height) * 2;
+    return Math.max(viewWidth / 2.5, height);
   }, [viewport]);
 
   // Use model geometry instead of plane geometry
