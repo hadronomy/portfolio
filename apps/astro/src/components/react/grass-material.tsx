@@ -476,3 +476,20 @@ export const grassNodeMaterial = createNodeMaterial((material) => {
 
   return material;
 });
+
+interface TLSMaterials {
+  // biome-ignore lint/suspicious/noExplicitAny: for now
+  nodeMaterial: any;
+}
+
+declare module 'react' {
+  namespace JSX {
+    interface IntrinsicElements extends TLSMaterials {}
+  }
+}
+
+declare module 'react/jsx-runtime' {
+  namespace JSX {
+    interface IntrinsicElements extends TLSMaterials {}
+  }
+}

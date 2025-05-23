@@ -3,7 +3,7 @@ import {
   AdaptiveDpr,
   OrbitControls,
   PerformanceMonitor,
-  Stats,
+  StatsGl,
   useGLTF,
 } from '@react-three/drei';
 import { Canvas, extend, useThree } from '@react-three/fiber';
@@ -12,8 +12,7 @@ import { Suspense, useMemo, useState } from 'react';
 import { createNoise2D } from 'simplex-noise';
 import * as THREE from 'three/webgpu';
 
-import './GrassMaterial';
-import { grassNodeMaterial } from './GrassMaterial';
+import { grassNodeMaterial } from './grass-material';
 
 const noise2D = createNoise2D(Math.random);
 
@@ -56,7 +55,7 @@ export function GrassView(props: GrassViewProps) {
       />
       <AdaptiveDpr pixelated />
       <ambientLight intensity={1} />
-      {showStats && <Stats />}
+      {showStats && <StatsGl horizontal={false} />}
       <directionalLight position={[10, 10, 5]} intensity={1} />
       <Suspense>
         <Grass instances={grassCount} />
