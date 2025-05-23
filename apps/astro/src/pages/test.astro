@@ -1,12 +1,21 @@
 ---
 import '~/styles/global.css';
 
+import Metadata from '~/components/Metadata.astro';
 import { GrassView } from '~/components/react/grass';
 
 ---
+<html>
+  <head>
+    <Metadata title="Test page" description="threejs test scene" />
+  </head>
+  </head>
+  <body>
+    <main class="dark bg-background w-full h-screen">
+      <GrassView client:load showStats />
+    </main>
+  </body>
+</html>
 
-<main class="dark bg-background w-full h-screen">
-  <GrassView client:load showStats />
-</main>
 
 <style>
