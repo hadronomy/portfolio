@@ -55,7 +55,9 @@ export function GrassView(props: GrassViewProps) {
       />
       <AdaptiveDpr pixelated />
       <ambientLight intensity={1} />
-      {showStats && <StatsGl horizontal={false} />}
+      {showStats && (
+        <StatsGl className="absolute top-0 left-0" horizontal={false} />
+      )}
       <directionalLight position={[10, 10, 5]} intensity={1} />
       <Suspense>
         <Grass instances={grassCount} />
