@@ -1,8 +1,8 @@
-// eslint-disable jsx-no-undef
 import {
   AdaptiveDpr,
   OrbitControls,
   PerformanceMonitor,
+  Plane,
   StatsGl,
   useGLTF,
 } from '@react-three/drei';
@@ -10,9 +10,11 @@ import { Canvas, extend, useThree } from '@react-three/fiber';
 import type React from 'react';
 import { Suspense, useMemo, useState } from 'react';
 import { createNoise2D } from 'simplex-noise';
+import { DEG2RAD } from 'three/src/math/MathUtils.js';
 import * as THREE from 'three/webgpu';
 
 import { grassNodeMaterial } from './grass-material';
+import { gridNodeMaterial } from './grid-material';
 
 const noise2D = createNoise2D(Math.random);
 
@@ -62,9 +64,24 @@ export function GrassView(props: GrassViewProps) {
       <Suspense>
         <Grass instances={grassCount} />
       </Suspense>
+      {showStats && <WorldPlane />}
       {children}
       <OrbitControls />
     </Canvas>
+  );
+}
+
+export function WorldPlane(_props: {}) {
+  const material = gridNodeMaterial();
+
+  return (
+    <Plane
+      position={[0, 0, 0]}
+      scale={[1000, 1000, 0]}
+      rotation={[-90 * DEG2RAD, 0, 0]}
+    >
+      <nodeMaterial {...material} />
+    </Plane>
   );
 }
 
