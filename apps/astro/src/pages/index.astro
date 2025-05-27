@@ -9,6 +9,7 @@ import SkillGrid from '~/components/SkillGrid.astro';
 import MainLayout from '~/layouts/Main.astro';
 
 import { GITHUB_TOKEN } from "astro:env/server";
+import { InteractiveBadge } from '~/components/react/interactive-badge';
 
 // Define the skills array
 const skills = [
@@ -86,9 +87,11 @@ const projects = await response.json();
         <ExperienceTimeline items={experiences} />
       </div>
     </section>
-    <hr class="w-full h-2 "/>
-    <aside class="w-full h-90 hidden md:flex align-middle justify-center items-center">
-      <div class="border-white border-2 w-[33%] h-full"></div>
-    </aside>      
+    <div class="inline-flex flex-col">
+      <hr class="w-full h-0 mb-0"/>
+      <aside class="w-full h-90 hidden md:flex align-middle justify-center items-center">
+        <InteractiveBadge client:load />
+      </aside>
+    </div>
   </main>
 </MainLayout>
