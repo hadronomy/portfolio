@@ -13,6 +13,7 @@ import {
   mix,
   positionLocal,
   positionWorld,
+  saturate,
   smoothstep,
   uniform,
   vec2,
@@ -32,7 +33,7 @@ export const gridNodeMaterial = createNodeMaterial((material) => {
   const CROSS_ARM_LENGTH_REL = float(0.5);
   const CROSS_STROKE_WIDTH_REL = float(0.12);
 
-  const MAIN_LINE_THICKNESS = float(0.001); // Thinner lines
+  const MAIN_LINE_THICKNESS = float(0.005); // Much thinner relative thickness
 
   // Distance fade parameters
   const FADE_START_DISTANCE = float(100.0); // Distance where fade starts
@@ -94,36 +95,43 @@ export const gridNodeMaterial = createNodeMaterial((material) => {
   const mainLineGridUV = worldUV
     .mul(MAIN_LINE_GRID_SCALE)
     .toVar('mainLineGridUV');
-  const mainLineCellUV = fract(mainLineGridUV).toVar('mainLineCellUV');
 
-  // Screen-space derivatives for main grid
-  const mainLineAA = getScreenSpaceAA(mainLineGridUV).toVar('mainLineAA');
+  // Convert sawtooth wave (fract) to triangle wave for better antialiasing
+  const mainLineFractUV = fract(mainLineGridUV).toVar('mainLineFractUV');
+  const mainLineTriangleUV = abs(mainLineFractUV.sub(float(0.5))).toVar(
+    'mainLineTriangleUV',
+  );
 
-  // Calculate distance to cell borders
-  const distToLeft = mainLineCellUV.x.toVar('distToLeft');
-  const distToRight = float(1.0).sub(mainLineCellUV.x).toVar('distToRight');
-  const distToBottom = mainLineCellUV.y.toVar('distToBottom');
-  const distToTop = float(1.0).sub(mainLineCellUV.y).toVar('distToTop');
+  // Create grid gradient that goes from 0 at edges to 0.5 at center
+  const mainLineGradient = float(0.5)
+    .sub(mainLineTriangleUV)
+    .toVar('mainLineGradient');
 
-  // Find minimum distance to any border
-  const distToBorder = min(
-    min(distToLeft, distToRight),
-    min(distToBottom, distToTop),
-  ).toVar('distToBorder');
+  // Use fwidth for proper screen-space derivatives
+  const mainLineFW = length(
+    vec2(dFdx(mainLineGridUV), dFdy(mainLineGridUV)),
+  ).toVar('mainLineFW');
 
-  // Main line thickness in grid space
-  const mainLineThickness = MAIN_LINE_THICKNESS.toVar('mainLineThickness');
+  // Main line thickness in grid space with minimum thickness for antialiasing
+  const baseThickness = MAIN_LINE_THICKNESS.mul(float(0.5)).toVar(
+    'baseThickness',
+  );
+  const minThickness = mainLineFW.mul(float(0.5)).toVar('minThickness');
+  const mainLineThickness = max(baseThickness, minThickness).toVar(
+    'mainLineThickness',
+  );
 
-  // Create border mask with screen-space anti-aliasing
-  const mainLinesMask = float(1.0)
-    .sub(
-      smoothstep(
-        mainLineThickness.div(float(2.0)).sub(mainLineAA),
-        mainLineThickness.div(float(2.0)).add(mainLineAA),
-        distToBorder,
-      ),
-    )
-    .toVar('mainLinesMask');
+  // Apply antialiasing formula: saturate((thickness - gradient) / fwidth + 0.5)
+  const mainLinesX = saturate(
+    mainLineThickness.sub(mainLineGradient.x).div(mainLineFW).add(float(0.5)),
+  ).toVar('mainLinesX');
+
+  const mainLinesY = saturate(
+    mainLineThickness.sub(mainLineGradient.y).div(mainLineFW).add(float(0.5)),
+  ).toVar('mainLinesY');
+
+  // Combine X and Y lines
+  const mainLinesMask = max(mainLinesX, mainLinesY).toVar('mainLinesMask');
 
   // Layer the elements - crosses on top of main lines
   const finalColor = BG_COLOR;
