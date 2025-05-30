@@ -1,9 +1,8 @@
 ---
-import { Button } from '@portfolio/ui/button';
+import { buttonVariants } from '@portfolio/ui/button';
 
 import Github from "~/components/svg/Github.astro";
 import LinkedIn from "~/components/svg/LinkedIn.astro";
-import ComicBubble from './ComicBubble.astro';
 
 const { class: string, ...props } = Astro.props;
 ---
@@ -37,9 +36,9 @@ const { class: string, ...props } = Astro.props;
         </div>
         <span class="text-sm font-medium">Open to work</span>
       </div>
-      <Button className="cursor-pointer relative" variant="linkHover2">
-          Download CV
-      </Button>
+      <a href="/cv.pdf" target="_blank" class={buttonVariants({ variant: 'linkHover2', size: 'sm' })}>
+        Download CV
+      </a>
     </div>
   </div>
   <div class="flex items-center p-3 justify-center relative overflow-visible">

@@ -66,6 +66,7 @@
     "@astrojs/language-server": "catalog:",
     "@iconify-json/iconoir": "catalog:",
     "@iconify-json/ph": "catalog:",
+    "@react-pdf/renderer": "^4.3.0",
     "@shikijs/twoslash": "catalog:",
     "@tailwindcss/vite": "catalog:",
     "@tweakpane/core": "^2.0.5",
