@@ -350,9 +350,6 @@ importers:
       fumadocs-ui:
         specifier: 'catalog:'
         version: 15.3.3(@types/react-dom@19.1.5(@types/react@19.1.4))(@types/react@19.1.4)(algoliasearch@4.24.0)(next@14.1.0(@babel/core@7.27.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(tailwindcss@4.1.7)
-      geist:
-        specifier: ^1.4.2
-        version: 1.4.2(next@14.1.0(@babel/core@7.27.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))
       gsap:
         specifier: ^3.13.0
         version: 3.13.0
@@ -3757,11 +3754,6 @@ packages:
 
   fzf@0.5.2:
     resolution: {integrity: sha512-Tt4kuxLXFKHy8KT40zwsUPUkg1CrsgY25FxA2U/j/0WgEDCk3ddc/zLTCCcbSHX9FcKtLuVaDGtGE/STWC+j3Q==}
-
-  geist@1.4.2:
-    resolution: {integrity: sha512-OQUga/KUc8ueijck6EbtT07L4tZ5+TZgjw8PyWfxo16sL5FWk7gNViPNU8hgCFjy6bJi9yuTP+CRpywzaGN8zw==}
-    peerDependencies:
-      next: '>=13.2.0'
 
   gemoji@4.2.1:
     resolution: {integrity: sha512-V9lUpRSn+KQGavZx8Pk+6mxG3kaz21ae2kTCXuT36KaRPNgYU8eHtj/RcUCNFVvmwppsYYz3nnNS9lmcP5kTsg==}
@@ -9499,10 +9491,6 @@ snapshots:
   function-bind@1.1.2: {}
 
   fzf@0.5.2: {}
-
-  geist@1.4.2(next@14.1.0(@babel/core@7.27.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)):
-    dependencies:
-      next: 14.1.0(@babel/core@7.27.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
 
   gemoji@4.2.1: {}
 
