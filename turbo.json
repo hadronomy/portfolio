@@ -3,6 +3,7 @@
   "globalDependencies": ["**/.env*.local"],
   "globalEnv": ["NODE_ENV", "VERCEL_URL", "PORT"],
   "ui": "tui",
+  "globalPassThroughEnv": ["COREPACK_HOME"],
   "tasks": {
     "start": {
       "dependsOn": ["^start", "build"],
