@@ -129,6 +129,63 @@
     position: relative;
   }
 
+  /* Animations only for users who don't prefer reduced motion */
+  @media (prefers-reduced-motion: no-preference) {
+    /* Initial state for animated elements */
+    main > section,
+    main > div:not(.halftone-bg):not([aria-hidden="true"]),
+    .hero,
+    /* nav, */
+    /* header, */
+    footer,
+    #hero,
+    section {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    /* Auto-animate elements with staggered delays - fast but smooth */
+    main {
+      counter-reset: animation-order;
+    }
+    
+    /* Hero section gets priority after navbar */
+    #hero { animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.05s forwards; }
+
+    /* Main sections animate in sequence with very short delays */
+    main > section:nth-child(1) { animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.1s forwards; }
+    main > section:nth-child(2) { animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.15s forwards; }
+    main > section:nth-child(3) { animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.2s forwards; }
+    main > section:nth-child(4) { animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.25s forwards; }
+    main > section:nth-child(5) { animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.3s forwards; }
+    main > section:nth-child(6) { animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.35s forwards; }
+    
+    /* Main divs animate in sequence - exclude background effects */
+    main > div:nth-child(1):not(.halftone-bg):not([aria-hidden="true"]) { animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.1s forwards; }
+    main > div:nth-child(2):not(.halftone-bg):not([aria-hidden="true"]) { animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.15s forwards; }
+    main > div:nth-child(3):not(.halftone-bg):not([aria-hidden="true"]) { animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.2s forwards; }
+    main > div:nth-child(4):not(.halftone-bg):not([aria-hidden="true"]) { animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.25s forwards; }
+    main > div:nth-child(5):not(.halftone-bg):not([aria-hidden="true"]) { animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.3s forwards; }
+    main > div:nth-child(6):not(.halftone-bg):not([aria-hidden="true"]) { animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.35s forwards; }
+    main > div:nth-child(7):not(.halftone-bg):not([aria-hidden="true"]) { animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.4s forwards; }
+
+    /* Footer animates last */
+    footer { animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.45s forwards; }
+  }
+
+  /* For users who prefer reduced motion, show everything immediately */
+  @media (prefers-reduced-motion: reduce) {
+    main > section,
+    main > div:not(.halftone-bg):not([aria-hidden="true"]),
+    .hero,
+    footer,
+    #hero,
+    section {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
   input,
   textarea,
   button,
@@ -278,8 +335,91 @@
   }
 }
 
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @utility animate-sparkle {
   animation: var(--animate-sparkle);
+}
+
+/* Fade in animation utilities */
+@layer utilities {
+  /* Animations only for users who don't prefer reduced motion */
+  @media (prefers-reduced-motion: no-preference) {
+    .animate-fade-in {
+      animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+    
+    .animate-fade-in-delay-1 {
+      animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.05s forwards;
+    }
+    
+    .animate-fade-in-delay-2 {
+      animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.1s forwards;
+    }
+    
+    .animate-fade-in-delay-3 {
+      animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.15s forwards;
+    }
+    
+    .animate-fade-in-delay-4 {
+      animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.2s forwards;
+    }
+    
+    .animate-fade-in-delay-5 {
+      animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.25s forwards;
+    }
+    
+    .animate-fade-in-delay-6 {
+      animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.3s forwards;
+    }
+    
+    .animate-fade-in-delay-7 {
+      animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.35s forwards;
+    }
+    
+    .animate-fade-in-delay-8 {
+      animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.4s forwards;
+    }
+
+    /* Animation states for users who don't prefer reduced motion */
+    .animate-hidden {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+  }
+
+  /* For users who prefer reduced motion, utility classes show content immediately */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-fade-in,
+    .animate-fade-in-delay-1,
+    .animate-fade-in-delay-2,
+    .animate-fade-in-delay-3,
+    .animate-fade-in-delay-4,
+    .animate-fade-in-delay-5,
+    .animate-fade-in-delay-6,
+    .animate-fade-in-delay-7,
+    .animate-fade-in-delay-8,
+    .animate-hidden {
+      opacity: 1;
+      transform: none;
+      animation: none;
+    }
+  }
+
+  /* This state is always available */
+  .animate-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /** comic bubble, credits: https://github.com/kaisermann/comicbubbles */
