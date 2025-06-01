@@ -86,3 +86,39 @@ export const useRandomInterval = (
 
   return cancel;
 };
+
+export function useTheme() {
+  const [isDark, setIsDark] = React.useState(() => {
+    if (typeof window === 'undefined') {
+      return true; // Default to dark theme on server
+    }
+    return document.documentElement.classList.contains('dark');
+  });
+
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (
+          mutation.type === 'attributes' &&
+          mutation.attributeName === 'class'
+        ) {
+          setIsDark(document.documentElement.classList.contains('dark'));
+        }
+      }
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    });
+
+    // Set initial value
+    setIsDark(document.documentElement.classList.contains('dark'));
+
+    return () => observer.disconnect();
+  }, []);
+
+  return isDark;
+}
