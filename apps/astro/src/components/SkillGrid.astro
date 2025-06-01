@@ -122,32 +122,82 @@ const { skills, emptySlots = 16 } = Astro.props;
     const cards = document.querySelectorAll('.card-wrapper') as NodeListOf<HTMLElement>;
     
     if (gridContainer) {
-      // Set mouse position variables
-      document.addEventListener('mousemove', (e) => {
-        const mouseEvent = e as MouseEvent;
-        
-        // Calculate position for each card
-        cards.forEach(card => {
-          const rect = card.getBoundingClientRect();
+      let animationFrameId: number;
+      let cardRects: DOMRect[] = [];
+      let isMouseInside = false;
+      let lastMouseEvent: MouseEvent | null = null;
+      
+      // Update positions with current mouse position
+      const updatePositions = (e: MouseEvent) => {
+        cards.forEach((card, index) => {
+          const rect = cardRects[index];
+          if (!rect) return;
           
           // Calculate the position of the mouse relative to the card (as a percentage)
-          const relativeX = ((mouseEvent.clientX - rect.left) / rect.width) * 100;
-          const relativeY = ((mouseEvent.clientY - rect.top) / rect.height) * 100;
+          const relativeX = ((e.clientX - rect.left) / rect.width) * 100;
+          const relativeY = ((e.clientY - rect.top) / rect.height) * 100;
           
           // Set the custom properties on each card
           card.style.setProperty('--x-pos', `${relativeX}`);
           card.style.setProperty('--y-pos', `${relativeY}`);
         });
-      });
+      };
+      
+      // Cache card positions and recalculate mouse positions if mouse is inside
+      const updateCardRects = () => {
+        // Only update if mouse is inside or we don't have cached rects yet
+        if (isMouseInside || cardRects.length === 0) {
+          console.log('Updating card rects');
+          cardRects = Array.from(cards).map(card => card.getBoundingClientRect());
+          // If mouse is inside and we have a last mouse position, recalculate
+          if (lastMouseEvent) {
+            updatePositions(lastMouseEvent);
+          }
+        }
+      };
+      
+      // Initial cache
+      updateCardRects();
+      
+      // Update cache on resize and scroll
+      window.addEventListener('resize', updateCardRects);
+      window.addEventListener('scroll', updateCardRects, { passive: true });
+      
+      // Throttled mouse move handler using requestAnimationFrame
+      const handleMouseMove = (e: MouseEvent) => {
+        if (!isMouseInside) return;
+        
+        // Store the last mouse event
+        lastMouseEvent = e;
+        
+        if (animationFrameId) {
+          cancelAnimationFrame(animationFrameId);
+        }
+        
+        animationFrameId = requestAnimationFrame(() => {
+          updatePositions(e);
+        });
+      };
       
       // Handle mouse enter/leave for container
       gridContainer.addEventListener('mouseleave', () => {
+        isMouseInside = false;
+        lastMouseEvent = null;
         document.documentElement.style.setProperty('--card-opacity', '0');
+        if (animationFrameId) {
+          cancelAnimationFrame(animationFrameId);
+        }
       });
       
       gridContainer.addEventListener('mouseenter', () => {
+        isMouseInside = true;
         document.documentElement.style.setProperty('--card-opacity', '1');
+        // Update card rects when entering the container
+        updateCardRects();
       });
+      
+      // Use mousemove on the container instead of document
+      gridContainer.addEventListener('mousemove', handleMouseMove);
     }
   });
 </script>
