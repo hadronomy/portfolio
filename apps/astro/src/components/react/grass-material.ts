@@ -31,6 +31,7 @@ import * as THREE from 'three/webgpu';
 
 import { fbm, noise2D, snoise } from './nodes';
 import { createNodeMaterial } from './nodes/utils';
+import { getTerrainHeight } from './terrain-material';
 
 type Node = THREE.TSL.ShaderNodeObject<THREE.Node>;
 
@@ -39,7 +40,6 @@ export const grassNodeMaterial = createNodeMaterial((material) => {
   const position = attribute('position', 'vec3');
   const offset = attribute('offset', 'vec3');
   const orientation = attribute('orientation', 'vec4');
-  const size = attribute('size', 'float');
   const halfRootAngleSin = attribute('halfRootAngleSin', 'float');
   const halfRootAngleCos = attribute('halfRootAngleCos', 'float');
 
@@ -55,20 +55,6 @@ export const grassNodeMaterial = createNodeMaterial((material) => {
   const shininess = uniform(120);
   const sunColour = uniform(new THREE.Color(1.0, 1.0, 1.0));
   const lightDirection = uniform(new THREE.Vector3(1.0, 0.0, 0.0).normalize());
-
-  // Grass color parameters
-  const bottomColor = uniform(color('#339933'));
-  const topColor = uniform(color('#66a61a'));
-  1;
-  const darkPatchColor = uniform(color('#1a801a'));
-  const lightPatchColor = uniform(color('#8cbf00'));
-
-  // Noise control parameters
-  const noiseScale = uniform(0.05);
-  const noiseQuantize = uniform(4.0);
-  const noiseMixStrength = uniform(0.5);
-  const edgeHighlightStrength = uniform(0.01);
-  const colorVariation = uniform(0.8);
 
   // Quaternion multiplication function
   const qmul = Fn<[Node, Node]>(([q1, q2]) => {
@@ -113,10 +99,11 @@ export const grassNodeMaterial = createNodeMaterial((material) => {
     const combinedQ = qmul(orientation, rootQ);
 
     // Scale and transform position
-    const scaledPosition = position.xyz.mul(vec3(size, size, size));
-    const transformedPos = applyQuaternion(scaledPosition, combinedQ).add(
-      offset,
-    );
+    const transformedPos = applyQuaternion(position.xyz, combinedQ).add(offset);
+
+    // Sample terrain height at the grass position and adjust Y
+    const terrainHeight = getTerrainHeight(transformedPos.xz);
+    transformedPos.y.assign(transformedPos.y.add(terrainHeight));
 
     vPosition.assign(transformedPos);
 
@@ -156,107 +143,7 @@ export const grassNodeMaterial = createNodeMaterial((material) => {
   // Color calculation for fragment shader
   const calculateColor = Fn(() => {
     const uvValue = vUv;
-
-    // Calculate moving noise pattern
-    const moveSpeed = float(0.2);
-    const position = vPosition;
-
-    // return fract(vPosition);
-
-    // Create coordinates for noise - only using X and Z to keep color consistent throughout the blade height
-    const noisePos = vec2(
-      position.x.mul(noiseScale).add(time.mul(moveSpeed)),
-      position.z.mul(noiseScale).add(time.mul(moveSpeed).mul(0.7)),
-    );
-
-    // Multi-layered noise
-    const noise1 = snoise(noisePos);
-    const noise2 = snoise(noisePos.mul(2.0)).mul(0.5);
-    const noise3 = snoise(noisePos.mul(4.0)).mul(0.25);
-
-    // Combined noise
-    const combinedNoise = noise1.add(noise2).add(noise3);
-
-    // Static noise - also using world position
-    const staticNoiseScale = float(0.1);
-    const staticNoisePos = vec2(
-      position.x.mul(staticNoiseScale),
-      position.z.mul(staticNoiseScale),
-    );
-
-    // Multi-layered static noise
-    const staticNoise1 = snoise(staticNoisePos);
-    const staticNoise2 = snoise(staticNoisePos.mul(3.0)).mul(0.4);
-    const staticNoise3 = snoise(staticNoisePos.mul(6.0)).mul(0.2);
-
-    // Combine static noise
-    const combinedStaticNoise = staticNoise1
-      .add(staticNoise2)
-      .add(staticNoise3);
-
-    // Blend moving and static noise
-    const finalNoise = combinedNoise.mul(0.6).add(combinedStaticNoise.mul(0.4));
-
-    // Brightness variation
-    const brightnessVariation = finalNoise.mul(0.2).add(0.9);
-
-    // FBM noise for color variation
-    const fbmCoord = vec2(
-      position.x.mul(noiseScale),
-      position.z.mul(noiseScale),
-    ).add(vec2(15.5, 7.2));
-    const fbmValue = fbm(fbmCoord, float(5), float(2.0), float(0.5));
-
-    // Quantize noise
-    const quantizedNoise = floor(fbmValue.mul(noiseQuantize)).div(
-      noiseQuantize,
-    );
-
-    // Height gradient
-    const heightGradient = uvValue.y;
-
-    // Base colors with noise
-    const baseBottomColor = mix(
-      bottomColor,
-      darkPatchColor,
-      quantizedNoise.mul(colorVariation),
-    );
-    const baseTopColor = mix(
-      topColor,
-      lightPatchColor,
-      quantizedNoise.mul(colorVariation),
-    );
-
-    // Gradient color
-    const gradientColor = mix(
-      baseTopColor,
-      baseBottomColor,
-      heightGradient,
-    ).toVar();
-
-    // Apply noise-based color
-    const noiseColor = mix(darkPatchColor, lightPatchColor, fbmValue).toVar();
-    gradientColor.assign(mix(gradientColor, noiseColor, noiseMixStrength));
-
-    // Edge highlighting
-    const edgeHighlight = smoothstep(
-      0.2,
-      0.3,
-      abs(fbmValue.sub(0.5)).mul(2.0),
-    ).mul(edgeHighlightStrength);
-    gradientColor.addAssign(vec3(edgeHighlight));
-
-    const grassColor = gradientColor.toVar();
-    grassColor.mulAssign(brightnessVariation);
-
-    // Root darkening
-    const rootDarkening = float(1.0).sub(
-      pow(max(0.0, uvValue.y.mul(1.3)), 2.0).mul(0.5),
-    );
-    grassColor.mulAssign(rootDarkening);
-
-    // Final base color
-    return grassColor;
+    return calculateGrassColor(vPosition, uvValue);
   });
 
   // Lighting calculation
@@ -306,4 +193,113 @@ export const grassNodeMaterial = createNodeMaterial((material) => {
   material.transparent = false;
 
   return material;
+});
+
+// Export the grass color calculation for reuse in terrain
+export const calculateGrassColor = Fn<[Node, Node]>(([position, uvValue]) => {
+  // Grass color parameters
+  const bottomColor = uniform(color('#339933'));
+  const topColor = uniform(color('#66a61a'));
+  const darkPatchColor = uniform(color('#1a801a'));
+  const lightPatchColor = uniform(color('#8cbf00'));
+
+  // Noise control parameters
+  const noiseScale = uniform(0.05);
+  const noiseQuantize = uniform(4.0);
+  const noiseMixStrength = uniform(0.5);
+  const edgeHighlightStrength = uniform(0.01);
+  const colorVariation = uniform(0.8);
+
+  // Calculate moving noise pattern
+  const moveSpeed = float(0.2);
+
+  // Create coordinates for noise - only using X and Z to keep color consistent throughout the blade height
+  const noisePos = vec2(
+    position.x.mul(noiseScale).add(time.mul(moveSpeed)),
+    position.z.mul(noiseScale).add(time.mul(moveSpeed).mul(0.7)),
+  );
+
+  // Multi-layered noise
+  const noise1 = snoise(noisePos);
+  const noise2 = snoise(noisePos.mul(2.0)).mul(0.5);
+  const noise3 = snoise(noisePos.mul(4.0)).mul(0.25);
+
+  // Combined noise
+  const combinedNoise = noise1.add(noise2).add(noise3);
+
+  // Static noise - also using world position
+  const staticNoiseScale = float(0.1);
+  const staticNoisePos = vec2(
+    position.x.mul(staticNoiseScale),
+    position.z.mul(staticNoiseScale),
+  );
+
+  // Multi-layered static noise
+  const staticNoise1 = snoise(staticNoisePos);
+  const staticNoise2 = snoise(staticNoisePos.mul(3.0)).mul(0.4);
+  const staticNoise3 = snoise(staticNoisePos.mul(6.0)).mul(0.2);
+
+  // Combine static noise
+  const combinedStaticNoise = staticNoise1.add(staticNoise2).add(staticNoise3);
+
+  // Blend moving and static noise
+  const finalNoise = combinedNoise.mul(0.6).add(combinedStaticNoise.mul(0.4));
+
+  // Brightness variation
+  const brightnessVariation = finalNoise.mul(0.2).add(0.9);
+
+  // FBM noise for color variation
+  const fbmCoord = vec2(
+    position.x.mul(noiseScale),
+    position.z.mul(noiseScale),
+  ).add(vec2(15.5, 7.2));
+  const fbmValue = fbm(fbmCoord, float(5), float(2.0), float(0.5));
+
+  // Quantize noise
+  const quantizedNoise = floor(fbmValue.mul(noiseQuantize)).div(noiseQuantize);
+
+  // Height gradient
+  const heightGradient = uvValue.y;
+
+  // Base colors with noise
+  const baseBottomColor = mix(
+    bottomColor,
+    darkPatchColor,
+    quantizedNoise.mul(colorVariation),
+  );
+  const baseTopColor = mix(
+    topColor,
+    lightPatchColor,
+    quantizedNoise.mul(colorVariation),
+  );
+
+  // Gradient color
+  const gradientColor = mix(
+    baseTopColor,
+    baseBottomColor,
+    heightGradient,
+  ).toVar();
+
+  // Apply noise-based color
+  const noiseColor = mix(darkPatchColor, lightPatchColor, fbmValue).toVar();
+  gradientColor.assign(mix(gradientColor, noiseColor, noiseMixStrength));
+
+  // Edge highlighting
+  const edgeHighlight = smoothstep(
+    0.2,
+    0.3,
+    abs(fbmValue.sub(0.5)).mul(2.0),
+  ).mul(edgeHighlightStrength);
+  gradientColor.addAssign(vec3(edgeHighlight));
+
+  const grassColor = gradientColor.toVar();
+  grassColor.mulAssign(brightnessVariation);
+
+  // Root darkening
+  const rootDarkening = float(1.0).sub(
+    pow(max(0.0, uvValue.y.mul(1.3)), 2.0).mul(0.5),
+  );
+  grassColor.mulAssign(rootDarkening);
+
+  return grassColor;
 });

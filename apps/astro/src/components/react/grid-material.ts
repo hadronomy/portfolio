@@ -51,7 +51,9 @@ export const gridNodeMaterial = createNodeMaterial((material) => {
 
   // Screen-space anti-aliasing helper
   const getScreenSpaceAA = Fn<[Node]>(([coord]) => {
-    const fw = length(vec2(dFdx(coord), dFdy(coord)));
+    const dfdx = dFdx(coord);
+    const dfdy = dFdy(coord);
+    const fw = length(vec2(dfdx.x, dfdy.x));
     return fw;
   });
 
@@ -109,7 +111,7 @@ export const gridNodeMaterial = createNodeMaterial((material) => {
 
   // Use fwidth for proper screen-space derivatives
   const mainLineFW = length(
-    vec2(dFdx(mainLineGridUV), dFdy(mainLineGridUV)),
+    vec2(dFdx(mainLineGridUV.x), dFdy(mainLineGridUV.x)),
   ).toVar('mainLineFW');
 
   // Main line thickness in grid space with minimum thickness for antialiasing

@@ -6,17 +6,15 @@ import {
   StatsGl,
   useGLTF,
 } from '@react-three/drei';
-import { Canvas, extend, useThree } from '@react-three/fiber';
+import { Canvas, extend } from '@react-three/fiber';
 import type React from 'react';
 import { Suspense, useMemo, useState } from 'react';
-import { createNoise2D } from 'simplex-noise';
 import { DEG2RAD } from 'three/src/math/MathUtils.js';
 import * as THREE from 'three/webgpu';
 
 import { grassNodeMaterial } from './grass-material';
 import { gridNodeMaterial } from './grid-material';
-
-const noise2D = createNoise2D(Math.random);
+import { terrainNodeMaterial } from './terrain-material';
 
 export interface GrassViewProps extends React.ComponentProps<typeof Canvas> {
   showStats?: boolean;
@@ -25,13 +23,20 @@ export interface GrassViewProps extends React.ComponentProps<typeof Canvas> {
 export function GrassView(props: GrassViewProps) {
   const {
     children,
-    camera = { position: [0, 30, 0], fov: 35 },
+    camera = {
+      position: [0, 2, 5],
+      rotation: [-0.0001, 0, 0],
+      fov: 35,
+      near: 0.001,
+      far: 1000,
+    },
     showStats,
     ...rest
   } = props;
 
-  const [grassCount, _setGrassCount] = useState(50000);
+  const [grassCount, _setGrassCount] = useState(250000);
   const [dpr, setDpr] = useState(1);
+  const [isHovering, setIsHovering] = useState(false);
 
   return (
     <Canvas
@@ -42,18 +47,22 @@ export function GrassView(props: GrassViewProps) {
         const renderer = new THREE.WebGPURenderer(props);
         return renderer.init().then(() => renderer);
       }}
+      frameloop={showStats || isHovering ? 'always' : 'demand'}
       camera={camera}
       dpr={dpr}
+      onPointerEnter={() => setIsHovering(true)}
+      onPointerLeave={() => setIsHovering(false)}
       {...rest}
     >
       <PerformanceMonitor
         onDecline={(_fps) => {
-          // Reduce grass count when performance drops
-          // setGrassCount((prevCount) => Math.max(5000, prevCount * 0.75));
           setDpr((prevDpr) => Math.max(0.5, prevDpr * 0.75));
         }}
+        onIncline={(_fps) => {
+          setDpr((prevDpr) => Math.min(2, prevDpr * 1.1));
+        }}
         bounds={(_) => [30, 60]}
-        factor={0.5} // Smoothing factor
+        factor={0.5}
       />
       <AdaptiveDpr pixelated />
       <ambientLight intensity={1} />
@@ -66,7 +75,7 @@ export function GrassView(props: GrassViewProps) {
       </Suspense>
       {showStats && <WorldPlane />}
       {children}
-      <OrbitControls />
+      {showStats && <OrbitControls />}
     </Canvas>
   );
 }
@@ -91,15 +100,11 @@ interface GrassProps {
 
 export function Grass({ instances = 5000 }: GrassProps) {
   // Use a more specific type for materialRef
-  const { viewport } = useThree();
   const { nodes, materials: _ } = useGLTF('/anime-grass.glb');
   const bladeMesh = nodes.GrassBlade as THREE.Mesh;
 
   // Adjust width based on viewport
-  const actualWidth = useMemo(() => {
-    const { width: viewWidth, height } = viewport.getCurrentViewport();
-    return Math.max(viewWidth / 2.5, height);
-  }, [viewport]);
+  const actualWidth = 100;
 
   // Use model geometry instead of plane geometry
   const baseGeometry = useMemo(() => {
@@ -116,34 +121,29 @@ export function Grass({ instances = 5000 }: GrassProps) {
     return modelGeometry;
   }, [bladeMesh.geometry]);
 
-  // Generate ground geometry with noise
-  const groundGeo = useMemo(() => {
-    const geo = new THREE.PlaneGeometry(actualWidth, actualWidth, 32, 32);
-    geo.rotateX(-Math.PI / 2);
-
-    // Apply height variation using simplex noise
-    const positionAttribute = geo.getAttribute('position');
-    for (let i = 0; i < positionAttribute.count; i++) {
-      const x = positionAttribute.getX(i);
-      const z = positionAttribute.getZ(i);
-      const y = getYPosition(x, z);
-      positionAttribute.setY(i, y);
-    }
-
-    geo.computeVertexNormals();
+  // Generate terrain geometry - large plane that can be repositioned
+  const terrainGeo = useMemo(() => {
+    const geo = new THREE.PlaneGeometry(1000, 1000, 256, 256);
+    geo.rotateX(-Math.PI * 0.5);
     return geo;
-  }, [actualWidth]);
+  }, []);
 
   const material = useMemo(() => grassNodeMaterial(), []);
+  const terrainMaterial = useMemo(() => terrainNodeMaterial(), []);
 
-  // Get attribute data for all instances
+  // Get attribute data for all instances (no height calculation needed)
   const attributeData = useMemo(
     () => getAttributeData(instances, actualWidth),
-    [instances, actualWidth],
+    [instances],
   );
 
   return (
     <group>
+      {/* Procedural terrain */}
+      <mesh geometry={terrainGeo} receiveShadow castShadow>
+        <nodeMaterial {...terrainMaterial} />
+      </mesh>
+
       {/* Grass instances */}
       <mesh>
         <instancedBufferGeometry
@@ -162,10 +162,6 @@ export function Grass({ instances = 5000 }: GrassProps) {
             args={[new Float32Array(attributeData.orientations), 4]}
           />
           <instancedBufferAttribute
-            attach={'attributes-size'}
-            args={[new Float32Array(attributeData.sizes), 1]}
-          />
-          <instancedBufferAttribute
             attach={'attributes-halfRootAngleSin'}
             args={[new Float32Array(attributeData.halfRootAngleSin), 1]}
           />
@@ -176,20 +172,11 @@ export function Grass({ instances = 5000 }: GrassProps) {
         </instancedBufferGeometry>
         <nodeMaterial {...material} />
       </mesh>
-
-      {/* Ground */}
-      <mesh position={[0, 0, 0]} geometry={groundGeo}>
-        <meshStandardMaterial color="#66a61a" roughness={1.0} side={2} />
-      </mesh>
     </group>
   );
 }
 
 useGLTF.preload('/anime-grass.glb');
-
-export function isMeshType(object?: THREE.Object3D): object is THREE.Mesh {
-  return object?.type === 'Mesh';
-}
 
 // Helper functions
 function getAttributeData(instances: number, width: number) {
@@ -226,8 +213,8 @@ function getAttributeData(instances: number, width: number) {
     const offsetX = baseX + (Math.random() * jitterSize - jitterSize / 2);
     const offsetZ = baseZ + (Math.random() * jitterSize - jitterSize / 2);
 
-    // Calculate height using noise function
-    const offsetY = getYPosition(offsetX, offsetZ);
+    // No height calculation needed - GPU will handle it
+    const offsetY = 0;
 
     offsets.push(offsetX, offsetY, offsetZ);
 
@@ -301,9 +288,4 @@ function multiplyQuaternions(q1: THREE.Vector4, q2: THREE.Vector4) {
   return new THREE.Vector4(x, y, z, w);
 }
 
-function getYPosition(x: number, z: number) {
-  let y = 2 * noise2D(x / 50, z / 50);
-  y += 4 * noise2D(x / 100, z / 100);
-  y += 0.2 * noise2D(x / 10, z / 10);
-  return y;
-}
+// Remove getYPosition function since it's now handled by terrain material
