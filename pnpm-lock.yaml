@@ -290,6 +290,9 @@ importers:
       '@fontsource/bellota':
         specifier: 'catalog:'
         version: 5.2.5
+      '@fontsource/maple-mono':
+        specifier: ^5.2.5
+        version: 5.2.5
       '@fontsource/monaspace-neon':
         specifier: 'catalog:'
         version: 5.2.5
@@ -1300,6 +1303,9 @@ packages:
 
   '@fontsource/bellota@5.2.5':
     resolution: {integrity: sha512-ssqebZjjZfl1Bqqg+iXmJPvG7ul//RM5y5soTQsVFwEb4TgmCk01/pwFddFVC/4dYzmvcKLPziFy3cI9/mYPCQ==}
+
+  '@fontsource/maple-mono@5.2.5':
+    resolution: {integrity: sha512-iJR/yQj+7DatkzxJNMu3+1gvq1YOHhCjlS6MBOys/Fw/BEDnhC65mp3RZoBXDbk+00flvRO9b9G/IvxBk82Ekw==}
 
   '@fontsource/monaspace-neon@5.2.5':
     resolution: {integrity: sha512-TjSSuHC37DroyhP5YCKRCAxdUb3In/uqHzqqW/8Ul+JWilz37d8lr8jFeapnbD3QdYXgiQoU2Rf/CmTdyl06DA==}
@@ -6751,6 +6757,8 @@ snapshots:
   '@fontsource-variable/onest@5.2.8': {}
 
   '@fontsource/bellota@5.2.5': {}
+
+  '@fontsource/maple-mono@5.2.5': {}
 
   '@fontsource/monaspace-neon@5.2.5': {}
 

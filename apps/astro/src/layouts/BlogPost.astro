@@ -1,6 +1,4 @@
 ---
-import monaspaceNeonWoff2 from '@fontsource/monaspace-neon/files/monaspace-neon-latin-400-normal.woff2?url';
-
 import type { CollectionEntry } from 'astro:content';
 
 import { Icon } from 'astro-icon/components';
@@ -9,6 +7,7 @@ import { format } from 'date-fns';
 import HalftoneEffect from '~/components/HalftoneEffect.astro';
 import Metadata from '~/components/Metadata.astro';
 import Navbar from '~/components/Navbar.astro';
+
 
 type Props = CollectionEntry<'blog'>['data'] & {
   remarkPluginFrontmatter: Record<string, any>;
@@ -29,13 +28,6 @@ function formatDuration(duration: number) {
     <Metadata title={title} description={description} />
     <!-- Preload Monospace Font -->
     <link
-      rel="preload"
-      as="font"
-      type="font/woff2"
-      href={monaspaceNeonWoff2}
-      crossorigin="anonymous"
-    />
-    <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css"
       integrity="sha384-MlJdn/WNKDGXveldHDdyRP1R4CTHr3FeuDNfhsLPYrq2t0UBkUdK2jyTnXPEK1NQ"
@@ -50,7 +42,7 @@ function formatDuration(duration: number) {
         class="py-32 grid grid-cols-[1fr_min(75ch,calc(100%-1.5rem))_1fr] px-3 *:col-start-2"
       >
         <header class="mb-8 flex flex-col gap-y-2 text-lg">
-          <div class="flex flex-row gap-x-2">
+          <div class="flex flex-row gap-x-2 font-mono text-sm">
             <time datetime={format(pubDate, 'yyyy-MM-dd')} class="text-foreground/60">
               {format(new Date(pubDate), 'MMMM eo, yyyy')}
             </time>

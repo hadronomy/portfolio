@@ -19,6 +19,7 @@
     "@expressive-code/plugin-line-numbers": "catalog:",
     "@fontsource-variable/onest": "catalog:",
     "@fontsource/bellota": "catalog:",
+    "@fontsource/maple-mono": "^5.2.5",
     "@fontsource/monaspace-neon": "catalog:",
     "@iconify-json/logos": "^1.2.4",
     "@iconify-json/mdi": "^1.2.3",
