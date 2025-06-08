@@ -41,6 +41,16 @@ export default defineConfig({
   env: {
     schema: {
       GITHUB_TOKEN: envField.string({ context: 'server', access: 'secret' }),
+      CERTIFICATE_P12: envField.string({
+        context: 'server',
+        access: 'secret',
+        optional: true,
+      }),
+      CERTIFICATE_PASSWORD: envField.string({
+        context: 'server',
+        access: 'secret',
+        optional: true,
+      }),
     },
   },
   integrations: [
