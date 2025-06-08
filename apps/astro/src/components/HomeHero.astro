@@ -1,5 +1,6 @@
 ---
 import { buttonVariants } from '@portfolio/ui/button';
+import { Icon } from 'astro-icon/components';
 
 import Github from "~/components/svg/Github.astro";
 import LinkedIn from "~/components/svg/LinkedIn.astro";
@@ -37,6 +38,7 @@ const { class: string, ...props } = Astro.props;
         <span class="text-sm font-medium">Open to work</span>
       </div>
       <a href="/cv.pdf" target="_blank" class={buttonVariants({ variant: 'linkHover2', size: 'sm' })}>
+        <Icon name="tabler:download" class="h-4 w-4 mr-1" />
         Download CV
       </a>
     </div>

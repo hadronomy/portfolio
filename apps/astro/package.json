@@ -66,7 +66,9 @@
   "devDependencies": {
     "@astrojs/language-server": "catalog:",
     "@iconify-json/iconoir": "catalog:",
+    "@iconify-json/material-icon-theme": "^1.2.11",
     "@iconify-json/ph": "catalog:",
+    "@iconify-json/vscode-icons": "^1.2.22",
     "@react-pdf/renderer": "^4.3.0",
     "@shikijs/twoslash": "catalog:",
     "@tailwindcss/vite": "catalog:",

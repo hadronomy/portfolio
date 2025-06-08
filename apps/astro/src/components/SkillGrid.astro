@@ -11,23 +11,39 @@ interface Props {
   emptySlots?: number; // Optional number of empty slots to fill the grid
 }
 
-const { skills, emptySlots = 16 } = Astro.props;
+const { skills, emptySlots } = Astro.props;
+
+// Calculate empty slots to fill complete rows
+// Grid has 3 cols on mobile, 6 on md, 8 on lg
+// We'll calculate for the largest grid (8 cols) to ensure proper layout
+const maxCols = 8;
+const skillCount = skills.length;
+const rowsNeeded = Math.ceil(skillCount / maxCols);
+const totalSlotsNeeded = rowsNeeded * maxCols;
+const calculatedEmptySlots = totalSlotsNeeded - skillCount;
+
+const finalEmptySlots = emptySlots ?? calculatedEmptySlots;
 ---
 
 <div class="grid-container relative">
   <div class="grid grid-cols-3 md:grid-cols-6 lg:grid-cols-8 gap-4 w-full p-4 mt-4 rounded-2xl">
     {
       skills.map((skill) => (
-        <div class="card-wrapper bg-muted">
-          <div class="card-content">
-            <Icon name={skill.icon} class="h-full w-full p-2" />
+        <div class="card-container">
+          <div class="card-wrapper bg-muted" data-skill-name={skill.name}>
+            <div class="card-content">
+              <Icon name={skill.icon} class="h-full w-full p-2" />
+            </div>
+          </div>
+          <div class="tooltip" role="tooltip">
+            {skill.name}
           </div>
         </div>
       ))
     }
     {
       // Add empty slots to fill the grid
-      Array(emptySlots).fill(0).map(() => (
+      Array(finalEmptySlots).fill(0).map(() => (
         <div class="card-wrapper">
           <div class="card-content"></div>
         </div>
@@ -55,13 +71,21 @@ const { skills, emptySlots = 16 } = Astro.props;
 
   .grid-container {
     position: relative;
-    overflow: hidden;
+  }
+
+  .card-container {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    min-height: 4rem;
+    max-width: 6rem;
+    margin: 0 auto;
   }
 
   .card-wrapper {
     position: relative;
-    width: 5rem;
-    height: 5rem;
+    width: 100%;
+    height: 100%;
     border-radius: 1rem;
     overflow: hidden;
     z-index: 1;
@@ -100,10 +124,60 @@ const { skills, emptySlots = 16 } = Astro.props;
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
   }
 
   .grid-container:hover .card-wrapper::before {
     opacity: var(--card-opacity);
+  }
+
+  .tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    font-weight: 500;
+    white-space: nowrap;
+    z-index: 100;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease;
+    pointer-events: none;
+    border: 1px solid hsl(var(--border));
+    margin-bottom: 0.5rem;
+  }
+
+  .tooltip::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: hsl(var(--background));
+  }
+
+  .tooltip::before {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 7px solid transparent;
+    border-top-color: hsl(var(--border));
+    z-index: -1;
+  }
+
+  .card-container:hover .tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(-4px);
   }
 
   @keyframes spin {
@@ -119,7 +193,8 @@ const { skills, emptySlots = 16 } = Astro.props;
 <script>
   document.addEventListener('DOMContentLoaded', () => {
     const gridContainer = document.querySelector('.grid-container') as HTMLElement;
-    const cards = document.querySelectorAll('.card-wrapper') as NodeListOf<HTMLElement>;
+    const cardWrappers = document.querySelectorAll('.card-wrapper') as NodeListOf<HTMLElement>;
+    const cardContainers = document.querySelectorAll('.card-container') as NodeListOf<HTMLElement>;
     
     if (gridContainer) {
       let animationFrameId: number;
@@ -129,7 +204,7 @@ const { skills, emptySlots = 16 } = Astro.props;
       
       // Update positions with current mouse position
       const updatePositions = (e: MouseEvent) => {
-        cards.forEach((card, index) => {
+        cardWrappers.forEach((card, index) => {
           const rect = cardRects[index];
           if (!rect) return;
           
@@ -142,13 +217,40 @@ const { skills, emptySlots = 16 } = Astro.props;
           card.style.setProperty('--y-pos', `${relativeY}`);
         });
       };
+
+      // Simple tooltip positioning
+      const handleTooltipPosition = (container: HTMLElement) => {
+        const tooltip = container.querySelector('.tooltip') as HTMLElement;
+        if (!tooltip) return;
+
+        const containerRect = container.getBoundingClientRect();
+        const tooltipRect = tooltip.getBoundingClientRect();
+        const viewportWidth = window.innerWidth;
+
+        // Reset tooltip position
+        tooltip.style.left = '50%';
+        tooltip.style.right = 'auto';
+        tooltip.style.transform = 'translateX(-50%)';
+
+        // Check if tooltip overflows viewport horizontally
+        const tooltipLeft = containerRect.left + containerRect.width / 2 - tooltipRect.width / 2;
+        const tooltipRight = tooltipLeft + tooltipRect.width;
+
+        if (tooltipLeft < 8) {
+          tooltip.style.left = '0';
+          tooltip.style.transform = 'translateX(0)';
+        } else if (tooltipRight > viewportWidth - 8) {
+          tooltip.style.left = 'auto';
+          tooltip.style.right = '0';
+          tooltip.style.transform = 'translateX(0)';
+        }
+      };
       
       // Cache card positions and recalculate mouse positions if mouse is inside
       const updateCardRects = () => {
         // Only update if mouse is inside or we don't have cached rects yet
         if (isMouseInside || cardRects.length === 0) {
-          console.log('Updating card rects');
-          cardRects = Array.from(cards).map(card => card.getBoundingClientRect());
+          cardRects = Array.from(cardWrappers).map(card => card.getBoundingClientRect());
           // If mouse is inside and we have a last mouse position, recalculate
           if (lastMouseEvent) {
             updatePositions(lastMouseEvent);
@@ -178,6 +280,13 @@ const { skills, emptySlots = 16 } = Astro.props;
           updatePositions(e);
         });
       };
+
+      // Add hover event listeners for tooltip positioning
+      cardContainers.forEach((container) => {
+        container.addEventListener('mouseenter', () => {
+          setTimeout(() => handleTooltipPosition(container), 10);
+        });
+      });
       
       // Handle mouse enter/leave for container
       gridContainer.addEventListener('mouseleave', () => {
