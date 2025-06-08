@@ -1,6 +1,7 @@
 import {
   Document,
   Font,
+  Image,
   Page,
   StyleSheet,
   Text,
@@ -65,7 +66,6 @@ interface CVData {
     logo?: string;
   }>;
   skills: {
-    design: string[];
     development: string[];
     tools: string[];
   };
@@ -73,26 +73,19 @@ interface CVData {
 
 const defaultData: CVData = {
   personalInfo: {
-    name: 'John Smith',
-    title: 'UX Designer',
-    email: 'chiara.bianchi@gmail.com',
-    phone: '(+39) 333 0123 765',
-    location: 'Bologna, Italy',
-    website: 'https://aldesign.it',
-    quote: 'Every great design begins with an even better story.',
-    quoteAuthor: 'Lorinda Mamo',
+    name: 'Pablo Hernández',
+    title: 'Software Developer',
+    email: 'hadronomy@gmail.com',
+    phone: '(+32) 608 73 31 18',
+    location: 'Canary Islands, Spain',
+    website: 'https://hadronomy.com',
+    quote: "Code is like humor. When you have to explain it, it's bad.",
+    quoteAuthor: 'Cory House',
   },
-  socials: [
-    { platform: 'Instagram', handle: '@chiara.designs' },
-    { platform: 'Dribbble', handle: '@chiara-designs' },
-    { platform: 'Twitter', handle: '@chiaradesigns' },
-    { platform: 'LinkedIn', handle: 'chiara-bianchi-123' },
-  ],
+  socials: [{ platform: 'Github', handle: '@hadronomy' }],
   languages: [
-    { name: 'Italian', level: 'Native' },
-    { name: 'Greek', level: 'Native' },
-    { name: 'English', level: 'Professional working' },
-    { name: 'Spanish', level: 'Elementary' },
+    { name: 'Spanish', level: 'Native' },
+    { name: 'English', level: 'C1' },
   ],
   projects: [
     {
@@ -110,59 +103,58 @@ const defaultData: CVData = {
   ],
   experience: [
     {
-      title: 'Product designer',
-      company: 'Apple',
-      duration: 'Jul 20 - Jan 2022',
-      location: 'Cupertino',
+      title: 'Computer Science Student',
+      company: 'Universidad de La Laguna',
+      duration: '2021 - 2025',
+      location: 'Canary Islands, Spain',
       description:
-        'Omnis minima inventore minus. Aut et incidunt. Aut fugiat culpa illum optio dolorum aut maxima ipsa. Liborum molestiae enim consectetur perspiciatis. Dolore ullam dolor magnis dolorum recusandae facilis quis qui officiis.',
+        'Studied advanced algorithms, software architecture, and full-stack development. Participated in coding competitions and led student projects.',
     },
     {
-      title: 'UX designer',
-      company: 'Tesla',
-      duration: 'Oct 2019 - Mar 2020',
-      location: 'Austin',
+      title: 'Self-Taught Programmer',
+      company: 'Self',
+      duration: '2014 - Present',
+      location: 'Various',
       description:
-        'Consequatur ullam aut eos assumenda autem aperiam occaecat voluptates. Fugit quasi est soluta nesciunt et beatae. Maiores repudiandae quisquam autem enim ut in possimus est.',
-    },
-    {
-      title: 'Design system architect',
-      company: 'Google',
-      duration: 'Sep 2014 - Aug 2015',
-      location: 'Mountain View',
-      description:
-        'Ut molestias omnis. Fugue voluptate velit corporis adipisci voluptate et qui sed neque. Inventore eos non. Qui eveniet quo incidunt nemo.',
-    },
-    {
-      title: 'Design system architect',
-      company: 'Vectornator',
-      duration: 'Sep 2010 - Jul 2013',
-      location: 'Berlin',
-      description:
-        'Nam in fugiat aut consequatur dolorem. Commodi animi impedit modi aspernatur imperdiet ut qui aut eligendi quibusdam. Fugit laborum ducimus filo tempore velit. Sed vitae et commodi odit tempor. Unde voluptates quaerat sit nihil aspernatur vitae et commodi odit tempor. Unde voluptates quaerat sit nihil aspernatur eveniet voluptatum.',
+        'Over 10 years of continuous learning across all fields of programming. From web development to systems programming, exploring various languages, frameworks, and paradigms through personal projects and open-source contributions.',
     },
   ],
   education: [
     {
-      course: 'Build a design system',
-      institution: 'Memorisely',
-      date: 'Oct 2021',
-    },
-    {
-      course: 'UX Design certificate',
-      institution: 'UX academy',
-      date: 'Feb 2020',
-    },
-    {
-      course: 'User research course',
-      institution: 'Coursera',
-      date: 'Dec 2019',
+      course: 'Computer Science Degree',
+      institution: 'Universidad de La Laguna',
+      date: '2021 - 2025',
     },
   ],
   skills: {
-    design: ['Wireframing', 'Prototyping', 'Testing'],
-    development: ['React JS', 'Chakra UI', 'Emotion', 'Framer'],
-    tools: ['Figma', 'Maze', 'Spline', 'Zeplin'],
+    development: [
+      'TypeScript',
+      'JavaScript',
+      'React',
+      'Rust',
+      'Python',
+      'C++',
+      'Node.js',
+      'Next.js',
+      'Go',
+      'Zig',
+      'WebAssembly',
+      'HTML',
+      'CSS',
+      'Astro',
+      'Tailwind CSS',
+      'Three.js',
+    ],
+    tools: [
+      'Docker',
+      'PostgreSQL',
+      'Git',
+      'Linux',
+      'Kubernetes',
+      'Prisma',
+      'Vite',
+      'Tauri',
+    ],
   },
 };
 
@@ -175,7 +167,10 @@ export function CVDocument({ data = defaultData }: { data?: CVData }) {
           {/* Profile Section */}
           <View style={styles.profileSection}>
             <View style={styles.profileImageContainer}>
-              <View style={styles.profileImagePlaceholder} />
+              <Image
+                style={styles.profileImagePlaceholder}
+                src="https://github.com/hadronomy.png"
+              />
             </View>
             <Text style={styles.name}>{data.personalInfo.name}</Text>
             <Text style={styles.title}>{data.personalInfo.title}</Text>
@@ -263,16 +258,18 @@ export function CVDocument({ data = defaultData }: { data?: CVData }) {
           <View style={styles.mainSection}>
             <Text style={styles.mainSectionTitle}>Experience</Text>
             <View style={styles.timelineContainer}>
-              {data.experience.map((exp, index) => (
+              {/* Timeline background line */}
+              <View style={styles.timelineBackgroundLine} />
+              {data.experience.map((exp) => (
                 <View
                   key={`${exp.company}-${exp.title}-${exp.duration}`}
                   style={styles.timelineItem}
                 >
                   <View style={styles.timelineLeft}>
-                    <View style={styles.timelineDot} />
-                    {index < data.experience.length - 1 && (
-                      <View style={styles.timelineLine} />
-                    )}
+                    <View style={styles.timelineDotContainer}>
+                      <View style={styles.timelineDotBackground} />
+                      <View style={styles.timelineDot} />
+                    </View>
                   </View>
                   <View style={styles.experienceItem}>
                     <View style={styles.experienceHeader}>
@@ -304,19 +301,33 @@ export function CVDocument({ data = defaultData }: { data?: CVData }) {
           {/* Education */}
           <View style={styles.mainSection}>
             <Text style={styles.mainSectionTitle}>Education</Text>
-            <View style={styles.educationGrid}>
-              {data.education.map((edu, _) => (
+            <View style={styles.timelineContainer}>
+              {/* Timeline background line */}
+              <View style={styles.timelineBackgroundLine} />
+              {data.education.map((edu) => (
                 <View
                   key={`${edu.institution}-${edu.course}-${edu.date}`}
-                  style={styles.educationCard}
+                  style={styles.timelineItem}
                 >
-                  <View style={styles.educationIcon} />
-                  <View style={styles.educationContent}>
-                    <Text style={styles.educationCourse}>{edu.course}</Text>
-                    <Text style={styles.educationInstitution}>
-                      {edu.institution}
-                    </Text>
-                    <Text style={styles.educationDate}>{edu.date}</Text>
+                  <View style={styles.timelineLeft}>
+                    <View style={styles.timelineDotContainer}>
+                      <View style={styles.timelineDotBackground} />
+                      <View style={styles.timelineDot} />
+                    </View>
+                  </View>
+                  <View style={styles.educationItem}>
+                    <View style={styles.educationHeader}>
+                      <View style={styles.educationLogo} />
+                      <View style={styles.educationDetails}>
+                        <Text style={styles.educationCourse}>{edu.course}</Text>
+                        <Text style={styles.educationInstitution}>
+                          {edu.institution}
+                        </Text>
+                      </View>
+                      <View style={styles.educationMetadata}>
+                        <Text style={styles.educationDate}>{edu.date}</Text>
+                      </View>
+                    </View>
                   </View>
                 </View>
               ))}
@@ -327,26 +338,20 @@ export function CVDocument({ data = defaultData }: { data?: CVData }) {
           <View style={styles.mainSection}>
             <Text style={styles.mainSectionTitle}>Skills</Text>
             <View style={styles.skillsContainer}>
-              <View style={styles.skillCategory}>
-                <Text style={styles.skillCategoryTitle}>Design</Text>
-                <View style={styles.skillTags}>
-                  {data.skills.design.map((skill) => (
-                    <Text key={skill} style={styles.skillTag}>
-                      {skill}
-                    </Text>
-                  ))}
+              {Object.entries(data.skills).map(([categoryKey, skillList]) => (
+                <View key={categoryKey} style={styles.skillCategory}>
+                  <Text style={styles.skillCategoryTitle}>
+                    {categoryKey.charAt(0).toUpperCase() + categoryKey.slice(1)}
+                  </Text>
+                  <View style={styles.skillTags}>
+                    {skillList.map((skill) => (
+                      <Text key={skill} style={styles.skillTag}>
+                        {skill}
+                      </Text>
+                    ))}
+                  </View>
                 </View>
-              </View>
-              <View style={styles.skillCategory}>
-                <Text style={styles.skillCategoryTitle}>Development</Text>
-                <View style={styles.skillTags}>
-                  {data.skills.development.map((skill) => (
-                    <Text key={skill} style={styles.skillTag}>
-                      {skill}
-                    </Text>
-                  ))}
-                </View>
-              </View>
+              ))}
             </View>
           </View>
         </View>
@@ -381,13 +386,11 @@ const styles = StyleSheet.create({
   },
 
   profileImagePlaceholder: {
-    width: '80%',
+    width: 80,
     height: 80,
-    borderTopRightRadius: 8,
-    borderBottomRightRadius: 8,
+    borderRadius: 8,
     backgroundColor: '#e9ecef',
-    marginLeft: -16,
-    paddingLeft: 16,
+    objectFit: 'cover',
   },
 
   name: {
@@ -541,30 +544,54 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
 
+  timelineBackgroundLine: {
+    position: 'absolute',
+    left: 9,
+    top: 0,
+    bottom: 0,
+    width: 2,
+    backgroundColor: '#e9ecef',
+  },
+
   timelineItem: {
     flexDirection: 'row',
     marginBottom: 16,
+    position: 'relative',
   },
 
   timelineLeft: {
     width: 20,
     alignItems: 'center',
     marginRight: 12,
+    position: 'relative',
+  },
+
+  timelineDotContainer: {
+    position: 'relative',
+    width: 14,
+    height: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  timelineDotBackground: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: 14,
+    height: 14,
+    backgroundColor: '#ffffff',
+    borderRadius: 7,
   },
 
   timelineDot: {
+    position: 'absolute',
+    top: 3,
+    left: 3,
     width: 8,
     height: 8,
     backgroundColor: '#6f42c1',
     borderRadius: 4,
-    zIndex: 1,
-  },
-
-  timelineLine: {
-    width: 2,
-    flex: 1,
-    backgroundColor: '#e9ecef',
-    marginTop: 4,
   },
 
   experienceItem: {
@@ -625,49 +652,47 @@ const styles = StyleSheet.create({
   },
 
   // Education
-  educationGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
+  educationItem: {
+    flex: 1,
   },
 
-  educationCard: {
+  educationHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#ffffff',
-    borderRadius: 6,
-    padding: 8,
-    border: '1px solid #e9ecef',
-    width: '31%',
+    alignItems: 'flex-start',
+    marginBottom: 4,
   },
 
-  educationIcon: {
+  educationLogo: {
     width: 24,
     height: 24,
     backgroundColor: '#e9ecef',
     borderRadius: 4,
-    marginRight: 6,
+    marginRight: 8,
   },
 
-  educationContent: {
+  educationDetails: {
     flex: 1,
   },
 
   educationCourse: {
-    fontSize: 8,
+    fontSize: 10,
     fontWeight: 600,
     color: '#212529',
     marginBottom: 1,
   },
 
   educationInstitution: {
-    fontSize: 7,
+    fontSize: 9,
     color: '#6f42c1',
-    marginBottom: 1,
+    fontWeight: 500,
+  },
+
+  educationMetadata: {
+    alignItems: 'flex-end',
   },
 
   educationDate: {
-    fontSize: 6,
+    fontSize: 7,
     color: '#6c757d',
   },
 
