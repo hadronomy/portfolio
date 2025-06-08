@@ -4,6 +4,11 @@ import '~/styles/global.css';
 import Metadata from '~/components/Metadata.astro';
 import { GrassView } from '~/components/react/grass';
 
+// Redirect to 404 in production
+if (import.meta.env.PROD) {
+  return Astro.redirect('/404');
+}
+
 ---
 <html>
   <head>
@@ -16,6 +21,3 @@ import { GrassView } from '~/components/react/grass';
     </main>
   </body>
 </html>
-
-
-<style>
