@@ -16,13 +16,13 @@
     "update:write": "pnpm taze --write"
   },
   "devDependencies": {
-    "@biomejs/biome": "catalog:",
-    "@commitlint/cli": "catalog:",
-    "@commitlint/config-conventional": "catalog:",
-    "lefthook": "catalog:",
-    "prettier": "catalog:",
-    "prettier-plugin-astro": "catalog:",
-    "taze": "catalog:",
-    "turbo": "catalog:"
+    "@biomejs/biome": "catalog:lint",
+    "@commitlint/cli": "catalog:lint",
+    "@commitlint/config-conventional": "catalog:lint",
+    "lefthook": "catalog:dev",
+    "prettier": "catalog:lint",
+    "prettier-plugin-astro": "catalog:lint",
+    "taze": "catalog:cli",
+    "turbo": "catalog:monorepo"
   }
 }

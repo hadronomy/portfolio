@@ -2,86 +2,127 @@ packages:
   - apps/*
   - packages/*
   - tooling/*
-catalog:
-  '@astrojs/check': ^0.9.4
-  '@astrojs/language-server': ^2.15.4
-  '@astrojs/mdx': ^4.2.6
-  '@astrojs/react': ^4.2.7
-  '@astrojs/rss': ^4.0.11
-  '@astrojs/sitemap': ^3.3.0
-  '@biomejs/biome': ^1.9.4
-  '@commitlint/cli': 19.8.1
-  '@commitlint/config-conventional': 19.8.1
-  '@expressive-code/plugin-line-numbers': ^0.41.2
-  '@fontsource-variable/onest': ^5.2.8
-  '@fontsource/bellota': ^5.2.5
-  '@fontsource/monaspace-neon': ^5.2.5
-  '@iconify-json/iconoir': ^1.2.7
-  '@iconify-json/ph': ^1.2.2
-  '@iconify-json/tabler': ^1.2.18
-  '@nextui-org/button': 2.2.9
-  '@radix-ui/react-avatar': 1.1.9
-  '@radix-ui/react-hover-card': ^1.1.13
-  '@radix-ui/react-scroll-area': ^1.2.8
-  '@radix-ui/react-separator': ^1.1.6
-  '@radix-ui/react-slot': ^1.2.2
-  '@radix-ui/react-tooltip': ^1.2.6
-  '@rollup/plugin-typescript': 12.1.2
-  '@shikijs/twoslash': ^3.4.2
-  '@swc-node/register': ^1.10.10
-  '@swc/core': ^1.11.24
-  '@swc/helpers': ^0.5.17
-  '@tailwindcss/postcss': ^4.1.7
-  '@tailwindcss/vite': ^4.1.7
-  '@types/mdx': 2.0.13
-  '@types/node': 20.17.47
-  '@types/react': ^19.1.4
-  '@types/react-dom': ^19.1.5
-  '@unpic/placeholder': ^0.1.2
-  astro: ^5.7.13
-  astro-icon: 1.1.5
-  autoprefixer: 10.4.21
-  blurhash: ^2.0.5
-  class-variance-authority: 0.7.1
-  clsx: 2.1.1
-  date-fns: ^4.1.0
-  fdir: 6.4.4
-  framer-motion: 12.12.1
-  fumadocs-core: ^15.3.3
-  fumadocs-twoslash: ^3.1.3
-  fumadocs-ui: ^15.3.3
-  iconoir-react: ^7.11.0
-  lefthook: ^1.11.13
-  lightningcss: ^1.30.1
-  lucide-react: 0.511.0
-  mdast-util-to-string: ^4.0.0
-  postcss: 8.5.3
-  prettier: ^3.5.3
-  prettier-plugin-astro: 0.14.1
-  react: ^19.1.0
-  react-compiler-runtime: 19.0.0-beta-af1b7da-20250417
-  react-dom: ^19.1.0
-  react-icons: 5.5.0
-  reading-time: ^1.5.0
-  rehype-accessible-emojis: 0.3.2
-  remark-gemoji: 8.0.0
-  rollup-preserve-directives: ^1.1.3
-  sharp: 0.34.1
-  sharp-ico: ^0.1.5
-  tailwind-merge: 3.3.0
-  tailwind-variants: 1.0.0
-  tailwindcss: 4.1.7
-  tailwindcss-animate: 1.0.7
-  taze: ^19.1.0
-  ts-node: 10.9.2
-  tslib: 2.8.1
-  turbo: 2.5.3
-  typescript: 5.8.3
-  typewriter-effect: 2.22.0
-  zod: ^3.24.4
 onlyBuiltDependencies:
   - '@swc/core'
   - '@tailwindcss/oxide'
   - esbuild
   - lefthook
   - sharp
+catalogs:
+  backend:
+    '@expressive-code/plugin-line-numbers': ^0.41.2
+  build:
+    '@rollup/plugin-typescript': 12.1.2
+    '@tailwindcss/vite': ^4.1.7
+    rollup-preserve-directives: ^1.1.3
+  cli:
+    taze: ^19.1.0
+  dev:
+    '@astrojs/language-server': ^2.15.4
+    '@react-pdf/renderer': ^4.3.0
+    '@swc-node/register': ^1.10.10
+    '@swc/core': ^1.11.24
+    '@swc/helpers': ^0.5.17
+    '@tweakpane/core': ^2.0.5
+    fdir: 6.4.4
+    lefthook: ^1.11.13
+    react-compiler-runtime: 19.0.0-beta-af1b7da-20250417
+    ts-node: 10.9.2
+    tslib: 2.8.1
+    typescript: 5.8.3
+  frontend:
+    '@react-three/drei': ^10.0.8
+    '@react-three/fiber': ^9.1.2
+    '@react-three/rapier': ^2.1.0
+    three: ^0.176.0
+  icons:
+    '@iconify-json/iconoir': ^1.2.7
+    '@iconify-json/logos': ^1.2.4
+    '@iconify-json/material-icon-theme': ^1.2.11
+    '@iconify-json/mdi': ^1.2.3
+    '@iconify-json/octicon': ^1.2.6
+    '@iconify-json/ph': ^1.2.2
+    '@iconify-json/simple-icons': ^1.2.34
+    '@iconify-json/tabler': ^1.2.18
+    '@iconify-json/vscode-icons': ^1.2.22
+    astro-icon: 1.1.5
+    iconoir-react: ^7.11.0
+    lucide-react: 0.511.0
+    react-icons: 5.5.0
+  lint:
+    '@biomejs/biome': ^1.9.4
+    '@commitlint/cli': 19.8.1
+    '@commitlint/config-conventional': 19.8.1
+    prettier: ^3.5.3
+    prettier-plugin-astro: 0.14.1
+  monorepo:
+    turbo: 2.5.3
+  prod:
+    '@astrojs/check': ^0.9.4
+    '@astrojs/mdx': ^4.2.6
+    '@astrojs/react': ^4.2.7
+    '@astrojs/rss': ^4.0.11
+    '@astrojs/sitemap': ^3.3.0
+    '@fontsource-variable/onest': ^5.2.8
+    '@fontsource/bellota': ^5.2.5
+    '@fontsource/maple-mono': ^5.2.5
+    '@fontsource/monaspace-neon': ^5.2.5
+    '@nextui-org/button': 2.2.9
+    '@radix-ui/react-avatar': 1.1.9
+    '@radix-ui/react-hover-card': ^1.1.13
+    '@radix-ui/react-scroll-area': ^1.2.8
+    '@radix-ui/react-separator': ^1.1.6
+    '@radix-ui/react-slot': ^1.2.2
+    '@radix-ui/react-tooltip': ^1.2.6
+    '@signpdf/placeholder-plain': ^3.2.5
+    '@signpdf/signer-p12': ^3.2.4
+    '@signpdf/signpdf': ^3.2.5
+    '@unpic/placeholder': ^0.1.2
+    astro: ^5.7.13
+    blurhash: ^2.0.5
+    date-fns: ^4.1.0
+    framer-motion: 12.12.1
+    fumadocs-core: ^15.3.3
+    fumadocs-twoslash: ^3.1.3
+    fumadocs-ui: ^15.3.3
+    gsap: ^3.13.0
+    lightningcss: ^1.30.1
+    mdast-util-to-string: ^4.0.0
+    meshline: ^3.3.1
+    node-forge: ^1.3.1
+    pdf-lib: ^1.17.1
+    random: ^5.4.0
+    react: ^19.1.0
+    react-dom: ^19.1.0
+    react-tweakpane: ^0.8.1
+    reading-time: ^1.5.0
+    rehype-accessible-emojis: 0.3.2
+    rehype-katex: ^7.0.1
+    remark-gemoji: 8.0.0
+    remark-math: ^6.0.0
+    sharp: 0.34.1
+    sharp-ico: ^0.1.5
+    simplex-noise: ^4.0.3
+    tailwind-variants: 1.0.0
+    tweakpane: ^3.1.4
+    typewriter-effect: 2.22.0
+  style:
+    '@tailwindcss/postcss': ^4.1.7
+    autoprefixer: 10.4.21
+    postcss: 8.5.3
+    tailwind-merge: 3.3.0
+    tailwindcss: 4.1.7
+    tailwindcss-animate: 1.0.7
+  syntax:
+    '@shikijs/twoslash': ^3.4.2
+  types:
+    '@types/mdx': 2.0.13
+    '@types/node': 20.17.47
+    '@types/node-forge': ^1.3.11
+    '@types/react': ^19.1.4
+    '@types/react-dom': ^19.1.5
+    '@types/three': ^0.176.0
+  utils:
+    class-variance-authority: 0.7.1
+    clsx: 2.1.1
+    zod: ^3.24.4

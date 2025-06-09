@@ -6,11 +6,11 @@
   "files": ["index.ts", "postcss.config.js"],
   "devDependencies": {
     "@portfolio/tsconfig": "workspace:",
-    "@tailwindcss/postcss": "catalog:",
-    "@types/node": "catalog:",
-    "postcss": "catalog:",
-    "tailwindcss": "catalog:",
-    "tailwindcss-animate": "catalog:",
-    "typescript": "catalog:"
+    "@tailwindcss/postcss": "catalog:style",
+    "@types/node": "catalog:types",
+    "postcss": "catalog:style",
+    "tailwindcss": "catalog:style",
+    "tailwindcss-animate": "catalog:style",
+    "typescript": "catalog:dev"
   }
 }
