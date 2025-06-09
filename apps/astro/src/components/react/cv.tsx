@@ -2,8 +2,11 @@ import {
   Document,
   Font,
   Image,
+  Link,
   Page,
+  Polygon,
   StyleSheet,
+  Svg,
   Text,
   View,
 } from '@react-pdf/renderer';
@@ -58,12 +61,14 @@ interface CVData {
     location: string;
     description: string;
     logo?: string;
+    icon?: React.ComponentType<{ style?: Svg['props']['style'] }>;
   }>;
   education: Array<{
     course: string;
     institution: string;
     date: string;
     logo?: string;
+    icon?: React.ComponentType<{ style?: Svg['props']['style'] }>;
   }>;
   skills: {
     development: string[];
@@ -109,6 +114,7 @@ const defaultData: CVData = {
       location: 'Canary Islands, Spain',
       description:
         'Studied advanced algorithms, software architecture, and full-stack development. Participated in coding competitions and led student projects.',
+      icon: UllIcon,
     },
     {
       title: 'Self-Taught Programmer',
@@ -124,6 +130,7 @@ const defaultData: CVData = {
       course: 'Computer Science Degree',
       institution: 'Universidad de La Laguna',
       date: '2021 - 2025',
+      icon: UllIcon,
     },
   ],
   skills: {
@@ -157,6 +164,26 @@ const defaultData: CVData = {
     ],
   },
 };
+
+export function UllIcon(props: { style?: Svg['props']['style'] }) {
+  return (
+    <Svg
+      id="Layer_1"
+      width="1000px"
+      height="783.73px"
+      viewBox="0 0 1000 783.73"
+      enable-background="new 0 0 1000 783.73"
+      {...props}
+    >
+      <Polygon
+        fill="#57068C"
+        points="746.737,530.964 746.737,4.073 736.357,4.073 494.495,235.557 494.495,530.964 257.835,530.964 
+	257.835,4.073 245.727,4.073 5.607,235.557 5.607,777.992 205.979,777.992 257.835,777.992 494.495,549.968 494.495,777.992 
+	694.894,777.992 746.737,777.992 993.764,541.29 993.764,530.964 "
+      />
+    </Svg>
+  );
+}
 
 export function CVDocument({ data = defaultData }: { data?: CVData }) {
   return (
@@ -240,16 +267,22 @@ export function CVDocument({ data = defaultData }: { data?: CVData }) {
             <Text style={styles.mainSectionTitle}>Latest projects</Text>
             <View style={styles.projectsGrid}>
               {data.projects.map((project) => (
-                <View key={project.name} style={styles.projectCard}>
-                  <View style={styles.projectIcon} />
-                  <View style={styles.projectContent}>
-                    <Text style={styles.projectName}>{project.name}</Text>
-                    <Text style={styles.projectDescription}>
-                      {project.description}
-                    </Text>
-                    <Text style={styles.projectUrl}>{project.url}</Text>
+                <Link
+                  key={project.name}
+                  src={project.url}
+                  style={styles.projectCardLink}
+                >
+                  <View style={styles.projectCard}>
+                    <View style={styles.projectIcon} />
+                    <View style={styles.projectContent}>
+                      <Text style={styles.projectName}>{project.name}</Text>
+                      <Text style={styles.projectDescription}>
+                        {project.description}
+                      </Text>
+                      <Text style={styles.projectUrl}>{project.url}</Text>
+                    </View>
                   </View>
-                </View>
+                </Link>
               ))}
             </View>
           </View>
@@ -273,7 +306,16 @@ export function CVDocument({ data = defaultData }: { data?: CVData }) {
                   </View>
                   <View style={styles.experienceItem}>
                     <View style={styles.experienceHeader}>
-                      <View style={styles.companyLogo} />
+                      {exp.icon ? (
+                        <exp.icon style={styles.companyLogo} />
+                      ) : (
+                        <View
+                          style={[
+                            styles.companyLogo,
+                            { backgroundColor: '#e9ecef' },
+                          ]}
+                        />
+                      )}
                       <View style={styles.experienceDetails}>
                         <Text style={styles.experienceTitle}>{exp.title}</Text>
                         <Text style={styles.experienceCompany}>
@@ -317,7 +359,16 @@ export function CVDocument({ data = defaultData }: { data?: CVData }) {
                   </View>
                   <View style={styles.educationItem}>
                     <View style={styles.educationHeader}>
-                      <View style={styles.educationLogo} />
+                      {edu.icon ? (
+                        <edu.icon style={styles.educationLogo} />
+                      ) : (
+                        <View
+                          style={[
+                            styles.educationLogo,
+                            { backgroundColor: '#e9ecef' },
+                          ]}
+                        />
+                      )}
                       <View style={styles.educationDetails}>
                         <Text style={styles.educationCourse}>{edu.course}</Text>
                         <Text style={styles.educationInstitution}>
@@ -499,13 +550,18 @@ const styles = StyleSheet.create({
     gap: 8,
   },
 
+  projectCardLink: {
+    width: '47%',
+    textDecoration: 'none',
+  },
+
   projectCard: {
     flexDirection: 'row',
     backgroundColor: '#ffffff',
     borderRadius: 6,
     padding: 10,
     border: '1px solid #e9ecef',
-    width: '47%',
+    width: '100%',
   },
 
   projectIcon: {
@@ -607,7 +663,6 @@ const styles = StyleSheet.create({
   companyLogo: {
     width: 24,
     height: 24,
-    backgroundColor: '#e9ecef',
     borderRadius: 4,
     marginRight: 8,
   },
@@ -665,7 +720,6 @@ const styles = StyleSheet.create({
   educationLogo: {
     width: 24,
     height: 24,
-    backgroundColor: '#e9ecef',
     borderRadius: 4,
     marginRight: 8,
   },
