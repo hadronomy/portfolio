@@ -4,6 +4,7 @@ import {
   Image,
   Link,
   Page,
+  Path,
   Polygon,
   StyleSheet,
   Svg,
@@ -94,21 +95,21 @@ const defaultData: CVData = {
   ],
   projects: [
     {
-      name: 'Powerful Design System',
-      description:
-        'Figma UI Kit and Design System targeting a wide variety of use cases.',
-      url: 'https://figma.com',
+      name: 'RAM Language',
+      description: 'RAM (Random Access Machine) language and emulator.',
+      url: 'https://github.com/hadronomy/ram',
     },
     {
-      name: 'Modern Website',
+      name: 'VRPT-SWTS',
       description:
-        'Powerful website + dashboard template for your next Chakra UI project.',
-      url: 'https://ui-8.net',
+        'This project implements algorithms for the Vehicle Routing Problem with Transshipments for Solid Waste Collection with Transfer Stations (VRPT-SWTS).',
+      url: 'https://github.com/hadronomy/VRPT-SWTS',
     },
   ],
   experience: [
     {
-      title: 'Computer Science Student',
+      title:
+        'B.S. in Computer Engineering Student (Grado en Ingeniería Informática)',
       company: 'Universidad de La Laguna',
       duration: '2021 - 2025',
       location: 'Canary Islands, Spain',
@@ -123,13 +124,14 @@ const defaultData: CVData = {
       location: 'Various',
       description:
         'Over 10 years of continuous learning across all fields of programming. From web development to systems programming, exploring various languages, frameworks, and paradigms through personal projects and open-source contributions.',
+      icon: GithubIcon,
     },
   ],
   education: [
     {
-      course: 'Computer Science Degree',
+      course: 'B.S. in Computer Engineering (Grado en Ingeniería Informática)',
       institution: 'Universidad de La Laguna',
-      date: '2021 - 2025',
+      date: '2021 - Present',
       icon: UllIcon,
     },
   ],
@@ -185,6 +187,26 @@ export function UllIcon(props: { style?: Svg['props']['style'] }) {
   );
 }
 
+export function GithubIcon(props: { style?: Svg['props']['style'] }) {
+  return (
+    <Svg
+      width="1024"
+      height="1024"
+      viewBox="0 0 1024 1024"
+      fill="none"
+      {...props}
+    >
+      <Path
+        fill-rule="evenodd"
+        clip-rule="evenodd"
+        d="M8 0C3.58 0 0 3.58 0 8C0 11.54 2.29 14.53 5.47 15.59C5.87 15.66 6.02 15.42 6.02 15.21C6.02 15.02 6.01 14.39 6.01 13.72C4 14.09 3.48 13.23 3.32 12.78C3.23 12.55 2.84 11.84 2.5 11.65C2.22 11.5 1.82 11.13 2.49 11.12C3.12 11.11 3.57 11.7 3.72 11.94C4.44 13.15 5.59 12.81 6.05 12.6C6.12 12.08 6.33 11.73 6.56 11.53C4.78 11.33 2.92 10.64 2.92 7.58C2.92 6.71 3.23 5.99 3.74 5.43C3.66 5.23 3.38 4.41 3.82 3.31C3.82 3.31 4.49 3.1 6.02 4.13C6.66 3.95 7.34 3.86 8.02 3.86C8.7 3.86 9.38 3.95 10.02 4.13C11.55 3.09 12.22 3.31 12.22 3.31C12.66 4.41 12.38 5.23 12.3 5.43C12.81 5.99 13.12 6.7 13.12 7.58C13.12 10.65 11.25 11.33 9.47 11.53C9.76 11.78 10.01 12.26 10.01 13.01C10.01 14.08 10 14.94 10 15.21C10 15.42 10.15 15.67 10.55 15.59C13.71 14.53 16 11.53 16 8C16 3.58 12.42 0 8 0Z"
+        transform="scale(64)"
+        fill="#0000"
+      />
+    </Svg>
+  );
+}
+
 export function CVDocument({ data = defaultData }: { data?: CVData }) {
   return (
     <Document>
@@ -212,6 +234,16 @@ export function CVDocument({ data = defaultData }: { data?: CVData }) {
               </Text>
             </View>
           )}
+
+          {/* Description */}
+          <View style={styles.descriptionSection}>
+            <Text style={styles.descriptionText}>
+              Proven ability to quickly adapt to new technologies and deliver
+              innovative solutions. Seeking opportunities to contribute
+              technical expertise and problem-solving skills to challenging
+              projects in a professional environment.
+            </Text>
+          </View>
 
           {/* Contact */}
           <View style={styles.section}>
@@ -262,6 +294,17 @@ export function CVDocument({ data = defaultData }: { data?: CVData }) {
 
         {/* Main Content */}
         <View style={styles.main}>
+          {/* Self description */}
+          <View style={styles.mainSection}>
+            <Text style={styles.mainSectionTitle}>About</Text>
+            <Text style={styles.aboutText}>
+              Passionate software developer with over 10 years of self-directed
+              learning and hands-on experience across multiple programming
+              languages and technologies. Currently pursuing a Computer Science
+              degree while maintaining expertise in full-stack development,
+              systems programming, and modern frameworks.
+            </Text>
+          </View>
           {/* Latest Projects */}
           <View style={styles.mainSection}>
             <Text style={styles.mainSectionTitle}>Latest projects</Text>
@@ -272,13 +315,20 @@ export function CVDocument({ data = defaultData }: { data?: CVData }) {
                   src={project.url}
                   style={styles.projectCardLink}
                 >
-                  <View style={styles.projectCard}>
-                    <View style={styles.projectIcon} />
-                    <View style={styles.projectContent}>
-                      <Text style={styles.projectName}>{project.name}</Text>
-                      <Text style={styles.projectDescription}>
-                        {project.description}
-                      </Text>
+                  <View style={[styles.projectCard, { minHeight: 100 }]}>
+                    <GithubIcon style={styles.projectIcon} />
+                    <View
+                      style={[
+                        styles.projectContent,
+                        { justifyContent: 'space-between' },
+                      ]}
+                    >
+                      <View>
+                        <Text style={styles.projectName}>{project.name}</Text>
+                        <Text style={styles.projectDescription}>
+                          {project.description}
+                        </Text>
+                      </View>
                       <Text style={styles.projectUrl}>{project.url}</Text>
                     </View>
                   </View>
@@ -457,6 +507,16 @@ const styles = StyleSheet.create({
     fontWeight: 500,
   },
 
+  descriptionSection: {
+    marginBottom: 20,
+  },
+
+  descriptionText: {
+    fontSize: 9,
+    color: '#495057',
+    lineHeight: 1.4,
+  },
+
   quoteSection: {
     marginBottom: 20,
     paddingLeft: 12,
@@ -567,7 +627,6 @@ const styles = StyleSheet.create({
   projectIcon: {
     width: 28,
     height: 28,
-    backgroundColor: '#6f42c1',
     borderRadius: 6,
     marginRight: 8,
   },
@@ -780,5 +839,12 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 8,
     border: '1px solid #e0e7ff',
+  },
+
+  // About section
+  aboutText: {
+    fontSize: 10,
+    color: '#495057',
+    lineHeight: 1.4,
   },
 });
