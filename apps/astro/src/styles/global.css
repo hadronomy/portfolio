@@ -58,11 +58,13 @@
     --radius: 0.5rem;
 
     --font-sans: 'Onest Variable', sans-serif;
-    --font-mono: 'Monaspace Neon', monospace;
+    --font-mono: 'Maple Mono', monospace;
 
     --halftone: rgba(255, 255, 255, 0.26);
 
     color-scheme: light;
+
+    --animate-sparkle: sparkle 700ms forwards
   }
 
   @media not print {
@@ -125,6 +127,63 @@
       'rlig' 1,
       'calt' 1;
     position: relative;
+  }
+
+  /* Animations only for users who don't prefer reduced motion */
+  @media (prefers-reduced-motion: no-preference) {
+    /* Initial state for animated elements */
+    main > section,
+    main > div:not(.halftone-bg):not([aria-hidden="true"]),
+    .hero,
+    /* nav, */
+    /* header, */
+    footer,
+    #hero,
+    section {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    /* Auto-animate elements with staggered delays - fast but smooth */
+    main {
+      counter-reset: animation-order;
+    }
+    
+    /* Hero section gets priority after navbar */
+    #hero { animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.05s forwards; }
+
+    /* Main sections animate in sequence with very short delays */
+    main > section:nth-child(1) { animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.1s forwards; }
+    main > section:nth-child(2) { animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.15s forwards; }
+    main > section:nth-child(3) { animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.2s forwards; }
+    main > section:nth-child(4) { animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.25s forwards; }
+    main > section:nth-child(5) { animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.3s forwards; }
+    main > section:nth-child(6) { animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.35s forwards; }
+    
+    /* Main divs animate in sequence - exclude background effects */
+    main > div:nth-child(1):not(.halftone-bg):not([aria-hidden="true"]) { animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.1s forwards; }
+    main > div:nth-child(2):not(.halftone-bg):not([aria-hidden="true"]) { animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.15s forwards; }
+    main > div:nth-child(3):not(.halftone-bg):not([aria-hidden="true"]) { animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.2s forwards; }
+    main > div:nth-child(4):not(.halftone-bg):not([aria-hidden="true"]) { animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.25s forwards; }
+    main > div:nth-child(5):not(.halftone-bg):not([aria-hidden="true"]) { animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.3s forwards; }
+    main > div:nth-child(6):not(.halftone-bg):not([aria-hidden="true"]) { animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.35s forwards; }
+    main > div:nth-child(7):not(.halftone-bg):not([aria-hidden="true"]) { animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.4s forwards; }
+
+    /* Footer animates last */
+    footer { animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.45s forwards; }
+  }
+
+  /* For users who prefer reduced motion, show everything immediately */
+  @media (prefers-reduced-motion: reduce) {
+    main > section,
+    main > div:not(.halftone-bg):not([aria-hidden="true"]),
+    .hero,
+    footer,
+    #hero,
+    section {
+      opacity: 1;
+      transform: none;
+    }
   }
 
   input,
@@ -261,5 +320,315 @@
     background-size: var(--bg-size) var(--bg-size);
     backdrop-filter: blur(3px);
     mask: linear-gradient(rgb(0, 0, 0) 40%, rgba(0, 0, 0, 0) 100%);
+  }
+}
+
+@keyframes sparkle {
+  0% {
+    transform: scale(0) rotate(0deg);
+  }
+  50% {
+    transform: scale(1) rotate(90deg);
+  }
+  100% {
+    transform: scale(0) rotate(180deg);
+  }
+}
+
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@utility animate-sparkle {
+  animation: var(--animate-sparkle);
+}
+
+/* Fade in animation utilities */
+@layer utilities {
+  /* Animations only for users who don't prefer reduced motion */
+  @media (prefers-reduced-motion: no-preference) {
+    .animate-fade-in {
+      animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+    
+    .animate-fade-in-delay-1 {
+      animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.05s forwards;
+    }
+    
+    .animate-fade-in-delay-2 {
+      animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.1s forwards;
+    }
+    
+    .animate-fade-in-delay-3 {
+      animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.15s forwards;
+    }
+    
+    .animate-fade-in-delay-4 {
+      animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.2s forwards;
+    }
+    
+    .animate-fade-in-delay-5 {
+      animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.25s forwards;
+    }
+    
+    .animate-fade-in-delay-6 {
+      animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.3s forwards;
+    }
+    
+    .animate-fade-in-delay-7 {
+      animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.35s forwards;
+    }
+    
+    .animate-fade-in-delay-8 {
+      animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.4s forwards;
+    }
+
+    /* Animation states for users who don't prefer reduced motion */
+    .animate-hidden {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+  }
+
+  /* For users who prefer reduced motion, utility classes show content immediately */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-fade-in,
+    .animate-fade-in-delay-1,
+    .animate-fade-in-delay-2,
+    .animate-fade-in-delay-3,
+    .animate-fade-in-delay-4,
+    .animate-fade-in-delay-5,
+    .animate-fade-in-delay-6,
+    .animate-fade-in-delay-7,
+    .animate-fade-in-delay-8,
+    .animate-hidden {
+      opacity: 1;
+      transform: none;
+      animation: none;
+    }
+  }
+
+  /* This state is always available */
+  .animate-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/** comic bubble, credits: https://github.com/kaisermann/comicbubbles */
+@layer components {
+  .comic-bubble {
+    background-color: var(--bkc);
+    color: var(--tc);
+    box-shadow:
+      0 -3px var(--bkc),
+      0 -6px var(--bdc),
+      3px 0 var(--bkc),
+      3px -3px var(--bdc),
+      6px 0 var(--bdc),
+      0 3px var(--bkc),
+      0 6px var(--bdc),
+      -3px 0 var(--bkc),
+      -3px 3px var(--bdc),
+      -6px 0 var(--bdc),
+      -3px -3px var(--bdc),
+      3px 3px var(--bdc),
+      3px 9px var(--sc),
+      6px 6px var(--sc),
+      9px 3px var(--sc);
+  }
+
+  .comic-bubble::before {
+    left: 20%;
+    width: 15px;
+    height: 8px;
+    background: var(--bkc);
+    bottom: -11px;
+    border-left: 3px solid var(--bdc);
+    border-right: 3px solid var(--bdc);
+  }
+
+  .comic-bubble::after {
+    left: 20%;
+    background: var(--bkc);
+    width: 9px;
+    height: 3px;
+    bottom: -14px;
+    margin-left: 6px;
+    box-shadow:
+      -3px 0 var(--bdc),
+      3px 0 var(--bdc),
+      3px 3px var(--bkc),
+      0px 3px var(--bdc),
+      6px 3px var(--bdc),
+      9px 3px var(--sc),
+      3px 6px var(--bdc),
+      6px 6px var(--bdc),
+      9px 6px var(--sc),
+      6px 9px var(--sc);
+  }
+
+  /* Up position */
+  .comic-bubble-up::before {
+    top: -11px;
+    bottom: auto;
+  }
+
+  .comic-bubble-up::after {
+    top: -14px;
+    bottom: auto;
+    box-shadow: -3px 0 var(--bdc), 3px 0 var(--bdc), 3px -3px var(--bkc), 0px -3px var(--bdc), 6px -3px var(--bdc), 3px
+      -6px var(--bdc), 6px -6px var(--bdc);
+  }
+
+  /* Right position */
+  .comic-bubble-right::before,
+  .comic-bubble-right::after {
+    left: auto;
+    right: 20%;
+  }
+
+  .comic-bubble-right::after {
+    margin-left: 0;
+    margin-right: 6px;
+    box-shadow:
+      3px 0 var(--bdc),
+      -3px 0 var(--bdc),
+      -3px 3px var(--bkc),
+      0px 3px var(--bdc),
+      -6px 3px var(--bdc),
+      -3px 6px var(--bdc),
+      -6px 6px var(--bdc),
+      -3px 9px var(--sc),
+      0 6px var(--sc),
+      3px 3px var(--sc),
+      6px 0px var(--sc);
+  }
+
+  /* Right-up position */
+  .comic-bubble-right.comic-bubble-up::after {
+    box-shadow: 3px 0 var(--bdc), -3px 0 var(--bdc), -3px -3px var(--bkc), 0px -3px var(--bdc), -6px -3px var(--bdc),
+      -3px -6px var(--bdc), -6px -6px var(--bdc);
+  }
+
+  /* Hover effects */
+  .comic-bubble-hover:hover {
+    background-color: var(--hbkc);
+    color: var(--htc);
+    box-shadow:
+      0 -3px var(--hbkc),
+      0 -6px var(--hbdc),
+      3px 0 var(--hbkc),
+      3px -3px var(--hbdc),
+      6px 0 var(--hbdc),
+      0 3px var(--hbkc),
+      0 6px var(--hbdc),
+      -3px 0 var(--hbkc),
+      -3px 3px var(--hbdc),
+      -6px 0 var(--hbdc),
+      -3px -3px var(--hbdc),
+      3px 3px var(--hbdc),
+      3px 9px var(--hsc),
+      6px 6px var(--hsc),
+      9px 3px var(--hsc);
+  }
+
+  .comic-bubble-hover:hover::before {
+    background: var(--hbkc);
+    border-left-color: var(--hbdc);
+    border-right-color: var(--hbdc);
+  }
+
+  .comic-bubble-hover:hover::after {
+    background: var(--hbkc);
+  }
+
+  /* Down hover */
+  .comic-bubble-hover:hover::after {
+    box-shadow:
+      -3px 0 var(--hbdc),
+      3px 0 var(--hbdc),
+      3px 3px var(--hbkc),
+      0px 3px var(--hbdc),
+      6px 3px var(--hbdc),
+      9px 3px var(--hsc),
+      3px 6px var(--hbdc),
+      6px 6px var(--hbdc),
+      9px 6px var(--hsc),
+      6px 9px var(--hsc);
+  }
+
+  /* Up hover */
+  .comic-bubble-hover.comic-bubble-up:hover::after {
+    box-shadow: -3px 0 var(--hbdc), 3px 0 var(--hbdc), 3px -3px var(--hbkc), 0px -3px var(--hbdc), 6px -3px var(--hbdc),
+      3px -6px var(--hbdc), 6px -6px var(--hbdc);
+  }
+
+  /* Right hover */
+  .comic-bubble-hover.comic-bubble-right:hover::after {
+    box-shadow:
+      3px 0 var(--hbdc),
+      -3px 0 var(--hbdc),
+      -3px 3px var(--hbkc),
+      0px 3px var(--hbdc),
+      -6px 3px var(--hbdc),
+      -3px 6px var(--hbdc),
+      -6px 6px var(--hbdc),
+      -3px 9px var(--hsc),
+      0 6px var(--hsc),
+      3px 3px var(--hsc),
+      6px 0px var(--hsc);
+  }
+
+  /* Right-up hover */
+  .comic-bubble-hover.comic-bubble-right.comic-bubble-up:hover::after {
+    box-shadow:
+      3px 0 var(--hbdc),
+      -3px 0 var(--hbdc),
+      -3px -3px var(--hbkc),
+      0px -3px var(--hbdc),
+      -6px -3px var(--hbdc),
+      -3px -6px var(--hbdc),
+      -6px -6px var(--hbdc);
+  }
+
+  /* Control styles */
+  .comic-bubble-control:active {
+    transform: scale(0.95);
+  }
+
+  .comic-bubble-control button,
+  .comic-bubble-control a,
+  .comic-bubble-control input[type="submit"] {
+    cursor: pointer;
+    transition: color 0.3s ease;
+  }
+
+  .comic-bubble-hover.comic-bubble-control:hover button,
+  .comic-bubble-hover.comic-bubble-control:hover a,
+  .comic-bubble-hover.comic-bubble-control:hover input[type="submit"] {
+    color: var(--htc);
+  }
+
+  /* Tooltip animations */
+  .comic-tooltip-animation {
+    transition: opacity 0.3s steps(3), transform 0.3s steps(3);
+  }
+
+  .comic-tooltip-visible {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .comic-tooltip-hidden {
+    opacity: 0;
+    transform: scale(0.8);
   }
 }

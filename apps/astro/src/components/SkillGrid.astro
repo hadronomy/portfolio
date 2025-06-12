@@ -1,0 +1,312 @@
+---
+import { Icon } from 'astro-icon/components';
+
+interface Skill {
+  name: string;
+  icon: string;
+}
+
+interface Props {
+  skills: Skill[];
+  emptySlots?: number; // Optional number of empty slots to fill the grid
+}
+
+const { skills, emptySlots } = Astro.props;
+
+// Calculate empty slots to fill complete rows
+// Grid has 3 cols on mobile, 6 on md, 8 on lg
+// We'll calculate for the largest grid (8 cols) to ensure proper layout
+const maxCols = 8;
+const skillCount = skills.length;
+const rowsNeeded = Math.ceil(skillCount / maxCols);
+const totalSlotsNeeded = rowsNeeded * maxCols;
+const calculatedEmptySlots = totalSlotsNeeded - skillCount;
+
+const finalEmptySlots = emptySlots ?? calculatedEmptySlots;
+---
+
+<div class="grid-container relative">
+  <div class="grid grid-cols-3 md:grid-cols-6 lg:grid-cols-8 gap-4 w-full p-4 mt-4 rounded-2xl">
+    {
+      skills.map((skill) => (
+        <div class="card-container">
+          <div class="card-wrapper bg-muted" data-skill-name={skill.name}>
+            <div class="card-content">
+              <Icon name={skill.icon} class="h-full w-full p-2" />
+            </div>
+          </div>
+          <div class="tooltip" role="tooltip">
+            {skill.name}
+          </div>
+        </div>
+      ))
+    }
+    {
+      // Add empty slots to fill the grid
+      Array(finalEmptySlots).fill(0).map(() => (
+        <div class="card-wrapper">
+          <div class="card-content"></div>
+        </div>
+      ))
+    }
+  </div>
+</div>
+
+<style>
+  @property --rotate {
+    syntax: "<angle>";
+    initial-value: 132deg;
+    inherits: false;
+  }
+
+  :global(:root) {
+    --mouse-x: 50%;
+    --mouse-y: 50%;
+    --color-primary: 181 239 255;    /* #b5efff */
+    --color-secondary: 117 143 217;  /* #758fd9 */
+    --color-tertiary: 117 143 217;     /* #9d86bf */
+    --border-width: 2px;
+    --card-opacity: 0;
+  }
+
+  .grid-container {
+    position: relative;
+  }
+
+  .card-container {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    min-height: 4rem;
+    max-width: 6rem;
+    margin: 0 auto;
+  }
+
+  .card-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 1rem;
+    overflow: hidden;
+    z-index: 1;
+    background-color: hsl(var(--muted-foreground) / 0.3);
+  }
+
+  .card-wrapper::before {
+    content: "";
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    background: linear-gradient(
+      var(--rotate),
+      rgb(var(--color-primary)), 
+      rgb(var(--color-secondary)) 43%, 
+      rgb(var(--color-tertiary))
+    );
+    border-radius: 50%;
+    filter: blur(60px);
+    opacity: var(--card-opacity);
+    z-index: 0;
+    transition: opacity 0.3s ease;
+    animation: spin 3s linear infinite;
+    /* Position based on relative coordinates within each card */
+    left: calc(var(--x-pos, 0) * 1%);
+    top: calc(var(--y-pos, 0) * 1%);
+    transform: translate(-50%, -50%);
+  }
+
+  .card-content {
+    position: absolute;
+    inset: var(--border-width);
+    background-color: hsl(var(--muted));
+    border-radius: calc(1rem - var(--border-width));
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .grid-container:hover .card-wrapper::before {
+    opacity: var(--card-opacity);
+  }
+
+  .tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    font-weight: 500;
+    white-space: nowrap;
+    z-index: 100;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease;
+    pointer-events: none;
+    border: 1px solid hsl(var(--border));
+    margin-bottom: 0.5rem;
+  }
+
+  .tooltip::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: hsl(var(--background));
+  }
+
+  .tooltip::before {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 7px solid transparent;
+    border-top-color: hsl(var(--border));
+    z-index: -1;
+  }
+
+  .card-container:hover .tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(-4px);
+  }
+
+  @keyframes spin {
+    0% {
+      --rotate: 0deg;
+    }
+    100% {
+      --rotate: 360deg;
+    }
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const gridContainer = document.querySelector('.grid-container') as HTMLElement;
+    const cardWrappers = document.querySelectorAll('.card-wrapper') as NodeListOf<HTMLElement>;
+    const cardContainers = document.querySelectorAll('.card-container') as NodeListOf<HTMLElement>;
+    
+    if (gridContainer) {
+      let animationFrameId: number;
+      let cardRects: DOMRect[] = [];
+      let isMouseInside = false;
+      let lastMouseEvent: MouseEvent | null = null;
+      
+      // Update positions with current mouse position
+      const updatePositions = (e: MouseEvent) => {
+        cardWrappers.forEach((card, index) => {
+          const rect = cardRects[index];
+          if (!rect) return;
+          
+          // Calculate the position of the mouse relative to the card (as a percentage)
+          const relativeX = ((e.clientX - rect.left) / rect.width) * 100;
+          const relativeY = ((e.clientY - rect.top) / rect.height) * 100;
+          
+          // Set the custom properties on each card
+          card.style.setProperty('--x-pos', `${relativeX}`);
+          card.style.setProperty('--y-pos', `${relativeY}`);
+        });
+      };
+
+      // Simple tooltip positioning
+      const handleTooltipPosition = (container: HTMLElement) => {
+        const tooltip = container.querySelector('.tooltip') as HTMLElement;
+        if (!tooltip) return;
+
+        const containerRect = container.getBoundingClientRect();
+        const tooltipRect = tooltip.getBoundingClientRect();
+        const viewportWidth = window.innerWidth;
+
+        // Reset tooltip position
+        tooltip.style.left = '50%';
+        tooltip.style.right = 'auto';
+        tooltip.style.transform = 'translateX(-50%)';
+
+        // Check if tooltip overflows viewport horizontally
+        const tooltipLeft = containerRect.left + containerRect.width / 2 - tooltipRect.width / 2;
+        const tooltipRight = tooltipLeft + tooltipRect.width;
+
+        if (tooltipLeft < 8) {
+          tooltip.style.left = '0';
+          tooltip.style.transform = 'translateX(0)';
+        } else if (tooltipRight > viewportWidth - 8) {
+          tooltip.style.left = 'auto';
+          tooltip.style.right = '0';
+          tooltip.style.transform = 'translateX(0)';
+        }
+      };
+      
+      // Cache card positions and recalculate mouse positions if mouse is inside
+      const updateCardRects = () => {
+        // Only update if mouse is inside or we don't have cached rects yet
+        if (isMouseInside || cardRects.length === 0) {
+          cardRects = Array.from(cardWrappers).map(card => card.getBoundingClientRect());
+          // If mouse is inside and we have a last mouse position, recalculate
+          if (lastMouseEvent) {
+            updatePositions(lastMouseEvent);
+          }
+        }
+      };
+      
+      // Initial cache
+      updateCardRects();
+      
+      // Update cache on resize and scroll
+      window.addEventListener('resize', updateCardRects);
+      window.addEventListener('scroll', updateCardRects, { passive: true });
+      
+      // Throttled mouse move handler using requestAnimationFrame
+      const handleMouseMove = (e: MouseEvent) => {
+        if (!isMouseInside) return;
+        
+        // Store the last mouse event
+        lastMouseEvent = e;
+        
+        if (animationFrameId) {
+          cancelAnimationFrame(animationFrameId);
+        }
+        
+        animationFrameId = requestAnimationFrame(() => {
+          updatePositions(e);
+        });
+      };
+
+      // Add hover event listeners for tooltip positioning
+      cardContainers.forEach((container) => {
+        container.addEventListener('mouseenter', () => {
+          setTimeout(() => handleTooltipPosition(container), 10);
+        });
+      });
+      
+      // Handle mouse enter/leave for container
+      gridContainer.addEventListener('mouseleave', () => {
+        isMouseInside = false;
+        lastMouseEvent = null;
+        document.documentElement.style.setProperty('--card-opacity', '0');
+        if (animationFrameId) {
+          cancelAnimationFrame(animationFrameId);
+        }
+      });
+      
+      gridContainer.addEventListener('mouseenter', () => {
+        isMouseInside = true;
+        document.documentElement.style.setProperty('--card-opacity', '1');
+        // Update card rects when entering the container
+        updateCardRects();
+      });
+      
+      // Use mousemove on the container instead of document
+      gridContainer.addEventListener('mousemove', handleMouseMove);
+    }
+  });
+</script>

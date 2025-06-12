@@ -10,10 +10,8 @@ const posts = (await getCollection('blog')).sort(
 ---
 
 <MainLayout>
-  <main
-    class="grid mx-auto min-h-screen py-32 w-full max-w-(--breakpoint-xl) grid-cols-[1fr_min(75ch,calc(100%-1.5rem))_1fr] *:col-start-2 px-6"
-  >
-    <section class="row-span-1 flex flex-col gap-y-6">
+  <main class="py-32 flex flex-col">
+    <section class="flex flex-col gap-y-6">
       <ul class="flex flex-col gap-y-6">
         {
           posts.map(async (post) => {

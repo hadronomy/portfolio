@@ -1,0 +1,21 @@
+---
+import ProjectCard from './ProjectCard.astro';
+
+interface Props {
+  projects: any[];
+}
+
+const { projects } = Astro.props;
+---
+
+<ul class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-8 p-0">
+  {projects.map((project) => (
+    <ProjectCard 
+      name={project.name} 
+      description={project.description} 
+      url={project.html_url}
+      language={project.language}
+      stars={project.stargazers_count}
+    />
+  ))}
+</ul>

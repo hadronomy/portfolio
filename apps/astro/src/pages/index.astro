@@ -1,12 +1,106 @@
 ---
 import '~/styles/global.css';
 
+import ExperienceTimeline from '~/components/ExperienceTimeline.astro';
 import Hero from '~/components/HomeHero.astro';
+import ProjectGrid from '~/components/ProjectGrid.astro';
+import { Sparkles } from '~/components/react/sparkle';
+import SkillGrid from '~/components/SkillGrid.astro';
 import MainLayout from '~/layouts/Main.astro';
+
+import { GITHUB_TOKEN } from "astro:env/server";
+import { InteractiveBadge } from '~/components/react/interactive-badge';
+
+// Define the skills array
+const skills = [
+  { name: 'TypeScript', icon: 'logos:typescript-icon' },
+  { name: 'JavaScript', icon: 'logos:javascript' },
+  { name: 'React', icon: 'logos:react' },
+  { name: 'Rust', icon: 'material-icon-theme:rust' },
+  { name: 'Python', icon: 'logos:python' },
+  { name: 'C++', icon: 'logos:c-plusplus' },
+  { name: 'HTML', icon: 'vscode-icons:file-type-html' },
+  { name: 'CSS', icon: 'vscode-icons:file-type-css' },
+  { name: 'Node.js', icon: 'logos:nodejs-icon' },
+  { name: 'Next.js', icon: 'logos:nextjs-icon' },
+  { name: 'Astro', icon: 'simple-icons:astro' },
+  { name: 'Tailwind CSS', icon: 'logos:tailwindcss-icon' },
+  { name: 'Docker', icon: 'logos:docker-icon' },
+  { name: 'PostgreSQL', icon: 'logos:postgresql' },
+  { name: 'Git', icon: 'logos:git-icon' },
+  { name: 'Linux', icon: 'logos:linux-tux' },
+  { name: 'Kubernetes', icon: 'logos:kubernetes' },
+  { name: 'Go', icon: 'logos:go' },
+  { name: 'Zig', icon: 'material-icon-theme:zig' },
+  { name: 'WebAssembly', icon: 'logos:webassembly' },
+  { name: 'Prisma', icon: 'logos:prisma' },
+  { name: 'Vite', icon: 'logos:vitejs' },
+  { name: 'Three.js', icon: 'logos:threejs' },
+  { name: 'Tauri', icon: 'logos:tauri' }
+];
+
+// Define experience data
+const experiences = [
+  {
+    title: 'Computer Science Student',
+    organization: 'Universidad de La Laguna',
+    period: '2021 - 2025',
+    description: 'Studied advanced algorithms, software architecture, and full-stack development. Participated in coding competitions and led student projects.',
+    tags: ['Algorithms', 'Software Design', 'Full-stack']
+  },
+  {
+    title: 'Self-Taught Programmer',
+    organization: 'Self',
+    period: '2014 - Present',
+    description: 'Over 10 years of continuous learning across all fields of programming. From web development to systems programming, exploring various languages, frameworks, and paradigms through personal projects and open-source contributions.',
+    tags: ['Full-stack', 'Systems Programming', 'Open Source', 'Multi-paradigm']
+  },
+];
+
+// Fetch GitHub projects data
+const username = 'hadronomy';
+const response = await fetch(
+  `https://api.github.com/users/${username}/repos?sort=updated&per_page=6`, 
+  { headers: { Authorization: `Bearer ${GITHUB_TOKEN}` } },
+);
+const projects = await response.json();
 ---
 
 <MainLayout>
-  <main class="mx-auto flex w-full min-h-dvh max-w-(--breakpoint-xl) flex-col">
+  <div class="h-30 animate-fade-in"></div>
+  <main class="flex gap-y-10 flex-col">
     <Hero id="hero" />
+    <section>
+      <a href="#skills">
+        <Sparkles client:load>
+          <h2 id="skills" class="text-3xl uppercase tracking-widest scroll-m-20">Skills</h2>
+        </Sparkles>
+      </a>
+      <SkillGrid skills={skills} />
+    </section>
+    <section>
+      <a href="#projects">
+        <Sparkles client:load>
+          <h2 id="projects" class="text-3xl uppercase tracking-widest scroll-m-20">Projects</h2>
+        </Sparkles>
+      </a>
+      <ProjectGrid projects={projects} />
+    </section>
+    <section>
+      <a href="#experience">
+        <Sparkles client:load>
+          <h2 id="experience" class="text-3xl uppercase tracking-widest scroll-m-20">Experience</h2>
+        </Sparkles>
+      </a>
+      <div class="w-full mt-4">
+        <ExperienceTimeline items={experiences} />
+      </div>
+    </section>
+    <div class="inline-flex flex-col">
+      <hr class="w-full h-0 mb-0"/>
+      <aside class="w-full h-90 hidden md:flex align-middle justify-center items-center">
+        <InteractiveBadge client:load />
+      </aside>
+    </div>
   </main>
 </MainLayout>

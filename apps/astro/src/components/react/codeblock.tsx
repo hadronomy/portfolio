@@ -30,10 +30,7 @@ export const Pre = React.forwardRef<
 Pre.displayName = 'Pre';
 
 export const CodeBlock = React.forwardRef<HTMLPreElement, CodeBlockProps>(
-  (
-    { title, keepBackground = false, className, children, style, ...props },
-    ref,
-  ) => {
+  ({ title, keepBackground = false, className, children, ...props }, _ref) => {
     const areaRef = React.useRef<HTMLDivElement>(null);
     const onCopy = React.useCallback(async () => {
       const pre = areaRef.current?.getElementsByTagName('pre').item(0);

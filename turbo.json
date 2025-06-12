@@ -1,8 +1,9 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "globalDependencies": ["**/.env*.local"],
-  "globalEnv": ["NODE_ENV", "VERCEL_URL", "PORT"],
+  "globalEnv": ["NODE_ENV", "VERCEL_URL", "PORT", "GITHUB_TOKEN"],
   "ui": "tui",
+  "globalPassThroughEnv": ["COREPACK_HOME"],
   "tasks": {
     "start": {
       "dependsOn": ["^start", "build"],
