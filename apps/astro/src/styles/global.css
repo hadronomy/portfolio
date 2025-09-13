@@ -64,7 +64,8 @@
 
     color-scheme: light;
 
-    --animate-sparkle: sparkle 700ms forwards
+    --animate-sparkle: sparkle 700ms forwards;
+    --text-base: 1.1em;
   }
 
   @media not print {
