@@ -73,7 +73,7 @@ catalogs:
     '@signpdf/signer-p12': ^3.2.4
     '@signpdf/signpdf': ^3.2.5
     '@unpic/placeholder': ^0.1.2
-    astro: ^5.13.7
+    astro: ^5.14.3
     blurhash: ^2.0.5
     date-fns: ^4.1.0
     framer-motion: 12.12.1
