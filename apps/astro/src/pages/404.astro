@@ -1,0 +1,395 @@
+---
+import { Icon } from 'astro-icon/components';
+import MainLayout from '~/layouts/Main.astro';
+
+import '@xterm/xterm/css/xterm.css';
+
+const sidebarItems = [
+  { label: 'FATAL_ERR', id: 'crash' },
+  { label: 'TTY_Session', id: 'console' },
+  { label: 'Power', id: 'recovery' },
+];
+---
+
+<MainLayout title="404 | System Failure" sidebarItems={sidebarItems}>
+  
+  <div id="crt-overlay" class="fixed inset-0 z-[9999] pointer-events-none opacity-0 bg-white mix-blend-overlay"></div>
+  <div id="blackout-overlay" class="fixed inset-0 z-[9998] pointer-events-none opacity-0 bg-black"></div>
+
+  <div class="relative w-full h-full flex flex-col bg-[#050505] selection:bg-red-500/30 overflow-hidden">
+    
+    <!-- Background: Hex Grid (Subtle) -->
+    <div class="absolute inset-0 z-0 overflow-hidden opacity-[0.03] pointer-events-none animate-bg-pan">
+       <div class="hex-grid h-full w-full"></div>
+    </div>
+
+    <!-- SECTION 1: ERROR HEADER -->
+    <div id="crash" class="relative z-20 w-full p-8 md:p-12 border-b border-white/20 bg-black/20 backdrop-blur-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
+      
+      <!-- Glitch 404 Title -->
+      <div class="relative group cursor-default select-none">
+        <h1 class="text-8xl md:text-9xl font-black text-white leading-none tracking-tighter mix-blend-difference">
+          404
+        </h1>
+        <h1 class="text-8xl md:text-9xl font-black text-red-500/50 leading-none tracking-tighter absolute top-0 left-0 -translate-x-1 translate-y-1 -z-10 animate-glitch-1 opacity-0 group-hover:opacity-100">404</h1>
+        <h1 class="text-8xl md:text-9xl font-black text-cyan-500/50 leading-none tracking-tighter absolute top-0 left-0 translate-x-1 -translate-y-1 -z-10 animate-glitch-2 opacity-0 group-hover:opacity-100">404</h1>
+      </div>
+
+      <!-- Error Description -->
+      <div class="flex flex-col items-start md:items-end text-left md:text-right max-w-md">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="w-2 h-2 bg-red-500 rounded-full animate-ping"></span>
+          <span class="font-mono text-xs text-red-500 font-bold uppercase tracking-widest">Signal Lost</span>
+        </div>
+        <h2 class="text-xl md:text-2xl font-bold text-white uppercase tracking-tight mb-1">
+          Sector Not Found
+        </h2>
+        <p class="font-mono text-xs text-muted-foreground leading-relaxed">
+          The requested trajectory leads to void space. <br class="hidden md:block" /> Coordinates invalid or corrupted.
+        </p>
+      </div>
+    </div>
+
+    <!-- SECTION 2: FULL WIDTH TERMINAL -->
+    <div id="console" class="relative z-10 flex-1 w-full flex flex-col min-h-0 bg-black/80 group/term">
+      
+      <!-- Terminal Bar -->
+      <div class="flex shrink-0 items-center justify-between px-4 py-1.5 border-b border-white/10 bg-white/[0.02]">
+        <div class="flex items-center gap-4">
+          <div class="flex gap-1.5">
+            <div class="w-2.5 h-2.5 rounded-full bg-red-500/20 border border-red-500"></div>
+            <div class="w-2.5 h-2.5 rounded-full bg-yellow-500/20 border border-yellow-500"></div>
+            <div class="w-2.5 h-2.5 rounded-full bg-green-500/20 border border-green-500"></div>
+          </div>
+          <span class="text-white/30 uppercase tracking-widest text-[10px] font-mono select-none">
+            root@hadronomy:~/recovery
+          </span>
+        </div>
+        <div class="text-[10px] font-mono text-white/20">bash -- 80x24</div>
+      </div>
+
+      <!-- Xterm Container -->
+      <div class="flex-1 relative w-full p-4 overflow-hidden cursor-text" onclick="document.querySelector('.xterm-helper-textarea')?.focus()">
+         <!-- Scanline Overlay -->
+         <div class="absolute inset-0 pointer-events-none z-20 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.1)_50%),linear-gradient(90deg,rgba(255,0,0,0.03),rgba(0,255,0,0.01),rgba(0,0,255,0.03))] bg-[size:100%_3px,3px_100%] opacity-50"></div>
+         
+         <!-- Terminal Div -->
+         <div id="terminal-container" class="w-full h-full"></div>
+      </div>
+    </div>
+
+    <!-- SECTION 3: CONTROL DECK -->
+    <div id="recovery" class="relative z-20 shrink-0 h-24 border-t border-white/20 bg-[#0A0A0A] flex items-center justify-between px-8 md:px-12">
+      
+      <div class="absolute inset-0 opacity-[0.03] pointer-events-none" style="background-image: repeating-linear-gradient(-45deg, transparent, transparent 10px, white 10px, white 20px);"></div>
+
+      <div class="hidden md:flex flex-col">
+        <span class="font-mono text-[10px] text-white/30 uppercase tracking-widest">Emergency Protocol</span>
+        <span class="font-mono text-xs text-white/60">Ready to execute</span>
+      </div>
+
+      <!-- THE BUTTON -->
+      <button 
+        id="btn-reboot"
+        class="group relative flex items-center justify-center h-12 px-8 bg-transparent border border-white/20 overflow-hidden hover:border-white/50 transition-colors cursor-pointer"
+      >
+        <div class="absolute inset-0 bg-white transform translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></div>
+        <div class="absolute inset-0 opacity-0 group-hover:opacity-10 pointer-events-none" style="background-image: repeating-linear-gradient(-45deg, transparent, transparent 5px, black 5px, black 10px);"></div>
+
+        <div class="relative z-10 flex items-center gap-3">
+          <Icon name="tabler:power" class="w-4 h-4 text-white group-hover:text-black transition-colors" />
+          <span class="font-mono text-xs font-bold uppercase tracking-[0.2em] text-white group-hover:text-black transition-colors">
+            Initiate Reboot
+          </span>
+        </div>
+
+        <div class="absolute top-0 left-0 w-1 h-1 bg-white transition-colors group-hover:bg-black"></div>
+        <div class="absolute bottom-0 right-0 w-1 h-1 bg-white transition-colors group-hover:bg-black"></div>
+      </button>
+
+    </div>
+
+  </div>
+</MainLayout>
+
+<style>
+  .hex-grid {
+    background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+    animation: bg-pan 60s linear infinite;
+  }
+
+  @keyframes bg-pan {
+    0% { background-position: 0% 0%; }
+    100% { background-position: 100% 100%; }
+  }
+
+  @keyframes glitch-1 {
+    0% { clip-path: inset(20% 0 80% 0); transform: translate(-2px, 1px); }
+    20% { clip-path: inset(60% 0 10% 0); transform: translate(2px, -1px); }
+    100% { clip-path: inset(40% 0 50% 0); transform: translate(-2px, 2px); }
+  }
+  @keyframes glitch-2 {
+    0% { clip-path: inset(10% 0 60% 0); transform: translate(2px, -1px); }
+    20% { clip-path: inset(80% 0 5% 0); transform: translate(-2px, 1px); }
+    100% { clip-path: inset(30% 0 10% 0); transform: translate(1px, -2px); }
+  }
+  .animate-glitch-1 { animation: glitch-1 2.5s infinite linear alternate-reverse; }
+  .animate-glitch-2 { animation: glitch-2 3s infinite linear alternate-reverse; }
+
+  /* Global Body Animation Class */
+  :global(body.animate-crt-off) {
+    animation: turn-off 0.55s cubic-bezier(0.230, 1.000, 0.320, 1.000) forwards;
+    transform-origin: center;
+    background-color: #050505;
+    overflow: hidden;
+  }
+
+  @keyframes turn-off {
+    0% { transform: scale(1, 1.3) translate3d(0, 0, 0); filter: brightness(1); opacity: 1; }
+    60% { transform: scale(1, 0.001) translate3d(0, 0, 0); filter: brightness(10); }
+    100% { transform: scale(0, 0.001) translate3d(0, 0, 0); opacity: 0; }
+  }
+
+  #terminal-container :global(.xterm-viewport), 
+  #terminal-container :global(.xterm-screen) {
+    background-color: transparent !important;
+  }
+</style>
+
+<script>
+  import { FitAddon } from '@xterm/addon-fit';
+import { Terminal } from '@xterm/xterm';
+
+  document.addEventListener('astro:page-load', () => {
+    const container = document.getElementById('terminal-container');
+    const rebootBtn = document.getElementById('btn-reboot');
+    
+    if (!container) return;
+
+    // --- Xterm Setup ---
+    const term = new Terminal({
+      cursorBlink: true,
+      cursorStyle: 'block',
+      fontFamily: '"Maple Mono", "JetBrains Mono", monospace',
+      fontSize: 14,
+      lineHeight: 1.4,
+      allowTransparency: true,
+      theme: {
+        background: '#00000000',
+        foreground: '#a9b1d6',
+        cursor: '#ffffff',
+        selectionBackground: 'rgba(255, 255, 255, 0.3)',
+        black: '#32344a',
+        red: '#f7768e',
+        green: '#9ece6a',
+        yellow: '#e0af68',
+        blue: '#7aa2f7',
+        magenta: '#ad8ee6',
+        cyan: '#449dab',
+        white: '#787c99',
+      }
+    });
+
+    const fitAddon = new FitAddon();
+    term.loadAddon(fitAddon);
+    term.open(container);
+    fitAddon.fit();
+
+    let isRebooting = false;
+    const prompt = '\x1b[1;34mroot@hadronomy\x1b[0m:\x1b[1;32m~/recovery\x1b[0m$ ';
+    let commandBuffer = '';
+
+    const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
+
+    const typeText = async (text: string, speed = 10) => {
+      for (const char of text) {
+        term.write(char);
+        await sleep(speed);
+      }
+      term.write('\r\n');
+    };
+
+    const progressBar = async (label: string, steps = 20) => {
+      term.write(`${label} [`);
+      for (let i = 0; i <= steps; i++) {
+        term.write('#');
+        await sleep(Math.random() * 50);
+      }
+      term.write('] \x1b[32mDONE\x1b[0m\r\n');
+    };
+
+    const triggerReboot = async () => {
+      if (isRebooting) return;
+      isRebooting = true;
+
+      term.write('\r\n\r\n');
+      await typeText('\x1b[31m[!]\x1b[0m MANUAL OVERRIDE INITIATED...', 20);
+      await sleep(300);
+      await typeText('\x1b[33m[*]\x1b[0m Sending SIGTERM to all processes...', 5);
+      await progressBar('Stopping services', 30);
+      
+      term.write('\x1b[38;5;240m');
+      for(let i=0; i<30; i++) {
+        term.write(`0x${Math.floor(Math.random()*16777215).toString(16).toUpperCase()} `);
+        if(i%6===0) term.write('\r\n');
+        await sleep(5);
+      }
+      term.write('\x1b[0m\r\n');
+
+      await typeText('\x1b[32m[+]\x1b[0m FLUSHING MEMORY BUFFERS...', 5);
+      await sleep(400);
+      await typeText('\x1b[32m[OK]\x1b[0m SYSTEM HALTED.', 50);
+      
+      await sleep(500);
+      
+      const crt = document.getElementById('crt-overlay');
+      const black = document.getElementById('blackout-overlay');
+      
+      if (crt && black) {
+        crt.style.opacity = '0.2';
+        await sleep(50);
+        crt.style.opacity = '0';
+        
+        // This triggers the CSS animation on the body
+        document.body.classList.add('animate-crt-off');
+        
+        black.style.opacity = '1';
+        black.style.transition = 'opacity 2s ease-in';
+      }
+
+      await sleep(800);
+      window.location.href = '/';
+    };
+
+    const runCommand = async (cmd: string) => {
+      term.write('\r\n');
+      const cleanCmd = cmd.trim().toLowerCase();
+      const parts = cleanCmd.split(' ');
+      const baseCmd = parts[0];
+      const arg = parts[1];
+
+      switch (baseCmd) {
+        case 'help':
+          await typeText('Available commands: \x1b[33mreboot\x1b[0m, \x1b[33mls\x1b[0m, \x1b[33mcat\x1b[0m, \x1b[33mstatus\x1b[0m, \x1b[33mclear\x1b[0m, \x1b[33mwhoami\x1b[0m', 0);
+          break;
+        case 'reboot':
+        case 'exit':
+          triggerReboot();
+          return; 
+        case 'ls':
+          if (arg === '-la' || arg === '-a') {
+             await typeText('drwxr-xr-x  2 root root  4096 Dec 20 08:00 .', 0);
+             await typeText('drwxr-xr-x  4 root root  4096 Dec 20 08:00 ..', 0);
+             await typeText('-rw-r--r--  1 root root   512 Dec 20 08:00 .ghost_protocol', 0);
+             await typeText('-rw-r--r--  1 root root     0 Dec 20 08:00 404_error.log', 0);
+             await typeText('-rwxr-xr-x  1 root root  1024 Dec 20 08:00 recovery_tool.sh', 0);
+          } else {
+             await typeText('404_error.log  recovery_tool.sh', 0);
+          }
+          break;
+        case 'cat':
+          if (arg === '404_error.log') {
+            await typeText('[ERROR] 0x00000000 - SECTOR_NOT_FOUND', 0);
+            await typeText('[INFO]  The requested resource vanished into the ether.', 0);
+          } else if (arg === '.ghost_protocol' || arg === 'ghost_protocol') {
+            await typeText('\x1b[35m[SECRET]\x1b[0m Project "H A D R O N" Initialized.', 0);
+            await typeText('Target: World Domination via Clean Code.', 0);
+          } else if (arg === 'recovery_tool.sh') {
+             await typeText('#!/bin/bash', 0);
+             await typeText('echo "Please click the reboot button below."', 0);
+          } else if (!arg) {
+             await typeText('cat: missing operand', 0);
+          } else {
+             await typeText(`cat: ${arg}: No such file or directory`, 0);
+          }
+          break;
+        case 'status':
+          await typeText('System Status: \x1b[31mCRITICAL\x1b[0m', 0);
+          await typeText('CPU: 3% (Idle)', 0);
+          await typeText('Router: \x1b[31mFAILED\x1b[0m', 0);
+          break;
+        case 'whoami':
+          await typeText('visitor@internet', 0);
+          break;
+        case 'sudo':
+          await typeText('visitor is not in the sudoers file. This incident will be reported.', 0);
+          break;
+        case 'rm':
+          if (arg === '-rf' && parts[2] === '/') {
+             await typeText('\x1b[31m[DANGER] SELF DESTRUCT SEQUENCE ARMED...\x1b[0m', 20);
+             await sleep(1000);
+             await typeText('Just kidding. Please don\'t delete my portfolio.', 20);
+          } else {
+             await typeText('Permission denied.', 0);
+          }
+          break;
+        case 'matrix':
+          for(let i=0; i<10; i++) {
+             let line = '';
+             for(let j=0; j<40; j++) line += Math.random() > 0.5 ? '1' : '0';
+             await typeText(`\x1b[32m${line}\x1b[0m`, 5);
+          }
+          await typeText('The matrix has you...', 50);
+          break;
+        case 'clear':
+          term.clear();
+          term.write(prompt);
+          return;
+        case '': break;
+        default:
+          await typeText(`\x1b[31mCommand not found: ${cleanCmd}\x1b[0m`, 0);
+      }
+      
+      if (!isRebooting) term.write(prompt);
+    };
+
+    term.onKey(({ key, domEvent }) => {
+      if (isRebooting) return;
+      
+      if (domEvent.key === 'Enter') {
+        runCommand(commandBuffer);
+        commandBuffer = '';
+        return;
+      }
+      
+      if (domEvent.key === 'Backspace') {
+        if (commandBuffer.length > 0) {
+          commandBuffer = commandBuffer.slice(0, -1);
+          term.write('\b \b');
+        }
+        return;
+      }
+
+      const isPrintable = !domEvent.altKey && !domEvent.ctrlKey && !domEvent.metaKey && key.length === 1;
+
+      if (isPrintable) {
+        commandBuffer += key;
+        term.write(key);
+      }
+    });
+
+    const boot = async () => {
+      term.writeln('\x1b[33m[WARN]\x1b[0m Connection lost with upstream server.');
+      await sleep(100);
+      term.write('Checking memory integrity... ');
+      await progressBar('', 10);
+      term.writeln('\x1b[32m[INFO]\x1b[0m Hardware: OK');
+      term.writeln('\x1b[32m[INFO]\x1b[0m Emergency shell loaded.');
+      await sleep(200);
+      term.write(prompt);
+    };
+
+    boot();
+
+    if (rebootBtn) {
+      rebootBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        triggerReboot();
+      });
+    }
+
+    new ResizeObserver(() => fitAddon.fit()).observe(container);
+  });
+</script>

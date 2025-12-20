@@ -1,28 +1,62 @@
 ---
 import { getCollection } from 'astro:content';
-
 import BlogPostCard from '~/components/BlogPostCard.astro';
 import MainLayout from '~/layouts/Main.astro';
 
 const posts = (await getCollection('blog')).sort(
-  (a, b) => a.data.pubDate.valueOf() - b.data.pubDate.valueOf()
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
 );
+
+// Sidebar for Blog Index could be simple links or filters in the future
+// For now we just show a "Directory" active state
+const blogSidebar = [
+  { label: '>> Directory Root', id: 'directory' },
+  { label: 'Latest Logs', id: 'latest' },
+  { label: 'Archive', id: 'archive' },
+];
 ---
 
-<MainLayout>
-  <main class="py-32 flex flex-col">
-    <section class="flex flex-col gap-y-6">
-      <ul class="flex flex-col gap-y-6">
-        {
-          posts.map(async (post) => {
-            return (
-              <li>
-                <BlogPostCard post={post} />
-              </li>
-            );
-          })
-        }
-      </ul>
-    </section>
-  </main>
+<MainLayout sidebarItems={blogSidebar} title="Blog | Archive">
+  
+  <!-- Header Section -->
+  <div id="directory" class="p-8 md:p-12 border-b border-white/20 bg-white/5">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+      <span class="font-mono text-xs text-green-500 tracking-widest uppercase">Database Connected</span>
+    </div>
+    
+    <h1 class="text-4xl md:text-6xl font-black uppercase tracking-tighter mb-4">
+      Engineering<br/>Logs
+    </h1>
+    
+    <p class="font-mono text-sm text-muted-foreground max-w-xl border-l-2 border-white/20 pl-4">
+      Documentation of experiments, technical breakdowns, and development notes. All records are immutable.
+    </p>
+  </div>
+
+  <!-- Filter Bar (Visual only for now) -->
+  <div class="w-full flex border-b border-white/20 font-mono text-xs uppercase tracking-widest sticky top-0 z-40 bg-background/90 backdrop-blur-md">
+    <div class="px-6 py-3 border-r border-white/20 bg-white text-black font-bold">All Logs</div>
+    <div class="px-6 py-3 border-r border-white/20 text-muted-foreground hover:bg-white/5 cursor-pointer">DevLogs</div>
+    <div class="px-6 py-3 border-r border-white/20 text-muted-foreground hover:bg-white/5 cursor-pointer">Tutorials</div>
+    <div class="flex-1"></div>
+    <div class="px-6 py-3 flex items-center gap-2 text-muted-foreground">
+      <span>{posts.length} Records Found</span>
+    </div>
+  </div>
+
+  <!-- Post Grid -->
+  <div id="latest" class="p-6 md:p-8 flex flex-col gap-4 min-h-[50vh]">
+    {
+      posts.map((post, index) => (
+        <BlogPostCard post={post} index={index} />
+      ))
+    }
+  </div>
+
+  <!-- Archive Section Placeholder -->
+  <div id="archive" class="p-8 border-t border-white/20 mt-auto opacity-50">
+    <span class="font-mono text-xs uppercase tracking-widest">End of Records</span>
+  </div>
+
 </MainLayout>

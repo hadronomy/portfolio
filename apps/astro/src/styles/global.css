@@ -4,582 +4,146 @@
 
 @config '../../tailwind.config.ts';
 
-/*
-  The default border color has changed to `currentColor` in Tailwind CSS v4,
-  so we've added these compatibility styles to make sure everything still
-  looks the same as it did with Tailwind CSS v3.
-
-  If we ever want to remove these styles, we need to add an explicit border
-  color utility to any element that depends on these defaults.
-*/
 @layer base {
   *,
   ::after,
   ::before,
   ::backdrop,
   ::file-selector-button {
-    border-color: var(--color-gray-200, currentColor);
+    border-color: var(--border);
   }
 }
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 47.4% 11.2%;
+    /* Force Dark Mode Default */
+    --background-image: url('/noise.png');
+    --background: 0 0% 5%;
+    --foreground: 0 0% 95%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 0 0% 10%;
+    --muted-foreground: 0 0% 60%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 47.4% 11.2%;
+    --popover: 0 0% 5%;
+    --popover-foreground: 0 0% 95%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 47.4% 11.2%;
+    --card: 0 0% 5%;
+    --card-foreground: 0 0% 95%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 5%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 98%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 0 0% 20%;
+    --accent-foreground: 0 0% 98%;
 
-    --destructive: 0 100% 50%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 0 0% 98%;
 
-    --selection: 233, 12%, 39%;
+    --ring: 0 0% 80%;
 
-    --ring: 215 20.2% 65.1%;
+    --radius: 0px;
 
-    --radius: 0.5rem;
-
-    --font-sans: 'Onest Variable', sans-serif;
+    --font-sans: 'Maple Mono', 'Onest Variable', sans-serif;
     --font-mono: 'Maple Mono', monospace;
 
-    --halftone: rgba(255, 255, 255, 0.26);
+    --halftone: rgba(255, 255, 255, 0.1);
 
-    color-scheme: light;
+    color-scheme: dark;
 
     --animate-sparkle: sparkle 700ms forwards;
-    --text-base: 1.1em;
   }
 
-  @media not print {
-    .dark {
-      --background-image: url('/noise.png');
-      --background: 220 17% 7%;
-      --foreground: 213 31% 91%;
-
-      --muted: 223 0% 11%;
-      --muted-foreground: 215.4 0% 56.9%;
-
-      --popover: 224 0% 4%;
-      --popover-foreground: 215 0% 65.1%;
-
-      --card: 0 100% 0%;
-      --card-foreground: 213 0% 91%;
-
-      --border: 216 0% 17%;
-      --input: 216 0% 17%;
-
-      --primary: 210 0% 98%;
-      --primary-foreground: 222.2 0% 1.2%;
-
-      --secondary: 222.2 0% 11.2%;
-      --secondary-foreground: 210 0% 98%;
-
-      --accent: 216 0% 17%;
-      --accent-foreground: 210 0% 98%;
-
-      --destructive: 0 63% 31%;
-      --destructive-foreground: 210 40% 98%;
-
-      --selection: 233, 12%, 39%;
-
-      --ring: 216 0% 17%;
-
-      --radius: 0.5rem;
-
-      --halftone: rgba(15, 16, 18, 0.7);
-
-      color-scheme: dark;
-    }
+  .dark {
+    --background-image: url('/noise.png');
+    --background: 0 0% 5%;
+    --foreground: 0 0% 95%;
+    --muted: 0 0% 10%;
+    --muted-foreground: 0 0% 60%;
+    --border: 0 0% 20%;
+    --halftone: rgba(20, 20, 20, 0.8);
   }
 }
 
 @layer base {
   * {
-    @apply border-border;
-    min-width: 0;
-    font-feature-settings:
-      'calt' 1,
-      'liga' 1,
-      'ss01' 1,
-      'ss09' 1;
+    @apply border-border box-border;
   }
 
   body {
-    @apply bg-background text-foreground;
-    font-feature-settings:
-      'rlig' 1,
-      'calt' 1;
-    position: relative;
+    @apply bg-background text-foreground font-mono antialiased overflow-x-hidden;
+    background-image: linear-gradient(
+      45deg, 
+      rgba(255, 255, 255, 0.03) 25%, 
+      transparent 25%, 
+      transparent 50%, 
+      rgba(255, 255, 255, 0.03) 50%, 
+      rgba(255, 255, 255, 0.03) 75%, 
+      transparent 75%, 
+      transparent
+    );
+    background-size: 4px 4px;
   }
 
-  /* Animations only for users who don't prefer reduced motion */
-  @media (prefers-reduced-motion: no-preference) {
-    /* Initial state for animated elements */
-    main > section,
-    main > div:not(.halftone-bg):not([aria-hidden="true"]),
-    .hero,
-    /* nav, */
-    /* header, */
-    footer,
-    #hero,
-    section {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-
-    /* Auto-animate elements with staggered delays - fast but smooth */
-    main {
-      counter-reset: animation-order;
-    }
-    
-    /* Hero section gets priority after navbar */
-    #hero { animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.05s forwards; }
-
-    /* Main sections animate in sequence with very short delays */
-    main > section:nth-child(1) { animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.1s forwards; }
-    main > section:nth-child(2) { animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.15s forwards; }
-    main > section:nth-child(3) { animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.2s forwards; }
-    main > section:nth-child(4) { animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.25s forwards; }
-    main > section:nth-child(5) { animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.3s forwards; }
-    main > section:nth-child(6) { animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.35s forwards; }
-    
-    /* Main divs animate in sequence - exclude background effects */
-    main > div:nth-child(1):not(.halftone-bg):not([aria-hidden="true"]) { animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.1s forwards; }
-    main > div:nth-child(2):not(.halftone-bg):not([aria-hidden="true"]) { animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.15s forwards; }
-    main > div:nth-child(3):not(.halftone-bg):not([aria-hidden="true"]) { animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.2s forwards; }
-    main > div:nth-child(4):not(.halftone-bg):not([aria-hidden="true"]) { animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.25s forwards; }
-    main > div:nth-child(5):not(.halftone-bg):not([aria-hidden="true"]) { animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.3s forwards; }
-    main > div:nth-child(6):not(.halftone-bg):not([aria-hidden="true"]) { animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.35s forwards; }
-    main > div:nth-child(7):not(.halftone-bg):not([aria-hidden="true"]) { animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.4s forwards; }
-
-    /* Footer animates last */
-    footer { animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.45s forwards; }
-  }
-
-  /* For users who prefer reduced motion, show everything immediately */
-  @media (prefers-reduced-motion: reduce) {
-    main > section,
-    main > div:not(.halftone-bg):not([aria-hidden="true"]),
-    .hero,
-    footer,
-    #hero,
-    section {
-      opacity: 1;
-      transform: none;
-    }
-  }
-
-  input,
-  textarea,
-  button,
-  select,
-  a {
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  /* Print */
-  @media print {
-    div,
-    code,
-    pre {
-      page-break-inside: avoid;
-    }
-  }
-
-  /* Scrollbar */
-
-  /* width */
+  /* 
+     FIXED SCROLLBAR STYLING 
+     Removed the 12px width and the left border which created the "stripe".
+     Now it's a sleek, floating-style scrollbar.
+  */
   ::-webkit-scrollbar {
-    @apply h-1 w-1;
+    width: 8px; /* Thinner */
+    height: 8px;
+    background: transparent; /* Transparent track */
   }
 
-  /* Track */
   ::-webkit-scrollbar-track {
-    @apply rounded bg-muted;
+    background: transparent;
   }
 
-  /* Handle */
   ::-webkit-scrollbar-thumb {
-    @apply rounded bg-muted-foreground;
+    background: #333; /* Dark Grey */
+    border-radius: 4px;
+    border: 2px solid transparent; /* Creates padding around the thumb */
+    background-clip: content-box;
   }
 
-  /* Handle on hover */
   ::-webkit-scrollbar-thumb:hover {
-    background: #555;
+    background-color: #666; /* Lighter on hover */
   }
 
-  pre code {
-    @apply grid! text-[16px]! font-[500]! font-mono!;
-    font-variant-ligatures: additional-ligatures !important;
+  /* Brutalist Utilities */
+  .neo-border-r {
+    border-right: 1px solid var(--border);
+  }
+  
+  .neo-border-b {
+    border-bottom: 1px solid var(--border);
   }
 
-  code:not(pre code):not(pre * code) {
-    @apply rounded-lg! border-2! p-0.25! m-0! bg-muted! text-foreground/100!;
+  .neo-border-l {
+    border-left: 1px solid var(--border);
   }
 
-  /* Base: remove default bullets/numbers; define variables */
-  article ul,
-  article ol {
-    margin: 0.75rem 0;
-    padding: 0;
-    list-style: none;
-    --indent-col: 1.5rem;   /* base marker column width */
-    --indent-step: 1.25rem; /* extra width added per nesting depth */
-    --gap: 0.5rem;          /* vertical gap between siblings */
-    color: inherit;
+  .neo-border-t {
+    border-top: 1px solid var(--border);
   }
 
-  /* Small top margin before any nested list */
-  article li > ul,
-  article li > ol {
-    margin-top: 0.35rem;
-  }
-
-  /* -------- Level 1 (direct children of article lists) -------- */
-  article > ul > li,
-  article > ol > li {
-    display: grid;
-    grid-template-columns: var(--indent-col) 1fr;
-    gap: 0.5rem;
-    align-items: start;
-  }
-  article > ul > li + li,
-  article > ol > li + li {
-    margin-top: var(--gap);
-  }
-
-  /* -------- Level 2 -------- */
-  article ul ul > li,
-  article ul ol > li,
-  article ol ul > li,
-  article ol ol > li {
-    display: grid;
-    grid-template-columns: calc(var(--indent-col) + var(--indent-step)) 1fr;
-    gap: 0.5rem;
-    align-items: start;
-  }
-  article ul ul > li + li,
-  article ul ol > li + li,
-  article ol ul > li + li,
-  article ol ol > li + li {
-    margin-top: var(--gap);
-  }
-
-  /* -------- Level 3 -------- */
-  article ul ul ul > li,
-  article ul ul ol > li,
-  article ol ul ul > li,
-  article ol ol ul > li {
-    display: grid;
-    grid-template-columns: calc(var(--indent-col) + 2 * var(--indent-step)) 1fr;
-    gap: 0.5rem;
-    align-items: start;
-  }
-  article ul ul ul > li + li,
-  article ul ul ol > li + li,
-  article ol ul ul > li + li,
-  article ol ol ul > li + li {
-    margin-top: var(--gap);
-  }
-
-  /* -------- Level 4 (optional; add more levels as needed) -------- */
-  article ul ul ul ul > li,
-  article ul ul ul ol > li,
-  article ol ul ul ul > li,
-  article ol ol ul ul > li {
-    display: grid;
-    grid-template-columns: calc(var(--indent-col) + 3 * var(--indent-step)) 1fr;
-    gap: 0.5rem;
-    align-items: start;
-  }
-  article ul ul ul ul > li + li,
-  article ul ul ul ol > li + li,
-  article ol ul ul ul > li + li,
-  article ol ol ul ul > li + li {
-    margin-top: var(--gap);
-  }
-
-  /* -------- Markers -------- */
-
-  /* UL marker: custom symbol (change as desired) */
-  article ul > li::before,
-  article ul ul > li::before,
-  article ul ul ul > li::before,
-  article ul ul ul ul > li::before {
-    content: "->";
-    color: #6b7280;
-    line-height: 1.2;
-    translate: 0 0.15em;
-    justify-self: end; /* right-align in marker column */
-  }
-
-  /* OL markers: hierarchical numbers using CSS counters */
-  article ol {
-    counter-reset: item;
-  }
-  article ol > li {
-    counter-increment: item;
-  }
-  article ol > li::before,
-  article ol ol > li::before,
-  article ol ul > li::before,
-  article ol ul ul > li::before,
-  article ol ol ol > li::before {
-    content: counters(item, ".") ".";
-    color: #6b7280;
-    line-height: 1.2;
-    translate: 0 0.15em;
-    justify-self: end;
-    text-align: right;
-    font-variant-numeric: tabular-nums; /* align multi-digit numbers */
-  }
-
-  /* Alternate UL markers per depth */
-  article ul ul > li::before {
-    content: "•";
-  }
-  article ul ul ul > li::before {
-    content: "–";
-  }
-  article ul ul ul ul > li::before {
-    content: "›";
-  }
-
-  /* Tighten text line-height slightly for nested items */
-  article ul ul > li,
-  article ol ul > li,
-  article ul ol > li,
-  article ol ol > li {
-    line-height: 1.45;
-  }
-
-  /* KBD */
-  /* Container when it has nested kbd or links */
-  kbd:has(kbd, a.kbd-key) {
-    @apply inline-flex flex-wrap items-center gap-x-1 text-sm;
-  }
-
-  /* Visual key style: works for both nested <kbd> and <a.kbd-key> */
-  kbd > kbd,
-  kbd > a.kbd-key,
-  kbd > button.kbd-key {
-    @apply min-h-[30px] inline-flex justify-center items-center py-1 px-1.5
-      bg-muted border border-muted-foreground font-mono text-sm text-foreground
-      rounded-md shadow-[0px_4px_0px_0px_rgba(0,0,0,0.5)]
-      dark:shadow-[0px_4px_0px_0px_rgba(255,255,255,0.5)];
-    text-decoration: none; /* remove underline for links */
-  }
-
-  /* Click affordance */
-  kbd > a.kbd-key,
-  kbd > kbd,
-  kbd > button.kbd-key {
-    @apply cursor-pointer transition-transform duration-100;
-  }
-
-  kbd > a.kbd-key:active,
-  kbd > kbd:active,
-  kbd > button.kbd-key:active {
-    transform: translateY(2px);
-    box-shadow: 0px 2px 0px 0px rgba(0,0,0,0.5);
-  }
-
-  /* Keyboard focus styles for accessibility */
-  kbd > a.kbd-key:focus-visible,
-  kbd > kbd:focus-visible,
-  kbd > button.kbd-key:focus-visible {
-    @apply outline-none ring-2 ring-offset-2 ring-blue-500;
-  }
-
-  article {
-    @apply break-words;
-  }
-
-  /* Line Numbers */
-
-  code[data-line-numbers] {
-    counter-reset: line;
-  }
-
-  code[data-line-numbers] > [data-line]::before {
-    counter-increment: line;
-    content: counter(line);
-
-    /* Other styling */
-    display: inline-block;
-    width: 0.75rem;
-    margin-right: 2rem;
-    text-align: right;
-    color: var(--muted-foreground);
-    opacity: 40%;
-  }
-
-  code[data-line-numbers-max-digits='2'] > [data-line]::before {
-    width: 1.25rem;
-  }
-
-  code[data-line-numbers-max-digits='3'] > [data-line]::before {
-    width: 1.75rem;
-  }
-
-  code[data-line-numbers-max-digits='4'] > [data-line]::before {
-    width: 2.25rem;
-  }
-
-  /* Shiki themes */
-  html.dark .shiki,
-  html.dark .shiki span {
-    color: var(--shiki-dark) !important;
-    /* Optional, if you also want font styles */
-    font-style: var(--shiki-dark-font-style) !important;
-    font-weight: var(--shiki-dark-font-weight) !important;
-    text-decoration: var(--shiki-dark-text-decoration) !important;
-  }
-
-  /* Halftone */
-
-  .bg-halftone {
-    --bg-size: 0.3rem;
-    --bg-position: calc(var(--bgSize) / 2);
-    --stop1: 3%;
-    --stop2: 65%;
-  }
-
-  .bg-halftone::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-
-    background-color: transparent;
-    background-image: radial-gradient(
-        circle at center,
-        transparent var(--stop1),
-        var(--halftone) var(--stop2)
-      ),
-      radial-gradient(circle at center, transparent var(--stop1), var(--halftone) var(--stop2));
-    background-position:
-      0 0,
-      var(--bg-position) var(--bg-position);
-    background-repeat: round;
-    background-size: var(--bg-size) var(--bg-size);
-    backdrop-filter: blur(3px);
-    mask: linear-gradient(rgb(0, 0, 0) 40%, rgba(0, 0, 0, 0) 100%);
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-mono uppercase tracking-wider font-bold;
   }
 }
 
 @keyframes sparkle {
-  0% {
-    transform: scale(0) rotate(0deg);
-  }
-  50% {
-    transform: scale(1) rotate(90deg);
-  }
-  100% {
-    transform: scale(0) rotate(180deg);
-  }
-}
-
-@keyframes fadeInUp {
-  0% {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  0% { transform: scale(0) rotate(0deg); }
+  50% { transform: scale(1) rotate(90deg); }
+  100% { transform: scale(0) rotate(180deg); }
 }
 
 @utility animate-sparkle {
   animation: var(--animate-sparkle);
-}
-
-/* Fade in animation utilities */
-@layer utilities {
-  /* Animations only for users who don't prefer reduced motion */
-  @media (prefers-reduced-motion: no-preference) {
-    .animate-fade-in {
-      animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-    }
-    
-    .animate-fade-in-delay-1 {
-      animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.05s forwards;
-    }
-    
-    .animate-fade-in-delay-2 {
-      animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.1s forwards;
-    }
-    
-    .animate-fade-in-delay-3 {
-      animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.15s forwards;
-    }
-    
-    .animate-fade-in-delay-4 {
-      animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.2s forwards;
-    }
-    
-    .animate-fade-in-delay-5 {
-      animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.25s forwards;
-    }
-    
-    .animate-fade-in-delay-6 {
-      animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.3s forwards;
-    }
-    
-    .animate-fade-in-delay-7 {
-      animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.35s forwards;
-    }
-    
-    .animate-fade-in-delay-8 {
-      animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.4s forwards;
-    }
-
-    /* Animation states for users who don't prefer reduced motion */
-    .animate-hidden {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-  }
-
-  /* For users who prefer reduced motion, utility classes show content immediately */
-  @media (prefers-reduced-motion: reduce) {
-    .animate-fade-in,
-    .animate-fade-in-delay-1,
-    .animate-fade-in-delay-2,
-    .animate-fade-in-delay-3,
-    .animate-fade-in-delay-4,
-    .animate-fade-in-delay-5,
-    .animate-fade-in-delay-6,
-    .animate-fade-in-delay-7,
-    .animate-fade-in-delay-8,
-    .animate-hidden {
-      opacity: 1;
-      transform: none;
-      animation: none;
-    }
-  }
-
-  /* This state is always available */
-  .animate-visible {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }

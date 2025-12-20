@@ -1,6 +1,5 @@
 ---
 import { Icon } from 'astro-icon/components';
-import { Sparkles } from './react/sparkle';
 
 interface Props {
   name: string;
@@ -13,25 +12,28 @@ interface Props {
 const { name, description, url, language, stars } = Astro.props;
 ---
 
-<li class="list-none">
-  <a href={url} target="_blank" rel="noopener noreferrer" class="block h-full">
-    <div class="h-full p-4 ring-1 rounded-2xl hover:ring-2 transition-all duration-300 flex flex-col justify-between">
+<li class="list-none bg-background group h-full">
+  <a href={url} target="_blank" rel="noopener noreferrer" class="block h-full p-8 transition-colors duration-300 hover:bg-white hover:text-black">
+    <div class="flex flex-col h-full justify-between gap-6">
       <div>
-        <h3 class="text-xl font-bold mb-2">{name}</h3>
-        <p class="text-sm text-gray-400 mb-4">{description || "No description available"}</p>
+        <div class="flex justify-between items-start mb-4">
+          <h3 class="text-xl font-bold font-mono uppercase tracking-tight">{name}</h3>
+          <Icon name="tabler:arrow-up-right" class="w-5 h-5 opacity-0 group-hover:opacity-100 transition-opacity" />
+        </div>
+        <p class="text-sm opacity-70 font-mono leading-relaxed line-clamp-3">
+          {description || "No description provided."}
+        </p>
       </div>
       
-      <div class="flex justify-between items-center mt-auto">
+      <div class="flex justify-between items-center pt-4 border-t border-current/20">
         {language && (
-          <div class="flex items-center">
-            <span class="text-sm">{language}</span>
-          </div>
+          <span class="text-xs font-bold uppercase tracking-wider px-2 py-1 border border-current/20">
+            {language}
+          </span>
         )}
-        <div class="flex items-center">
-          <Icon name="octicon:star-fill-16" class="h-4 w-4 mr-1" />
-          <Sparkles color={{dark: "white", light: "black"}} client:load>
-            <span class="text-sm">{stars}</span>
-          </Sparkles>
+        <div class="flex items-center gap-1 font-mono text-xs">
+          <Icon name="octicon:star-fill-16" class="h-3 w-3" />
+          <span>{stars}</span>
         </div>
       </div>
     </div>

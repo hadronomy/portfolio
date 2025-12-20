@@ -14,12 +14,12 @@ const { class: className, tabindex, ...props } = Astro.props;
   client:visible
   className={cn(
     className,
-    'group lg:col-span-3 col-span-1 col-start-2 lg:w-3/4 w-full md:max-w-(--breakpoint-xl) md:place-self-center lg:col-start-1! relative overflow-hidden rounded bg-muted [&(:first-child)]:my-8!'
+    'relative overflow-hidden w-full rounded-none border border-white/20 bg-[#050505] my-8'
   )}
   tabIndex={tabindex}
   {...props}
 >
-  <CodeBlockPre client:visible>
+  <CodeBlockPre client:visible className="font-mono text-sm">
     <slot />
   </CodeBlockPre>
 </CodeBlock>

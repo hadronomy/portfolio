@@ -4,40 +4,15 @@ import { motion } from 'framer-motion';
 import * as React from 'react';
 
 import { cn } from '@portfolio/ui';
-// import { NextThemeToggle } from './next-theme-toggle';
-import { Separator } from '@portfolio/ui/separator';
 
 type Link =
-  | {
-      active: boolean;
-      label: string;
-      href: string;
-      disabled?: undefined;
-    }
-  | {
-      active: boolean;
-      label: string;
-      href: string;
-      disabled: boolean;
-    };
+  | { active: boolean; label: string; href: string; disabled?: undefined }
+  | { active: boolean; label: string; href: string; disabled: boolean };
 
 const links: Link[] = [
-  {
-    label: 'Home',
-    href: '/',
-    active: false,
-  },
-  {
-    label: 'Blog',
-    href: '/blog',
-    active: false,
-  },
-  {
-    label: 'Experiments',
-    href: '/experiments',
-    active: false,
-    disabled: true,
-  },
+  { label: 'Home', href: '/', active: false },
+  { label: 'Blog', href: '/blog', active: false },
+  { label: 'Experiments', href: '/experiments', active: false, disabled: true },
 ];
 
 function startsWithAndNotHome(str: string | undefined, prefix: string) {
@@ -60,20 +35,23 @@ export function Navbar({ className, pages = links, children }: NavbarProps) {
 
   return (
     <header
-      className={cn('fixed py-5 top-0 z-20 w-full bg-halftone', className)}
+      className={cn(
+        'fixed top-6 z-50 w-full flex justify-center px-4',
+        className,
+      )}
     >
-      <nav className="mx-auto gap-x-2 flex flex-row justify-between items-center max-w-fit px-3 md:px-8 py-3 bg-transparent backdrop-blur-xl border-foreground/10 border-4 md:rounded-full rounded-3xl overflow-hidden">
-        <ul className="flex w-full h-full gap-x-0 capitalize flex-row p-0">
+      <nav className="flex flex-row items-center gap-x-2 border-2 border-foreground bg-background px-2 py-2 shadow-[4px_4px_0_0_hsl(var(--foreground))]">
+        <ul className="flex flex-row gap-x-1 p-0 m-0">
           {pages.map(({ label, href, active: currentActive, disabled }) => (
             <li key={label}>
               <a
                 href={href}
                 className={cn(
-                  'rounded-md transition-all h-full inline-block relative px-5 py-2 font-bold hover:text-foreground/80 dark:hover:drop-shadow-[0.3_0.3_1.2rem_#ffffff80]',
+                  'relative block px-4 py-2 font-mono font-bold text-sm uppercase tracking-wide transition-colors',
                   {
-                    'text-foreground': currentActive,
-                    'text-muted-foreground': !currentActive,
-                    'pointer-events-none': disabled,
+                    'text-background': currentActive, // Inverted for active
+                    'text-foreground hover:bg-muted': !currentActive,
+                    'pointer-events-none opacity-50': disabled,
                   },
                 )}
                 aria-label={label}
@@ -83,51 +61,23 @@ export function Navbar({ className, pages = links, children }: NavbarProps) {
                 onMouseLeave={() => setHoveredPath(active?.href)}
                 onFocus={() => setHoveredPath(href)}
               >
-                <span className="text-center">{label}</span>
-                {hoveredPath === undefined && (
-                  <AnimatedHighlight layoutId="navbar" style={{ opacity: 0 }} />
-                )}
-                {startsWithAndNotHome(hoveredPath, href) && (
-                  <AnimatedHighlight layoutId="navbar" style={{ opacity: 1 }} />
+                <span className="relative z-10">{label}</span>
+                {/* Active/Hover Background */}
+                {(startsWithAndNotHome(hoveredPath, href) ||
+                  (currentActive && !hoveredPath)) && (
+                  <motion.div
+                    layoutId="navbar-indicator"
+                    className="absolute inset-0 bg-foreground z-0"
+                    transition={{ type: 'tween', duration: 0.2 }}
+                  />
                 )}
               </a>
             </li>
           ))}
         </ul>
-        <Separator orientation="vertical" className="h-5" />
+        <div className="h-6 w-0.5 bg-foreground mx-2" />
         {children}
       </nav>
     </header>
-  );
-}
-
-type AnimatedHighlightProps = React.ComponentProps<typeof motion.div>;
-
-function AnimatedHighlight({
-  className,
-  style,
-  layoutId,
-  ...props
-}: AnimatedHighlightProps) {
-  return (
-    <motion.div
-      className={cn(
-        'absolute bottom-0 left-0 h-full bg-muted rounded-md -z-10',
-        className,
-      )}
-      layoutId={layoutId}
-      aria-hidden="true"
-      style={Object.assign(
-        {
-          width: '100%',
-        },
-        style,
-      )}
-      transition={{
-        type: 'tween',
-        duration: 0.3,
-      }}
-      {...props}
-    />
   );
 }

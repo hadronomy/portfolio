@@ -1,27 +1,105 @@
 ---
+import { Icon } from 'astro-icon/components';
 import Footer from '~/components/Footer.astro';
 import HalftoneEffect from '~/components/HalftoneEffect.astro';
 import Metadata from '~/components/Metadata.astro';
 import Navbar from '~/components/Navbar.astro';
-
+import Sidebar from '~/components/Sidebar.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '~/consts';
+
+const { 
+  title = SITE_TITLE, 
+  description = SITE_DESCRIPTION,
+  sidebarItems = [
+    { label: '00. Start', id: 'hero' },
+    { label: '01. Skills', id: 'skills' },
+    { label: '02. Projects', id: 'projects' },
+    { label: '03. Experience', id: 'experience' },
+    { label: '04. Simulation', id: 'contact' },
+  ]
+} = Astro.props;
 ---
 
 <html lang="en" class="dark antialiased">
   <head>
-    <Metadata title={SITE_TITLE} description={SITE_DESCRIPTION} />
+    <Metadata title={title} description={description} />
   </head>
-  <body>
-    <div class="box-border min-h-screen m-0 p-0">
-      <Navbar />
-      <div class="grid mx-auto w-full min-h-dvh max-w-(--breakpoint-xl) grid-cols-[1fr_min(75ch,calc(100%-1.5rem))_1fr] px-6">
-        <div class="col-start-2 flex flex-col gap-y-20">
-          <slot />
-          <hr class="w-full h-1"/>
+  <body class="min-h-screen bg-background text-foreground font-mono selection:bg-white selection:text-black overflow-x-hidden">
+    
+    <!-- 
+      FIXED GRID LAYOUT:
+      - Removed max-w-[100vw] (This forces width to include scrollbar area, causing stripes/overflow)
+      - Used w-full (This respects the scrollbar width)
+    -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 min-h-screen w-full relative">
+      
+      <!-- 1. LEFT SIDEBAR (Desktop Only) -->
+      <aside class="hidden lg:flex col-span-3 border-r border-white/20 flex-col z-30 sticky top-0 h-screen bg-background">
+        <div class="h-20 shrink-0 border-b border-white/20 flex items-center px-8"/>
+        
+        <div class="flex-1 relative">
+           <Sidebar items={sidebarItems} />
         </div>
-      </div>
-      <Footer />
-      <HalftoneEffect />
+
+        <div class="shrink-0 border-t border-white/20 p-8">
+          <div class="text-[10px] uppercase tracking-widest text-muted-foreground mb-4">
+            External_Comms
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <a href="https://github.com/hadronomy" target="_blank" class="flex items-center gap-3 text-xs text-muted-foreground hover:text-white transition-colors group">
+              <div class="w-8 h-8 border border-white/20 flex items-center justify-center group-hover:bg-white group-hover:text-black transition-all">
+                <Icon name="simple-icons:github" class="w-4 h-4" />
+              </div>
+              <span>GitHub</span>
+            </a>
+            <a href="/rss.xml" target="_blank" class="flex items-center gap-3 text-xs text-muted-foreground hover:text-white transition-colors group">
+              <div class="w-8 h-8 border border-white/20 flex items-center justify-center group-hover:bg-white group-hover:text-black transition-all">
+                <Icon name="tabler:rss" class="w-4 h-4" />
+              </div>
+              <span>RSS</span>
+            </a>
+          </div>
+        </div>
+      </aside>
+      
+      <!-- 2. MAIN CONTENT -->
+      <main class="col-span-1 lg:col-span-6 relative flex flex-col bg-black/20 z-10 lg:border-r border-white/20 min-h-screen w-full">
+        
+        <!-- NAVBAR -->
+        <Navbar class="sticky top-0 z-[100]" />
+
+        <!-- CONTENT STREAM -->
+        <div class="flex-1 flex flex-col w-full relative z-0">
+          <slot />
+        </div>
+        
+        <div class="border-t border-white/20 mt-auto bg-background relative z-10 w-full">
+           <Footer />
+        </div>
+
+        <!-- Texture Overlay -->
+        <HalftoneEffect />
+      </main>
+
+      <!-- 3. RIGHT GUTTER (Desktop Only) -->
+      <aside class="hidden lg:flex col-span-3 bg-background flex-col z-30 sticky top-0 h-screen">
+         <div class="h-20 shrink-0 border-b border-white/20 flex items-center justify-end px-8">
+         </div>
+
+         <div class="flex-1 flex items-center justify-center opacity-20 select-none">
+            <span class="writing-vertical-rl text-[10px] tracking-[0.3em] uppercase">
+              // SCROLL_Y: ACTIVE //
+            </span>
+         </div>
+      </aside>
+
     </div>
   </body>
 </html>
+
+<style>
+  .writing-vertical-rl {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+  }
+</style>

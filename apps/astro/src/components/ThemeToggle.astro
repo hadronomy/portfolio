@@ -7,26 +7,114 @@ interface Props extends HTMLAttributes<'button'> {}
 const { class: className, ...props } = Astro.props;
 ---
 
-<button class:list={['flex relative theme-toggle-button', className]} {...props}>
-  <Icon name="ph:moon-fill" class="h-4 w-4 scale-0 dark:scale-100 hidden dark:block" />
-  <Icon name="ph:sun-fill" class="h-4 w-4 scale-100 dark:scale-0 dark:hidden" />
-</button>
+<div class="relative inline-block">
+  <button 
+    id="broken-theme-toggle"
+    class:list={[
+      'group relative flex items-center justify-center w-9 h-9 border border-white/20 hover:bg-white/5 active:bg-red-500/20 transition-colors overflow-hidden', 
+      className
+    ]}
+    aria-label="Toggle Theme (Broken)"
+    {...props}
+  >
+    <!-- Normal Icon (Moon) -->
+    <div class="relative z-10 icon-container">
+      <Icon name="tabler:moon-filled" class="h-4 w-4 text-white group-hover:text-white/80 transition-colors" />
+    </div>
+
+    <!-- Glitch Layers (Hidden by default) -->
+    <div class="glitch-layer absolute inset-0 z-0 opacity-0 pointer-events-none flex items-center justify-center">
+       <Icon name="tabler:moon-filled" class="h-4 w-4 text-red-500 translate-x-[2px]" />
+    </div>
+    <div class="glitch-layer absolute inset-0 z-0 opacity-0 pointer-events-none flex items-center justify-center">
+       <Icon name="tabler:moon-filled" class="h-4 w-4 text-cyan-500 -translate-x-[2px]" />
+    </div>
+
+    <!-- Scanline Overlay -->
+    <div class="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(0,0,0,0.5)_50%)] bg-[size:100%_4px] opacity-0 group-hover:opacity-20 pointer-events-none"></div>
+  </button>
+
+  <!-- Error Tooltip (Appears on click) -->
+  <div 
+    id="error-tooltip"
+    class="absolute top-full right-0 mt-2 px-2 py-1 bg-red-900/90 border border-red-500 text-[10px] font-mono text-red-100 uppercase tracking-widest whitespace-nowrap opacity-0 pointer-events-none transition-opacity duration-200 z-50 shadow-[0_0_15px_rgba(220,38,38,0.5)]"
+  >
+    FATAL: LIGHT_MODE_404
+  </div>
+</div>
+
+<style>
+  /* Glitch Animation Classes */
+  .glitch-active {
+    animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+    border-color: rgba(239, 68, 68, 0.8); /* Red border */
+    background-color: rgba(239, 68, 68, 0.1);
+  }
+
+  .glitch-active .icon-container {
+    opacity: 0.5;
+  }
+
+  .glitch-active .glitch-layer {
+    opacity: 1;
+    animation: glitch-anim 0.4s infinite linear alternate-reverse;
+  }
+
+  /* Shake the button */
+  @keyframes shake {
+    10%, 90% { transform: translate3d(-1px, 0, 0); }
+    20%, 80% { transform: translate3d(2px, 0, 0); }
+    30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+    40%, 60% { transform: translate3d(4px, 0, 0); }
+  }
+
+  /* Split RGB channels */
+  @keyframes glitch-anim {
+    0% { clip-path: inset(20% 0 80% 0); transform: translate(-2px, 1px); }
+    20% { clip-path: inset(60% 0 10% 0); transform: translate(2px, -1px); }
+    40% { clip-path: inset(40% 0 50% 0); transform: translate(-2px, 2px); }
+    60% { clip-path: inset(80% 0 5% 0); transform: translate(2px, -2px); }
+    80% { clip-path: inset(10% 0 70% 0); transform: translate(-1px, 1px); }
+    100% { clip-path: inset(30% 0 20% 0); transform: translate(1px, -1px); }
+  }
+</style>
 
 <script>
-  const toggleTheme = () => {
-    const isDark = document.documentElement.classList.contains('dark');
-    document.documentElement.classList[isDark ? 'remove' : 'add']('dark');
-    localStorage.setItem('theme', isDark ? 'light' : 'dark');
-  };
-
-  const initTheme = () => {
-    const theme = localStorage.getItem('theme') ?? 'dark';
-    document.documentElement.classList.toggle('dark', theme === 'dark');
-  };
-
   document.addEventListener('astro:page-load', () => {
-    initTheme();
-    const buttons = document.querySelectorAll<HTMLButtonElement>('button.theme-toggle-button');
-    buttons.forEach((button) => button.addEventListener('click', toggleTheme));
+    const btn = document.getElementById('broken-theme-toggle');
+    const tooltip = document.getElementById('error-tooltip');
+    
+    if (btn && tooltip) {
+      // Force Dark Mode just in case
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+
+      let isGlitching = false;
+
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        
+        if (isGlitching) return;
+        isGlitching = true;
+
+        // 1. Play Glitch Animation
+        btn.classList.add('glitch-active');
+        
+        // 2. Show Error Tooltip
+        tooltip.classList.remove('opacity-0');
+        tooltip.classList.add('opacity-100');
+
+        // 3. Log to Console for the curious
+        console.warn('SYSTEM_ALERT: User attempted to invoke [LIGHT_MODE]. Module not found in registry.');
+
+        // 4. Reset after delay
+        setTimeout(() => {
+          btn.classList.remove('glitch-active');
+          tooltip.classList.remove('opacity-100');
+          tooltip.classList.add('opacity-0');
+          isGlitching = false;
+        }, 1200);
+      });
+    }
   });
 </script>

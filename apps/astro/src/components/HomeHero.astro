@@ -1,65 +1,190 @@
 ---
-import { buttonVariants } from '@portfolio/ui/button';
 import { Icon } from 'astro-icon/components';
-
-import Github from "~/components/svg/Github.astro";
-import LinkedIn from "~/components/svg/LinkedIn.astro";
 
 const { class: string, ...props } = Astro.props;
 ---
 
-<section
-  class:list={[
-    props.class,
-    'relative grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-x-8 grow py-5 overflow-visible',
-  ]}
-  ,
+<section 
+  id="hero" 
+  class="relative w-full min-h-[calc(100vh-5rem)] flex flex-col border-b border-white/20 select-none group" 
   {...props}
 >
-  <div class="flex w-fit flex-col justify-center mx-auto md:mx-0 text-center md:text-left mb-6 md:mb-0">
-    <div class="flex flex-row items-center justify-center md:justify-start w-full gap-x-4">
-      <h2 class="text-sm md:text-xl font-thin uppercase tracking-widest">@hadronomy</h2>
-      <a href="https://github.com/hadronomy" target="_blank" aria-label="GitHub"><Github class="w-5" /></a>
-      <a href="https://www.linkedin.com/in/hadronomy/" target="_blank" aria-label="LinkedIn"><LinkedIn class="w-5 text-foreground" /></a>
+  <!-- Background: Subtle localized grid -->
+  <div class="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none"></div>
+
+  <!-- ROW 1: Header / Meta Data -->
+  <!-- Fixed h-12 (48px) to ensure perfect vertical alignment across all cells -->
+  <div class="w-full grid grid-cols-2 md:grid-cols-4 border-b border-white/20 bg-white/5 backdrop-blur-sm">
+    
+    <!-- Cell 1: Status -->
+    <div class="h-12 px-4 border-r border-white/20 flex items-center gap-2">
+      <div class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
+      <span class="font-mono text-[10px] uppercase tracking-widest text-muted-foreground pt-px">Status: Active</span>
     </div>
-    <h1 class="mt-2 text-4xl sm:text-5xl md:text-6xl">
-      <span class="font-bellota">I&apos;m </span>
-      <span class="font-semibold">Pablo</span>
-    </h1>
-    <h1 class="font-bellota text-4xl sm:text-5xl font-semibold md:text-6xl">Hernandez</h1>
-    <div class="flex justify-between w-full md:justify-between items-center mt-1 gap-2">
-      <div class="inline-flex justify-center md:justify-start items-center gap-2">
-        <div class="relative inline-flex">
-          <span class="inline-flex h-3 w-3">
-            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-            <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-          </span>
-        </div>
-        <span class="text-sm font-medium">Open to work</span>
-      </div>
-      <a href="/cv.pdf" target="_blank" class={buttonVariants({ variant: 'linkHover2', size: 'sm' })}>
-        <Icon name="tabler:download" class="h-4 w-4 mr-1" />
-        Download CV
-      </a>
+
+    <!-- Cell 2: Location (Hidden on mobile) -->
+    <!-- Added 'md:flex items-center' to fix vertical alignment -->
+    <div class="hidden md:flex h-12 px-4 border-r border-white/20 items-center">
+      <span class="font-mono text-[10px] uppercase tracking-widest text-muted-foreground pt-px">Loc: Canary Islands</span>
+    </div>
+
+    <!-- Cell 3: Experience (Hidden on mobile) -->
+    <!-- Added 'md:flex items-center' to fix vertical alignment -->
+    <div class="hidden md:flex h-12 px-4 border-r border-white/20 items-center">
+      <span class="font-mono text-[10px] uppercase tracking-widest text-muted-foreground pt-px">Exp: 10+ Years</span>
+    </div>
+
+    <!-- Cell 4: Version -->
+    <div class="h-12 px-4 flex items-center justify-between">
+      <span class="font-mono text-[10px] uppercase tracking-widest text-muted-foreground pt-px">Ver: 2.4.0</span>
+      <Icon name="tabler:command" class="w-4 h-4 text-white/40" />
     </div>
   </div>
-  <div class="flex items-center p-3 justify-center relative overflow-visible">
-    <!-- Top-left corner cross -->
-    <div class="absolute top-0 left-0 z-10 overflow-visible pointer-events-none">
-      <!-- Horizontal line - crossing through the center point -->
-      <div class="absolute top-0 left-[-4px] h-[1px] w-[26px] bg-primary origin-center transform rotate-2 [filter:drop-shadow(0_0_2px_rgba(var(--color-primary-rgb),0.3))]"></div>
-      <!-- Vertical line - crossing through the center point -->
-      <div class="absolute top-[-4px] left-0 h-[26px] w-[1px] bg-primary origin-center transform -rotate-3 [filter:drop-shadow(0_0_2px_rgba(var(--color-primary-rgb),0.3))]"></div>
+
+  <!-- ROW 2: Main Content (Takes remaining space) -->
+  <div class="flex-1 flex flex-col justify-center relative p-6 md:p-12 overflow-hidden">
+    
+    <!-- Decorative vertical line -->
+    <div class="absolute left-6 md:left-12 top-0 bottom-0 w-px bg-white/10"></div>
+
+    <div class="relative pl-8 md:pl-12 z-10">
+      
+      <!-- Label -->
+      <div class="flex items-center gap-3 mb-6">
+        <span class="px-2 py-0.5 border border-white/20 text-[10px] font-mono uppercase bg-black text-white">Subject</span>
+        <span class="font-mono text-xs text-muted-foreground tracking-widest">// FULL_STACK_ENGINEER</span>
+      </div>
+
+      <!-- Massive Name Typography with Hover Scramble Effect -->
+      <div class="relative mb-8">
+        <h1 class="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tighter text-white leading-[0.9] mix-blend-difference">
+          <span class="scramble-text block" data-value="PABLO">PABLO</span>
+          <span class="scramble-text block text-white/50" data-value="HERNANDEZ">HERNANDEZ</span>
+        </h1>
+        
+        <!-- Glitch Effect Layer (Visible on Group Hover) -->
+        <div class="absolute top-0 left-1 w-full h-full text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tighter text-green-500/20 leading-[0.9] -z-10 blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-100 select-none pointer-events-none">
+          PABLO<br />HERNANDEZ
+        </div>
+      </div>
+
+      <!-- Description / Abstract -->
+      <div class="max-w-lg mb-12">
+        <p class="font-mono text-sm md:text-base text-muted-foreground leading-relaxed text-justify">
+          <span class="text-white font-bold mr-2">>>> ABSTRACT:</span>
+          Specialized in high-performance web architecture and interactive 3D ecosystems. Converting complex requirements into elegant, type-safe solutions.
+        </p>
+      </div>
+
+      <!-- Primary Actions -->
+      <div class="flex flex-col sm:flex-row gap-4">
+        <a 
+          href="#projects" 
+          class="group relative inline-flex items-center justify-center px-8 py-3 bg-white text-black font-mono text-xs font-bold uppercase tracking-widest overflow-hidden hover:bg-white/90 transition-colors"
+        >
+          <span class="relative z-10 flex items-center gap-2">
+            View Projects 
+            <Icon name="tabler:arrow-down-right" class="w-4 h-4" />
+          </span>
+        </a>
+        
+        <a 
+          href="/cv.pdf" 
+          target="_blank"
+          class="group inline-flex items-center justify-center px-8 py-3 border border-white/20 text-white font-mono text-xs font-bold uppercase tracking-widest hover:bg-white/5 transition-colors"
+        >
+          <span>Download CV</span>
+        </a>
+      </div>
+
     </div>
-    <!-- Bottom-right corner cross -->
-    <div class="absolute bottom-0 right-0 z-10 overflow-visible pointer-events-none">
-      <!-- Horizontal line - crossing through the center point -->
-      <div class="absolute bottom-0 right-[-4px] h-[1px] w-[26px] bg-primary origin-center transform -rotate-2 [filter:drop-shadow(0_0_2px_rgba(var(--color-primary-rgb),0.3))]"></div>
-      <!-- Vertical line - crossing through the center point -->
-      <div class="absolute bottom-[-4px] right-0 h-[26px] w-[1px] bg-primary origin-center transform rotate-3 [filter:drop-shadow(0_0_2px_rgba(var(--color-primary-rgb),0.3))]"></div>
+
+    <!-- Right Side Decorative Elements -->
+    <div class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 md:translate-x-0 md:right-12 w-64 h-64 border border-white/5 rounded-full flex items-center justify-center animate-[spin_10s_linear_infinite]">
+      <div class="w-full h-px bg-white/5 absolute"></div>
+      <div class="h-full w-px bg-white/5 absolute"></div>
     </div>
-    <p class="text-base md:text-md leading-relaxed px-2 md:px-0">
-      I began coding at age <u>10</u>, progressing through languages like Basic, C++, Java, Python and everything you see in my skills by building projects. I explored frameworks, databases, and DevOps tools, constantly learning through newsletters and videos. I’ve tried most well-known technologies and frameworks.
-    </p>
+  </div>
+
+  <!-- ROW 3: Technical Footer -->
+  <div class="w-full border-t border-white/20 bg-black/40">
+    <div class="grid grid-cols-1 md:grid-cols-2">
+      <!-- Stack Ticker -->
+      <div class="p-4 border-b md:border-b-0 md:border-r border-white/20 flex items-center overflow-hidden relative h-12">
+        <div class="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-black to-transparent z-10"></div>
+        <div class="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-black to-transparent z-10"></div>
+        
+        <div class="flex gap-8 animate-marquee whitespace-nowrap font-mono text-xs text-muted-foreground">
+          <span>TYPESCRIPT</span>
+          <span>RUST</span>
+          <span>REACT</span>
+          <span>THREE.JS</span>
+          <span>NODE.JS</span>
+          <span>POSTGRESQL</span>
+          <span>DOCKER</span>
+          <span>//</span>
+          <span>TYPESCRIPT</span>
+          <span>RUST</span>
+          <span>REACT</span>
+          <span>THREE.JS</span>
+          <span>NODE.JS</span>
+        </div>
+      </div>
+
+      <!-- Availability -->
+      <div class="p-4 h-12 flex items-center justify-between">
+         <span class="font-mono text-[10px] uppercase text-muted-foreground">Availability</span>
+         <div class="flex items-center gap-2">
+            <span class="font-mono text-xs text-white font-bold">OPEN FOR WORK</span>
+            <div class="w-2 h-2 bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
+         </div>
+      </div>
+    </div>
   </div>
 </section>
+
+<style>
+  @keyframes marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  .animate-marquee {
+    animation: marquee 20s linear infinite;
+  }
+</style>
+
+<script>
+  // Hacker Text Effect (Scramble)
+  const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  
+  document.addEventListener('astro:page-load', () => {
+    document.querySelectorAll('.scramble-text').forEach((element) => {
+      const el = element as HTMLElement;
+      const originalText = el.dataset.value || el.innerText;
+      
+      el.addEventListener('mouseover', () => {
+        let iteration = 0;
+        
+        clearInterval((el as any).interval);
+        
+        (el as any).interval = setInterval(() => {
+          el.innerText = originalText
+            .split("")
+            .map((letter, index) => {
+              if(index < iteration) {
+                return originalText[index];
+              }
+              return letters[Math.floor(Math.random() * 26)];
+            })
+            .join("");
+          
+          if(iteration >= originalText.length){ 
+            clearInterval((el as any).interval);
+          }
+          
+          iteration += 1 / 3;
+        }, 30);
+      });
+    });
+  });
+</script>

@@ -1,19 +1,17 @@
 ---
-import type { CollectionEntry } from 'astro:content';
-
+import type { MarkdownHeading } from 'astro'; // Import type
 import { Icon } from 'astro-icon/components';
+import type { CollectionEntry } from 'astro:content';
 import { format } from 'date-fns';
 
-import HalftoneEffect from '~/components/HalftoneEffect.astro';
-import Metadata from '~/components/Metadata.astro';
-import Navbar from '~/components/Navbar.astro';
-
+import MainLayout from '~/layouts/Main.astro';
 
 type Props = CollectionEntry<'blog'>['data'] & {
   remarkPluginFrontmatter: Record<string, any>;
+  headings: MarkdownHeading[]; // Receive headings
 };
 
-const { title, description, pubDate, remarkPluginFrontmatter } = Astro.props;
+const { title, description, pubDate, remarkPluginFrontmatter, headings } = Astro.props;
 const { duration } = remarkPluginFrontmatter;
 
 function formatDuration(duration: number) {
@@ -21,56 +19,87 @@ function formatDuration(duration: number) {
   const minutes = Math.ceil(seconds / 60);
   return `${minutes} min read`;
 }
+
+const baseItems = [
+  { label: '00. Metadata', id: 'post-header', depth: 1 },
+];
+
+const contentItems = headings
+  // Filter out h1 (usually title) and anything too deep (h4+)
+  .filter(h => h.depth > 1 && h.depth < 4)
+  .map(h => ({
+    label: h.text,
+    id: h.slug,
+    depth: h.depth
+  }));
+
+const footerItems = [
+  { label: 'End of File', id: 'post-footer', depth: 1 }
+];
+
+// Combine
+const postSidebar = [...baseItems, ...contentItems, ...footerItems];
 ---
 
-<html class="dark" lang="en">
-  <head>
-    <Metadata title={title} description={description} />
-    <!-- Preload Monospace Font -->
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css"
-      integrity="sha384-MlJdn/WNKDGXveldHDdyRP1R4CTHr3FeuDNfhsLPYrq2t0UBkUdK2jyTnXPEK1NQ"
-      crossorigin="anonymous"
-    />
-  </head>
+<MainLayout title={title} description={description} sidebarItems={postSidebar}>
+  
+  <article class="flex flex-col min-h-screen">
+    
+    <!-- Post Header -->
+    <header id="post-header" class="relative p-8 md:p-16 border-b border-white/20 bg-white/5 overflow-hidden">
+      <!-- Clean Repeating Diagonal Stripes -->
+      <div class="absolute inset-0 opacity-10 pointer-events-none" 
+           style="background-image: repeating-linear-gradient(45deg, #ffffff 0, #ffffff 1px, transparent 0, transparent 50%); background-size: 10px 10px;">
+      </div>
 
-  <body>
-    <Navbar />
-    <main>
-      <article
-        class="py-32 grid grid-cols-[1fr_min(75ch,calc(100%-1.5rem))_1fr] px-3 *:col-start-2"
-      >
-        <header class="mb-12 flex flex-col gap-y-2 text-lg">
-          <div class="flex flex-row gap-x-2 font-mono text-sm">
-            <time datetime={format(pubDate, 'yyyy-MM-dd')} class="text-foreground/60">
-              {format(new Date(pubDate), 'MMMM eo, yyyy')}
+      <div class="relative z-10 flex flex-col gap-6">
+        <!-- Meta Data -->
+        <div class="flex flex-wrap items-center gap-4 font-mono text-xs uppercase tracking-widest text-muted-foreground">
+          <div class="flex items-center gap-2 px-3 py-1 border border-white/10 bg-black/40">
+            <Icon name="tabler:calendar" class="w-4 h-4" />
+            <time datetime={format(pubDate, 'yyyy-MM-dd')}>
+              {format(new Date(pubDate), 'dd MMM yyyy')}
             </time>
-            <span class="text-foreground/60"> &middot; </span>
-            <div class="flex flex-row gap-x-2">
-              <Icon name="tabler:clock" class="text-foreground/60 h-full" />
-              <span class="text-foreground/60">{formatDuration(duration)}</span>
-            </div>
           </div>
-          <h1
-            class="scroll-m-20 text-4xl font-extrabold leading-tight tracking-tight lg:text-5xl text-balance"
-          >
-            {title}
-          </h1>
-        </header>
+          <div class="flex items-center gap-2 px-3 py-1 border border-white/10 bg-black/40">
+            <Icon name="tabler:clock" class="w-4 h-4" />
+            <span>{formatDuration(duration)}</span>
+          </div>
+        </div>
+
+        <h1 class="text-3xl md:text-5xl lg:text-6xl font-black uppercase tracking-tighter leading-tight text-white">
+          {title}
+        </h1>
+        
+        <p class="text-lg md:text-xl text-muted-foreground font-mono border-l-2 border-green-500/50 pl-6 max-w-3xl">
+          {description}
+        </p>
+      </div>
+    </header>
+
+    <!-- Post Content -->
+    <!-- Note: We ensure headings have IDs (Astro MDX does this automatically) -->
+    <div id="post-content" class="p-8 md:p-12 w-full max-w-none">
+      <div class="prose prose-invert prose-lg prose-mono w-full max-w-4xl mx-auto
+           prose-headings:font-bold prose-headings:uppercase prose-headings:tracking-tight prose-headings:scroll-mt-32
+           prose-p:text-muted-foreground prose-p:leading-relaxed
+           prose-a:text-green-400 prose-a:no-underline hover:prose-a:underline
+           prose-code:text-white prose-code:bg-white/10 prose-code:px-1 prose-code:py-0.5 prose-code:rounded-none prose-code:before:content-none prose-code:after:content-none
+           prose-pre:bg-transparent prose-pre:p-0 prose-pre:m-0 prose-pre:border-0 prose-pre:rounded-none
+           prose-blockquote:border-l-2 prose-blockquote:border-white/20 prose-blockquote:bg-white/5 prose-blockquote:py-2 prose-blockquote:px-6 prose-blockquote:not-italic
+           prose-img:rounded-none prose-img:border prose-img:border-white/20
+           ">
         <slot />
-        <footer
-          class="relative print:hidden group overflow-hidden my-8 flex h-[75vh] hover:ring-4 transition-all ring-muted rounded-md place-items-center justify-center"
-        >
-          <small
-            aria-hidden
-            class="scroll-m-20 transition-all opacity-0 group-hover:opacity-100 group-hover:block text-lg text-foreground/60 font-extrabold text-center leading-tight tracking-tight md:leading-loose lg:text-xl"
-          >
-          </small>
-        </footer>
-      </article>
-    </main>
-    <HalftoneEffect />
-    <!-- <Footer /> -->
-  </body>
-</html>
+      </div>
+    </div>
+
+    <!-- Article Footer -->
+    <footer id="post-footer" class="p-8 md:p-12 border-t border-white/20 mt-auto opacity-60">
+      <div class="flex items-center justify-between font-mono text-xs uppercase tracking-widest">
+         <span>End of File</span>
+         <span>Hash: {Math.random().toString(36).substring(7).toUpperCase()}</span>
+      </div>
+    </footer>
+
+  </article>
+</MainLayout>

@@ -1,0 +1,383 @@
+---
+interface Props {
+  items: { label: string; id: string; depth?: number }[];
+}
+
+const { items } = Astro.props;
+---
+
+<nav 
+  id="minimap-nav" 
+  class="group/sidebar relative w-full h-full pl-8 py-12 select-none flex flex-col items-start"
+  aria-label="Minimap Navigation"
+>
+  <!-- TRACK CONTAINER -->
+  <div id="sidebar-track" class="relative w-full h-full z-10">
+    
+    <!-- SVG CANVAS -->
+    <svg 
+      class="absolute left-8 -ml-3 top-0 w-6 h-full pointer-events-none z-0 overflow-visible"
+      preserveAspectRatio="none"
+    >
+      <!-- Background Track -->
+      <line 
+        x1="12" y1="0" 
+        x2="12" y2="100%" 
+        stroke="white" 
+        stroke-opacity="0.1" 
+        stroke-width="1" 
+        stroke-dasharray="2 6"
+      />
+
+      <!-- Progress Beam -->
+      <line 
+        id="progress-line"
+        x1="12" y1="0" 
+        x2="12" y2="0" 
+        stroke="white"
+        stroke-opacity="0.9" 
+        stroke-width="2" 
+        stroke-linecap="round"
+        style="filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.8));"
+      />
+      
+      <!-- Leading Head -->
+      <circle 
+        id="progress-tip"
+        cx="12" cy="0" r="3" 
+        fill="white" 
+        style="filter: drop-shadow(0 0 4px white);"
+      />
+    </svg>
+
+    <!-- NODES -->
+    {items.map((item, index) => (
+      <a 
+        href={`#${item.id}`}
+        data-target-id={item.id}
+        data-depth={item.depth || 2}
+        class="sidebar-node absolute left-0 w-full flex items-center group/node -translate-y-1/2 h-8"
+        style="top: 0%; opacity: 0;" 
+      >
+        <!-- 1. MARKER -->
+        <div class="absolute left-8 -translate-x-1/2 flex items-center justify-center">
+            
+            <!-- Idle State -->
+            <div 
+              class:list={[
+                "node-shape bg-background border transition-all duration-500 ease-out z-10 box-border",
+                (!item.depth || item.depth <= 2)
+                  ? "w-2.5 h-2.5 border-white/30 rotate-45 group-hover/node:border-white group-hover/node:scale-110" 
+                  : "w-1.5 h-1.5 rounded-full border-white/20 group-hover/node:border-white/60"
+              ]}
+            ></div>
+
+            <!-- Active State -->
+            <div class="node-fill absolute z-20 opacity-0 scale-0 transition-all duration-200">
+               <div class:list={[
+                 "bg-white shadow-[0_0_10px_white]",
+                 (!item.depth || item.depth <= 2) ? "w-2.5 h-2.5 rotate-45" : "w-1.5 h-1.5 rounded-full"
+               ]}></div>
+               <!-- Ping Ring (Initializes hidden) -->
+               <div class:list={[
+                 "ping-ring absolute inset-0 bg-white rounded-full opacity-0",
+                 (!item.depth || item.depth <= 2) ? "rounded-none rotate-45" : ""
+               ]}></div>
+            </div>
+        </div>
+
+        <!-- 2. LABEL -->
+        <div 
+          class="node-label-container ml-14 flex items-center gap-3 transition-all duration-300 origin-left opacity-0 -translate-x-4 group-hover/sidebar:opacity-100 group-hover/sidebar:translate-x-0"
+        >
+            {(!item.depth || item.depth <= 2) && (
+              <span class="font-mono text-[9px] text-white/30 font-bold group-hover/sidebar:text-white/50 transition-colors">
+                  {(index).toString().padStart(2, '0')}
+              </span>
+            )}
+
+            <span 
+              class:list={[
+                "node-label font-mono text-muted-foreground truncate max-w-[180px] transition-colors duration-300",
+                "group-hover/node:text-white group-hover/node:font-bold group-hover/node:tracking-widest",
+                (!item.depth || item.depth <= 2) ? "text-[10px] uppercase tracking-wider" : "text-[9px] tracking-wide pl-2 border-l border-white/10"
+              ]}
+            >
+              {item.label}
+            </span>
+        </div>
+      </a>
+    ))}
+  </div>
+</nav>
+
+<style>
+  .text-shadow-glow {
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+  }
+  
+  /* Faster, more active ping */
+  @keyframes ping-active {
+    0% { transform: scale(1); opacity: 0.8; }
+    75%, 100% { transform: scale(2.5); opacity: 0; }
+  }
+  
+  .animate-ping-active {
+    animation: ping-active 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+</style>
+
+<script>
+  import { createTimer, utils } from 'animejs';
+
+  const CONFIG = {
+    SCROLL_OFFSET: 120,    
+    MIN_NODE_GAP: 32,      
+    SNAP_THRESHOLD: 2.5,   
+    ACTIVATION_BUFFER: 0.5,
+    LERP_FACTOR: 0.1
+  } as const;
+
+  interface NodeData {
+    element: HTMLElement;
+    pageTop: number;   
+    visualPct: number; 
+  }
+
+  class MinimapController {
+    private track: HTMLElement;
+    private nodes: NodeListOf<HTMLElement>;
+    private progressLine: SVGLineElement;
+    private progressTip: SVGCircleElement;
+    
+    private nodeMap: NodeData[] = [];
+    private resizeObserver: ResizeObserver;
+    
+    private currentValue = 0;
+    private targetValue = 0;
+
+    constructor() {
+      this.track = document.getElementById('sidebar-track')!;
+      this.nodes = document.querySelectorAll('.sidebar-node');
+      this.progressLine = document.getElementById('progress-line') as unknown as SVGLineElement;
+      this.progressTip = document.getElementById('progress-tip') as unknown as SVGCircleElement;
+
+      this.resizeObserver = new ResizeObserver(() => {
+        this.calculatePositions();
+        this.updateTarget();
+      });
+    }
+
+    public init(): void {
+      if (!this.track || this.nodes.length === 0 || !this.progressLine) return;
+
+      // Randomize Ping Delays for organic feel
+      this.nodes.forEach(node => {
+        const ring = node.querySelector('.ping-ring') as HTMLElement;
+        if(ring) {
+          // Negative delay ensures animation starts mid-cycle immediately
+          ring.style.animationDelay = `-${Math.random() * 2}s`;
+        }
+      });
+
+      window.addEventListener('resize', this.handleResize);
+      window.addEventListener('scroll', this.handleScroll, { passive: true });
+      this.resizeObserver.observe(document.body);
+
+      setTimeout(() => {
+        this.calculatePositions();
+        this.updateTarget();
+        this.currentValue = this.targetValue;
+        this.render();
+        createTimer({ onUpdate: this.loop });
+      }, 150);
+    }
+
+    private calculatePositions = (): void => {
+      const trackHeight = this.track.clientHeight;
+      const docHeight = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+      const winHeight = window.innerHeight;
+      const scrollableDist = docHeight - winHeight;
+
+      const targets: Array<{ element: HTMLElement; pageTop: number; index: number }> = [];
+
+      this.nodes.forEach((node, index) => {
+        const targetId = node.getAttribute('data-target-id');
+        if (!targetId) return;
+
+        const target = document.getElementById(targetId);
+        if (target) {
+          const rect = target.getBoundingClientRect();
+          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+          
+          const pageTop = index === 0 
+            ? 0 
+            : Math.max(0, rect.top + scrollTop - CONFIG.SCROLL_OFFSET);
+
+          targets.push({ element: node, pageTop, index });
+        }
+      });
+
+      targets.sort((a, b) => a.pageTop - b.pageTop);
+
+      const visualPositionsInPx: number[] = targets.map(t => {
+        const naturalPct = t.pageTop / scrollableDist;
+        const clampedPct = Math.max(0, Math.min(1, naturalPct));
+        return clampedPct * trackHeight;
+      });
+
+      // Elastic Spacing
+      for (let i = 1; i < visualPositionsInPx.length; i++) {
+        if (visualPositionsInPx[i] < visualPositionsInPx[i-1] + CONFIG.MIN_NODE_GAP) {
+          visualPositionsInPx[i] = visualPositionsInPx[i-1] + CONFIG.MIN_NODE_GAP;
+        }
+      }
+
+      // Compression
+      if (visualPositionsInPx.length > 0) {
+        const lastIdx = visualPositionsInPx.length - 1;
+        if (visualPositionsInPx[lastIdx] > trackHeight) {
+          visualPositionsInPx[lastIdx] = trackHeight;
+          for (let i = lastIdx - 1; i >= 0; i--) {
+            if (visualPositionsInPx[i] > visualPositionsInPx[i+1] - CONFIG.MIN_NODE_GAP) {
+              visualPositionsInPx[i] = visualPositionsInPx[i+1] - CONFIG.MIN_NODE_GAP;
+            }
+          }
+        }
+      }
+
+      this.nodeMap = targets.map((t, i) => {
+        const visualPx = visualPositionsInPx[i];
+        const visualPct = (visualPx / trackHeight) * 100;
+
+        t.element.style.top = `${visualPct}%`;
+        t.element.style.opacity = '1';
+
+        return {
+          element: t.element,
+          pageTop: t.pageTop,
+          visualPct: visualPct
+        };
+      });
+    };
+
+    private updateTarget = (): void => {
+      if (this.nodeMap.length === 0) return;
+
+      let scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const docHeight = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+      const winHeight = window.innerHeight;
+      
+      const isAtBottom = (scrollTop + winHeight) >= (docHeight - 10);
+
+      if (isAtBottom) {
+        this.targetValue = 100;
+        return;
+      }
+
+      let activeIndex = 0;
+      for (let i = 0; i < this.nodeMap.length; i++) {
+        if (scrollTop >= this.nodeMap[i].pageTop) {
+          activeIndex = i;
+        } else {
+          break; 
+        }
+      }
+
+      const startNode = this.nodeMap[activeIndex];
+      const endNode = this.nodeMap[activeIndex + 1];
+      let calculatedPct = 0;
+
+      if (!endNode) {
+        calculatedPct = startNode ? startNode.visualPct : 0;
+      } else {
+        const segmentScroll = scrollTop - startNode.pageTop;
+        const segmentTotal = endNode.pageTop - startNode.pageTop;
+        const ratio = segmentTotal > 0 
+          ? Math.min(1, Math.max(0, segmentScroll / segmentTotal))
+          : 1;
+        
+        const segmentVisual = endNode.visualPct - startNode.visualPct;
+        calculatedPct = startNode.visualPct + (ratio * segmentVisual);
+      }
+
+      if (this.nodeMap[0] && scrollTop < this.nodeMap[0].pageTop) {
+         const ratio = Math.min(1, Math.max(0, scrollTop / this.nodeMap[0].pageTop));
+         calculatedPct = ratio * this.nodeMap[0].visualPct;
+      }
+
+      // Magnetism
+      for (const node of this.nodeMap) {
+        const diff = Math.abs(calculatedPct - node.visualPct);
+        if (diff < CONFIG.SNAP_THRESHOLD) {
+          calculatedPct = node.visualPct;
+          break;
+        }
+      }
+
+      this.targetValue = calculatedPct;
+    };
+
+    private loop = (): void => {
+      if (Math.abs(this.targetValue - this.currentValue) < 0.1) {
+        this.currentValue = this.targetValue;
+      } else {
+        this.currentValue = utils.lerp(this.currentValue, this.targetValue, CONFIG.LERP_FACTOR);
+      }
+      this.render();
+    };
+
+    private render = (): void => {
+      const pctString = `${this.currentValue}%`;
+      
+      this.progressLine.setAttribute('y2', pctString);
+      this.progressTip.setAttribute('cy', pctString);
+
+      this.nodes.forEach((node, idx) => {
+        if(!this.nodeMap[idx]) return;
+
+        const nodeVisual = this.nodeMap[idx].visualPct;
+        const isPassed = this.currentValue >= (nodeVisual - CONFIG.ACTIVATION_BUFFER);
+
+        const shape = node.querySelector('.node-shape');
+        const fill = node.querySelector('.node-fill');
+        const label = node.querySelector('.node-label');
+        const indexText = node.querySelector('span:first-child'); 
+        const pingRing = node.querySelector('.ping-ring');
+
+        if (isPassed) {
+          fill?.classList.remove('opacity-0', 'scale-0');
+          shape?.classList.add('opacity-0');
+          label?.classList.add('text-white', 'font-bold');
+          indexText?.classList.add('text-white', 'opacity-100');
+          
+          // Add faster ping class
+          pingRing?.classList.add('animate-ping-active');
+          pingRing?.classList.remove('opacity-0');
+        } else {
+          fill?.classList.add('opacity-0', 'scale-0');
+          shape?.classList.remove('opacity-0');
+          label?.classList.remove('text-white', 'font-bold');
+          indexText?.classList.remove('text-white', 'opacity-100');
+          
+          pingRing?.classList.remove('animate-ping-active');
+          pingRing?.classList.add('opacity-0');
+        }
+      });
+    }
+
+    private handleResize = () => {
+      this.calculatePositions();
+      this.updateTarget();
+    };
+
+    private handleScroll = () => {
+      this.updateTarget();
+    };
+  }
+
+  document.addEventListener('astro:page-load', () => {
+    const controller = new MinimapController();
+    controller.init();
+  });
+</script>

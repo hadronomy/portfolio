@@ -1,49 +1,63 @@
 ---
-import { Image } from 'astro:assets';
-
-import type { CollectionEntry } from 'astro:content';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@portfolio/ui/card';
 import { Icon } from 'astro-icon/components';
+import type { CollectionEntry } from 'astro:content';
 
 type Props = {
   post: CollectionEntry<'blog'>;
+  index: number;
 };
 
-const { post } = Astro.props;
+const { post, index } = Astro.props;
 const { data, id } = post;
 const pathname = `/blog/${id}/`;
-const image = data.heroImage;
 ---
 
-<a href={pathname} class="block h-full transition-transform duration-300 hover:scale-105">
-  <Card className="h-full flex flex-col bg-muted overflow-hidden group">
-    <div class="relative w-full aspect-16/9 overflow-hidden">
-      <Image
-        class="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-        src={image}
-        alt={data.title}
-        width={800}
-        height={450}
-        loading="eager"
-        decoding="async"
-      />
-      <div
-        class="absolute inset-0 bg-black/40 transition-opacity duration-300 opacity-0 group-hover:opacity-100 flex items-center justify-center"
-      >
+<a href={pathname} class="group block w-full border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/30 transition-all duration-300">
+  <div class="grid grid-cols-1 md:grid-cols-[160px_1fr] gap-0">
+    
+    <!-- Meta Column -->
+    <div class="p-6 border-b md:border-b-0 md:border-r border-white/10 flex flex-col justify-between">
+      <div class="flex flex-col">
+        <span class="font-mono text-[10px] text-white/40 uppercase tracking-widest mb-1">Log_ID</span>
+        <span class="font-mono text-xl font-bold text-white">{(index + 1).toString().padStart(3, '0')}</span>
+      </div>
+      
+      <div class="flex flex-col mt-4 md:mt-0">
+        <span class="font-mono text-[10px] text-white/40 uppercase tracking-widest mb-1">Date</span>
+        <time class="font-mono text-xs text-green-400">
+          {data.pubDate.toISOString().split('T')[0]}
+        </time>
       </div>
     </div>
-    <CardHeader className="flex bg-muted flex-col p-4">
-      <CardTitle className="text-xl bg-muted text-balance font-semibold">{data.title}</CardTitle>
-    </CardHeader>
-    <CardContent className="grow bg-muted">
-      <p class="text-muted-foreground line-clamp-3">{data.description}</p>
-    </CardContent>
-    <CardFooter
-      className="flex flex-wrap bg-muted items-center text-sm text-muted-foreground gap-4"
-    >
-      <div class="flex items-center">
-        <Icon name="tabler:tag" class="mr-1 h-4 w-4" />
+
+    <!-- Content Column -->
+    <div class="p-6 relative overflow-hidden">
+      <!-- Title -->
+      <h3 class="text-xl md:text-2xl font-bold uppercase tracking-tight mb-3 group-hover:text-white transition-colors">
+        {data.title}
+      </h3>
+      
+      <!-- Desc -->
+      <p class="font-mono text-sm text-muted-foreground line-clamp-2 mb-4 max-w-xl">
+        {data.description}
+      </p>
+
+      <!-- Footer Tags -->
+      <div class="flex items-center gap-4 mt-auto">
+        <div class="inline-flex items-center gap-2 px-2 py-1 border border-white/10 bg-black/20 text-[10px] font-mono uppercase text-white/60">
+           <Icon name="tabler:file-text" class="w-3 h-3" />
+           <span>MDX</span>
+        </div>
+        <div class="inline-flex items-center gap-2 px-2 py-1 border border-white/10 bg-black/20 text-[10px] font-mono uppercase text-white/60">
+           <span>Read Time: Auto</span>
+        </div>
+        
+        <!-- Hover Arrow -->
+        <div class="ml-auto opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all duration-300">
+           <Icon name="tabler:arrow-right" class="w-5 h-5 text-green-400" />
+        </div>
       </div>
-    </CardFooter>
-  </Card>
+    </div>
+
+  </div>
 </a>

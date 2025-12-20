@@ -1,56 +1,145 @@
 ---
-import { Separator } from '@portfolio/ui/separator';
-import type { HTMLAttributes } from 'astro/types';
-import { Navbar as Header } from '~/components/react/navbar';
-
+import { Icon } from 'astro-icon/components';
 import ThemeToggle from '~/components/ThemeToggle.astro';
 
-interface Props extends HTMLAttributes<'header'> {
-  pages?: Page[];
+const { class: className, ...props } = Astro.props;
+
+// Dynamic Breadcrumb Logic
+const pathname = Astro.url.pathname;
+const pathSegments = pathname.split('/').filter(Boolean);
+const isHome = pathSegments.length === 0;
+
+// Construct breadcrumbs
+const breadcrumbs = [
+  { label: '~/hadronomy', href: '/', icon: 'tabler:folder' },
+  ...pathSegments.map((segment, index) => {
+    const href = '/' + pathSegments.slice(0, index + 1).join('/');
+    const isLast = index === pathSegments.length - 1;
+    // Simulate file extension for the last segment
+    const label = isLast && !segment.includes('.') ? `${segment}.mdx` : segment;
+    return {
+      label,
+      href,
+      icon: isLast ? 'tabler:file-code' : 'tabler:folder-open'
+    };
+  })
+];
+
+// Fallback for home
+if (isHome) {
+  breadcrumbs.push({ label: 'index.tsx', href: '/', icon: 'tabler:file-code' });
 }
-
-const defaultPages = [
-  { label: 'Home', href: '/' },
-  { label: 'Blog', href: '/blog' },
-  { label: 'Experiments', href: 'experiments', disabled: true },
-].map((page) => ({ ...page, active: page.href === Astro.url.pathname }));
-
-type Page = (typeof defaultPages)[number];
-
-const isReact = true;
-
-const { pages: inputPages = defaultPages, class: className, ...props } = Astro.props;
 ---
 
-{
-  (isReact && (
-    <Header client:load pages={inputPages}>
-      <ThemeToggle class="ml-4" />
-    </Header>
-  )) || (
-    <header class="sticky flex pt-5 top-0 z-20 w-full" {...props}>
-      <nav class="mx-auto gap-x-2 flex flex-row justify-between items-center max-w-fit px-3 md:px-8 py-3 bg-background/5 backdrop-blur-x border-foreground/10 border-2 md:rounded-full rounded-3xl overflow-hidden">
-        <ul class="flex w-full h-full gap-x-0 capitalize flex-row p-0">
-          {defaultPages.map(({ label, href, active, disabled }) => (
-            <li>
-              <a
-                href={href}
-                class:list={[
-                  'rounded-md transition-all h-full inline-block relative px-5 py-2 font-bold hover:text-foreground/80 dark:hover:drop-shadow-[0.3_0.3_1.2rem_#ffffff80]',
-                  { 'current-page text-foreground': active },
-                  { 'text-muted-foreground': !active },
-                  { 'pointer-events-none': disabled },
-                ]}
-                aria-label={label}
-              >
-                <span class="text-center">{label}</span>
-              </a>
-            </li>
-          ))}
-        </ul>
-        <Separator orientation="vertical" className="h-5" />
-        <ThemeToggle class="ml-4" />
-      </nav>
-    </header>
-  )
-}
+<header 
+  class:list={[
+    'w-full h-20 shrink-0 flex items-center justify-between px-8 border-b border-white/20 bg-background/80 backdrop-blur-md z-50',
+    className
+  ]} 
+  {...props}
+>
+  <!-- Left: Dynamic Breadcrumbs -->
+  <!-- Added max-w constraints to prevent overlap with center title -->
+  <div class="flex items-center gap-4 overflow-hidden xl:max-w-[calc(50%-100px)] flex-1 xl:flex-none">
+    
+    <nav class="hidden md:flex items-center gap-2 text-xs font-mono overflow-hidden">
+      {breadcrumbs.map((crumb, index) => (
+        <div class="flex items-center gap-2 min-w-0 shrink">
+          {index > 0 && <span class="text-white/20 shrink-0">/</span>}
+          
+          <a 
+            href={crumb.href}
+            class:list={[
+              "flex items-center gap-2 px-3 py-1 border rounded-sm transition-all min-w-0 group",
+              index === breadcrumbs.length - 1 
+                ? "bg-white/10 border-white/20 text-white" 
+                : "bg-transparent border-transparent text-muted-foreground hover:bg-white/5 hover:text-white"
+            ]}
+            title={crumb.label}
+          >
+            <Icon name={crumb.icon} class="w-3 h-3 shrink-0" />
+            <!-- Truncate long names (e.g. blog posts) -->
+            <span class="truncate max-w-[120px] lg:max-w-[200px] group-hover:max-w-none transition-all duration-300">
+              {crumb.label}
+            </span>
+          </a>
+        </div>
+      ))}
+    </nav>
+    
+    <!-- Mobile Menu Button (Visible only on small screens) -->
+    <button class="lg:hidden p-2 border border-white/20 text-white shrink-0 hover:bg-white/10 transition-colors">
+       <Icon name="tabler:menu-2" class="w-5 h-5" />
+    </button>
+  </div>
+
+  <!-- Center: Title (Absolute Positioned) -->
+  <div class="hidden xl:block absolute left-1/2 -translate-x-1/2 pointer-events-none">
+    <span class="text-[10px] tracking-[0.5em] uppercase text-white/40 font-mono">
+      {isHome ? 'Main_View_Port' : 'Archive_Reader'}
+    </span>
+  </div>
+
+  <!-- Right: Utilities -->
+  <div class="flex items-center gap-6 shrink-0">
+    
+    <!-- Time Widget -->
+    <div id="clock-widget" class="hidden md:flex flex-col items-end leading-none">
+      <span class="text-xs font-bold font-mono time-display">00:00:00</span>
+      <span class="text-[10px] text-muted-foreground uppercase date-display">INIT...</span>
+    </div>
+
+    <div class="h-8 w-[1px] bg-white/20 hidden md:block"></div>
+
+    <!-- Actions -->
+    <div class="flex items-center gap-3">
+      
+      <!-- Contextual Nav Button -->
+      {pathname.startsWith('/blog') ? (
+         <a href="/" class="h-9 px-4 flex items-center justify-center border border-white/20 hover:bg-white hover:text-black font-mono text-xs font-bold uppercase tracking-wider transition-all">
+           Return Home
+         </a>
+      ) : (
+         <a href="/blog" class="h-9 px-4 flex items-center justify-center border border-white/20 hover:bg-white hover:text-black font-mono text-xs font-bold uppercase tracking-wider transition-all">
+           /Blog
+         </a>
+      )}
+
+      <!-- Theme Toggle -->
+      <div class="w-9 h-9 flex items-center justify-center border border-white/20 hover:bg-white/5 transition-all">
+         <ThemeToggle class="text-current" />
+      </div>
+    </div>
+  </div>
+</header>
+
+<script>
+  function updateClock() {
+    const timeDisplay = document.querySelector('.time-display');
+    const dateDisplay = document.querySelector('.date-display');
+    
+    if (timeDisplay && dateDisplay) {
+      const now = new Date();
+      
+      const timeString = now.toLocaleTimeString('en-US', { 
+        hour12: false, 
+        hour: '2-digit', 
+        minute: '2-digit', 
+        second: '2-digit' 
+      });
+      
+      const dateString = now.toLocaleDateString('en-GB', { 
+        day: '2-digit', 
+        month: 'short', 
+        year: 'numeric' 
+      });
+
+      timeDisplay.textContent = timeString;
+      dateDisplay.textContent = dateString.toUpperCase();
+    }
+  }
+
+  // Sync with system seconds
+  setInterval(updateClock, 1000);
+  updateClock();
+</script>

@@ -1,44 +1,107 @@
 ---
-import { GrassView } from '~/components/react/grass';
-
+import { Icon } from 'astro-icon/components';
 const today = new Date();
 ---
 
-<footer class="w-full relative mt-20 flex justify-center">
-  <div class="absolute flex z-0 w-full h-full bottom-0 left-0">
-    <GrassView client:load />
-  </div>
-  <small class="font-mono z-1 text-center">
-    <span class="text-muted-foreground">(C) {today.getFullYear()} Pablo Hernández.</span> Made with 
-    <span class="sr-only">love</span>
-    <div class="inline-block relative mx-1 h-2 w-2 align-[-0.125em]">
-      {/* Static heart (top layer) */}
-      <div class="absolute inset-0 z-10 bg-red-600 rotate-[-45deg] shadow-[0_0_8px_2px_theme(colors.red.400)] before:content-[''] before:absolute before:h-2 before:w-2 before:bg-red-600 before:rounded-full before:left-0 before:-top-1/2 after:content-[''] after:absolute after:h-2 after:w-2 after:bg-red-600 after:rounded-full after:top-0 after:left-1/2">
+<footer class="w-full border-t border-white/10 bg-background z-20 relative overflow-hidden">
+  
+  <!-- Background Grid Texture (Subtle) -->
+  <div class="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:1rem_1rem] pointer-events-none"></div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 relative z-10">
+
+    <!-- LEFT: System Status & Reactor Core -->
+    <div class="p-6 md:p-8 flex flex-col items-center md:items-start justify-center gap-6">
+      
+      <!-- Reactor Status Indicator -->
+      <div class="flex items-center gap-3">
+        <div class="relative flex h-2 w-2">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+        </div>
+        <span class="font-mono text-[10px] text-green-500 tracking-[0.2em] uppercase">
+          System Status: Nominal
+        </span>
       </div>
-      {/* Pinging heart (bottom layer) */}
-      <div class="absolute inset-0 z-0 bg-red-600 rotate-[-45deg] shadow-red-500 shadow-lg animate-ping before:content-[''] before:absolute before:h-2 before:w-2 before:bg-red-600 before:rounded-full before:left-0 before:-top-1/2 after:content-[''] after:absolute after:h-2 after:w-2 after:bg-red-600 after:rounded-full after:top-0 after:left-1/2">
+
+      <div class="space-y-1 text-center md:text-left">
+        <p class="font-mono text-xs text-muted-foreground uppercase tracking-wider">
+          &copy; {today.getFullYear()} Pablo Hernandez. All rights reserved.
+        </p>
+        <p class="font-mono text-[10px] text-white/20">
+          Build Ver: 2.0.4 // Dist: Production
+        </p>
+      </div>
+
+      <!-- Mobile-Only Socials (Hidden on lg since they are in sidebar) -->
+      <div class="flex lg:hidden items-center gap-4 mt-2">
+        <a href="https://github.com/hadronomy" target="_blank" class="p-2 border border-white/10 bg-white/5 hover:bg-white hover:text-black transition-all rounded-sm" aria-label="Github">
+          <Icon name="simple-icons:github" class="w-4 h-4" />
+        </a>
+        <a href="/rss.xml" target="_blank" class="p-2 border border-white/10 bg-white/5 hover:bg-white hover:text-black transition-all rounded-sm" aria-label="RSS">
+          <Icon name="tabler:rss" class="w-4 h-4" />
+        </a>
       </div>
     </div>
-  </small>
+
+    <!-- RIGHT: Cozy Pixel Badge -->
+    <div class="p-6 md:p-8 flex items-center justify-center md:justify-end">
+      
+      <div class="group relative">
+        <!-- Glow Effect -->
+        <div class="absolute -inset-2 bg-gradient-to-r from-red-500/10 to-pink-500/10 rounded-xl blur opacity-0 group-hover:opacity-100 transition duration-700"></div>
+        
+        <div class="relative px-5 py-2.5 bg-black/40 border border-white/10 rounded-lg flex items-center gap-3 transition-colors hover:bg-white/5 hover:border-white/20">
+          
+          <span class="font-mono text-xs text-muted-foreground tracking-wide group-hover:text-white transition-colors">
+            Made with
+          </span>
+
+          <!-- PIXEL ART HEART -->
+          <div class="relative w-4 h-4 flex items-center justify-center transform group-hover:scale-110 transition-transform duration-300">
+            <svg 
+              viewBox="0 0 9 8" 
+              fill="none" 
+              xmlns="http://www.w3.org/2000/svg" 
+              class="w-full h-full text-red-500 animate-heartbeat drop-shadow-[0_0_5px_rgba(239,68,68,0.5)]"
+              shape-rendering="crispEdges"
+            >
+              <rect x="1" y="0" width="2" height="1" fill="currentColor" />
+              <rect x="6" y="0" width="2" height="1" fill="currentColor" />
+              <rect x="0" y="1" width="4" height="1" fill="currentColor" />
+              <rect x="5" y="1" width="4" height="1" fill="currentColor" />
+              <rect x="0" y="2" width="9" height="2" fill="currentColor" />
+              <rect x="1" y="4" width="7" height="1" fill="currentColor" />
+              <rect x="2" y="5" width="5" height="1" fill="currentColor" />
+              <rect x="3" y="6" width="3" height="1" fill="currentColor" />
+              <rect x="4" y="7" width="1" height="1" fill="currentColor" />
+              <rect x="1" y="1" width="1" height="1" fill="white" fill-opacity="0.8" />
+              <rect x="2" y="2" width="1" height="1" fill="white" fill-opacity="0.4" />
+            </svg>
+          </div>
+
+          <span class="font-mono text-xs text-muted-foreground tracking-wide group-hover:text-white transition-colors">
+            in Spain
+          </span>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
 </footer>
+
 <style>
-  footer {
-    padding: 2em 1em 6em 1em;
-    background: linear-gradient(var(--gray-gradient)) no-repeat;
-    color: rgb(var(--gray));
-    text-align: center;
+  @keyframes heartbeat {
+    0% { transform: scale(1); }
+    15% { transform: scale(1.15); }
+    30% { transform: scale(1); }
+    45% { transform: scale(1.15); }
+    60% { transform: scale(1); }
+    100% { transform: scale(1); }
   }
-  .social-links {
-    display: flex;
-    justify-content: center;
-    gap: 1em;
-    margin-top: 1em;
-  }
-  .social-links a {
-    text-decoration: none;
-    color: rgb(var(--gray));
-  }
-  .social-links a:hover {
-    color: rgb(var(--gray-dark));
+
+  .animate-heartbeat {
+    animation: heartbeat 2s infinite ease-in-out;
   }
 </style>
