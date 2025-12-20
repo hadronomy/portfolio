@@ -17,7 +17,7 @@ export async function GET() {
   // generate ico
   const icoBuffer = ico.encode([buffer16, buffer32]);
 
-  return new Response(icoBuffer, {
+  return new Response(new Uint8Array(icoBuffer), {
     headers: { 'Content-Type': 'image/x-icon' },
   });
 }

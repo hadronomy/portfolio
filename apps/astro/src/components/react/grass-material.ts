@@ -1,5 +1,4 @@
 import {
-  Fn,
   abs,
   attribute,
   cameraProjectionMatrix,
@@ -7,14 +6,15 @@ import {
   cos,
   cross,
   dot,
+  Fn,
   float,
   floor,
   max,
   mix,
   modelViewMatrix,
+  normalize,
   normalLocal,
   normalView,
-  normalize,
   positionView,
   pow,
   sin,
@@ -28,12 +28,10 @@ import {
   vec4,
 } from 'three/tsl';
 import * as THREE from 'three/webgpu';
-
+import type { Node } from '~/components/react/nodes/types';
 import { fbm, noise2D, snoise } from './nodes';
 import { createNodeMaterial } from './nodes/utils';
 import { getTerrainHeight } from './terrain-material';
-
-type Node = THREE.TSL.ShaderNodeObject<THREE.Node>;
 
 // Create TSL-based grass material
 export const grassNodeMaterial = createNodeMaterial((material) => {

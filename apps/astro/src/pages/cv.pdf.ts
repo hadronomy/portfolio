@@ -20,7 +20,7 @@ export async function GET(_context: APIContext) {
 
   const signedBuffer = await signPdfBuffer(documentBuffer, signingOptions);
 
-  return new Response(signedBuffer, {
+  return new Response(new Uint8Array(signedBuffer), {
     headers: {
       'Content-Type': 'application/pdf',
       'Content-Disposition': 'inline; filename="Pablo_Hernandez-CV.pdf"',

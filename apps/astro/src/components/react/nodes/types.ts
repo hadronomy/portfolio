@@ -1,6 +1,6 @@
 import type * as THREE from 'three/webgpu';
 
-export type Node = THREE.TSL.ShaderNodeObject<THREE.Node>;
+export type Node = THREE.TSL.NodeObject<THREE.Node>;
 
 interface TLSMaterials {
   // biome-ignore lint/suspicious/noExplicitAny: for now

@@ -114,7 +114,7 @@ function createP12Buffer(
 ): Buffer {
   // Create a PKCS#12 container
   const p12Asn1 = forge.pkcs12.toPkcs12Asn1(
-    privateKey,
+    privateKey as any,
     [certificate],
     '', // Empty passphrase
     {
