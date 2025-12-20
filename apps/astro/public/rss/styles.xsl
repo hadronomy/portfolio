@@ -3,12 +3,21 @@
   <xsl:output method="html" doctype-public="-//W3C//DTD HTML 4.01//EN" doctype-system="http://www.w3.org/TR/html4/strict.dtd"/>
   
   <xsl:template match="/">
-    <html>
+    <html lang="en">
       <head>
-        <title><xsl:value-of select="/rss/channel/title"/> - RSS Feed</title>
+        <title>RSS_FEED // <xsl:value-of select="/rss/channel/title"/></title>
         <meta charset="UTF-8"/>
         <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
         <style>
+          :root {
+            --bg: #050505;
+            --fg: #e5e5e5;
+            --border: #333;
+            --accent: #22c55e;
+            --muted: #888;
+            --font-mono: 'Menlo', 'Monaco', 'Courier New', monospace;
+          }
+
           * {
             margin: 0;
             padding: 0;
@@ -16,228 +25,277 @@
           }
           
           body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-          }
-          
-          .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-          }
-          
-          .header {
-            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-            color: white;
-            padding: 40px;
-            text-align: center;
-          }
-          
-          .header h1 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 10px;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-          }
-          
-          .header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
-            margin-bottom: 20px;
-          }
-          
-          .rss-info {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 20px;
-            border-radius: 12px;
-            margin-top: 20px;
-            backdrop-filter: blur(10px);
-          }
-          
-          .rss-info h2 {
-            font-size: 1.3rem;
-            margin-bottom: 10px;
-          }
-          
-          .rss-info p {
-            font-size: 0.95rem;
+            font-family: var(--font-mono);
+            background-color: var(--bg);
+            color: var(--fg);
             line-height: 1.5;
-            opacity: 0.9;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
           }
-          
-          .feed-url {
-            background: rgba(255, 255, 255, 0.2);
-            padding: 10px 15px;
-            border-radius: 8px;
-            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-            font-size: 0.9rem;
-            word-break: break-all;
-            margin-top: 10px;
+
+          /* Utility Grid Background */
+          .bg-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+              linear-gradient(to right, rgba(255,255,255,0.05) 1px, transparent 1px),
+              linear-gradient(to bottom, rgba(255,255,255,0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
           }
-          
-          .content {
+
+          .layout {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            border-left: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+          }
+
+          /* Header */
+          header {
+            border-bottom: 1px solid var(--border);
             padding: 40px;
+            background: rgba(255,255,255,0.02);
           }
-          
-          .posts-header {
-            border-bottom: 3px solid #e5e7eb;
-            padding-bottom: 15px;
-            margin-bottom: 30px;
-          }
-          
-          .posts-header h2 {
-            font-size: 1.8rem;
-            color: #1f2937;
-            font-weight: 600;
-          }
-          
-          .post {
-            border-bottom: 1px solid #f3f4f6;
-            padding: 25px 0;
-            transition: all 0.3s ease;
-          }
-          
-          .post:last-child {
-            border-bottom: none;
-          }
-          
-          .post:hover {
-            background: #f9fafb;
-            margin: 0 -20px;
-            padding: 25px 20px;
-            border-radius: 12px;
-          }
-          
-          .post-title {
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: #1f2937;
-            text-decoration: none;
-            display: block;
-            margin-bottom: 8px;
-            transition: color 0.3s ease;
-          }
-          
-          .post-title:hover {
-            color: #4f46e5;
-          }
-          
-          .post-date {
-            color: #6b7280;
-            font-size: 0.9rem;
+
+          h1 {
+            font-size: 2rem;
+            text-transform: uppercase;
+            letter-spacing: -1px;
             margin-bottom: 10px;
             display: flex;
             align-items: center;
+            gap: 15px;
           }
-          
-          .post-date::before {
-            content: "📅";
-            margin-right: 8px;
+
+          h1::before {
+            content: '';
+            display: block;
+            width: 15px;
+            height: 15px;
+            background: var(--accent);
+            box-shadow: 0 0 10px var(--accent);
           }
-          
-          .post-description {
-            color: #4b5563;
-            line-height: 1.6;
-            font-size: 0.95rem;
-          }
-          
-          .footer {
-            background: #f9fafb;
-            padding: 30px 40px;
-            text-align: center;
-            color: #6b7280;
+
+          .subtitle {
+            color: var(--muted);
             font-size: 0.9rem;
-            border-top: 1px solid #e5e7eb;
+            max-width: 600px;
           }
-          
-          .footer a {
-            color: #4f46e5;
+
+          /* Metadata Bar */
+          .meta-bar {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+          }
+
+          .meta-item {
+            padding: 15px 20px;
+            border-right: 1px solid var(--border);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+          }
+
+          .label { color: var(--muted); }
+          .value { color: var(--fg); font-weight: bold; }
+
+          /* Feed Content */
+          .feed-container {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+          }
+
+          /* Sidebar */
+          .sidebar {
+            border-right: 1px solid var(--border);
+            padding: 30px;
+          }
+
+          .info-box {
+            border: 1px solid var(--border);
+            padding: 20px;
+            margin-bottom: 20px;
+            background: rgba(0,0,0,0.5);
+          }
+
+          .info-title {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 10px;
+            display: block;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 5px;
+          }
+
+          .xml-link {
+            display: block;
+            background: rgba(255,255,255,0.1);
+            padding: 10px;
+            font-size: 0.7rem;
+            word-break: break-all;
+            color: var(--accent);
             text-decoration: none;
-            font-weight: 500;
+            margin-top: 5px;
           }
-          
-          .footer a:hover {
+
+          .xml-link:hover {
+            background: rgba(255,255,255,0.2);
+          }
+
+          /* Entries */
+          .entries {
+            padding: 0;
+          }
+
+          .entry {
+            display: block;
+            text-decoration: none;
+            color: inherit;
+            border-bottom: 1px solid var(--border);
+            padding: 30px;
+            transition: background 0.2s;
+            position: relative;
+          }
+
+          .entry:hover {
+            background: rgba(255,255,255,0.03);
+          }
+
+          .entry:hover::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--accent);
+          }
+
+          .entry-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 10px;
+          }
+
+          .entry-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--fg);
+          }
+
+          .entry-date {
+            font-size: 0.75rem;
+            color: var(--muted);
+            text-transform: uppercase;
+          }
+
+          .entry-desc {
+            font-size: 0.9rem;
+            color: var(--muted);
+            line-height: 1.6;
+          }
+
+          /* Footer */
+          footer {
+            padding: 30px;
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--muted);
+            border-top: 1px solid var(--border);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+          }
+
+          footer a {
+            color: var(--fg);
             text-decoration: underline;
           }
-          
-          @media (max-width: 768px) {
-            body {
-              padding: 10px;
-            }
-            
-            .header {
-              padding: 30px 20px;
-            }
-            
-            .header h1 {
-              font-size: 2rem;
-            }
-            
-            .content {
-              padding: 30px 20px;
-            }
-            
-            .footer {
-              padding: 20px;
-            }
-            
-            .post:hover {
-              margin: 0 -10px;
-              padding: 25px 10px;
-            }
+
+          @media (max-width: 800px) {
+            .feed-container { grid-template-columns: 1fr; }
+            .sidebar { border-right: none; border-bottom: 1px solid var(--border); }
+            .entry-header { flex-direction: column; gap: 5px; }
           }
         </style>
       </head>
       <body>
-        <div class="container">
-          <div class="header">
+        <div class="bg-grid"></div>
+        
+        <div class="layout">
+          <header>
             <h1><xsl:value-of select="/rss/channel/title"/></h1>
-            <p><xsl:value-of select="/rss/channel/description"/></p>
-            
-            <div class="rss-info">
-              <h2>📡 RSS Feed</h2>
-              <p>This is an RSS feed. You can subscribe to it using your favorite RSS reader to stay updated with new posts.</p>
-              <div class="feed-url">
-                <xsl:value-of select="/rss/channel/link"/>rss.xml
-              </div>
+            <div class="subtitle"><xsl:value-of select="/rss/channel/description"/></div>
+          </header>
+
+          <div class="meta-bar">
+            <div class="meta-item">
+              <span class="label">Protocol:</span>
+              <span class="value">RSS 2.0</span>
+            </div>
+            <div class="meta-item">
+              <span class="label">Language:</span>
+              <span class="value"><xsl:value-of select="/rss/channel/language"/></span>
+            </div>
+            <div class="meta-item">
+              <span class="label">Items:</span>
+              <span class="value"><xsl:value-of select="count(/rss/channel/item)"/></span>
             </div>
           </div>
-          
-          <div class="content">
-            <div class="posts-header">
-              <h2>Latest Posts (<xsl:value-of select="count(/rss/channel/item)"/>)</h2>
-            </div>
-            
-            <xsl:for-each select="/rss/channel/item">
-              <div class="post">
-                <a class="post-title" href="{link}">
-                  <xsl:value-of select="title"/>
+
+          <div class="feed-container">
+            <aside class="sidebar">
+              <div class="info-box">
+                <span class="info-title">Feed Source</span>
+                <p style="font-size: 0.8rem; margin-bottom: 10px; color: #ccc;">
+                  This is a raw data stream. Subscribe using a compliant reader.
+                </p>
+                <a class="xml-link" href="#">
+                  <xsl:value-of select="/rss/channel/link"/>rss.xml
                 </a>
-                <div class="post-date">
-                  <xsl:value-of select="pubDate"/>
-                </div>
-                <xsl:if test="description">
-                  <div class="post-description">
-                    <xsl:value-of select="description" disable-output-escaping="yes"/>
-                  </div>
-                </xsl:if>
               </div>
-            </xsl:for-each>
+              
+              <div class="info-box">
+                <span class="info-title">Sys_Admin</span>
+                <p style="font-size: 0.8rem; color: #ccc;">Pablo Hernández</p>
+              </div>
+            </aside>
+
+            <main class="entries">
+              <xsl:for-each select="/rss/channel/item">
+                <a class="entry" href="{link}" target="_blank">
+                  <div class="entry-header">
+                    <span class="entry-title"><xsl:value-of select="title"/></span>
+                    <span class="entry-date"><xsl:value-of select="pubDate"/></span>
+                  </div>
+                  <div class="entry-desc">
+                    <xsl:value-of select="description"/>
+                  </div>
+                </a>
+              </xsl:for-each>
+            </main>
           </div>
-          
-          <div class="footer">
-            <p>
-              Powered by <a href="https://astro.build/">Astro</a> • 
-              Subscribe to this feed in your RSS reader to stay updated!
-            </p>
-          </div>
+
+          <footer>
+            Generated by Astro // System Online
+          </footer>
         </div>
       </body>
     </html>
