@@ -321,14 +321,3 @@ pre * code {
 pre {
   overflow-x: auto;
 }
-
-pre:after {
-  content: '';
-  position: absolute;
-  right: -3px;
-  top: 0;
-  bottom: 0;
-  width: 2rem;
-  pointer-events: none;
-  background: linear-gradient(to left, hsl(var(--muted)), transparent);
-}

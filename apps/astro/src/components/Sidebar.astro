@@ -78,7 +78,7 @@ const { items } = Astro.props;
                  "bg-white shadow-[0_0_10px_white]",
                  (!item.depth || item.depth <= 2) ? "w-2.5 h-2.5 rotate-45" : "w-1.5 h-1.5 rounded-full"
                ]}></div>
-               <!-- Ping Ring (Initializes hidden) -->
+               <!-- Ping Ring -->
                <div class:list={[
                  "ping-ring absolute inset-0 bg-white rounded-full opacity-0",
                  (!item.depth || item.depth <= 2) ? "rounded-none rotate-45" : ""
@@ -116,14 +116,13 @@ const { items } = Astro.props;
     text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
   }
   
-  /* Faster, more active ping */
+  .animate-ping-active {
+    animation: ping-active 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+
   @keyframes ping-active {
     0% { transform: scale(1); opacity: 0.8; }
     75%, 100% { transform: scale(2.5); opacity: 0; }
-  }
-  
-  .animate-ping-active {
-    animation: ping-active 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
   }
 </style>
 
@@ -169,13 +168,11 @@ const { items } = Astro.props;
     }
 
     public init(): void {
-      if (!this.track || this.nodes.length === 0 || !this.progressLine) return;
+      if (!this.track || this.nodes.length === 0 || !this.progressLine || !this.progressTip) return;
 
-      // Randomize Ping Delays for organic feel
       this.nodes.forEach(node => {
         const ring = node.querySelector('.ping-ring') as HTMLElement;
         if(ring) {
-          // Negative delay ensures animation starts mid-cycle immediately
           ring.style.animationDelay = `-${Math.random() * 2}s`;
         }
       });
@@ -194,10 +191,13 @@ const { items } = Astro.props;
     }
 
     private calculatePositions = (): void => {
+      // Guard: Check if track exists
+      if (!this.track) return;
+
       const trackHeight = this.track.clientHeight;
       const docHeight = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
       const winHeight = window.innerHeight;
-      const scrollableDist = docHeight - winHeight;
+      const scrollableDist = Math.max(1, docHeight - winHeight);
 
       const targets: Array<{ element: HTMLElement; pageTop: number; index: number }> = [];
 
@@ -221,19 +221,18 @@ const { items } = Astro.props;
       targets.sort((a, b) => a.pageTop - b.pageTop);
 
       const visualPositionsInPx: number[] = targets.map(t => {
+        // Safe division now that scrollableDist is >= 1
         const naturalPct = t.pageTop / scrollableDist;
         const clampedPct = Math.max(0, Math.min(1, naturalPct));
         return clampedPct * trackHeight;
       });
 
-      // Elastic Spacing
       for (let i = 1; i < visualPositionsInPx.length; i++) {
         if (visualPositionsInPx[i] < visualPositionsInPx[i-1] + CONFIG.MIN_NODE_GAP) {
           visualPositionsInPx[i] = visualPositionsInPx[i-1] + CONFIG.MIN_NODE_GAP;
         }
       }
 
-      // Compression
       if (visualPositionsInPx.length > 0) {
         const lastIdx = visualPositionsInPx.length - 1;
         if (visualPositionsInPx[lastIdx] > trackHeight) {
@@ -248,7 +247,8 @@ const { items } = Astro.props;
 
       this.nodeMap = targets.map((t, i) => {
         const visualPx = visualPositionsInPx[i];
-        const visualPct = (visualPx / trackHeight) * 100;
+        // Handle trackHeight = 0 case
+        const visualPct = trackHeight > 0 ? (visualPx / trackHeight) * 100 : 0;
 
         t.element.style.top = `${visualPct}%`;
         t.element.style.opacity = '1';
@@ -293,6 +293,8 @@ const { items } = Astro.props;
       } else {
         const segmentScroll = scrollTop - startNode.pageTop;
         const segmentTotal = endNode.pageTop - startNode.pageTop;
+        
+        // Safety check for divide by zero
         const ratio = segmentTotal > 0 
           ? Math.min(1, Math.max(0, segmentScroll / segmentTotal))
           : 1;
@@ -302,11 +304,12 @@ const { items } = Astro.props;
       }
 
       if (this.nodeMap[0] && scrollTop < this.nodeMap[0].pageTop) {
-         const ratio = Math.min(1, Math.max(0, scrollTop / this.nodeMap[0].pageTop));
+         // Avoid div by zero if pageTop is 0
+         const firstTop = Math.max(1, this.nodeMap[0].pageTop);
+         const ratio = Math.min(1, Math.max(0, scrollTop / firstTop));
          calculatedPct = ratio * this.nodeMap[0].visualPct;
       }
 
-      // Magnetism
       for (const node of this.nodeMap) {
         const diff = Math.abs(calculatedPct - node.visualPct);
         if (diff < CONFIG.SNAP_THRESHOLD) {
@@ -328,6 +331,12 @@ const { items } = Astro.props;
     };
 
     private render = (): void => {
+      if (!this.progressLine || !this.progressTip) return;
+
+      if (isNaN(this.currentValue)) {
+        this.currentValue = 0;
+      }
+
       const pctString = `${this.currentValue}%`;
       
       this.progressLine.setAttribute('y2', pctString);
@@ -351,7 +360,6 @@ const { items } = Astro.props;
           label?.classList.add('text-white', 'font-bold');
           indexText?.classList.add('text-white', 'opacity-100');
           
-          // Add faster ping class
           pingRing?.classList.add('animate-ping-active');
           pingRing?.classList.remove('opacity-0');
         } else {
