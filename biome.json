@@ -1,8 +1,6 @@
 {
-  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
-  "organizeImports": {
-    "enabled": true
-  },
+  "$schema": "https://biomejs.dev/schemas/2.3.10/schema.json",
+  "assist": { "actions": { "source": { "organizeImports": "on" } } },
   "linter": {
     "enabled": true,
     "rules": {
@@ -32,7 +30,7 @@
     "enabled": true,
     "indentWidth": 2,
     "indentStyle": "space",
-    "ignore": [".astro"]
+    "includes": ["**", "!**/.astro"]
   },
   "javascript": {
     "formatter": {
@@ -54,6 +52,6 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "ignore": ["*.astro"]
+    "includes": ["**", "!**/*.astro"]
   }
 }
