@@ -4,10 +4,10 @@ parallel = true
 
 [pre-commit.commands.check]
 glob = "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"
-run = "pnpm run ci {staged_files}"
+run = "bun run ci {staged_files}"
 
 # [pre-commit.commands.fix]
-# run = "pnpm fix"
+# run = "bun fix"
 
 [commit-msg.scripts."commitlint.sh"]
 runner = "bash"
