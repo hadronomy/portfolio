@@ -4,7 +4,6 @@
   "engines": {
     "node": ">=20.18.0"
   },
-  "packageManager": "bun@1.3.2",
   "scripts": {
     "prepare": "lefthook install",
     "format": "bun biome format --write .; bun prettier --write .",
