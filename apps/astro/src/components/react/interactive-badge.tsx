@@ -155,7 +155,7 @@ function Band({ minSpeed = 10, maxSpeed = 50 }) {
   useEffect(() => {
     if (hovered) {
       document.body.style.cursor = dragged ? 'grabbing' : 'grab';
-      // biome-ignore lint/suspicious/noAssignInExpressions: <explanation>
+      // biome-ignore lint/suspicious/noAssignInExpressions: document.body.style.cursor = 'auto'
       return () => void (document.body.style.cursor = 'auto');
     }
   }, [hovered, dragged]);
