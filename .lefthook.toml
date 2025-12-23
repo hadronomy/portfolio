@@ -5,6 +5,7 @@ parallel = true
 [pre-commit.commands.check]
 glob = "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"
 run = "bun run ci {staged_files}"
+stage_fixed = true
 
 # [pre-commit.commands.fix]
 # run = "bun fix"
