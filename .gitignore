@@ -41,6 +41,3 @@ next-env.d.ts
 # turbo
 .turbo
 .astro
-
-# hooks
-.husky
