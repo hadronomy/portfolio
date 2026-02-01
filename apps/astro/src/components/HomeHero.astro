@@ -1,6 +1,8 @@
 ---
 import { Icon } from 'astro-icon/components';
 
+const techStack = ["TYPESCRIPT", "RUST", "REACT", "THREE.JS", "NODE.JS", "POSTGRESQL", "DOCKER", "//"];
+
 const { class: string, ...props } = Astro.props;
 ---
 
@@ -47,7 +49,7 @@ const { class: string, ...props } = Astro.props;
     <!-- Decorative vertical line -->
     <div class="absolute left-6 md:left-12 top-0 bottom-0 w-px bg-white/10"></div>
 
-    <div class="relative pl-8 md:pl-12 z-10">
+    <div class="relative md:pl-12 z-10">
       
       <!-- Label -->
       <div class="flex items-center gap-3 mb-6">
@@ -114,20 +116,12 @@ const { class: string, ...props } = Astro.props;
         <div class="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-black to-transparent z-10"></div>
         <div class="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-black to-transparent z-10"></div>
         
-        <div class="flex gap-8 animate-marquee whitespace-nowrap font-mono text-xs text-muted-foreground">
-          <span>TYPESCRIPT</span>
-          <span>RUST</span>
-          <span>REACT</span>
-          <span>THREE.JS</span>
-          <span>NODE.JS</span>
-          <span>POSTGRESQL</span>
-          <span>DOCKER</span>
-          <span>//</span>
-          <span>TYPESCRIPT</span>
-          <span>RUST</span>
-          <span>REACT</span>
-          <span>THREE.JS</span>
-          <span>NODE.JS</span>
+        <div class="flex w-max animate-marquee">
+          {[1, 2].map(() => (
+            <div class="flex gap-8 items-center px-4 font-mono text-xs text-muted-foreground">
+              {techStack.map((item) => <span>{item}</span>)}
+            </div>
+          ))}
         </div>
       </div>
 
@@ -145,11 +139,23 @@ const { class: string, ...props } = Astro.props;
 
 <style>
   @keyframes marquee {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      /* Moves exactly half the width of the doubled content */
+      transform: translateX(-50%);
+    }
   }
+
   .animate-marquee {
-    animation: marquee 20s linear infinite;
+    /* Ensure the animation is smooth and linear */
+    animation: marquee 30s linear infinite;
+  }
+
+  /* Optional: Pause on hover for better UX */
+  .animate-marquee:hover {
+    animation-play-state: paused;
   }
 </style>
 
@@ -170,7 +176,7 @@ const { class: string, ...props } = Astro.props;
         (el as any).interval = setInterval(() => {
           el.innerText = originalText
             .split("")
-            .map((letter, index) => {
+            .map((_letter, index) => {
               if(index < iteration) {
                 return originalText[index];
               }

@@ -1,6 +1,5 @@
-import React from 'react';
-
 import random from 'random';
+import React from 'react';
 
 const QUERY = '(prefers-reduced-motion: no-preference)';
 
@@ -25,17 +24,10 @@ export function usePrefersReducedMotion() {
       setPrefersReducedMotion(!event.matches);
     };
 
-    if (mediaQueryList.addEventListener) {
-      mediaQueryList.addEventListener('change', listener);
-    } else {
-      mediaQueryList.addListener(listener);
-    }
+    mediaQueryList.addEventListener('change', listener);
+
     return () => {
-      if (mediaQueryList.removeEventListener) {
-        mediaQueryList.removeEventListener('change', listener);
-      } else {
-        mediaQueryList.removeListener(listener);
-      }
+      mediaQueryList.removeEventListener('change', listener);
     };
   }, []);
 
