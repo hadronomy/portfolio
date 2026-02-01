@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-pnpm commitlint --edit --color
+bun commitlint --edit --color
