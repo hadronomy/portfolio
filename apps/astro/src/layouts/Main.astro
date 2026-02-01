@@ -103,3 +103,34 @@ const {
     text-orientation: mixed;
   }
 </style>
+
+<script>
+  let abortController: AbortController | null = null;
+
+  /**
+   * Sets up navigation listener to dispatch path change events to React components.
+   * Aborts any existing listener before creating a new one to prevent duplicates.
+   */
+  function setupNavigationListener() {
+    if (abortController) {
+      abortController.abort();
+    }
+
+    abortController = new AbortController();
+
+    document.addEventListener(
+      'astro:page-load',
+      () => {
+        const pathname = window.location.pathname;
+        const event = new CustomEvent('navbar:path-change', {
+          detail: { pathname }
+        });
+        window.dispatchEvent(event);
+      },
+      { signal: abortController.signal }
+    );
+  }
+
+  setupNavigationListener();
+  document.addEventListener('astro:after-swap', setupNavigationListener);
+</script>
