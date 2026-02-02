@@ -4,7 +4,7 @@ import {
   PerformanceMonitor,
   Plane,
   StatsGl,
-  useGLTF,
+  useTexture, // CHANGED: Load texture
 } from '@react-three/drei';
 import { Canvas, extend } from '@react-three/fiber';
 import type React from 'react';
@@ -142,7 +142,7 @@ function SceneContent({
       <ambientLight intensity={0.5} />
       <directionalLight position={[10, 10, 5]} intensity={1.5} castShadow />
 
-      <Grass instances={150000} />
+      <Grass instances={50000} />
 
       {showStats && (
         <>
@@ -174,17 +174,20 @@ interface GrassProps {
 }
 
 export function Grass({ instances = 5000 }: GrassProps) {
-  const { nodes } = useGLTF('/anime-grass.glb');
-  const bladeMesh = nodes.GrassBlade as THREE.Mesh;
+  // CHANGED: Load the texture
+  const grassTexture = useTexture('/grass4_mask_01.png');
+  grassTexture.anisotropy = 16;
+
   const width = 100;
 
+  // CHANGED: Use Plane Geometry instead of GLTF
   const baseGeometry = useMemo(() => {
-    const geo = bladeMesh.geometry.clone();
-    geo.computeBoundingBox();
-    const minY = geo.boundingBox!.min.y;
-    geo.translate(0, -minY, 0);
+    // Width 0.5 (ish), Height 1.0. Adjust ratio as needed.
+    const geo = new THREE.PlaneGeometry(1.0, 1.0, 1, 4);
+    // Move pivot to bottom
+    geo.translate(0, 0.5, 0);
     return geo;
-  }, [bladeMesh]);
+  }, []);
 
   const terrainGeo = useMemo(() => {
     const geo = new THREE.PlaneGeometry(width, width, 128, 128);
@@ -192,7 +195,11 @@ export function Grass({ instances = 5000 }: GrassProps) {
     return geo;
   }, [width]);
 
-  const grassMaterial = useMemo(() => grassNodeMaterial(), []);
+  // CHANGED: Pass texture to material
+  const grassMaterial = useMemo(
+    () => grassNodeMaterial(grassTexture)(),
+    [grassTexture],
+  );
   const terrainMaterial = useMemo(() => terrainNodeMaterial(), []);
 
   const attributeData = useMemo(
@@ -230,6 +237,11 @@ export function Grass({ instances = 5000 }: GrassProps) {
             attach="attributes-halfRootAngleCos"
             args={[attributeData.halfRootAngleCos, 1]}
           />
+          {/* NEW: Texture Indices */}
+          <instancedBufferAttribute
+            attach="attributes-textureIndex"
+            args={[attributeData.textureIndices, 1]}
+          />
         </instancedBufferGeometry>
         <primitive object={grassMaterial} attach="material" />
       </mesh>
@@ -242,6 +254,8 @@ function getAttributeData(instances: number, width: number) {
   const orientations = new Float32Array(instances * 4);
   const halfRootAngleSin = new Float32Array(instances);
   const halfRootAngleCos = new Float32Array(instances);
+  // NEW: Indices array
+  const textureIndices = new Float32Array(instances);
 
   const _q = new THREE.Quaternion();
   const _e = new THREE.Euler();
@@ -273,9 +287,16 @@ function getAttributeData(instances: number, width: number) {
     orientations[i4 + 1] = _q.y;
     orientations[i4 + 2] = _q.z;
     orientations[i4 + 3] = _q.w;
+
+    // NEW: Assign random texture quadrant (0 to 3)
+    textureIndices[i] = Math.floor(Math.random() * 4);
   }
 
-  return { offsets, orientations, halfRootAngleSin, halfRootAngleCos };
+  return {
+    offsets,
+    orientations,
+    halfRootAngleSin,
+    halfRootAngleCos,
+    textureIndices,
+  };
 }
-
-useGLTF.preload('/anime-grass.glb');
