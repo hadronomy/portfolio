@@ -3,6 +3,7 @@ import type { MarkdownHeading } from 'astro'; // Import type
 import { Icon } from 'astro-icon/components';
 import type { CollectionEntry } from 'astro:content';
 import { format } from 'date-fns';
+import { Penflow } from 'penflow/react';
 
 import MainLayout from '~/layouts/Main.astro';
 
@@ -94,8 +95,9 @@ const postSidebar = [...baseItems, ...contentItems, ...footerItems];
     </div>
 
     <!-- Article Footer -->
-    <footer id="post-footer" class="p-8 md:p-12 border-t border-white/20 mt-auto opacity-60">
-      <div class="flex items-center justify-between font-mono text-xs uppercase tracking-widest">
+    <footer id="post-footer">
+      <Penflow client:only className="pl-10 h-20" size={42} color="white" text="Pablo Hernández J." fontUrl="/fonts/BrittanySignature.ttf" />
+      <div class="flex items-center justify-between font-mono text-xs uppercase tracking-widest p-8 md:p-12 border-t border-white/20 mt-auto opacity-60">
          <span>End of File</span>
          <span>Hash: {Math.random().toString(36).substring(7).toUpperCase()}</span>
       </div>

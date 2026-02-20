@@ -53,6 +53,7 @@
     "meshline": "catalog:prod",
     "node-forge": "catalog:prod",
     "pdf-lib": "catalog:prod",
+    "penflow": "^0.1.0",
     "random": "catalog:prod",
     "react": "catalog:prod",
     "react-dom": "catalog:prod",
