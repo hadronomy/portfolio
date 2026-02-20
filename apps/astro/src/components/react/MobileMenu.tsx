@@ -1,6 +1,3 @@
-/* ================================================
-   FILE: src/components/react/MobileMenu.tsx
-   ================================================ */
 'use client';
 
 import { cn } from '@portfolio/ui';
