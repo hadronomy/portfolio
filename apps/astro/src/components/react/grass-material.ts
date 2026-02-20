@@ -7,7 +7,6 @@ import {
   Fn,
   float,
   floor,
-  max,
   mix,
   mod,
   modelViewMatrix,
@@ -47,16 +46,6 @@ export const grassNodeMaterial = (grassTexture: THREE.Texture) =>
     const vPosition = varying(vec3(), 'vPosition');
     const vNormal = varying(vec3(), 'vNormal');
     const vUv = varying(vec3(), 'vUv');
-
-    const ambientStrength = uniform(0.7);
-    const diffuseStrength = uniform(1.5);
-    const specularStrength = uniform(1.0);
-    const translucencyStrength = uniform(1.5);
-    const shininess = uniform(120);
-    const sunColour = uniform(new THREE.Color(1.0, 1.0, 1.0));
-    const lightDirection = uniform(
-      new THREE.Vector3(1.0, 0.0, 0.0).normalize(),
-    );
 
     const qmul = Fn<[Node, Node]>(([q1, q2]) => {
       return vec4(
@@ -177,7 +166,6 @@ export const calculateGrassColor = Fn<[Node, Node]>(([position, uvValue]) => {
   const noiseScale = uniform(0.05);
   const noiseQuantize = uniform(4.0);
   const noiseMixStrength = uniform(0.5);
-  const edgeHighlightStrength = uniform(0.01);
   const colorVariation = uniform(0.8);
 
   const moveSpeed = float(0.2);
