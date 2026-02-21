@@ -13,6 +13,7 @@
  */
 
 import * as fs from 'node:fs';
+
 import { plainAddPlaceholder } from '@signpdf/placeholder-plain';
 import { P12Signer } from '@signpdf/signer-p12';
 import { SignPdf } from '@signpdf/signpdf';
@@ -110,11 +111,10 @@ export async function signPdfBuffer(
  */
 function createP12Buffer(
   certificate: forge.pki.Certificate,
-  privateKey: forge.pki.PrivateKey,
+  privateKey: forge.pki.rsa.PrivateKey,
 ): Buffer {
-  // Create a PKCS#12 container
   const p12Asn1 = forge.pkcs12.toPkcs12Asn1(
-    privateKey as any,
+    privateKey,
     [certificate],
     '', // Empty passphrase
     {
