@@ -144,7 +144,7 @@ export function MobileMenu({
           'lg:hidden relative flex items-center justify-center',
           'h-10 w-10 border border-white/20 bg-black/40 backdrop-blur-md',
           'text-white hover:bg-white hover:text-black transition-all duration-300',
-          'active:scale-95 z-[50]',
+          'active:scale-95 z-50',
         )}
         aria-label="Open system menu"
       >
@@ -155,7 +155,7 @@ export function MobileMenu({
       <AnimatePresence mode="wait">
         {isOpen && (
           <motion.div
-            className="fixed inset-0 z-[200] w-screen h-screen flex flex-col bg-[#050505] text-white overflow-hidden"
+            className="fixed inset-0 z-200 w-screen h-screen flex flex-col bg-[#050505] text-white overflow-hidden"
             initial="closed"
             animate="open"
             exit="closed"
@@ -163,7 +163,7 @@ export function MobileMenu({
           >
             {/* Background Texture */}
             <div className="absolute inset-0 pointer-events-none opacity-20 z-0">
-              <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:20px_20px]"></div>
+              <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-size-[20px_20px]"></div>
             </div>
 
             {/* --- HEADER --- */}
