@@ -82,7 +82,7 @@ const defaultData: CVData = {
     name: 'Pablo Hernández',
     title: 'Software Developer',
     email: 'hadronomy@gmail.com',
-    phone: '(+32) 608 73 31 18',
+    phone: '(+34) 608 73 31 18',
     location: 'Canary Islands, Spain',
     website: 'https://hadronomy.com',
     quote: "Code is like humor. When you have to explain it, it's bad.",
