@@ -51,7 +51,7 @@ const fileTree: FileNode = {
 
 <header 
   class:list={[
-    'sticky top-0 z-50 w-full h-20 border-b border-white/20 bg-[#050505]/90 backdrop-blur-md',
+    'sticky top-0 z-50 w-full h-20 bg-[#050505]/90 backdrop-blur-md',
     className
   ]} 
   {...props}
@@ -60,7 +60,7 @@ const fileTree: FileNode = {
   <div class="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none z-0"></div>
 
   <!-- Layout Container -->
-  <div class="relative z-10 h-full w-full flex items-center justify-between px-4 sm:px-6">
+  <div class="relative z-10 h-full w-full flex items-center justify-between px-4 sm:px-6 border-b border-white/20">
     
     <!-- LEFT: Path & Mobile Menu -->
     <div class="flex-1 flex items-center min-w-0 mr-4 gap-4">
@@ -103,9 +103,11 @@ const fileTree: FileNode = {
     <div class="flex-none flex items-center justify-end gap-4 pl-4">
       
       <!-- Clock -->
+      <!-- 
       <div id="clock-widget" class="hidden xl:flex items-center gap-3 text-white/40 select-none border-r border-white/10 pr-4">
         <span class="text-[10px] font-mono time-display tabular-nums">00:00:00</span>
       </div>
+      -->
 
       <!-- Navigation & Tools -->
       <div class="flex items-center gap-2">
@@ -130,16 +132,16 @@ const fileTree: FileNode = {
 </header>
 
 <script>
-  function updateClock() {
-    const timeDisplay = document.querySelector('.time-display');
-    if (timeDisplay) {
-      const now = new Date();
-      timeDisplay.textContent = now.toLocaleTimeString('en-US', { hour12: false });
-    }
-  }
+  // function updateClock() {
+  //   const timeDisplay = document.querySelector('.time-display');
+  //   if (timeDisplay) {
+  //     const now = new Date();
+  //     timeDisplay.textContent = now.toLocaleTimeString('en-US', { hour12: false });
+  //   }
+  // }
 
-  document.addEventListener('astro:page-load', () => {
-    updateClock();
-    setInterval(updateClock, 1000);
-  });
+  // document.addEventListener('astro:page-load', () => {
+  //   updateClock();
+  //   setInterval(updateClock, 1000);
+  // });
 </script>

@@ -2,6 +2,7 @@
 import { Icon } from 'astro-icon/components';
 
 const techStack = ["TYPESCRIPT", "RUST", "REACT", "THREE.JS", "NODE.JS", "POSTGRESQL", "DOCKER", "//"];
+const summary = "Specialized in fullstack architecture spanning bare-metal systems to beautiful interfaces, with deep expertise in agentic AI. Converting complex requirements into elegant, type-safe solutions."
 
 const { class: string, ...props } = Astro.props;
 ---
@@ -12,7 +13,7 @@ const { class: string, ...props } = Astro.props;
   {...props}
 >
   <!-- Background: Subtle localized grid -->
-  <div class="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none"></div>
+  <div class="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-size-[4rem_4rem] pointer-events-none"></div>
 
   <!-- ROW 1: Header / Meta Data -->
   <!-- Fixed h-12 (48px) to ensure perfect vertical alignment across all cells -->
@@ -45,11 +46,19 @@ const { class: string, ...props } = Astro.props;
 
   <!-- ROW 2: Main Content (Takes remaining space) -->
   <div class="flex-1 flex flex-col justify-center relative p-6 md:p-12 overflow-hidden">
-    
-    <!-- Decorative vertical line -->
-    <div class="absolute left-6 md:left-12 top-0 bottom-0 w-px bg-white/10"></div>
-
     <div class="relative md:pl-12 z-10">
+      <div class="flex flex-row items-center gap-1 mb-3">
+        <a href="https://github.com/hadronomy" target="_blank" class="flex items-center gap-3 text-xs text-muted-foreground hover:text-white transition-colors group">
+          <div class="w-8 h-8 flex items-center justify-center transition-all">
+            <Icon name="simple-icons:github" class="w-4 h-4" />
+          </div>
+        </a>
+        <a href="/rss.xml" target="_blank" class="flex items-center gap-3 text-xs text-muted-foreground hover:text-white transition-colors group">
+          <div class="w-8 h-8 flex items-center justify-center transition-all">
+            <Icon name="tabler:rss" class="w-4 h-4" />
+          </div>
+        </a>
+      </div>
       
       <!-- Label -->
       <div class="flex items-center gap-3 mb-6">
@@ -73,8 +82,7 @@ const { class: string, ...props } = Astro.props;
       <!-- Description / Abstract -->
       <div class="max-w-lg mb-12">
         <p class="font-mono text-sm md:text-base text-muted-foreground leading-relaxed text-justify">
-          <span class="text-white font-bold mr-2">>>> ABSTRACT:</span>
-          Specialized in high-performance web architecture and interactive 3D ecosystems. Converting complex requirements into elegant, type-safe solutions.
+          {summary}
         </p>
       </div>
 
@@ -113,8 +121,8 @@ const { class: string, ...props } = Astro.props;
     <div class="grid grid-cols-1 md:grid-cols-2">
       <!-- Stack Ticker -->
       <div class="p-4 border-b md:border-b-0 md:border-r border-white/20 flex items-center overflow-hidden relative h-12">
-        <div class="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-black to-transparent z-10"></div>
-        <div class="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-black to-transparent z-10"></div>
+        <div class="absolute left-0 top-0 bottom-0 w-8 bg-linear-to-r from-black to-transparent z-10"></div>
+        <div class="absolute right-0 top-0 bottom-0 w-8 bg-linear-to-l from-black to-transparent z-10"></div>
         
         <div class="flex w-max animate-marquee">
           {[1, 2].map(() => (
