@@ -3,7 +3,13 @@ import { getCollection } from 'astro:content';
 import BlogPostCard from '~/components/BlogPostCard.astro';
 import MainLayout from '~/layouts/Main.astro';
 
-const posts = (await getCollection('blog')).sort(
+import { Penflow } from 'penflow/react';
+
+const posts = (await getCollection('blog'))
+  .filter(
+    (post) => post.data.state === 'published'
+  )
+  .sort(
   (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
 );
 
@@ -46,13 +52,24 @@ const blogSidebar = [
   </div>
 
   <!-- Post Grid -->
-  <div id="latest" class="p-6 md:p-8 flex flex-col gap-4 min-h-[50vh]">
-    {
-      posts.map((post, index) => (
-        <BlogPostCard post={post} index={index} />
-      ))
-    }
-  </div>
+  { posts.length > 0 && (
+      <div id="latest" class="p-6 md:p-8 flex flex-col gap-4 min-h-[50vh]">
+        {
+          posts.map((post, index) => (
+            <BlogPostCard post={post} index={index} />
+          ))
+        }
+      </div>
+    )
+  }
+  {
+    posts.length === 0 && (
+      <div class="p-8 text-center place-items-center text-muted-foreground">
+        <Penflow client:only className="h-30" size={50} color="white" text="Pablo Hernández J." fontUrl="/fonts/BrittanySignature.ttf" />
+        <p class="font-mono text-sm">Posts are underway.</p>
+      </div>
+    )
+  }
 
   <!-- Archive Section Placeholder -->
   <div id="archive" class="p-8 border-t border-white/20 mt-auto opacity-50">
