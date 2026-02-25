@@ -10,6 +10,7 @@ const { items } = Astro.props;
   id="minimap-nav" 
   class="group/sidebar relative w-full h-full pl-8 py-12 select-none flex flex-col items-start"
   aria-label="Minimap Navigation"
+  hidden={items.length <= 3}
 >
   <!-- TRACK CONTAINER -->
   <div id="sidebar-track" class="relative w-full h-full z-10">
@@ -103,7 +104,7 @@ const { items } = Astro.props;
                 (!item.depth || item.depth <= 2) ? "text-[10px] uppercase tracking-wider" : "text-[9px] tracking-wide pl-2 border-l border-white/10"
               ]}
             >
-              {item.label}
+              {item.label.replace(/^(\d+\.\s*)/, '')}
             </span>
         </div>
       </a>

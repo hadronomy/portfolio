@@ -56,9 +56,6 @@ const fileTree: FileNode = {
   ]} 
   {...props}
 >
-  <!-- Background Grid -->
-  <div class="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none z-0"></div>
-
   <!-- Layout Container -->
   <div class="relative z-10 h-full w-full flex items-center justify-between px-4 sm:px-6 border-b border-white/20">
     
@@ -132,16 +129,25 @@ const fileTree: FileNode = {
 </header>
 
 <script>
-  // function updateClock() {
-  //   const timeDisplay = document.querySelector('.time-display');
-  //   if (timeDisplay) {
-  //     const now = new Date();
-  //     timeDisplay.textContent = now.toLocaleTimeString('en-US', { hour12: false });
-  //   }
-  // }
+  function updateNavbar() {
+    const pathname = window.location.pathname;
+    const isBlog = pathname.startsWith('/blog');
+    const isHome = pathname === '/';
 
-  // document.addEventListener('astro:page-load', () => {
-  //   updateClock();
-  //   setInterval(updateClock, 1000);
-  // });
+    const btn = document.querySelector<HTMLAnchorElement>('#navbar-contextual-btn');
+    const title = document.querySelector('#navbar-title');
+
+    if (btn) {
+      btn.href = isBlog ? '/' : '/blog';
+      btn.textContent = isBlog ? 'Return' : '/Blog';
+    }
+
+    if (title) {
+      title.textContent = isHome
+        ? 'System_Root'
+        : 'Directory_View';
+    }
+  }
+
+  document.addEventListener('astro:page-load', updateNavbar);
 </script>
