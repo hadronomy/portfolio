@@ -33,12 +33,12 @@ const { class: string, ...props } = Astro.props;
 
     <!-- Cell 3: Experience (Hidden on mobile) -->
     <!-- Added 'md:flex items-center' to fix vertical alignment -->
-    <div class="hidden md:flex h-12 px-4 border-r border-white/20 items-center">
+    <div class="flex h-12 px-4 md:border-r border-white/20 items-center">
       <span class="font-mono text-[10px] uppercase tracking-widest text-muted-foreground pt-px">Exp: 10+ Years</span>
     </div>
 
     <!-- Cell 4: Version -->
-    <div class="h-12 px-4 flex items-center justify-between">
+    <div class="hidden md:flex h-12 px-4 items-center justify-between">
       <span class="font-mono text-[10px] uppercase tracking-widest text-muted-foreground pt-px">Ver: 2.4.0</span>
       <Icon name="tabler:command" class="w-4 h-4 text-white/40" />
     </div>
