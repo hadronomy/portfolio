@@ -1,8 +1,5 @@
 'use client';
 
-import type { MDXComponents } from 'mdx/types';
-import type * as React from 'react';
-
 import { cn } from '@portfolio/ui';
 import {
   Table,
@@ -13,6 +10,8 @@ import {
   TableHeader,
   TableRow,
 } from '@portfolio/ui/table';
+import type { MDXComponents } from 'mdx/types';
+import type * as React from 'react';
 
 import Pre from '~/components/mdx/Pre.astro';
 
@@ -35,7 +34,7 @@ export const components = {
     <h2
       id={id}
       className={cn(
-        'scroll-m-20 pb-2 text-3xl font-semibold tracking-tight transition-all after:absolute after:translate-x-[1rem] after:opacity-0 after:transition-all after:content-["#"] first:mt-0 mt-4 hover:after:opacity-100',
+        'scroll-m-20 pb-2 text-3xl font-semibold tracking-tight transition-all after:absolute after:translate-x-4 after:opacity-0 after:transition-all after:content-["#"] first:mt-0 mt-4 hover:after:opacity-100',
         className,
       )}
       {...props}
@@ -47,7 +46,7 @@ export const components = {
     <h3
       id={id}
       className={cn(
-        'mt-8 scroll-m-20 text-2xl font-semibold tracking-tight after:absolute after:translate-x-[1rem] after:opacity-0 after:transition-all after:content-["#"] hover:after:opacity-100',
+        'mt-8 scroll-m-20 text-2xl font-semibold tracking-tight after:absolute after:translate-x-4 after:opacity-0 after:transition-all after:content-["#"] hover:after:opacity-100',
         className,
       )}
       {...props}
@@ -79,7 +78,6 @@ export const components = {
       {...props}
     />
   ),
-  // @ts-ignore
   pre: Pre,
   code: ({ className, ...props }: React.ComponentProps<'code'>) => (
     <code
