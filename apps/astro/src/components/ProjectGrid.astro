@@ -9,7 +9,7 @@ const { projects } = Astro.props;
 ---
 
 <div class="border-t border-white/20">
-  <ul class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[1px] bg-white/20 border-b border-white/20">
+  <ul class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-white/20 border-b border-white/20">
     {projects.map((project) => (
       <ProjectCard 
         name={project.name} 

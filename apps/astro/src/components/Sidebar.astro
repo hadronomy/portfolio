@@ -98,7 +98,7 @@ const { items } = Astro.props;
 
             <span 
               class:list={[
-                "node-label font-mono text-muted-foreground truncate max-w-[180px] transition-colors duration-300",
+                "node-label font-mono text-muted-foreground truncate max-w-45 transition-colors duration-300",
                 "group-hover/node:text-white group-hover/node:font-bold group-hover/node:tracking-widest",
                 (!item.depth || item.depth <= 2) ? "text-[10px] uppercase tracking-wider" : "text-[9px] tracking-wide pl-2 border-l border-white/10"
               ]}

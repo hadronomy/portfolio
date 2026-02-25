@@ -24,14 +24,14 @@ const { class: className, ...props } = Astro.props;
 
     <!-- Glitch Layers (Hidden by default) -->
     <div class="glitch-layer absolute inset-0 z-0 opacity-0 pointer-events-none flex items-center justify-center">
-       <Icon name="tabler:moon-filled" class="h-4 w-4 text-red-500 translate-x-[2px]" />
+       <Icon name="tabler:moon-filled" class="h-4 w-4 text-red-500 translate-x-0.5" />
     </div>
     <div class="glitch-layer absolute inset-0 z-0 opacity-0 pointer-events-none flex items-center justify-center">
-       <Icon name="tabler:moon-filled" class="h-4 w-4 text-cyan-500 -translate-x-[2px]" />
+       <Icon name="tabler:moon-filled" class="h-4 w-4 text-cyan-500 -translate-x-0.5" />
     </div>
 
     <!-- Scanline Overlay -->
-    <div class="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(0,0,0,0.5)_50%)] bg-[size:100%_4px] opacity-0 group-hover:opacity-20 pointer-events-none"></div>
+    <div class="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(0,0,0,0.5)_50%)] bg-size-[100%_4px] opacity-0 group-hover:opacity-20 pointer-events-none"></div>
   </button>
 
   <!-- Error Tooltip (Appears on click) -->

@@ -13,7 +13,7 @@ interface Props {
 const { skills } = Astro.props;
 ---
 
-<div class="border-t border-white/20 bg-white/20 gap-[1px] grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 border-b">
+<div class="border-t border-white/20 bg-white/20 gap-px grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 border-b">
   {
     skills.map((skill) => (
       <div class="bg-background aspect-square flex flex-col items-center justify-center p-4 hover:bg-white/5 transition-colors group relative overflow-hidden">
