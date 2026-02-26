@@ -12,6 +12,7 @@ const isHome = pathname === '/' || pathname === '';
 const posts = await getCollection('blog');
 const blogChildren: FileNode[] = posts
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .filter(post => post.data.state === 'published')
   .map(post => ({
     name: post.id + (post.id.endsWith('.mdx') ? '' : '.mdx'),
     path: `/blog/${post.id}`,
