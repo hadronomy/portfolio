@@ -9,7 +9,7 @@
     "prepare": "husky",
     "format": "bun biome format --write .; bun prettier --write .",
     "lint": "bun biome lint --apply .",
-    "lint:ws": "bun dlx sherif@latest",
+    "lint:ws": "bunx sherif@latest",
     "ci": "bun biome check --write --no-errors-on-unmatched",
     "update:plan": "bun taze",
     "update:write": "bun taze --write"
