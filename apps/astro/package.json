@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro preview",
+    "fonts:download": "bun run scripts/fonts/download-pdf-fonts.mjs",
     "build": "astro check && astro build",
     "preview": "astro preview",
     "astro": "astro"

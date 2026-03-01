@@ -1,33 +1,18 @@
+import fs from 'node:fs';
+import path from 'node:path';
+
 import {
   Document,
   Font,
   Image,
   Link,
   Page,
-  Path,
-  Polygon,
   StyleSheet,
-  Svg,
   Text,
   View,
 } from '@react-pdf/renderer';
 
-// Register fonts
-Font.register({
-  family: 'Inter',
-  fonts: [
-    {
-      src: 'https://fonts.gstatic.com/s/inter/v19/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfMZg.ttf',
-      fontStyle: 'normal',
-    },
-    {
-      src: 'https://fonts.gstatic.com/s/inter/v19/UcCM3FwrK3iLTcvneQg7Ca725JhhKnNqk4j1ebLhAm8SrXTc2dtRipWA.ttf',
-      fontStyle: 'italic',
-    },
-  ],
-});
-
-interface CVData {
+export interface CVData {
   personalInfo: {
     name: string;
     title: string;
@@ -53,7 +38,6 @@ interface CVData {
     name: string;
     description: string;
     url: string;
-    icon?: string;
   }>;
   experience: Array<{
     title: string;
@@ -61,15 +45,11 @@ interface CVData {
     duration: string;
     location: string;
     description: string;
-    logo?: string;
-    icon?: React.ComponentType<{ style?: Svg['props']['style'] }>;
   }>;
   education: Array<{
     course: string;
     institution: string;
     date: string;
-    logo?: string;
-    icon?: React.ComponentType<{ style?: Svg['props']['style'] }>;
   }>;
   skills: {
     development: string[];
@@ -79,7 +59,7 @@ interface CVData {
 
 const defaultData: CVData = {
   personalInfo: {
-    name: 'Pablo Hernández',
+    name: 'Pablo Hernandez',
     title: 'Software Developer',
     email: 'hadronomy@gmail.com',
     phone: '(+34) 608 73 31 18',
@@ -108,31 +88,27 @@ const defaultData: CVData = {
   ],
   experience: [
     {
-      title:
-        'B.S. in Computer Engineering Student (Grado en Ingeniería Informática)',
+      title: 'B.S. in Computer Engineering Student',
       company: 'Universidad de La Laguna',
       duration: '2021 - 2025',
       location: 'Canary Islands, Spain',
       description:
         'Studied advanced algorithms, software architecture, and full-stack development. Participated in coding competitions and led student projects.',
-      icon: UllIcon,
     },
     {
       title: 'Self-Taught Programmer',
-      company: 'Self',
+      company: 'Independent',
       duration: '2014 - Present',
-      location: 'Various',
+      location: 'Global',
       description:
         'Over 10 years of continuous learning across all fields of programming. From web development to systems programming, exploring various languages, frameworks, and paradigms through personal projects and open-source contributions.',
-      icon: GithubIcon,
     },
   ],
   education: [
     {
-      course: 'B.S. in Computer Engineering (Grado en Ingeniería Informática)',
+      course: 'B.S. in Computer Engineering (Grado en Ingenieria Informatica)',
       institution: 'Universidad de La Laguna',
       date: '2021 - Present',
-      icon: UllIcon,
     },
   ],
   skills: {
@@ -167,292 +143,513 @@ const defaultData: CVData = {
   },
 };
 
-export function UllIcon(props: { style?: Svg['props']['style'] }) {
-  return (
-    <Svg
-      id="Layer_1"
-      width="1000px"
-      height="783.73px"
-      viewBox="0 0 1000 783.73"
-      enable-background="new 0 0 1000 783.73"
-      {...props}
-    >
-      <Polygon
-        fill="#57068C"
-        points="746.737,530.964 746.737,4.073 736.357,4.073 494.495,235.557 494.495,530.964 257.835,530.964 
-	257.835,4.073 245.727,4.073 5.607,235.557 5.607,777.992 205.979,777.992 257.835,777.992 494.495,549.968 494.495,777.992 
-	694.894,777.992 746.737,777.992 993.764,541.29 993.764,530.964 "
-      />
-    </Svg>
-  );
+const COLORS = {
+  bg: '#F7F5F2',
+  bgAlt: '#EBE8E0',
+  border: '#D6D3CD',
+  textMain: '#1A1A1A',
+  textMuted: '#666666',
+  accent: '#0033FF',
+};
+
+const PDF_FONTS_DIR = path.resolve(process.cwd(), 'src/assets/pdf-fonts');
+
+const FONT_FILES = {
+  spaceGrotesk300: path.join(PDF_FONTS_DIR, 'SpaceGrotesk-Light.ttf'),
+  spaceGrotesk400: path.join(PDF_FONTS_DIR, 'SpaceGrotesk-Regular.ttf'),
+  spaceGrotesk700: path.join(PDF_FONTS_DIR, 'SpaceGrotesk-Bold.ttf'),
+  dmSans400: path.join(PDF_FONTS_DIR, 'DMSans-Regular.ttf'),
+  dmSans700: path.join(PDF_FONTS_DIR, 'DMSans-Bold.ttf'),
+  geistMono400: path.join(PDF_FONTS_DIR, 'GeistMono-Regular.ttf'),
+  geistMono700: path.join(PDF_FONTS_DIR, 'GeistMono-Bold.ttf'),
+};
+
+let fontsRegistered = false;
+
+function ensureFontsRegistered() {
+  if (fontsRegistered) return;
+
+  const readFont = (filePath: string) => filePath;
+
+  for (const [key, filePath] of Object.entries(FONT_FILES)) {
+    if (!fs.existsSync(filePath)) {
+      throw new Error(
+        `Missing PDF font file (${key}): ${filePath}. Run \`bun run fonts:download\`.`,
+      );
+    }
+  }
+
+  Font.register({
+    family: 'Space Grotesk',
+    fonts: [
+      { src: readFont(FONT_FILES.spaceGrotesk300), fontWeight: 300 },
+      { src: readFont(FONT_FILES.spaceGrotesk400), fontWeight: 400 },
+      { src: readFont(FONT_FILES.spaceGrotesk700), fontWeight: 700 },
+    ],
+  });
+
+  Font.register({
+    family: 'DM Sans',
+    fonts: [
+      { src: readFont(FONT_FILES.dmSans400), fontWeight: 400 },
+      { src: readFont(FONT_FILES.dmSans700), fontWeight: 700 },
+    ],
+  });
+
+  Font.register({
+    family: 'Geist Mono',
+    fonts: [
+      { src: readFont(FONT_FILES.geistMono400), fontWeight: 400 },
+      { src: readFont(FONT_FILES.geistMono700), fontWeight: 700 },
+    ],
+  });
+
+  Font.registerHyphenationCallback((word) => [word]);
+  fontsRegistered = true;
 }
 
-export function GithubIcon(props: { style?: Svg['props']['style'] }) {
-  return (
-    <Svg
-      width="1024"
-      height="1024"
-      viewBox="0 0 1024 1024"
-      fill="none"
-      {...props}
-    >
-      <Path
-        fill-rule="evenodd"
-        clip-rule="evenodd"
-        d="M8 0C3.58 0 0 3.58 0 8C0 11.54 2.29 14.53 5.47 15.59C5.87 15.66 6.02 15.42 6.02 15.21C6.02 15.02 6.01 14.39 6.01 13.72C4 14.09 3.48 13.23 3.32 12.78C3.23 12.55 2.84 11.84 2.5 11.65C2.22 11.5 1.82 11.13 2.49 11.12C3.12 11.11 3.57 11.7 3.72 11.94C4.44 13.15 5.59 12.81 6.05 12.6C6.12 12.08 6.33 11.73 6.56 11.53C4.78 11.33 2.92 10.64 2.92 7.58C2.92 6.71 3.23 5.99 3.74 5.43C3.66 5.23 3.38 4.41 3.82 3.31C3.82 3.31 4.49 3.1 6.02 4.13C6.66 3.95 7.34 3.86 8.02 3.86C8.7 3.86 9.38 3.95 10.02 4.13C11.55 3.09 12.22 3.31 12.22 3.31C12.66 4.41 12.38 5.23 12.3 5.43C12.81 5.99 13.12 6.7 13.12 7.58C13.12 10.65 11.25 11.33 9.47 11.53C9.76 11.78 10.01 12.26 10.01 13.01C10.01 14.08 10 14.94 10 15.21C10 15.42 10.15 15.67 10.55 15.59C13.71 14.53 16 11.53 16 8C16 3.58 12.42 0 8 0Z"
-        transform="scale(64)"
-        fill="#0000"
-      />
-    </Svg>
-  );
-}
+const styles = StyleSheet.create({
+  page: {
+    backgroundColor: COLORS.bg,
+    padding: 18,
+    fontFamily: 'DM Sans',
+    color: COLORS.textMain,
+    flexDirection: 'column',
+  },
+  metaHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+    paddingHorizontal: 2,
+  },
+  metaText: {
+    fontFamily: 'Geist Mono',
+    fontSize: 6,
+    color: COLORS.textMuted,
+    letterSpacing: 1,
+  },
+  gridContainer: {
+    flex: 1,
+    border: `1pt solid ${COLORS.border}`,
+    flexDirection: 'column',
+  },
+  row: {
+    flexDirection: 'row',
+  },
+  borderBottom: {
+    borderBottom: `1pt solid ${COLORS.border}`,
+  },
+  borderTop: {
+    borderTop: `1pt solid ${COLORS.border}`,
+  },
+  borderRight: {
+    borderRight: `1pt solid ${COLORS.border}`,
+  },
+  colFlex: {
+    flex: 1,
+    flexDirection: 'column',
+  },
+  headerBlock: {
+    padding: 10,
+    flex: 1,
+    justifyContent: 'center',
+    backgroundColor: COLORS.bg,
+  },
+  nameFirst: {
+    fontFamily: 'Space Grotesk',
+    fontWeight: 300,
+    fontSize: 42,
+    letterSpacing: -1.5,
+    lineHeight: 1,
+  },
+  nameLast: {
+    fontFamily: 'Space Grotesk',
+    fontWeight: 700,
+    fontSize: 42,
+    letterSpacing: -1.5,
+    lineHeight: 1,
+  },
+  roleTitle: {
+    fontFamily: 'Geist Mono',
+    fontWeight: 700,
+    fontSize: 10,
+    color: COLORS.accent,
+    marginTop: 12,
+    letterSpacing: 1.5,
+  },
+  photoContainer: {
+    width: 140,
+    height: 140,
+  },
+  profileImage: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+  },
+  infoRow: {
+    backgroundColor: COLORS.bgAlt,
+    flexDirection: 'row',
+  },
+  infoBlock: {
+    padding: 8,
+    paddingLeft: 16,
+    justifyContent: 'center',
+  },
+  infoLabel: {
+    fontFamily: 'Geist Mono',
+    fontSize: 6,
+    fontWeight: 700,
+    color: COLORS.textMuted,
+    marginBottom: 4,
+    letterSpacing: 0.5,
+  },
+  infoValue: {
+    fontFamily: 'Geist Mono',
+    fontSize: 8,
+    color: COLORS.textMain,
+  },
+  link: {
+    fontFamily: 'Geist Mono',
+    fontSize: 8,
+    color: COLORS.textMain,
+    textDecoration: 'none',
+  },
+  section: {
+    padding: 20,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'baseline',
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontFamily: 'Space Grotesk',
+    fontWeight: 700,
+    fontSize: 14,
+    letterSpacing: 1.2,
+    color: COLORS.textMain,
+  },
+  sectionMeta: {
+    fontFamily: 'Geist Mono',
+    fontSize: 8,
+    color: COLORS.border,
+  },
+  aboutText: {
+    fontSize: 10,
+    lineHeight: 1.5,
+    color: COLORS.textMuted,
+  },
+  experienceList: {
+    flexDirection: 'column',
+    gap: 16,
+  },
+  experienceItem: {
+    flexDirection: 'column',
+  },
+  expHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'baseline',
+    marginBottom: 4,
+  },
+  expTitle: {
+    fontFamily: 'Space Grotesk',
+    fontWeight: 700,
+    fontSize: 12,
+  },
+  expDuration: {
+    fontFamily: 'Geist Mono',
+    fontSize: 8,
+    color: COLORS.accent,
+  },
+  expCompany: {
+    fontFamily: 'Geist Mono',
+    fontSize: 8,
+    color: COLORS.textMuted,
+    marginBottom: 6,
+    textTransform: 'uppercase',
+  },
+  expDescription: {
+    fontSize: 9,
+    lineHeight: 1.5,
+    color: COLORS.textMuted,
+  },
+  rightColumn: {
+    width: 220,
+    flexDirection: 'column',
+  },
+  skillCategory: {
+    fontFamily: 'Geist Mono',
+    fontWeight: 700,
+    fontSize: 7,
+    marginBottom: 8,
+    color: COLORS.textMuted,
+    letterSpacing: 1,
+  },
+  skillTags: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 16,
+  },
+  skillTag: {
+    fontFamily: 'Geist Mono',
+    fontSize: 7,
+    backgroundColor: '#FFFFFF',
+    color: COLORS.textMain,
+    paddingTop: 4,
+    paddingBottom: 2,
+    paddingHorizontal: 6,
+    borderRadius: 3,
+    borderTop: `1pt solid ${COLORS.border}`,
+    borderLeft: `1pt solid ${COLORS.border}`,
+    borderRight: `1pt solid ${COLORS.border}`,
+    borderBottom: '3pt solid #BEBBB4',
+    textTransform: 'uppercase',
+  },
+  projItem: {
+    marginBottom: 8,
+  },
+  projHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'baseline',
+    marginBottom: 4,
+  },
+  projName: {
+    fontFamily: 'Space Grotesk',
+    fontWeight: 700,
+    fontSize: 10,
+    textTransform: 'uppercase',
+  },
+  projLink: {
+    fontFamily: 'Geist Mono',
+    fontSize: 7,
+    color: COLORS.accent,
+    textDecoration: 'none',
+  },
+  projDesc: {
+    fontSize: 9,
+    lineHeight: 1.4,
+    color: COLORS.textMuted,
+  },
+  eduItem: {
+    marginBottom: 12,
+  },
+  eduCourse: {
+    fontFamily: 'Space Grotesk',
+    fontWeight: 700,
+    fontSize: 10,
+    marginBottom: 4,
+    lineHeight: 1.3,
+  },
+  eduInstitution: {
+    fontFamily: 'DM Sans',
+    fontSize: 9,
+    color: COLORS.textMuted,
+    marginBottom: 4,
+  },
+  eduDate: {
+    fontFamily: 'Geist Mono',
+    fontSize: 8,
+    color: COLORS.accent,
+  },
+  langItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'baseline',
+    marginBottom: 6,
+  },
+  langName: {
+    fontFamily: 'DM Sans',
+    fontWeight: 700,
+    fontSize: 9,
+    color: COLORS.textMain,
+  },
+  langLevel: {
+    fontFamily: 'Geist Mono',
+    fontSize: 7,
+    color: COLORS.textMuted,
+  },
+});
 
 export function CVDocument({ data = defaultData }: { data?: CVData }) {
+  ensureFontsRegistered();
+
+  const nameParts = data.personalInfo.name.split(' ');
+  const firstName = nameParts[0].toUpperCase();
+  const lastName = nameParts.slice(1).join(' ').toUpperCase();
+
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        {/* Left Sidebar */}
-        <View style={styles.sidebar}>
-          {/* Profile Section */}
-          <View style={styles.profileSection}>
-            <View style={styles.profileImageContainer}>
-              <Image
-                style={styles.profileImagePlaceholder}
-                src="https://github.com/hadronomy.png"
-              />
-            </View>
-            <Text style={styles.name}>{data.personalInfo.name}</Text>
-            <Text style={styles.title}>{data.personalInfo.title}</Text>
-          </View>
-
-          {/* Quote */}
-          {data.personalInfo.quote && (
-            <View style={styles.quoteSection}>
-              <Text style={styles.quote}>"{data.personalInfo.quote}"</Text>
-              <Text style={styles.quoteAuthor}>
-                {data.personalInfo.quoteAuthor}
-              </Text>
-            </View>
-          )}
-
-          {/* Description */}
-          <View style={styles.descriptionSection}>
-            <Text style={styles.descriptionText}>
-              Proven ability to quickly adapt to new technologies and deliver
-              innovative solutions. Seeking opportunities to contribute
-              technical expertise and problem-solving skills to challenging
-              projects in a professional environment.
-            </Text>
-          </View>
-
-          {/* Contact */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Email</Text>
-            <Text style={styles.contactText}>{data.personalInfo.email}</Text>
-          </View>
-
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Website</Text>
-            <Text style={styles.contactText}>{data.personalInfo.website}</Text>
-          </View>
-
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Phone</Text>
-            <Text style={styles.contactText}>{data.personalInfo.phone}</Text>
-          </View>
-
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Address</Text>
-            <Text style={styles.contactText}>{data.personalInfo.location}</Text>
-          </View>
-
-          {/* Socials */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Socials</Text>
-            {data.socials.map((social) => (
-              <View
-                key={`${social.platform}-${social.handle}`}
-                style={styles.socialItem}
-              >
-                <Text style={styles.socialPlatform}>{social.platform}</Text>
-                <Text style={styles.socialHandle}>{social.handle}</Text>
-              </View>
-            ))}
-          </View>
-
-          {/* Languages */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Languages</Text>
-            {data.languages.map((language) => (
-              <View key={language.name} style={styles.languageItem}>
-                <Text style={styles.languageName}>{language.name}</Text>
-                <Text style={styles.languageLevel}>{language.level}</Text>
-              </View>
-            ))}
-          </View>
+        <View style={styles.metaHeader} fixed>
+          <Text
+            style={styles.metaText}
+          >{`SYS.DOC.CV :: ${new Date().getFullYear()}`}</Text>
+          <Text style={styles.metaText}>RENDERED: RUNTIME</Text>
         </View>
 
-        {/* Main Content */}
-        <View style={styles.main}>
-          {/* Self description */}
-          <View style={styles.mainSection}>
-            <Text style={styles.mainSectionTitle}>About</Text>
-            <Text style={styles.aboutText}>
-              Passionate software developer with over 10 years of self-directed
-              learning and hands-on experience across multiple programming
-              languages and technologies. Currently pursuing a Computer Science
-              degree while maintaining expertise in full-stack development,
-              systems programming, and modern frameworks.
-            </Text>
-          </View>
-          {/* Latest Projects */}
-          <View style={styles.mainSection}>
-            <Text style={styles.mainSectionTitle}>Latest projects</Text>
-            <View style={styles.projectsGrid}>
-              {data.projects.map((project) => (
-                <Link
-                  key={project.name}
-                  src={project.url}
-                  style={styles.projectCardLink}
-                >
-                  <View style={[styles.projectCard, { minHeight: 100 }]}>
-                    <GithubIcon style={styles.projectIcon} />
-                    <View
-                      style={[
-                        styles.projectContent,
-                        { justifyContent: 'space-between' },
-                      ]}
-                    >
-                      <View>
-                        <Text style={styles.projectName}>{project.name}</Text>
-                        <Text style={styles.projectDescription}>
-                          {project.description}
-                        </Text>
-                      </View>
-                      <Text style={styles.projectUrl}>{project.url}</Text>
-                    </View>
-                  </View>
-                </Link>
-              ))}
+        <View style={styles.gridContainer}>
+          <View style={styles.row}>
+            <View style={[styles.headerBlock, styles.borderRight]}>
+              <Text style={styles.nameFirst}>{firstName}</Text>
+              <Text style={styles.nameLast}>{lastName}</Text>
+              <Text
+                style={styles.roleTitle}
+              >{`-- ${data.personalInfo.title.toUpperCase()}`}</Text>
+            </View>
+            <View style={styles.photoContainer}>
+              <Image
+                style={styles.profileImage}
+                src={
+                  data.personalInfo.profileImage ||
+                  'https://github.com/hadronomy.png'
+                }
+              />
             </View>
           </View>
 
-          {/* Experience */}
-          <View style={styles.mainSection}>
-            <Text style={styles.mainSectionTitle}>Experience</Text>
-            <View style={styles.timelineContainer}>
-              {/* Timeline background line */}
-              <View style={styles.timelineBackgroundLine} />
-              {data.experience.map((exp) => (
-                <View
-                  key={`${exp.company}-${exp.title}-${exp.duration}`}
-                  style={styles.timelineItem}
-                >
-                  <View style={styles.timelineLeft}>
-                    <View style={styles.timelineDotContainer}>
-                      <View style={styles.timelineDotBackground} />
-                      <View style={styles.timelineDot} />
-                    </View>
-                  </View>
-                  <View style={styles.experienceItem}>
-                    <View style={styles.experienceHeader}>
-                      {exp.icon ? (
-                        <exp.icon style={styles.companyLogo} />
-                      ) : (
-                        <View
-                          style={[
-                            styles.companyLogo,
-                            { backgroundColor: '#e9ecef' },
-                          ]}
-                        />
-                      )}
-                      <View style={styles.experienceDetails}>
-                        <Text style={styles.experienceTitle}>{exp.title}</Text>
-                        <Text style={styles.experienceCompany}>
-                          {exp.company}
-                        </Text>
-                      </View>
-                      <View style={styles.experienceMetadata}>
-                        <Text style={styles.experienceDuration}>
-                          {exp.duration}
-                        </Text>
-                        <Text style={styles.experienceLocation}>
-                          {exp.location}
-                        </Text>
-                      </View>
-                    </View>
-                    <Text style={styles.experienceDescription}>
-                      {exp.description}
-                    </Text>
-                  </View>
+          <View style={[styles.infoRow, styles.borderTop, styles.borderBottom]}>
+            <View style={[styles.infoBlock, styles.borderRight, { flex: 2 }]}>
+              <Text style={styles.infoLabel}>LOCATION</Text>
+              <Text style={styles.infoValue}>{data.personalInfo.location}</Text>
+            </View>
+            <View style={[styles.infoBlock, styles.borderRight, { flex: 2 }]}>
+              <Text style={styles.infoLabel}>CONTACT</Text>
+              <Text style={styles.infoValue}>{data.personalInfo.email}</Text>
+              <Text style={[styles.infoValue, { marginTop: 2 }]}>
+                {data.personalInfo.phone}
+              </Text>
+            </View>
+            <View style={[styles.infoBlock, styles.borderRight, { flex: 1.5 }]}>
+              <Text style={styles.infoLabel}>WEBSITE</Text>
+              <Link src={data.personalInfo.website || ''} style={styles.link}>
+                {data.personalInfo.website?.replace('https://', '')}
+              </Link>
+            </View>
+            <View style={[styles.infoBlock, { flex: 1.5 }]}>
+              <Text style={styles.infoLabel}>NETWORK</Text>
+              <Link
+                src={`https://github.com/${(data.socials[0]?.handle || '@hadronomy').replace('@', '')}`}
+                style={styles.link}
+              >
+                {data.socials[0]?.platform || 'Github'} /{' '}
+                {data.socials[0]?.handle || '@hadronomy'}
+              </Link>
+            </View>
+          </View>
+
+          <View style={[styles.row, { flex: 1 }]}>
+            <View style={[styles.colFlex, styles.borderRight]}>
+              <View style={[styles.section, styles.borderBottom]}>
+                <View style={styles.sectionHeader}>
+                  <Text style={styles.sectionTitle}>ABSTRACT</Text>
+                  <Text style={styles.sectionMeta}>[01]</Text>
                 </View>
-              ))}
-            </View>
-          </View>
+                <Text style={styles.aboutText}>
+                  Passionate software developer with over 10 years of
+                  self-directed learning and hands-on experience across multiple
+                  programming languages and technologies. Currently pursuing a
+                  Computer Science degree while maintaining expertise in
+                  full-stack development, systems programming, and modern
+                  frameworks.
+                </Text>
+              </View>
 
-          {/* Education */}
-          <View style={styles.mainSection}>
-            <Text style={styles.mainSectionTitle}>Education</Text>
-            <View style={styles.timelineContainer}>
-              {/* Timeline background line */}
-              <View style={styles.timelineBackgroundLine} />
-              {data.education.map((edu) => (
-                <View
-                  key={`${edu.institution}-${edu.course}-${edu.date}`}
-                  style={styles.timelineItem}
-                >
-                  <View style={styles.timelineLeft}>
-                    <View style={styles.timelineDotContainer}>
-                      <View style={styles.timelineDotBackground} />
-                      <View style={styles.timelineDot} />
-                    </View>
-                  </View>
-                  <View style={styles.educationItem}>
-                    <View style={styles.educationHeader}>
-                      {edu.icon ? (
-                        <edu.icon style={styles.educationLogo} />
-                      ) : (
-                        <View
-                          style={[
-                            styles.educationLogo,
-                            { backgroundColor: '#e9ecef' },
-                          ]}
-                        />
-                      )}
-                      <View style={styles.educationDetails}>
-                        <Text style={styles.educationCourse}>{edu.course}</Text>
-                        <Text style={styles.educationInstitution}>
-                          {edu.institution}
-                        </Text>
-                      </View>
-                      <View style={styles.educationMetadata}>
-                        <Text style={styles.educationDate}>{edu.date}</Text>
-                      </View>
-                    </View>
-                  </View>
+              <View style={[styles.section, styles.borderBottom]}>
+                <View style={styles.sectionHeader}>
+                  <Text style={styles.sectionTitle}>EXPERIENCE</Text>
+                  <Text style={styles.sectionMeta}>[02]</Text>
                 </View>
-              ))}
-            </View>
-          </View>
-
-          {/* Skills */}
-          <View style={styles.mainSection}>
-            <Text style={styles.mainSectionTitle}>Skills</Text>
-            <View style={styles.skillsContainer}>
-              {Object.entries(data.skills).map(([categoryKey, skillList]) => (
-                <View key={categoryKey} style={styles.skillCategory}>
-                  <Text style={styles.skillCategoryTitle}>
-                    {categoryKey.charAt(0).toUpperCase() + categoryKey.slice(1)}
-                  </Text>
-                  <View style={styles.skillTags}>
-                    {skillList.map((skill) => (
-                      <Text key={skill} style={styles.skillTag}>
-                        {skill}
+                <View style={styles.experienceList}>
+                  {data.experience.map((exp, i) => (
+                    <View key={i} style={styles.experienceItem} wrap={false}>
+                      <View style={styles.expHeader}>
+                        <Text style={styles.expTitle}>{exp.title}</Text>
+                        <Text style={styles.expDuration}>{exp.duration}</Text>
+                      </View>
+                      <Text style={styles.expCompany}>
+                        {exp.company} - {exp.location}
                       </Text>
-                    ))}
-                  </View>
+                      <Text style={styles.expDescription}>
+                        {exp.description}
+                      </Text>
+                    </View>
+                  ))}
                 </View>
-              ))}
+              </View>
+
+              <View style={[styles.section, { flex: 1 }]}>
+                <View style={styles.sectionHeader}>
+                  <Text style={styles.sectionTitle}>PROJECTS</Text>
+                  <Text style={styles.sectionMeta}>[03]</Text>
+                </View>
+                {data.projects.map((proj, i) => (
+                  <View key={i} style={styles.projItem} wrap={false}>
+                    <View style={styles.projHeader}>
+                      <Text style={styles.projName}>{proj.name}</Text>
+                      <Link src={proj.url} style={styles.projLink}>
+                        [ VIEW ]
+                      </Link>
+                    </View>
+                    <Text style={styles.projDesc}>{proj.description}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+
+            <View style={styles.rightColumn}>
+              <View style={[styles.section, styles.borderBottom]}>
+                <View style={styles.sectionHeader}>
+                  <Text style={styles.sectionTitle}>SKILLS</Text>
+                  <Text style={styles.sectionMeta}>[04]</Text>
+                </View>
+                <Text style={styles.skillCategory}>DEVELOPMENT</Text>
+                <View style={styles.skillTags}>
+                  {data.skills.development.map((skill, i) => (
+                    <Text key={i} style={styles.skillTag}>
+                      {skill}
+                    </Text>
+                  ))}
+                </View>
+                <Text style={[styles.skillCategory, { marginTop: 8 }]}>
+                  TOOLS
+                </Text>
+                <View style={styles.skillTags}>
+                  {data.skills.tools.map((tool, i) => (
+                    <Text key={i} style={styles.skillTag}>
+                      {tool}
+                    </Text>
+                  ))}
+                </View>
+              </View>
+
+              <View style={[styles.section, { flex: 1 }]}>
+                <View style={styles.sectionHeader}>
+                  <Text style={styles.sectionTitle}>EDUCATION</Text>
+                  <Text style={styles.sectionMeta}>[05]</Text>
+                </View>
+                {data.education.map((edu, i) => (
+                  <View key={i} style={styles.eduItem} wrap={false}>
+                    <Text style={styles.eduCourse}>{edu.course}</Text>
+                    <Text style={styles.eduInstitution}>{edu.institution}</Text>
+                    <Text style={styles.eduDate}>{edu.date}</Text>
+                  </View>
+                ))}
+
+                <View style={[styles.sectionHeader, { marginTop: 16 }]}>
+                  <Text style={styles.sectionTitle}>LANGUAGES</Text>
+                  <Text style={styles.sectionMeta}>[06]</Text>
+                </View>
+                {data.languages.map((lang, i) => (
+                  <View key={i} style={styles.langItem} wrap={false}>
+                    <Text style={styles.langName}>{lang.name}</Text>
+                    <Text style={styles.langLevel}>{lang.level}</Text>
+                  </View>
+                ))}
+              </View>
             </View>
           </View>
         </View>
@@ -460,391 +657,3 @@ export function CVDocument({ data = defaultData }: { data?: CVData }) {
     </Document>
   );
 }
-
-const styles = StyleSheet.create({
-  page: {
-    flexDirection: 'row',
-    backgroundColor: '#ffffff',
-    fontFamily: 'Inter',
-    fontSize: 8,
-  },
-
-  // Sidebar styles
-  sidebar: {
-    width: '35%',
-    backgroundColor: '#f8f9fa',
-    padding: 16,
-  },
-
-  profileSection: {
-    alignItems: 'flex-start',
-    marginBottom: 20,
-  },
-
-  profileImageContainer: {
-    marginBottom: 10,
-    width: '100%',
-  },
-
-  profileImagePlaceholder: {
-    width: 80,
-    height: 80,
-    borderRadius: 8,
-    backgroundColor: '#e9ecef',
-    objectFit: 'cover',
-  },
-
-  name: {
-    fontSize: 18,
-    fontWeight: 600,
-    color: '#212529',
-    marginBottom: 2,
-  },
-
-  title: {
-    fontSize: 11,
-    color: '#6f42c1',
-    fontWeight: 500,
-  },
-
-  descriptionSection: {
-    marginBottom: 20,
-  },
-
-  descriptionText: {
-    fontSize: 9,
-    color: '#495057',
-    lineHeight: 1.4,
-  },
-
-  quoteSection: {
-    marginBottom: 20,
-    paddingLeft: 12,
-    borderLeft: '2px solid #6f42c1',
-  },
-
-  quote: {
-    fontSize: 9,
-    fontStyle: 'italic',
-    color: '#495057',
-    marginBottom: 4,
-    lineHeight: 1.3,
-  },
-
-  quoteAuthor: {
-    fontSize: 8,
-    color: '#6c757d',
-  },
-
-  section: {
-    marginBottom: 16,
-  },
-
-  sectionTitle: {
-    fontSize: 10,
-    fontWeight: 600,
-    color: '#212529',
-    marginBottom: 6,
-  },
-
-  contactText: {
-    fontSize: 8,
-    color: '#495057',
-    lineHeight: 1.3,
-  },
-
-  socialItem: {
-    marginBottom: 4,
-  },
-
-  socialPlatform: {
-    fontSize: 8,
-    fontWeight: 500,
-    color: '#212529',
-  },
-
-  socialHandle: {
-    fontSize: 7,
-    color: '#6c757d',
-  },
-
-  languageItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-
-  languageName: {
-    fontSize: 8,
-    color: '#212529',
-    fontWeight: 500,
-  },
-
-  languageLevel: {
-    fontSize: 7,
-    color: '#6c757d',
-  },
-
-  // Main content styles
-  main: {
-    width: '65%',
-    padding: 16,
-  },
-
-  mainSection: {
-    marginBottom: 20,
-  },
-
-  mainSectionTitle: {
-    fontSize: 12,
-    fontWeight: 600,
-    color: '#212529',
-    marginBottom: 10,
-  },
-
-  // Projects
-  projectsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-
-  projectCardLink: {
-    width: '47%',
-    textDecoration: 'none',
-  },
-
-  projectCard: {
-    flexDirection: 'row',
-    backgroundColor: '#ffffff',
-    borderRadius: 6,
-    padding: 10,
-    border: '1px solid #e9ecef',
-    width: '100%',
-  },
-
-  projectIcon: {
-    width: 28,
-    height: 28,
-    borderRadius: 6,
-    marginRight: 8,
-  },
-
-  projectContent: {
-    flex: 1,
-  },
-
-  projectName: {
-    fontSize: 9,
-    fontWeight: 600,
-    color: '#212529',
-    marginBottom: 2,
-  },
-
-  projectDescription: {
-    fontSize: 7,
-    color: '#6c757d',
-    lineHeight: 1.2,
-    marginBottom: 4,
-  },
-
-  projectUrl: {
-    fontSize: 7,
-    color: '#6f42c1',
-  },
-
-  // Experience
-  timelineContainer: {
-    position: 'relative',
-  },
-
-  timelineBackgroundLine: {
-    position: 'absolute',
-    left: 9,
-    top: 0,
-    bottom: 0,
-    width: 2,
-    backgroundColor: '#e9ecef',
-  },
-
-  timelineItem: {
-    flexDirection: 'row',
-    marginBottom: 16,
-    position: 'relative',
-  },
-
-  timelineLeft: {
-    width: 20,
-    alignItems: 'center',
-    marginRight: 12,
-    position: 'relative',
-  },
-
-  timelineDotContainer: {
-    position: 'relative',
-    width: 14,
-    height: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  timelineDotBackground: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: 14,
-    height: 14,
-    backgroundColor: '#ffffff',
-    borderRadius: 7,
-  },
-
-  timelineDot: {
-    position: 'absolute',
-    top: 3,
-    left: 3,
-    width: 8,
-    height: 8,
-    backgroundColor: '#6f42c1',
-    borderRadius: 4,
-  },
-
-  experienceItem: {
-    flex: 1,
-  },
-
-  experienceHeader: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: 4,
-  },
-
-  companyLogo: {
-    width: 24,
-    height: 24,
-    borderRadius: 4,
-    marginRight: 8,
-  },
-
-  experienceDetails: {
-    flex: 1,
-  },
-
-  experienceTitle: {
-    fontSize: 10,
-    fontWeight: 600,
-    color: '#212529',
-    marginBottom: 1,
-  },
-
-  experienceCompany: {
-    fontSize: 9,
-    color: '#6f42c1',
-    fontWeight: 500,
-  },
-
-  experienceMetadata: {
-    alignItems: 'flex-end',
-  },
-
-  experienceDuration: {
-    fontSize: 7,
-    color: '#6c757d',
-    marginBottom: 1,
-  },
-
-  experienceLocation: {
-    fontSize: 7,
-    color: '#6c757d',
-  },
-
-  experienceDescription: {
-    fontSize: 8,
-    color: '#495057',
-    lineHeight: 1.3,
-    marginLeft: 32,
-  },
-
-  // Education
-  educationItem: {
-    flex: 1,
-  },
-
-  educationHeader: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: 4,
-  },
-
-  educationLogo: {
-    width: 24,
-    height: 24,
-    borderRadius: 4,
-    marginRight: 8,
-  },
-
-  educationDetails: {
-    flex: 1,
-  },
-
-  educationCourse: {
-    fontSize: 10,
-    fontWeight: 600,
-    color: '#212529',
-    marginBottom: 1,
-  },
-
-  educationInstitution: {
-    fontSize: 9,
-    color: '#6f42c1',
-    fontWeight: 500,
-  },
-
-  educationMetadata: {
-    alignItems: 'flex-end',
-  },
-
-  educationDate: {
-    fontSize: 7,
-    color: '#6c757d',
-  },
-
-  // Skills
-  skillsContainer: {
-    gap: 10,
-  },
-
-  skillCategory: {
-    marginBottom: 10,
-  },
-
-  skillCategoryTitle: {
-    fontSize: 10,
-    fontWeight: 600,
-    color: '#212529',
-    marginBottom: 6,
-  },
-
-  skillTags: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 4,
-  },
-
-  skillTag: {
-    fontSize: 7,
-    color: '#6f42c1',
-    backgroundColor: '#f8f9ff',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 8,
-    border: '1px solid #e0e7ff',
-  },
-
-  // About section
-  aboutText: {
-    fontSize: 10,
-    color: '#495057',
-    lineHeight: 1.4,
-  },
-});
