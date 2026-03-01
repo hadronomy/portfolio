@@ -60,7 +60,7 @@ export interface CVData {
 const defaultData: CVData = {
   personalInfo: {
     name: 'Pablo Hernandez',
-    title: 'Software Developer',
+    title: 'Full-Stack Engineer',
     email: 'hadronomy@gmail.com',
     phone: '(+34) 608 73 31 18',
     location: 'Canary Islands, Spain',
@@ -75,6 +75,16 @@ const defaultData: CVData = {
   ],
   projects: [
     {
+      name: 'Autographa',
+      description: 'Generate beautiful animated signatures',
+      url: 'https://github.com/hadronomy/autographa',
+    },
+    {
+      name: 'Canary',
+      description: 'An agentic legal assitant',
+      url: 'https://github.com/hadronomy/canary',
+    },
+    {
       name: 'RAM Language',
       description: 'RAM (Random Access Machine) language and emulator.',
       url: 'https://github.com/hadronomy/ram',
@@ -82,26 +92,23 @@ const defaultData: CVData = {
     {
       name: 'VRPT-SWTS',
       description:
-        'This project implements algorithms for the Vehicle Routing Problem with Transshipments for Solid Waste Collection with Transfer Stations (VRPT-SWTS).',
+        'This project implements algorithms for the Vehicle Routing Problem with Transshipments (VRPT-SWTS).',
       url: 'https://github.com/hadronomy/VRPT-SWTS',
+    },
+    {
+      name: 'King of The Hollywood Hill',
+      description: 'An interactive movie recommendation system',
+      url: 'https://github.com/SistemasInteligentesHL/Proyecto-Sistemas-Inteligentes.git',
     },
   ],
   experience: [
     {
-      title: 'B.S. in Computer Engineering Student',
-      company: 'Universidad de La Laguna',
-      duration: '2021 - 2025',
-      location: 'Canary Islands, Spain',
-      description:
-        'Studied advanced algorithms, software architecture, and full-stack development. Participated in coding competitions and led student projects.',
-    },
-    {
-      title: 'Self-Taught Programmer',
+      title: 'Independent Developer',
       company: 'Independent',
       duration: '2014 - Present',
       location: 'Global',
       description:
-        'Over 10 years of continuous learning across all fields of programming. From web development to systems programming, exploring various languages, frameworks, and paradigms through personal projects and open-source contributions.',
+        'Independent development spanning systems programming to AI-driven web applications, building production-grade tools and open-source projects across diverse languages and paradigms. Mentored peer developers and student project teams in clean, maintainable code practices and software architecture standards.',
     },
   ],
   education: [
@@ -321,7 +328,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'baseline',
-    marginBottom: 16,
+    marginBottom: 12,
   },
   sectionTitle: {
     fontFamily: 'Space Grotesk',
@@ -549,12 +556,11 @@ export function CVDocument({ data = defaultData }: { data?: CVData }) {
                   <Text style={styles.sectionMeta}>[01]</Text>
                 </View>
                 <Text style={styles.aboutText}>
-                  Passionate software developer with over 10 years of
-                  self-directed learning and hands-on experience across multiple
-                  programming languages and technologies. Currently pursuing a
-                  Computer Science degree while maintaining expertise in
-                  full-stack development, systems programming, and modern
-                  frameworks.
+                  Started coding at ten, obsessed with how things tick—from ASTs
+                  to agentic systems twelve years later. Finishing my CS degree,
+                  but the real education came from shipping systems in the quiet
+                  hours. I build tools that survive production and interfaces
+                  that respect the human.
                 </Text>
               </View>
 
