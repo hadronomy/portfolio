@@ -13,16 +13,10 @@ interface Props {
 const { skills } = Astro.props;
 ---
 
-<div class="border-t border-white/20 bg-white/20 gap-px grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 border-b">
+<div class="border-white/20 bg-white/20 gap-px grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 border-b">
   {
     skills.map((skill) => (
       <div class="bg-background aspect-square flex flex-col items-center justify-center p-4 hover:bg-white/5 transition-colors group relative overflow-hidden">
-        <div class="absolute inset-0 opacity-0 group-hover:opacity-100 pointer-events-none">
-          <div class="absolute top-0 right-0 p-1">
-             <div class="w-2 h-2 bg-white"></div>
-          </div>
-        </div>
-        
         <Icon name={skill.icon} class="w-10 h-10 mb-3 grayscale group-hover:grayscale-0 transition-all duration-300" />
         <span class="text-xs font-mono uppercase tracking-wider text-center opacity-60 group-hover:opacity-100">{skill.name}</span>
       </div>
