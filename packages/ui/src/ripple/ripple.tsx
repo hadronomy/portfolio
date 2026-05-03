@@ -1,7 +1,7 @@
 'use client';
 
-import { AnimatePresence, motion } from 'framer-motion';
 import type { HTMLMotionProps } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 
 import type { RippleType } from './use-ripple';
 

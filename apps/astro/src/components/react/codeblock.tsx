@@ -1,16 +1,10 @@
 'use client';
 
-import * as React from 'react';
-
+import { cn } from '@portfolio/ui';
+import { ScrollArea, ScrollBar } from '@portfolio/ui/scroll-area';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Check, Copy } from 'lucide-react';
-
-import { cn } from '@portfolio/ui';
-import {
-  ScrollArea,
-  ScrollBar,
-  ScrollViewport,
-} from '@portfolio/ui/scroll-area';
+import * as React from 'react';
 
 export type CodeBlockProps = React.ComponentProps<'pre'> & {
   keepBackground?: boolean;
@@ -75,7 +69,7 @@ export const CodeBlock = React.forwardRef<HTMLPreElement, CodeBlockProps>(
           />
         )}
         <ScrollArea className="overflow-y-visible!" ref={areaRef} dir="ltr">
-          <ScrollViewport>{children}</ScrollViewport>
+          {children}
           <ScrollBar orientation="horizontal" />
         </ScrollArea>
       </figure>

@@ -47,7 +47,7 @@ export function useRipple(props: UseRippleProps = {}) {
       setRipples((prevRipples) => [
         ...prevRipples,
         {
-          key: new Date().getTime(),
+          key: Date.now(),
           size,
           x: event.clientX - rect.x - size / 2,
           y: event.clientY - rect.y - size / 2,

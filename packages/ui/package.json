@@ -42,17 +42,12 @@
   },
   "dependencies": {
     "@nextui-org/button": "catalog:prod",
-    "@radix-ui/react-avatar": "catalog:prod",
-    "@radix-ui/react-hover-card": "catalog:prod",
-    "@radix-ui/react-scroll-area": "catalog:prod",
-    "@radix-ui/react-separator": "catalog:prod",
-    "@radix-ui/react-slot": "catalog:prod",
-    "@radix-ui/react-tooltip": "catalog:prod",
     "class-variance-authority": "catalog:utils",
     "clsx": "catalog:utils",
     "framer-motion": "catalog:prod",
     "iconoir-react": "catalog:icons",
     "lucide-react": "catalog:icons",
+    "radix-ui": "catalog:prod",
     "react-icons": "catalog:icons",
     "tailwind-merge": "catalog:style",
     "tailwind-variants": "catalog:prod"
