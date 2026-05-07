@@ -1,6 +1,7 @@
 'use client';
 
-import * as RadixSeparator from '@radix-ui/react-separator';
+import { Separator as RadixSeparator } from 'radix-ui';
+import type * as React from 'react';
 import type { VariantProps } from 'tailwind-variants';
 import { tv } from 'tailwind-variants';
 
@@ -25,7 +26,7 @@ export const separatorStyle = tv({
 });
 
 export type SeparatorProps = VariantProps<typeof separatorStyle> &
-  RadixSeparator.SeparatorProps;
+  React.ComponentProps<typeof RadixSeparator.Root>;
 
 export function Separator({
   className,

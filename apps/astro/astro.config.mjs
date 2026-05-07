@@ -1,21 +1,19 @@
 import path from 'node:path';
 
-import { defineConfig, envField } from 'astro/config';
-
 import mdx from '@astrojs/mdx';
 import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
+import { defineConfig, envField } from 'astro/config';
+import icon from 'astro-icon';
+import { rehypeCode } from 'fumadocs-core/mdx-plugins';
+import { rehypeAccessibleEmojis } from 'rehype-accessible-emojis';
+import rehypeKatex from 'rehype-katex';
+import remarkGemoji from 'remark-gemoji';
+import remarkMath from 'remark-math';
 import preserveDirectives from 'rollup-preserve-directives';
 
-import icon from 'astro-icon';
-import { rehypeAccessibleEmojis } from 'rehype-accessible-emojis';
-import remarkGemoji from 'remark-gemoji';
-
-import { rehypeCode } from 'fumadocs-core/mdx-plugins';
-import rehypeKatex from 'rehype-katex';
-import remarkMath from 'remark-math';
-
+import { reactSsrCjsWorkaround } from './plugins/react-ssr-cjs-workaround.mjs';
 import { remarkReadingTime } from './plugins/remark-reading-time.mjs';
 
 // https://astro.build/config
@@ -67,7 +65,7 @@ export default defineConfig({
     react(),
   ],
   vite: {
-    plugins: [tailwindcss(), preserveDirectives()],
+    plugins: [tailwindcss(), reactSsrCjsWorkaround(), preserveDirectives()],
     ssr: {
       noExternal: ['fumadocs-ui'],
     },

@@ -1,10 +1,10 @@
 import {
-  Fn,
   abs,
   cameraPosition,
   color,
   dFdx,
   dFdy,
+  Fn,
   float,
   fract,
   length,
@@ -21,7 +21,7 @@ import {
 } from 'three/tsl';
 import * as THREE from 'three/webgpu';
 
-import type { Node } from '~/components/react/nodes/types';
+import type { Vec2Node } from '~/components/react/nodes/types';
 import { createNodeMaterial } from './nodes/utils';
 
 export const gridNodeMaterial = createNodeMaterial((material) => {
@@ -44,13 +44,13 @@ export const gridNodeMaterial = createNodeMaterial((material) => {
   const CROSS_COLOR = uniform(color(0.3, 0.3, 0.9));
   const MAIN_LINE_COLOR = uniform(color(0.95, 0.95, 0.95)); // Explicit white
 
-  const sdfBox = Fn<[Node, Node]>(([p, b]) => {
+  const sdfBox = Fn(([p, b]: [Vec2Node, Vec2Node]) => {
     const d = abs(p).sub(b);
     return length(max(d, float(0.0))).add(min(max(d.x, d.y), float(0.0)));
   });
 
   // Screen-space anti-aliasing helper
-  const getScreenSpaceAA = Fn<[Node]>(([coord]) => {
+  const getScreenSpaceAA = Fn(([coord]: [Vec2Node]) => {
     const dfdx = dFdx(coord);
     const dfdy = dFdy(coord);
     const fw = length(vec2(dfdx.x, dfdy.x));
@@ -110,9 +110,7 @@ export const gridNodeMaterial = createNodeMaterial((material) => {
     .toVar('mainLineGradient');
 
   // Use fwidth for proper screen-space derivatives
-  const mainLineFW = length(
-    vec2(dFdx(mainLineGridUV.x), dFdy(mainLineGridUV.x)),
-  ).toVar('mainLineFW');
+  const mainLineFW = getScreenSpaceAA(mainLineGridUV).toVar('mainLineFW');
 
   // Main line thickness in grid space with minimum thickness for antialiasing
   const baseThickness = MAIN_LINE_THICKNESS.mul(float(0.5)).toVar(

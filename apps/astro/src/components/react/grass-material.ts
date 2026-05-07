@@ -24,7 +24,7 @@ import {
   vec4,
 } from 'three/tsl';
 import * as THREE from 'three/webgpu';
-import type { Node } from '~/components/react/nodes/types';
+import type { Vec3Node, Vec4Node } from '~/components/react/nodes/types';
 import { fbm, noise2D, snoise } from './nodes';
 import { createNodeMaterial } from './nodes/utils';
 import { getTerrainHeight } from './terrain-material';
@@ -36,18 +36,18 @@ export const grassLightPatchColor = uniform(color('#8cbf00'));
 
 export const grassNodeMaterial = (grassTexture: THREE.Texture) =>
   createNodeMaterial((material) => {
-    const position = attribute('position', 'vec3');
-    const offset = attribute('offset', 'vec3');
-    const orientation = attribute('orientation', 'vec4');
-    const halfRootAngleSin = attribute('halfRootAngleSin', 'float');
-    const halfRootAngleCos = attribute('halfRootAngleCos', 'float');
-    const textureIndex = attribute('textureIndex', 'float');
+    const position = attribute<'vec3'>('position', 'vec3');
+    const offset = attribute<'vec3'>('offset', 'vec3');
+    const orientation = attribute<'vec4'>('orientation', 'vec4');
+    const halfRootAngleSin = attribute<'float'>('halfRootAngleSin', 'float');
+    const halfRootAngleCos = attribute<'float'>('halfRootAngleCos', 'float');
+    const textureIndex = attribute<'float'>('textureIndex', 'float');
 
     const vPosition = varying(vec3(), 'vPosition');
     const vNormal = varying(vec3(), 'vNormal');
     const vUv = varying(vec3(), 'vUv');
 
-    const qmul = Fn<[Node, Node]>(([q1, q2]) => {
+    const qmul = Fn(([q1, q2]: [Vec4Node, Vec4Node]) => {
       return vec4(
         q1.w
           .mul(q2.x)
@@ -72,7 +72,7 @@ export const grassNodeMaterial = (grassTexture: THREE.Texture) =>
       );
     });
 
-    const applyQuaternion = Fn<[Node, Node]>(([v, q]) => {
+    const applyQuaternion = Fn(([v, q]: [Vec3Node, Vec4Node]) => {
       const temp = cross(q.xyz, v).mul(2.0);
       return v.add(temp.mul(q.w)).add(cross(q.xyz, temp));
     });
@@ -158,82 +158,88 @@ export const grassNodeMaterial = (grassTexture: THREE.Texture) =>
   });
 
 // Helper (unchanged)
-export const calculateGrassColor = Fn<[Node, Node]>(([position, uvValue]) => {
-  const bottomColor = grassBottomColor;
-  const topColor = grassTopColor;
-  const darkPatchColor = grassDarkPatchColor;
-  const lightPatchColor = grassLightPatchColor;
-  const noiseScale = uniform(0.05);
-  const noiseQuantize = uniform(4.0);
-  const noiseMixStrength = uniform(0.5);
-  const colorVariation = uniform(0.8);
+export const calculateGrassColor = Fn(
+  ([position, uvValue]: [Vec3Node, Vec3Node]) => {
+    const bottomColor = grassBottomColor;
+    const topColor = grassTopColor;
+    const darkPatchColor = grassDarkPatchColor;
+    const lightPatchColor = grassLightPatchColor;
+    const noiseScale = uniform(0.05);
+    const noiseQuantize = uniform(4.0);
+    const noiseMixStrength = uniform(0.5);
+    const colorVariation = uniform(0.8);
 
-  const moveSpeed = float(0.2);
-  const noisePos = vec2(
-    position.x.mul(noiseScale).add(time.mul(moveSpeed)),
-    position.z.mul(noiseScale).add(time.mul(moveSpeed).mul(0.7)),
-  );
+    const moveSpeed = float(0.2);
+    const noisePos = vec2(
+      position.x.mul(noiseScale).add(time.mul(moveSpeed)),
+      position.z.mul(noiseScale).add(time.mul(moveSpeed).mul(0.7)),
+    );
 
-  const noise1 = snoise(noisePos);
-  const noise2 = snoise(noisePos.mul(2.0)).mul(0.5);
-  const noise3 = snoise(noisePos.mul(4.0)).mul(0.25);
-  const combinedNoise = noise1.add(noise2).add(noise3);
+    const noise1 = snoise(noisePos);
+    const noise2 = snoise(noisePos.mul(2.0)).mul(0.5);
+    const noise3 = snoise(noisePos.mul(4.0)).mul(0.25);
+    const combinedNoise = noise1.add(noise2).add(noise3);
 
-  const staticNoiseScale = float(0.1);
-  const staticNoisePos = vec2(
-    position.x.mul(staticNoiseScale),
-    position.z.mul(staticNoiseScale),
-  );
-  const staticNoise1 = snoise(staticNoisePos);
-  const staticNoise2 = snoise(staticNoisePos.mul(3.0)).mul(0.4);
-  const staticNoise3 = snoise(staticNoisePos.mul(6.0)).mul(0.2);
-  const combinedStaticNoise = staticNoise1.add(staticNoise2).add(staticNoise3);
+    const staticNoiseScale = float(0.1);
+    const staticNoisePos = vec2(
+      position.x.mul(staticNoiseScale),
+      position.z.mul(staticNoiseScale),
+    );
+    const staticNoise1 = snoise(staticNoisePos);
+    const staticNoise2 = snoise(staticNoisePos.mul(3.0)).mul(0.4);
+    const staticNoise3 = snoise(staticNoisePos.mul(6.0)).mul(0.2);
+    const combinedStaticNoise = staticNoise1
+      .add(staticNoise2)
+      .add(staticNoise3);
 
-  const finalNoise = combinedNoise.mul(0.6).add(combinedStaticNoise.mul(0.4));
-  const brightnessVariation = finalNoise.mul(0.2).add(0.9);
+    const finalNoise = combinedNoise.mul(0.6).add(combinedStaticNoise.mul(0.4));
+    const brightnessVariation = finalNoise.mul(0.2).add(0.9);
 
-  const fbmCoord = vec2(
-    position.x.mul(noiseScale),
-    position.z.mul(noiseScale),
-  ).add(vec2(15.5, 7.2));
-  const fbmValue = fbm(fbmCoord, float(5), float(2.0), float(0.5));
-  const quantizedNoise = floor(fbmValue.mul(noiseQuantize)).div(noiseQuantize);
+    const fbmCoord = vec2(
+      position.x.mul(noiseScale),
+      position.z.mul(noiseScale),
+    ).add(vec2(15.5, 7.2));
+    const fbmValue = fbm(fbmCoord, float(5), float(2.0), float(0.5));
+    const quantizedNoise = floor(fbmValue.mul(noiseQuantize)).div(
+      noiseQuantize,
+    );
 
-  const heightGradient = uvValue.y;
+    const heightGradient = uvValue.y;
 
-  const baseBottomColor = mix(
-    bottomColor,
-    darkPatchColor,
-    quantizedNoise.mul(colorVariation),
-  );
-  const baseTopColor = mix(
-    topColor,
-    lightPatchColor,
-    quantizedNoise.mul(colorVariation),
-  );
-  const gradientColor = mix(
-    baseTopColor,
-    baseBottomColor,
-    heightGradient,
-  ).toVar();
+    const baseBottomColor = mix(
+      bottomColor,
+      darkPatchColor,
+      quantizedNoise.mul(colorVariation),
+    );
+    const baseTopColor = mix(
+      topColor,
+      lightPatchColor,
+      quantizedNoise.mul(colorVariation),
+    );
+    const gradientColor = mix(
+      baseTopColor,
+      baseBottomColor,
+      heightGradient,
+    ).toVar();
 
-  const noiseColor = mix(darkPatchColor, lightPatchColor, fbmValue).toVar();
-  gradientColor.assign(mix(gradientColor, noiseColor, noiseMixStrength));
+    const noiseColor = mix(darkPatchColor, lightPatchColor, fbmValue).toVar();
+    gradientColor.assign(mix(gradientColor, noiseColor, noiseMixStrength));
 
-  // const edgeHighlight = smoothstep(
-  //   0.2,
-  //   0.3,
-  //   abs(fbmValue.sub(0.5)).mul(2.0),
-  // ).mul(edgeHighlightStrength);
-  // gradientColor.addAssign(vec3(edgeHighlight));
+    // const edgeHighlight = smoothstep(
+    //   0.2,
+    //   0.3,
+    //   abs(fbmValue.sub(0.5)).mul(2.0),
+    // ).mul(edgeHighlightStrength);
+    // gradientColor.addAssign(vec3(edgeHighlight));
 
-  const grassColor = gradientColor.toVar();
-  grassColor.mulAssign(brightnessVariation);
+    const grassColor = gradientColor.toVar();
+    grassColor.mulAssign(brightnessVariation);
 
-  // const rootDarkening = float(1.0).sub(
-  //   pow(max(0.0, uvValue.y.oneMinus().mul(1.3)), 2.0).mul(0.5),
-  // );
-  // grassColor.mulAssign(rootDarkening);
+    // const rootDarkening = float(1.0).sub(
+    //   pow(max(0.0, uvValue.y.oneMinus().mul(1.3)), 2.0).mul(0.5),
+    // );
+    // grassColor.mulAssign(rootDarkening);
 
-  return grassColor;
-});
+    return grassColor;
+  },
+);

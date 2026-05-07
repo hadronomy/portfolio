@@ -1,4 +1,4 @@
-import { Slot } from '@radix-ui/react-slot';
+import { Slot as SlotPrimitive } from 'radix-ui';
 import * as React from 'react';
 import { tv, type VariantProps } from 'tailwind-variants';
 import { cn } from './utils/cn';
@@ -69,7 +69,7 @@ const Button = React.forwardRef<
     },
     ref,
   ) => {
-    const Comp = asChild ? Slot : 'button';
+    const Comp = asChild ? SlotPrimitive.Root : 'button';
     return (
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}

@@ -1,12 +1,13 @@
 import {
-  Fn,
-  If,
-  Loop,
   abs,
   dot,
+  Fn,
   float,
   floor,
   fract,
+  If,
+  int,
+  Loop,
   max,
   mix,
   sin,
@@ -15,10 +16,10 @@ import {
   vec4,
 } from 'three/tsl';
 
-import type { Node } from './types';
+import type { FloatNode, Vec2Node, Vec3Node, Vec4Node } from './types';
 
 // Noise function for wind influence
-export const noise2D = Fn<[Node]>(([p]) => {
+export const noise2D = Fn(([p]: [Vec2Node]) => {
   return sin(p.x.mul(10.0))
     .mul(sin(p.y.mul(10.0)))
     .mul(0.5)
@@ -26,11 +27,11 @@ export const noise2D = Fn<[Node]>(([p]) => {
 });
 
 // Simplex noise functions
-export const permute = Fn<[Node]>(([x]) => {
+export const permute = Fn(([x]: [Vec3Node]) => {
   return x.mul(34.0).add(1.0).mul(x).mod(289.0);
 });
 
-export const snoise = Fn<[Node]>(([v]) => {
+export const snoise = Fn(([v]: [Vec2Node]) => {
   const C = vec4(
     0.211324865405187, // (3.0-sqrt(3.0))/6.0
     0.366025403784439, // 0.5*(sqrt(3.0)-1.0)
@@ -85,24 +86,24 @@ export const snoise = Fn<[Node]>(([v]) => {
 
 // Helper functions for Perlin Noise
 // eslint-disable-next-line no-unused-vars
-export const mod289Vec2 = Fn<[Node]>(([x_vec2]) => {
+export const mod289Vec2 = Fn(([x_vec2]: [Vec2Node]) => {
   return x_vec2.sub(floor(x_vec2.mul(1.0 / 289.0)).mul(289.0));
 });
 
-export const mod289Vec4 = Fn<[Node]>(([x_vec4]) => {
+export const mod289Vec4 = Fn(([x_vec4]: [Vec4Node]) => {
   return x_vec4.sub(floor(x_vec4.mul(1.0 / 289.0)).mul(289.0));
 });
 
-export const permuteVec4 = Fn<[Node]>(([x_perm]) => {
+export const permuteVec4 = Fn(([x_perm]: [Vec4Node]) => {
   return mod289Vec4(x_perm.mul(34.0).add(1.0).mul(x_perm));
 });
 
-export const taylorInvSqrtVec4 = Fn<[Node]>(([r_taylor]) => {
+export const taylorInvSqrtVec4 = Fn(([r_taylor]: [Vec4Node]) => {
   return float(1.79284291400159).sub(float(0.85373472090914).mul(r_taylor));
 });
 
 // Enhanced Perlin Noise 2D
-export const perlinNoise2D = Fn<[Node]>(([P_noise]) => {
+export const perlinNoise2D = Fn(([P_noise]: [Vec2Node]) => {
   // P_noise is vec2
   const Pi = floor(P_noise.xyxy.add(vec4(0.0, 0.0, 1.0, 1.0))).toVar();
 
@@ -158,21 +159,32 @@ export const perlinNoise2D = Fn<[Node]>(([P_noise]) => {
 });
 
 // Advanced FBM noise function
-export const fbm = Fn<[Node, Node, Node, Node]>(
-  ([p, octaves, lacunarity, persistence]) => {
+export const fbm = Fn(
+  ([p, octaves, lacunarity, persistence]: [
+    Vec2Node,
+    FloatNode,
+    FloatNode,
+    FloatNode,
+  ]) => {
     const total = float(0.0).toVar();
     const frequency = float(1.0).toVar();
     const amplitude = float(1.0).toVar();
     const maxValue = float(0.0).toVar();
 
-    // Use loop with custom index
-
-    Loop(octaves, () => {
-      total.addAssign(perlinNoise2D(p.mul(frequency)).mul(amplitude));
-      maxValue.addAssign(amplitude);
-      amplitude.mulAssign(persistence);
-      frequency.mulAssign(lacunarity);
-    });
+    Loop(
+      {
+        type: 'int',
+        start: 0,
+        end: int(octaves),
+        condition: '<',
+      },
+      () => {
+        total.addAssign(perlinNoise2D(p.mul(frequency)).mul(amplitude));
+        maxValue.addAssign(amplitude);
+        amplitude.mulAssign(persistence);
+        frequency.mulAssign(lacunarity);
+      },
+    );
 
     return total.div(maxValue).add(1.0).mul(0.5);
   },

@@ -59,7 +59,6 @@
     "random": "catalog:prod",
     "react": "catalog:prod",
     "react-dom": "catalog:prod",
-    "react-tweakpane": "catalog:prod",
     "reading-time": "catalog:prod",
     "rehype-accessible-emojis": "catalog:prod",
     "rehype-katex": "catalog:prod",
@@ -70,7 +69,6 @@
     "simplex-noise": "catalog:prod",
     "tailwindcss": "catalog:style",
     "three": "catalog:frontend",
-    "tweakpane": "catalog:prod",
     "typewriter-effect": "catalog:prod",
     "zod": "catalog:utils"
   },
@@ -83,7 +81,6 @@
     "@react-pdf/renderer": "catalog:dev",
     "@shikijs/twoslash": "catalog:syntax",
     "@tailwindcss/vite": "catalog:build",
-    "@tweakpane/core": "catalog:dev",
     "@types/mdx": "catalog:types",
     "@types/node-forge": "catalog:types",
     "@types/react": "catalog:types",

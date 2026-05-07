@@ -9,13 +9,14 @@ import {
   positionLocal,
   sign,
   transformNormalToView,
+  uint,
   uniform,
   varying,
   vec2,
   vec3,
 } from 'three/tsl';
 
-import type { Node } from '~/components/react/nodes/types';
+import type { Vec2Node, Vec3Node } from '~/components/react/nodes/types';
 
 import {
   grassBottomColor,
@@ -26,7 +27,7 @@ import {
 import { fbm, snoise } from './nodes';
 import { createNodeMaterial } from './nodes/utils';
 
-export const getTerrainHeight = Fn<[Node]>(([position2D]) => {
+export const getTerrainHeight = Fn(([position2D]: [Vec2Node]) => {
   const noiseIterations = uniform(3);
   const positionFrequency = uniform(0.01);
   const warpFrequency = uniform(2);
@@ -47,8 +48,8 @@ export const getTerrainHeight = Fn<[Node]>(([position2D]) => {
   Loop(
     {
       type: 'uint',
-      start: float(1),
-      end: noiseIterations.toFloat(),
+      start: uint(1),
+      end: noiseIterations.toUint(),
       condition: '<=',
     },
     ({ i }) => {
@@ -71,7 +72,7 @@ export const getTerrainHeight = Fn<[Node]>(([position2D]) => {
 });
 
 // Terrain color calculation using same logic as grass
-const calculateTerrainColor = Fn<[Node]>(([position]) => {
+const calculateTerrainColor = Fn(([position]: [Vec3Node]) => {
   // Match the uniforms from grass-material
   const noiseScale = uniform(0.05);
   const noiseQuantize = uniform(4.0);
