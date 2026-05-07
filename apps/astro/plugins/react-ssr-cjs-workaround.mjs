@@ -1,244 +1,244 @@
 import { createRequire } from 'node:module';
-import { pathToFileURL } from 'node:url';
 
-// Vite SSR can evaluate React's CommonJS entry as transformed source instead of
-// externalizing it. That reproduces under Bun and Node package-manager installs,
-// so keep this workaround scoped to SSR transforms rather than Bun-specific code.
-const ASTRO_REACT_RENDERER_FILES = [
-  '/@astrojs/react/dist/server.js',
-  '/@astrojs/react/dist/server-v17.js',
-];
+/**
+ * @fileoverview Redirects SSR React-family imports to virtual ESM shims backed
+ * by Node's CommonJS loader.
+ *
+ * @remarks
+ * Vite's SSR pipeline can occasionally evaluate React's CommonJS entrypoints as
+ * transformed source rather than as external dependencies. When that happens,
+ * CommonJS globals such as `module` are unavailable and the render crashes with
+ * `module is not defined`.
+ *
+ * This plugin avoids source rewriting entirely. Instead, it intercepts SSR-only
+ * imports for a small set of React-related package ids and replaces them with
+ * virtual modules that:
+ *
+ * 1. Load the real CommonJS module via `createRequire(import.meta.url)`.
+ * 2. Re-export its default export.
+ * 3. Re-export stable named bindings from collision-safe local identifiers.
+ *
+ * The result behaves like a normal ESM module from Vite's perspective while
+ * still loading React through Node's CommonJS interop path.
+ */
 
-const ASTRO_REACT_HELPER_FILES = [
-  '/@astrojs/react/dist/static-html.js',
-  '/@astrojs/react/dist/vnode-children.js',
-];
+/**
+ * Runtime metadata used to generate a stable shim module for one package id.
+ *
+ * @typedef {object} ModuleMetadata
+ * @property {string} resolvedId
+ *   Fully resolved filesystem path for the CommonJS module entrypoint.
+ * @property {string[]} exportNames
+ *   Sorted list of valid JavaScript identifiers exposed by the module.
+ */
 
-const WORKSPACE_SSR_REACT_ROOTS = ['/apps/astro/src/', '/packages/ui/src/'];
+/**
+ * Optional configuration for {@link reactSsrCjsWorkaround}.
+ *
+ * @typedef {object} ReactSsrCjsWorkaroundOptions
+ * @property {string} [namespace]
+ *   Namespace used for the Vite plugin name and its virtual module prefix.
+ */
 
-const SSR_REACT_EXTERNALS = new Set([
+/**
+ * Default namespace used when the caller does not provide one explicitly.
+ *
+ * @type {string}
+ */
+const DEFAULT_NAMESPACE = 'react-ssr-cjs-workaround';
+
+/**
+ * Package ids that should be redirected to virtual shims during SSR.
+ *
+ * @type {string[]}
+ */
+const REACT_SSR_MODULES = [
   'react',
   'react-dom',
   'react-dom/server',
   'react/jsx-runtime',
   'react/jsx-dev-runtime',
-]);
+];
 
-const SSR_REACT_REQUIRE_PREAMBLE = [
-  'import { createRequire as __astroReactCreateRequire } from "node:module";',
-  'const __astroReactRequire = __astroReactCreateRequire(import.meta.url);',
-].join('\n');
+/**
+ * Constant-time lookup table for supported SSR shim targets.
+ *
+ * @type {Set<string>}
+ */
+const REACT_SSR_MODULE_SET = new Set(REACT_SSR_MODULES);
 
-const DIRECTIVE_PROLOGUE_PATTERN = /^(?:\s*['"][^'"]+['"];\s*)*/;
+/**
+ * Ensures that generated named exports are valid ESM identifiers.
+ *
+ * @type {RegExp}
+ */
+const VALID_IDENTIFIER_PATTERN = /^[A-Za-z_$][\w$]*$/;
+
+/**
+ * CommonJS resolver/loader anchored to this module.
+ *
+ * @type {NodeJS.Require}
+ */
 const nodeRequire = createRequire(import.meta.url);
 
-function matchesAny(id, suffixes) {
-  return suffixes.some((suffix) => id.includes(suffix));
+/**
+ * Caches per-package metadata so repeated resolves in dev do not keep reading
+ * the same CommonJS module shape.
+ *
+ * @type {Map<string, ModuleMetadata>}
+ */
+const moduleMetadataCache = new Map();
+
+/**
+ * Caches generated shim source keyed by package id.
+ *
+ * @type {Map<string, string>}
+ */
+const shimCodeCache = new Map();
+
+/**
+ * Checks whether the current Vite hook invocation targets an SSR environment.
+ *
+ * @param {{ ssr?: boolean } | undefined} options
+ *   Vite hook options bag.
+ * @returns {boolean}
+ *   `true` when the hook is running for SSR or prerender work.
+ */
+function isSsrRequest(options) {
+  return Boolean(options?.ssr);
 }
 
-function injectReactRequirePreamble(code) {
-  if (code.includes('__astroReactCreateRequire')) {
-    return code;
+/**
+ * Builds the virtual module prefix for a given plugin namespace.
+ *
+ * @param {string} namespace
+ *   Namespace selected for this plugin instance.
+ * @returns {string}
+ *   A `\0`-prefixed virtual module namespace understood by Vite.
+ */
+function getVirtualPrefix(namespace) {
+  return `\0${namespace}:`;
+}
+
+/**
+ * Builds the full virtual id for one redirected package import.
+ *
+ * @param {string} namespace
+ *   Namespace selected for this plugin instance.
+ * @param {string} source
+ *   Original package id requested by the importing module.
+ * @returns {string}
+ *   Virtual module id used by Vite to resolve the shim.
+ */
+function getVirtualId(namespace, source) {
+  return `${getVirtualPrefix(namespace)}${source}`;
+}
+
+/**
+ * Resolves and inspects one CommonJS module so its shim can be generated once
+ * and reused safely.
+ *
+ * @param {string} source
+ *   Original package id requested by the importing module.
+ * @returns {ModuleMetadata}
+ *   Resolved module path plus the stable list of named exports to expose.
+ */
+function getModuleMetadata(source) {
+  let metadata = moduleMetadataCache.get(source);
+  if (!metadata) {
+    const resolvedId = nodeRequire.resolve(source);
+    const exports = nodeRequire(source);
+    const exportNames = Object.getOwnPropertyNames(exports)
+      .filter(
+        (name) => name !== 'default' && VALID_IDENTIFIER_PATTERN.test(name),
+      )
+      .sort();
+
+    metadata = { resolvedId, exportNames };
+    moduleMetadataCache.set(source, metadata);
   }
 
-  const directives = code.match(DIRECTIVE_PROLOGUE_PATTERN)?.[0] ?? '';
-  return `${directives}${SSR_REACT_REQUIRE_PREAMBLE}\n${code.slice(
-    directives.length,
-  )}`;
+  return metadata;
 }
 
-function replaceImportBlock(code, importBlock, replacementLines) {
-  if (!code.includes(importBlock)) {
-    return null;
-  }
-
-  return code.replace(importBlock, replacementLines.join('\n'));
-}
-
-function normalizeSpecifier(specifier) {
-  return specifier.replace(/\s+/g, ' ').trim();
-}
-
-function toDestructuringSpecifier(specifier) {
-  const cleaned = normalizeSpecifier(specifier).replace(/^type\s+/, '');
-  if (!cleaned) {
-    return null;
-  }
-
-  const aliasMatch = cleaned.match(
-    /^([A-Za-z_$][\w$]*)\s+as\s+([A-Za-z_$][\w$]*)$/,
+/**
+ * Generates virtual ESM source for one CommonJS React-family package.
+ *
+ * @param {string} source
+ *   Original package id requested by the importing module.
+ * @returns {string}
+ *   ESM shim source that loads the real CommonJS entrypoint through
+ *   `createRequire(import.meta.url)` and re-exports its public bindings.
+ */
+function buildShimCode(source) {
+  const { resolvedId, exportNames } = getModuleMetadata(source);
+  const bindingLines = exportNames.map(
+    (name, index) =>
+      `const __react_ssr_export_${index} = __react_ssr_module[${JSON.stringify(name)}];`,
   );
-  if (aliasMatch) {
-    return `${aliasMatch[1]}: ${aliasMatch[2]}`;
-  }
-
-  return cleaned;
-}
-
-function splitNamedSpecifiers(rawSpecifiers) {
-  return rawSpecifiers.split(',').map(normalizeSpecifier).filter(Boolean);
-}
-
-function partitionNamedSpecifiers(rawSpecifiers) {
-  const runtimeSpecifiers = [];
-  const typeSpecifiers = [];
-
-  for (const specifier of splitNamedSpecifiers(rawSpecifiers)) {
-    if (specifier.startsWith('type ')) {
-      typeSpecifiers.push(specifier.replace(/^type\s+/, ''));
-      continue;
-    }
-
-    const runtimeSpecifier = toDestructuringSpecifier(specifier);
-    if (runtimeSpecifier) {
-      runtimeSpecifiers.push(runtimeSpecifier);
-    }
-  }
-
-  return { runtimeSpecifiers, typeSpecifiers };
-}
-
-function buildNamedReactImportReplacement(rawSpecifiers, runtimeTarget) {
-  const { runtimeSpecifiers, typeSpecifiers } =
-    partitionNamedSpecifiers(rawSpecifiers);
-
-  if (!runtimeSpecifiers.length) {
-    return null;
-  }
-
-  const lines = [];
-  if (typeSpecifiers.length) {
-    lines.push(`import type { ${typeSpecifiers.join(', ')} } from 'react';`);
-  }
-  lines.push(`const { ${runtimeSpecifiers.join(', ')} } = ${runtimeTarget};`);
-
-  return lines.join('\n');
-}
-
-function patchAstroReactRenderer(code) {
-  return replaceImportBlock(
-    code,
-    'import React from "react";\nimport ReactDOM from "react-dom/server";',
-    [
-      'import { createRequire as __astroReactCreateRequire } from "node:module";',
-      'const __astroReactRequire = __astroReactCreateRequire(import.meta.url);',
-      'const React = __astroReactRequire("react");',
-      'const ReactDOM = __astroReactRequire("react-dom/server");',
-    ],
+  const exportSpecifiers = exportNames.map(
+    (name, index) => `__react_ssr_export_${index} as ${name}`,
   );
+
+  return [
+    'import { createRequire as __react_ssr_createRequire } from "node:module";',
+    `const __react_ssr_require = __react_ssr_createRequire(${JSON.stringify(import.meta.url)});`,
+    `const __react_ssr_module = __react_ssr_require(${JSON.stringify(resolvedId)});`,
+    ...bindingLines,
+    'export default __react_ssr_module;',
+    exportSpecifiers.length ? `export { ${exportSpecifiers.join(', ')} };` : '',
+  ]
+    .filter(Boolean)
+    .join('\n');
 }
 
-function patchAstroReactHelpers(code) {
-  return (
-    replaceImportBlock(
-      code,
-      'import { createElement as h, memo } from "react";',
-      [
-        'import { createRequire as __astroReactCreateRequire } from "node:module";',
-        'const { createElement: h, memo } = __astroReactCreateRequire(import.meta.url)("react");',
-      ],
-    ) ??
-    replaceImportBlock(
-      code,
-      'import { createElement, Fragment } from "react";',
-      [
-        'import { createRequire as __astroReactCreateRequire } from "node:module";',
-        'const { createElement, Fragment } = __astroReactCreateRequire(import.meta.url)("react");',
-      ],
-    )
-  );
+/**
+ * Returns cached shim source for one package id, generating it on first use.
+ *
+ * @param {string} source
+ *   Original package id requested by the importing module.
+ * @returns {string}
+ *   Cached virtual module source.
+ */
+function getShimCode(source) {
+  let shimCode = shimCodeCache.get(source);
+  if (!shimCode) {
+    shimCode = buildShimCode(source);
+    shimCodeCache.set(source, shimCode);
+  }
+
+  return shimCode;
 }
 
-function patchWorkspaceReactImports(code) {
-  let changed = false;
+/**
+ * Creates a Vite plugin that replaces SSR-only React-family imports with
+ * virtual ESM shims backed by Node's CommonJS loader.
+ *
+ * @param {ReactSsrCjsWorkaroundOptions} [options]
+ *   Optional plugin configuration.
+ * @returns {import('vite').Plugin}
+ *   A Vite plugin suitable for `vite.plugins`.
+ */
+export function reactSsrCjsWorkaround({ namespace = DEFAULT_NAMESPACE } = {}) {
+  const virtualPrefix = getVirtualPrefix(namespace);
 
-  const patched = code
-    .replace(
-      /^import\s+([A-Za-z_$][\w$]*)\s*,\s*\{([^;]*?)\}\s+from\s+['"]react['"];?$/gm,
-      (_, defaultImport, rawSpecifiers) => {
-        const namedReplacement = buildNamedReactImportReplacement(
-          rawSpecifiers,
-          defaultImport,
-        );
-        if (!namedReplacement) {
-          return _;
-        }
-
-        changed = true;
-        return [
-          `const ${defaultImport} = __astroReactRequire('react');`,
-          namedReplacement,
-        ].join('\n');
-      },
-    )
-    .replace(
-      /^import\s+\*\s+as\s+([A-Za-z_$][\w$]*)\s+from\s+['"]react['"];?$/gm,
-      (_, namespaceImport) => {
-        changed = true;
-        return `const ${namespaceImport} = __astroReactRequire('react');`;
-      },
-    )
-    .replace(
-      /^import\s+([A-Za-z_$][\w$]*)\s+from\s+['"]react['"];?$/gm,
-      (_, defaultImport) => {
-        changed = true;
-        return `const ${defaultImport} = __astroReactRequire('react');`;
-      },
-    )
-    .replace(
-      /^import\s+\{([^;]*?)\}\s+from\s+['"]react['"];?$/gm,
-      (_, rawSpecifiers) => {
-        const replacement = buildNamedReactImportReplacement(
-          rawSpecifiers,
-          "__astroReactRequire('react')",
-        );
-        if (!replacement) {
-          return _;
-        }
-
-        changed = true;
-        return replacement;
-      },
-    );
-
-  return changed ? injectReactRequirePreamble(patched) : null;
-}
-
-export function reactSsrCjsWorkaround() {
   return {
-    name: 'portfolio:react-ssr-cjs-workaround',
+    name: namespace,
     enforce: 'pre',
     resolveId(source, _importer, options) {
-      if (options?.ssr && SSR_REACT_EXTERNALS.has(source)) {
-        return {
-          id: pathToFileURL(nodeRequire.resolve(source)).href,
-          external: true,
-        };
-      }
-
-      return null;
-    },
-    transform(code, id, options) {
-      if (!options?.ssr) {
+      if (!isSsrRequest(options) || !REACT_SSR_MODULE_SET.has(source)) {
         return null;
       }
 
-      if (matchesAny(id, ASTRO_REACT_RENDERER_FILES)) {
-        const patched = patchAstroReactRenderer(code);
-        return patched ? { code: patched, map: null } : null;
+      return getVirtualId(namespace, source);
+    },
+    load(id) {
+      if (!id.startsWith(virtualPrefix)) {
+        return null;
       }
 
-      if (matchesAny(id, ASTRO_REACT_HELPER_FILES)) {
-        const patched = patchAstroReactHelpers(code);
-        return patched ? { code: patched, map: null } : null;
-      }
-
-      if (matchesAny(id, WORKSPACE_SSR_REACT_ROOTS)) {
-        const patched = patchWorkspaceReactImports(code);
-        return patched ? { code: patched, map: null } : null;
-      }
-
-      return null;
+      const source = id.slice(virtualPrefix.length);
+      return getShimCode(source);
     },
   };
 }
