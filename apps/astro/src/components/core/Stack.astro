@@ -14,8 +14,15 @@ import { stack } from '~/lib/profile';
 <Section id="stack">
   <Overline>Stack</Overline>
 
-  {/* Core sets 10px between marks and leaves the row left-aligned. */}
-  <ul class="flex flex-wrap items-center gap-2.5">
+  {/*
+    Core's row is `space-between` across the full column with `gap: 10px` as a
+    minimum, not a packed left-aligned run — first mark flush left, last flush
+    right. Wrapping is off there; on phones ten 40px marks cannot fit that way,
+    so wrapping comes back below the tablet breakpoint rather than overflowing.
+  */}
+  <ul
+    class="flex flex-wrap items-center justify-start gap-2.5 tablet:flex-nowrap tablet:justify-between"
+  >
     {
       stack.map((tool) => (
         <li class="stack-item group relative size-10 shrink-0">
@@ -34,13 +41,13 @@ import { stack } from '~/lib/profile';
           </span>
 
           {/*
-            The tooltip sits directly below the mark and left-aligned to it,
-            with a 15px gap — measured off the rendered reference rather than
-            the canvas, where the node is parked somewhere else entirely.
+            Centred under the mark with a 15px gap, taken off the rendered
+            reference — the canvas parks this node somewhere the live site
+            never shows it.
           */}
           <span
             role="tooltip"
-            class="type-body-xs pointer-events-none absolute top-[55px] left-0 z-20 rounded-[6px] bg-inset px-2 py-1 whitespace-nowrap text-foreground opacity-0 transition-opacity duration-200 ease-out group-hover:opacity-100 group-focus-within:opacity-100"
+            class="type-body-xs pointer-events-none absolute top-[55px] left-1/2 z-20 -translate-x-1/2 rounded-[6px] bg-inset px-2 py-1 whitespace-nowrap text-foreground opacity-0 transition-opacity duration-200 ease-out group-hover:opacity-100 group-focus-within:opacity-100"
           >
             {tool.name}
           </span>
