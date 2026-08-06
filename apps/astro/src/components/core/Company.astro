@@ -1,0 +1,22 @@
+---
+interface Props {
+  name: string;
+}
+
+const { name } = Astro.props;
+---
+
+{/*
+  Core's Company chip: the mark and the name travel together as one unit with
+  6px between them and 5px of padding either side. That padding is what stops
+  the logo colliding with the word before it — the row's own 4px gap alone
+  reads as cramped, and widening the row gap instead would push the name away
+  from its own mark.
+
+  Baseline-agnostic: the chip centres its contents on the mark rather than the
+  text, so a 20px logo never rides above or below the line it sits in.
+*/}
+<span class="inline-flex items-center gap-1.5 px-[5px] align-middle">
+  <slot />
+  <span>{name}</span>
+</span>

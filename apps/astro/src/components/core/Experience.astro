@@ -1,5 +1,6 @@
 ---
 import { Icon } from 'astro-icon/components';
+import Company from '~/components/core/Company.astro';
 import Monogram from '~/components/core/Monogram.astro';
 import Overline from '~/components/core/Overline.astro';
 import Section from '~/components/core/Section.astro';
@@ -25,18 +26,23 @@ import { experience } from '~/lib/profile';
         </p>
 
         <div class="flex flex-col gap-0.5">
+          {/* Core keeps the role, the joining word and the company chip as
+              three siblings 4px apart, so the chip's own padding is what
+              spaces the mark rather than the row gap. */}
           <h3 class="type-body flex flex-wrap items-center gap-1 font-medium text-foreground">
-            {entry.role} at
-            {entry.mark === 'monogram' ? (
-              <Monogram />
-            ) : entry.mark === 'academic' ? (
-              <span class="flex size-5 items-center justify-center rounded-[6px] bg-foreground text-background">
-                <Icon name="tabler:school" class="size-3" />
-              </span>
-            ) : (
-              <Icon name={entry.mark} class="size-5 text-foreground" />
-            )}
-            {entry.organisation}
+            <span>{entry.role}</span>
+            <span>at</span>
+            <Company name={entry.organisation}>
+              {entry.mark === 'monogram' ? (
+                <Monogram />
+              ) : entry.mark === 'academic' ? (
+                <span class="flex size-5 shrink-0 items-center justify-center rounded-[6px] bg-foreground text-background">
+                  <Icon name="tabler:school" class="size-3" />
+                </span>
+              ) : (
+                <Icon name={entry.mark} class="size-5 shrink-0 text-foreground" />
+              )}
+            </Company>
           </h3>
           <p class="type-body text-muted-foreground">{entry.description}</p>
         </div>
