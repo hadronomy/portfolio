@@ -128,7 +128,8 @@ const { items } = Astro.props;
 </style>
 
 <script>
-  import { createTimer, utils } from 'animejs';
+  const lerp = (from: number, to: number, amount: number) =>
+    from + (to - from) * amount;
 
   const CONFIG = {
     SCROLL_OFFSET: 120,    
@@ -187,7 +188,7 @@ const { items } = Astro.props;
         this.updateTarget();
         this.currentValue = this.targetValue;
         this.render();
-        createTimer({ onUpdate: this.loop });
+        this.tick();
       }, 150);
     }
 
@@ -322,13 +323,14 @@ const { items } = Astro.props;
       this.targetValue = calculatedPct;
     };
 
-    private loop = (): void => {
+    private tick = (): void => {
       if (Math.abs(this.targetValue - this.currentValue) < 0.1) {
         this.currentValue = this.targetValue;
       } else {
-        this.currentValue = utils.lerp(this.currentValue, this.targetValue, CONFIG.LERP_FACTOR);
+        this.currentValue = lerp(this.currentValue, this.targetValue, CONFIG.LERP_FACTOR);
       }
       this.render();
+      requestAnimationFrame(this.tick);
     };
 
     private render = (): void => {

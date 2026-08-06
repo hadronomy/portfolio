@@ -1,7 +1,6 @@
 'use client';
 
 import { cn } from '@portfolio/ui';
-import { AnimatePresence, motion, type Variants } from 'framer-motion';
 import {
   ArrowRight,
   BatteryMedium,
@@ -12,6 +11,7 @@ import {
   Wifi,
   X,
 } from 'lucide-react';
+import { AnimatePresence, motion, type Variants } from 'motion/react';
 import * as React from 'react';
 
 interface NavLink {

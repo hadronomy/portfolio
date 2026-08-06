@@ -2,8 +2,8 @@
 
 import { PreviewCard } from '@base-ui/react/preview-card';
 import { cn } from '@portfolio/ui';
-import { LayoutGroup, motion } from 'framer-motion';
 import { ChevronRight, FileText, Folder, FolderOpen } from 'lucide-react';
+import { LayoutGroup, motion } from 'motion/react';
 import * as React from 'react';
 
 export interface FileNode {

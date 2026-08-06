@@ -52,11 +52,9 @@
     --font-sans: 'Maple Mono', 'Onest Variable', sans-serif;
     --font-mono: 'Maple Mono', monospace;
 
-    --halftone: rgba(255, 255, 255, 0.1);
 
     color-scheme: dark;
 
-    --animate-sparkle: sparkle 700ms forwards;
   }
 
   /* Force Dark styling regardless of preference for this specific aesthetic */
@@ -67,7 +65,6 @@
     --muted: 0 0% 10%;
     --muted-foreground: 0 0% 60%;
     --border: 0 0% 20%;
-    --halftone: rgba(20, 20, 20, 0.8);
   }
 }
 
@@ -412,48 +409,4 @@
     text-decoration: var(--shiki-dark-text-decoration) !important;
   }
 
-  /* Halftone */
-  .bg-halftone {
-    --bg-size: 0.3rem;
-    --bg-position: calc(var(--bgSize) / 2);
-    --stop1: 3%;
-    --stop2: 65%;
-  }
-
-  .bg-halftone::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-
-    background-color: transparent;
-    background-image: radial-gradient(
-        circle at center,
-        transparent var(--stop1),
-        var(--halftone) var(--stop2)
-      ),
-      radial-gradient(circle at center, transparent var(--stop1), var(--halftone) var(--stop2));
-    background-position:
-      0 0,
-      var(--bg-position) var(--bg-position);
-    background-repeat: round;
-    background-size: var(--bg-size) var(--bg-size);
-    backdrop-filter: blur(3px);
-    mask: linear-gradient(rgb(0, 0, 0) 40%, rgba(0, 0, 0, 0) 100%);
-  }
-}
-
-@keyframes sparkle {
-  0% {
-    transform: scale(0) rotate(0deg);
-  }
-  50% {
-    transform: scale(1) rotate(90deg);
-  }
-  100% {
-    transform: scale(0) rotate(180deg);
-  }
-}
-
-@utility animate-sparkle {
-  animation: var(--animate-sparkle);
 }
