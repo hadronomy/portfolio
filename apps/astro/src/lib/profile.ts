@@ -25,6 +25,14 @@ export type ExperienceEntry = {
   /** Icon set name for astro-icon, or `monogram` for the in-house mark. */
   mark: string;
   description: string;
+  /** Makes the company chip a link. */
+  url?: string;
+  /**
+   * Screenshot of `url` shown in the cursor on hover. Captured from the live
+   * page rather than mocked, so it stays honest — regenerate it when the page
+   * it points at changes.
+   */
+  preview?: string;
 };
 
 export const experience: ExperienceEntry[] = [
@@ -43,6 +51,8 @@ export const experience: ExperienceEntry[] = [
     mark: 'academic',
     description:
       'Algorithms, software architecture and distributed systems. Led student project teams and competed in algorithm contests.',
+    url: 'https://www.ull.es',
+    preview: '/previews/ull.webp',
   },
   {
     period: '2014 — NOW',
@@ -51,6 +61,8 @@ export const experience: ExperienceEntry[] = [
     mark: 'simple-icons:github',
     description:
       'Autographa, Canary, a RAM machine language and emulator, and solvers for vehicle routing with transshipments.',
+    url: 'https://github.com/hadronomy',
+    preview: '/previews/github.webp',
   },
 ];
 

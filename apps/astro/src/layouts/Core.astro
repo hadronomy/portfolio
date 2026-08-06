@@ -1,5 +1,6 @@
 ---
 import CopyShortcut from '~/components/core/CopyShortcut.astro';
+import Cursor from '~/components/core/Cursor.astro';
 import Header from '~/components/core/Header.astro';
 import ScrollBlur from '~/components/core/ScrollBlur.astro';
 import Signature from '~/components/core/Signature.astro';
@@ -39,5 +40,6 @@ const { title = SITE_TITLE, description = SITE_DESCRIPTION } = Astro.props;
     <ScrollBlur edge="bottom" />
 
     <CopyShortcut />
+    <Cursor />
   </body>
 </html>

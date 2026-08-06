@@ -32,7 +32,11 @@ import { experience } from '~/lib/profile';
           <h3 class="type-body flex flex-wrap items-center gap-1 font-medium text-foreground">
             <span>{entry.role}</span>
             <span>at</span>
-            <Company name={entry.organisation}>
+            <Company
+              name={entry.organisation}
+              url={entry.url}
+              preview={entry.preview}
+            >
               {entry.mark === 'monogram' ? (
                 <Monogram />
               ) : entry.mark === 'academic' ? (
