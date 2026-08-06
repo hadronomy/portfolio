@@ -1,0 +1,115 @@
+---
+interface Props {
+  edge: 'top' | 'bottom';
+}
+
+const { edge } = Astro.props;
+
+/*
+  A progressive blur, not a single blurred pane. Eight layers each blur twice as
+  hard as the one below and are masked to a narrower band nearer the edge, so
+  the blur accumulates smoothly instead of ending on a visible seam — which is
+  what a lone `backdrop-filter` strip always does.
+
+  Core's strip is 72px on both edges.
+*/
+const LAYERS = 8;
+const BASE_BLUR = 0.25;
+
+const layers = Array.from({ length: LAYERS }, (_, index) => {
+  // Layer 0 covers the whole strip and blurs least; the last covers only the
+  // sliver at the edge and blurs most.
+  const opaqueTo = ((LAYERS - index - 1) / LAYERS) * 100;
+  const clearBy = ((LAYERS - index) / LAYERS) * 100;
+  const towards = edge === 'top' ? 'bottom' : 'top';
+
+  return {
+    blur: (BASE_BLUR * 2 ** index).toFixed(2),
+    mask: `linear-gradient(to ${towards}, rgb(0 0 0) 0%, rgb(0 0 0) ${opaqueTo}%, rgb(0 0 0 / 0) ${clearBy}%)`,
+  };
+});
+---
+
+<div
+  class="scroll-blur pointer-events-none fixed inset-x-0 z-30 h-[72px]"
+  data-edge={edge}
+  aria-hidden="true"
+>
+  {
+    layers.map((layer) => (
+      <div
+        class="absolute inset-0"
+        style={`backdrop-filter: blur(${layer.blur}px); -webkit-backdrop-filter: blur(${layer.blur}px); mask-image: ${layer.mask}; -webkit-mask-image: ${layer.mask};`}
+      />
+    ))
+  }
+
+  {/* A faint wash of the page colour under the blur, so text dissolves into the
+      background rather than staying legible-but-smeared behind it. */}
+  <div
+    class="absolute inset-0"
+    style={`background: linear-gradient(to ${edge === 'top' ? 'bottom' : 'top'}, hsl(var(--background)) 0%, hsl(var(--background) / 0) 100%);`}
+  >
+  </div>
+</div>
+
+<style>
+  .scroll-blur {
+    opacity: 0;
+    transition: opacity 220ms ease-out;
+  }
+
+  .scroll-blur[data-edge='top'] {
+    top: 0;
+  }
+
+  .scroll-blur[data-edge='bottom'] {
+    bottom: 0;
+  }
+
+  .scroll-blur[data-visible] {
+    opacity: 1;
+  }
+</style>
+
+<script>
+  const TOP_THRESHOLD = 24;
+  const BOTTOM_THRESHOLD = 24;
+
+  let frame = 0;
+
+  const update = () => {
+    frame = 0;
+
+    const top = document.querySelector<HTMLElement>(
+      '.scroll-blur[data-edge="top"]',
+    );
+    const bottom = document.querySelector<HTMLElement>(
+      '.scroll-blur[data-edge="bottom"]',
+    );
+
+    const y = window.scrollY;
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+
+    if (top) {
+      if (y > TOP_THRESHOLD) top.dataset.visible = '';
+      else delete top.dataset.visible;
+    }
+
+    if (bottom) {
+      // Hidden once the page bottom is reached; there is nothing left to fade.
+      if (max - y > BOTTOM_THRESHOLD) bottom.dataset.visible = '';
+      else delete bottom.dataset.visible;
+    }
+  };
+
+  const schedule = () => {
+    if (frame) return;
+    frame = requestAnimationFrame(update);
+  };
+
+  addEventListener('scroll', schedule, { passive: true });
+  addEventListener('resize', schedule, { passive: true });
+  document.addEventListener('astro:page-load', update);
+  update();
+</script>

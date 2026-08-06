@@ -1,6 +1,7 @@
 ---
 import CopyShortcut from '~/components/core/CopyShortcut.astro';
 import Header from '~/components/core/Header.astro';
+import ScrollBlur from '~/components/core/ScrollBlur.astro';
 import Signature from '~/components/core/Signature.astro';
 import Metadata from '~/components/Metadata.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '~/consts';
@@ -25,11 +26,17 @@ const { title = SITE_TITLE, description = SITE_DESCRIPTION } = Astro.props;
         itself rather than in a bar. */}
     <Header />
 
-    <main class="flex w-full flex-col gap-16 pb-8">
+    {/* 40px between sections, measured off the reference render — the canvas
+        reports a zero gap here and puts the spacing somewhere it does not
+        expose, so this comes from the pixels rather than the API. */}
+    <main class="flex w-full flex-col gap-10 pb-8">
       <slot />
     </main>
 
     <Signature />
+
+    <ScrollBlur edge="top" />
+    <ScrollBlur edge="bottom" />
 
     <CopyShortcut />
   </body>

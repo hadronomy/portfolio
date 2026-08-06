@@ -1,21 +1,36 @@
 ---
+import { Icon } from 'astro-icon/components';
 import { profile } from '~/lib/profile';
 
 const year = new Date().getFullYear();
 ---
 
-<footer class="mx-auto flex w-full max-w-content flex-col items-center gap-8 px-4 pt-16 pb-10">
+<footer class="mx-auto flex w-full max-w-content flex-col gap-10 px-4 pt-16 pb-10">
   {/*
     Set as text in the signature face rather than drawn, so it inherits the
     theme colour and needs no script to appear.
   */}
-  <p class="signature text-4xl leading-none text-foreground" aria-hidden="true">
+  <p
+    class="signature self-center text-4xl leading-none text-foreground"
+    aria-hidden="true"
+  >
     {profile.name}
   </p>
 
-  <p class="type-overline text-muted-foreground">
-    &copy; {year} {profile.name}
-  </p>
+  {/* Core closes on a meta row: copyright on one side, place on the other. It
+      also shows live temperature, which waits on the weather integration. */}
+  <div
+    class="flex flex-col gap-2 tablet:flex-row tablet:items-center tablet:justify-between"
+  >
+    <p class="type-overline text-muted-foreground">
+      &copy; {year} {profile.name}
+    </p>
+
+    <p class="type-overline flex items-center gap-2 text-muted-foreground">
+      <Icon name="tabler:map-pin" class="size-4" />
+      {profile.location}
+    </p>
+  </div>
 </footer>
 
 <style>

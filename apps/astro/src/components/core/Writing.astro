@@ -2,9 +2,12 @@
 import { Icon } from 'astro-icon/components';
 import { getCollection } from 'astro:content';
 import Overline from '~/components/core/Overline.astro';
+import Row from '~/components/core/Row.astro';
 import Section from '~/components/core/Section.astro';
 
-const posts = (await getCollection('blog', ({ data }) => data.state === 'published'))
+const posts = (
+  await getCollection('blog', ({ data }) => data.state === 'published')
+)
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
   .slice(0, 5);
 
@@ -23,17 +26,16 @@ const readingMinutes = (body: string | undefined) =>
     heading over nothing reads worse than no heading. */}
 {
   posts.length > 0 && (
-    <Section id="writing">
-      <Overline>Writing</Overline>
+    <div id="writing" class="flex w-full flex-col gap-4">
+      <Section>
+        <Overline>Writing</Overline>
+      </Section>
 
-      <ul class="flex flex-col">
+      <ul class="flex w-full flex-col">
         {posts.map((post) => (
           <li>
-            <a
-              href={`/blog/${post.id}`}
-              class="group flex items-baseline gap-4 rounded-[var(--radius)] py-2 transition-colors hover:bg-button-hover"
-            >
-              <span class="type-overline w-20 shrink-0 text-muted-foreground tablet:w-32">
+            <Row href={`/blog/${post.id}`}>
+              <span class="type-overline w-20 shrink-0 text-muted-foreground opacity-70 tablet:w-32">
                 {shortDate.format(post.data.pubDate)}
               </span>
 
@@ -45,10 +47,10 @@ const readingMinutes = (body: string | undefined) =>
                 <Icon name="tabler:clock" class="size-3.5" />
                 {readingMinutes(post.body)} m
               </span>
-            </a>
+            </Row>
           </li>
         ))}
       </ul>
-    </Section>
+    </div>
   )
 }

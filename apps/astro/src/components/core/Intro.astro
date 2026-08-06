@@ -28,11 +28,15 @@ import { profile } from '~/lib/profile';
     <div class="flex flex-col">
       <div class="flex items-center gap-1.5">
         <h1 class="type-h3 text-foreground">{profile.name}</h1>
-        <Icon
-          name="tabler:rosette-discount-check-filled"
-          class="size-5 text-[rgb(29,155,240)]"
-          aria-hidden="true"
-        />
+        {/* Core animates this badge between two variants; the sweep is the
+            same idea done in one element. */}
+        <span class="badge relative inline-flex size-5 shrink-0">
+          <Icon
+            name="tabler:rosette-discount-check-filled"
+            class="size-5 text-[rgb(29,155,240)]"
+            aria-hidden="true"
+          />
+        </span>
       </div>
       <p class="type-body text-muted-foreground">{profile.role}</p>
     </div>
@@ -46,3 +50,40 @@ import { profile } from '~/lib/profile';
     Press <Shortcut key="C" /> to copy my email
   </p>
 </Section>
+
+<style>
+  /* A highlight travelling across the mark, masked to the badge itself so it
+     never leaks a rectangle over the name beside it. */
+  .badge::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 999px;
+    background: linear-gradient(
+      110deg,
+      transparent 40%,
+      rgb(255 255 255 / 0.75) 50%,
+      transparent 60%
+    );
+    background-size: 300% 100%;
+    animation: badge-sweep 4.5s ease-in-out infinite;
+    mix-blend-mode: overlay;
+  }
+
+  @keyframes badge-sweep {
+    0%,
+    65% {
+      background-position: 150% 0;
+    }
+    100% {
+      background-position: -50% 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .badge::after {
+      animation: none;
+      opacity: 0;
+    }
+  }
+</style>

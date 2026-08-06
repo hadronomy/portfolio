@@ -18,13 +18,14 @@ import { experience } from '~/lib/profile';
     experience.map((entry) => (
       /* Fixed 144px date rail so every row's title starts on the same line,
          regardless of how long the period string is. */
-      <article class="flex flex-col gap-1 tablet:flex-row tablet:gap-0">
-        <p class="type-overline shrink-0 pt-1 text-muted-foreground tablet:w-36">
+      <article class="flex flex-col gap-2 tablet:flex-row tablet:gap-4">
+        {/* Core dims the date to 70% on top of the subdued colour. */}
+        <p class="type-overline shrink-0 pt-1 text-muted-foreground opacity-70 tablet:w-32">
           {entry.period}
         </p>
 
-        <div class="flex flex-col gap-1">
-          <h3 class="type-body flex flex-wrap items-center gap-1.5 font-medium text-foreground">
+        <div class="flex flex-col gap-0.5">
+          <h3 class="type-body flex flex-wrap items-center gap-1 font-medium text-foreground">
             {entry.role} at
             {entry.mark === 'monogram' ? (
               <Monogram />

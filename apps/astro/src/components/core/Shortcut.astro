@@ -12,8 +12,10 @@ const { key } = Astro.props;
   dropped entirely in dark mode — Core sets the token to zero alpha there
   rather than darkening it, which is why this is one token and not two rules.
 */}
+{/* Exactly 18px tall with no vertical padding, as Core sets it — any extra
+    height pushes the whole line and shows up as a spacing drift below. */}
 <kbd
-  class="inline-flex min-w-[22px] items-center justify-center rounded-[6px] bg-shortcut px-1.5 py-0.5 font-sans text-[13px] leading-[18px] font-medium text-foreground shadow-[0_1px_0_0_hsl(var(--shortcut-shadow))]"
+  class="inline-flex h-[18px] min-w-[20px] items-center justify-center rounded-[6px] bg-shortcut px-1.5 font-sans text-[13px] leading-[18px] font-medium text-foreground shadow-[0_1px_0_0_hsl(var(--shortcut-shadow))]"
 >
   {key}
 </kbd>
