@@ -1,0 +1,91 @@
+---
+import { Icon } from 'astro-icon/components';
+import { profile } from '~/lib/profile';
+
+const { latitude, longitude } = profile.coordinates;
+---
+
+{/*
+  Current conditions, fetched on the client rather than at build time — a
+  temperature baked into a static page is wrong within the hour. Open-Meteo
+  needs no key and allows cross-origin reads.
+
+  Every icon is rendered up front and revealed by code, so the correct one
+  appears without a second request and the row never jumps width.
+*/}
+<p
+  id="weather"
+  class="type-overline flex items-center gap-2 text-muted-foreground"
+  data-lat={latitude}
+  data-lon={longitude}
+  hidden
+>
+  <span class="grid size-4 shrink-0 place-items-center">
+    {
+      (
+        [
+          ['clear', 'tabler:sun'],
+          ['cloudy', 'tabler:cloud-filled'],
+          ['overcast', 'tabler:cloud'],
+          ['fog', 'tabler:cloud-fog'],
+          ['rain', 'tabler:cloud-rain'],
+          ['snow', 'tabler:snowflake'],
+          ['storm', 'tabler:cloud-storm'],
+        ] as const
+      ).map(([key, icon]) => (
+        <span class="weather-icon col-start-1 row-start-1" data-for={key} hidden>
+          <Icon name={icon} class="size-4" />
+        </span>
+      ))
+    }
+  </span>
+
+  <span id="weather-temp" class="tabular-nums"></span>
+</p>
+
+<script>
+  /** WMO weather codes, collapsed to the seven marks the footer draws. */
+  const describe = (code: number) => {
+    if (code === 0 || code === 1) return 'clear';
+    if (code === 2) return 'cloudy';
+    if (code === 3) return 'overcast';
+    if (code === 45 || code === 48) return 'fog';
+    if (code >= 71 && code <= 77) return 'snow';
+    if (code >= 95) return 'storm';
+    if (code >= 51) return 'rain';
+    return 'cloudy';
+  };
+
+  const load = async () => {
+    const root = document.getElementById('weather');
+    if (!root || root.dataset.loaded) return;
+
+    const { lat, lon } = root.dataset;
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code`;
+
+    try {
+      const response = await fetch(url);
+      if (!response.ok) return;
+
+      const { current } = await response.json();
+      if (typeof current?.temperature_2m !== 'number') return;
+
+      const temp = document.getElementById('weather-temp');
+      if (temp) temp.textContent = `${Math.round(current.temperature_2m)}°C`;
+
+      const wanted = describe(current.weather_code ?? 3);
+      for (const icon of root.querySelectorAll<HTMLElement>('.weather-icon')) {
+        icon.toggleAttribute('hidden', icon.dataset.for !== wanted);
+      }
+
+      root.dataset.loaded = 'true';
+      root.removeAttribute('hidden');
+    } catch {
+      // Offline or blocked: the row simply stays absent rather than showing
+      // a placeholder temperature that could be mistaken for a real one.
+    }
+  };
+
+  load();
+  document.addEventListener('astro:page-load', load);
+</script>

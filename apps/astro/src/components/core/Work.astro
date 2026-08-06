@@ -1,14 +1,16 @@
 ---
+import { Icon } from 'astro-icon/components';
 import Overline from '~/components/core/Overline.astro';
 import Section from '~/components/core/Section.astro';
 
 /*
-  Four placeholder panels stand in for real project screenshots. They carry the
-  correct geometry (300x248, 10px radius, Core's tilt and stagger) so dropping
-  real images in is a one-line change per panel and the layout does not move.
+  Four placeholder panels carrying Core's Work Image geometry exactly: 300x248
+  at 12px radius, a white mat, and the picture inset at 6px — a print in a
+  frame rather than a bare screenshot. The mat is white in both themes because
+  Core hardcodes it, and it is what makes the group read as objects lit against
+  the canvas instead of holes cut out of it.
 
-  Deliberately empty rather than mocked: an invented product UI here would be
-  the one thing on the page that is not true.
+  Dropping a real capture in means replacing the inner div and nothing else.
 */
 const panels = [
   { rotate: -9, x: -420, y: 26, z: 10 },
@@ -28,31 +30,31 @@ const panels = [
     </div>
   </Section>
 
-  {/*
-    Full-bleed band. `overflow-hidden` clips the outer panels at narrow widths,
-    so the padding below keeps the tallest tilted corner clear of the cut.
-  */}
   <div class="relative h-[340px] w-full overflow-hidden tablet:h-[540px]">
-    {/* A printed-substrate tick, not graph paper — it should be felt, not read. */}
+    {/* Core runs its canvas texture at 0.2 — felt, not read. */}
     <div
-      class="pointer-events-none absolute inset-0 opacity-40 [background-image:linear-gradient(to_right,hsl(var(--border-subtle))_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border-subtle))_1px,transparent_1px)] [background-size:40px_40px]"
+      class="pointer-events-none absolute inset-0 opacity-20 [background-image:linear-gradient(to_right,hsl(var(--border-subtle))_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border-subtle))_1px,transparent_1px)] [background-size:40px_40px]"
       aria-hidden="true"
     >
     </div>
 
-    {/* Scaled from the centre on small screens so the group keeps Core's
-        overlap instead of two panels filling the whole band. */}
     <div
       class="absolute inset-0 flex scale-[0.55] items-center justify-center tablet:scale-100"
     >
       {
         panels.map((panel) => (
           <div
-            class="absolute h-[248px] w-[300px] rounded-[10px] border border-subtle bg-inset"
+            class="work-panel group absolute h-[248px] w-[300px] rounded-[12px] bg-white p-2"
             style={`transform: translate(${panel.x}px, ${panel.y}px) rotate(${panel.rotate}deg); z-index: ${panel.z};`}
           >
-            <span class="type-overline absolute inset-0 flex items-center justify-center text-muted-foreground/40">
-              —
+            <div class="grid h-full w-full place-items-center rounded-[6px] bg-[rgb(232,232,232)]">
+              <span class="type-overline text-[rgb(150,150,150)]">—</span>
+            </div>
+
+            {/* Core reveals an icon button on hover rather than moving the
+                card; the panel itself never shifts. */}
+            <span class="pointer-events-none absolute right-4 bottom-4 grid size-8 place-items-center rounded-pill bg-[rgb(18,18,18)] text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+              <Icon name="tabler:arrow-up-right" class="size-4" />
             </span>
           </div>
         ))
@@ -60,3 +62,19 @@ const panels = [
     </div>
   </div>
 </div>
+
+<style>
+  /* A tight, directional cast rather than an all-round bloom, so the panels
+     sit on the canvas instead of glowing above it. */
+  .work-panel {
+    box-shadow:
+      0 1px 1px rgb(0 0 0 / 0.04),
+      0 8px 24px rgb(0 0 0 / 0.12);
+  }
+
+  :global(.dark) .work-panel {
+    box-shadow:
+      0 1px 1px rgb(0 0 0 / 0.3),
+      0 12px 32px rgb(0 0 0 / 0.55);
+  }
+</style>

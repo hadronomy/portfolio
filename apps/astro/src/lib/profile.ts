@@ -10,6 +10,8 @@ export const profile = {
   /** Year the "10+ years" of building started, shown as EST. in the header. */
   established: 2003,
   location: 'Canary Islands, Spain',
+  /** Santa Cruz de Tenerife, for the footer's current conditions. */
+  coordinates: { latitude: 28.4636, longitude: -16.2518 },
   email: 'hadronomy@gmail.com',
   avatar: 'https://github.com/hadronomy.png',
   intro:
