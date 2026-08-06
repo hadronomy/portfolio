@@ -23,12 +23,12 @@ const year = new Date().getFullYear();
   </p>
 
   {/*
-    The closing meta row spans the full 1200 frame rather than the 640 column,
-    so place and conditions sit at the outer edges with the copyright centred
-    above them.
+    Place and conditions push to the edges of the same 640px column the rest of
+    the page sits in — not the viewport. Letting them reach the window edges
+    breaks the column the whole layout is built on.
   */}
   <div
-    class="mx-auto mt-20 flex w-full max-w-[1200px] items-center justify-between gap-4 px-4"
+    class="mx-auto mt-20 flex w-full max-w-content items-center justify-between gap-4 px-4"
   >
     <p class="type-overline flex items-center gap-2 text-muted-foreground">
       <Icon name="tabler:map-pin" class="size-4 shrink-0" />
