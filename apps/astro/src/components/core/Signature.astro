@@ -1,0 +1,31 @@
+---
+import { profile } from '~/lib/profile';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="mx-auto flex w-full max-w-content flex-col items-center gap-8 px-4 pt-16 pb-10">
+  {/*
+    Set as text in the signature face rather than drawn, so it inherits the
+    theme colour and needs no script to appear.
+  */}
+  <p class="signature text-4xl leading-none text-foreground" aria-hidden="true">
+    {profile.name}
+  </p>
+
+  <p class="type-overline text-muted-foreground">
+    &copy; {year} {profile.name}
+  </p>
+</footer>
+
+<style>
+  @font-face {
+    font-family: 'Brittany Signature';
+    src: url('/fonts/BrittanySignature.ttf') format('truetype');
+    font-display: swap;
+  }
+
+  .signature {
+    font-family: 'Brittany Signature', cursive;
+  }
+</style>

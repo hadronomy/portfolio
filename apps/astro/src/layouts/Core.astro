@@ -1,0 +1,36 @@
+---
+import CopyShortcut from '~/components/core/CopyShortcut.astro';
+import Header from '~/components/core/Header.astro';
+import Signature from '~/components/core/Signature.astro';
+import Metadata from '~/components/Metadata.astro';
+import { SITE_DESCRIPTION, SITE_TITLE } from '~/consts';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title = SITE_TITLE, description = SITE_DESCRIPTION } = Astro.props;
+---
+
+<html lang="en" class="antialiased">
+  <head>
+    <Metadata title={title} description={description} />
+  </head>
+
+  <body
+    class="min-h-screen bg-background font-sans text-foreground selection:bg-foreground selection:text-background"
+  >
+    {/* One centred column, no chrome — Core carries navigation in the page
+        itself rather than in a bar. */}
+    <Header />
+
+    <main class="flex w-full flex-col gap-16 pb-8">
+      <slot />
+    </main>
+
+    <Signature />
+
+    <CopyShortcut />
+  </body>
+</html>

@@ -1,0 +1,19 @@
+---
+interface Props {
+  /** The key as the visitor sees it on their keyboard. */
+  key: string;
+}
+
+const { key } = Astro.props;
+---
+
+{/*
+  The shadow is a real offset cast rather than a second element, and it is
+  dropped entirely in dark mode — Core sets the token to zero alpha there
+  rather than darkening it, which is why this is one token and not two rules.
+*/}
+<kbd
+  class="inline-flex min-w-[22px] items-center justify-center rounded-[6px] bg-shortcut px-1.5 py-0.5 font-sans text-[13px] leading-[18px] font-medium text-foreground shadow-[0_1px_0_0_hsl(var(--shortcut-shadow))]"
+>
+  {key}
+</kbd>

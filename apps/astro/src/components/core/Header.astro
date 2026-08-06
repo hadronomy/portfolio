@@ -1,0 +1,57 @@
+---
+import { Icon } from 'astro-icon/components';
+import ThemeToggle from '~/components/ThemeToggle.astro';
+import { profile } from '~/lib/profile';
+---
+
+{/*
+  The toggle sits in this row rather than pinned to the viewport corner, where
+  it would land on top of the clock once the column stops being centred.
+*/}
+<header
+  class="mx-auto flex w-full max-w-content items-center justify-between gap-4 px-4 py-6"
+>
+  <p class="type-overline text-muted-foreground">Est. {profile.established}</p>
+
+  <div class="flex items-center gap-3">
+    <p class="type-overline flex items-center gap-1.5 text-muted-foreground">
+      <Icon name="tabler:clock" class="size-3.5" />
+      {/* Rendered at full width up front so the row never reflows on hydrate. */}
+      <time id="utc-clock" datetime="" class="tabular-nums">--:--:-- UTC</time>
+    </p>
+
+    <ThemeToggle class="size-7" />
+  </div>
+</header>
+
+<script>
+  const pad = (n: number) => String(n).padStart(2, '0');
+
+  const tick = () => {
+    const el = document.getElementById('utc-clock');
+    if (!el) return false;
+
+    const now = new Date();
+    const h = now.getUTCHours();
+    const m = now.getUTCMinutes();
+    const s = now.getUTCSeconds();
+
+    // Core renders the hour unpadded (8:29:56) but pads minutes and seconds.
+    el.textContent = `${h}:${pad(m)}:${pad(s)} UTC`;
+    el.setAttribute('datetime', now.toISOString());
+    return true;
+  };
+
+  let timer: number | undefined;
+
+  const start = () => {
+    window.clearInterval(timer);
+    if (tick()) timer = window.setInterval(tick, 1000);
+  };
+
+  start();
+  document.addEventListener('astro:page-load', start);
+  document.addEventListener('astro:before-swap', () =>
+    window.clearInterval(timer),
+  );
+</script>

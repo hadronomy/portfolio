@@ -1,0 +1,62 @@
+---
+import Overline from '~/components/core/Overline.astro';
+import Section from '~/components/core/Section.astro';
+
+/*
+  Four placeholder panels stand in for real project screenshots. They carry the
+  correct geometry (300x248, 10px radius, Core's tilt and stagger) so dropping
+  real images in is a one-line change per panel and the layout does not move.
+
+  Deliberately empty rather than mocked: an invented product UI here would be
+  the one thing on the page that is not true.
+*/
+const panels = [
+  { rotate: -9, x: -420, y: 26, z: 10 },
+  { rotate: -4, x: -150, y: -18, z: 20 },
+  { rotate: 5, x: 130, y: 34, z: 30 },
+  { rotate: 11, x: 400, y: -6, z: 20 },
+];
+---
+
+<div id="work" class="flex w-full flex-col gap-4">
+  <Section gap={24}>
+    <div class="flex flex-col gap-4">
+      <Overline>Work</Overline>
+      <p class="type-body text-muted-foreground">
+        Placeholders below. Real project captures are on the way.
+      </p>
+    </div>
+  </Section>
+
+  {/*
+    Full-bleed band. `overflow-hidden` clips the outer panels at narrow widths,
+    so the padding below keeps the tallest tilted corner clear of the cut.
+  */}
+  <div class="relative h-[340px] w-full overflow-hidden tablet:h-[540px]">
+    {/* A printed-substrate tick, not graph paper — it should be felt, not read. */}
+    <div
+      class="pointer-events-none absolute inset-0 opacity-40 [background-image:linear-gradient(to_right,hsl(var(--border-subtle))_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border-subtle))_1px,transparent_1px)] [background-size:40px_40px]"
+      aria-hidden="true"
+    >
+    </div>
+
+    {/* Scaled from the centre on small screens so the group keeps Core's
+        overlap instead of two panels filling the whole band. */}
+    <div
+      class="absolute inset-0 flex scale-[0.55] items-center justify-center tablet:scale-100"
+    >
+      {
+        panels.map((panel) => (
+          <div
+            class="absolute h-[248px] w-[300px] rounded-[10px] border border-subtle bg-inset"
+            style={`transform: translate(${panel.x}px, ${panel.y}px) rotate(${panel.rotate}deg); z-index: ${panel.z};`}
+          >
+            <span class="type-overline absolute inset-0 flex items-center justify-center text-muted-foreground/40">
+              —
+            </span>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</div>

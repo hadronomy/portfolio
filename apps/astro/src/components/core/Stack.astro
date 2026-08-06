@@ -1,0 +1,31 @@
+---
+import { Icon } from 'astro-icon/components';
+import Overline from '~/components/core/Overline.astro';
+import Section from '~/components/core/Section.astro';
+import { stack } from '~/lib/profile';
+
+/*
+  TODO(layer 5): this row shows ten of twenty-four. Redesign it to carry the
+  full stack at the same density before adding entries here — widening this
+  row is what makes it look like a checklist.
+*/
+---
+
+<Section id="stack">
+  <Overline>Stack</Overline>
+
+  <ul class="flex flex-wrap items-center gap-2.5">
+    {
+      stack.map((tool) => (
+        <li>
+          <span
+            class="flex size-10 items-center justify-center rounded-[8px] text-foreground"
+            title={tool.name}
+          >
+            <Icon name={tool.icon} class="size-6" aria-label={tool.name} />
+          </span>
+        </li>
+      ))
+    }
+  </ul>
+</Section>

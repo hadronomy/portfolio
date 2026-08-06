@@ -1,0 +1,45 @@
+---
+import { Icon } from 'astro-icon/components';
+import Monogram from '~/components/core/Monogram.astro';
+import Overline from '~/components/core/Overline.astro';
+import Section from '~/components/core/Section.astro';
+import { experience } from '~/lib/profile';
+---
+
+<Section id="experience" gap={32}>
+  <div class="flex flex-col gap-4">
+    <Overline>Experience</Overline>
+    <p class="type-body text-muted-foreground">
+      Ten years of building, most of it in the open. A brief overview.
+    </p>
+  </div>
+
+  {
+    experience.map((entry) => (
+      /* Fixed 144px date rail so every row's title starts on the same line,
+         regardless of how long the period string is. */
+      <article class="flex flex-col gap-1 tablet:flex-row tablet:gap-0">
+        <p class="type-overline shrink-0 pt-1 text-muted-foreground tablet:w-36">
+          {entry.period}
+        </p>
+
+        <div class="flex flex-col gap-1">
+          <h3 class="type-body flex flex-wrap items-center gap-1.5 font-medium text-foreground">
+            {entry.role} at
+            {entry.mark === 'monogram' ? (
+              <Monogram />
+            ) : entry.mark === 'academic' ? (
+              <span class="flex size-5 items-center justify-center rounded-[6px] bg-foreground text-background">
+                <Icon name="tabler:school" class="size-3" />
+              </span>
+            ) : (
+              <Icon name={entry.mark} class="size-5 text-foreground" />
+            )}
+            {entry.organisation}
+          </h3>
+          <p class="type-body text-muted-foreground">{entry.description}</p>
+        </div>
+      </article>
+    ))
+  }
+</Section>

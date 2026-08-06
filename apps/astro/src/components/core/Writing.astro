@@ -1,0 +1,54 @@
+---
+import { Icon } from 'astro-icon/components';
+import { getCollection } from 'astro:content';
+import Overline from '~/components/core/Overline.astro';
+import Section from '~/components/core/Section.astro';
+
+const posts = (await getCollection('blog', ({ data }) => data.state === 'published'))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .slice(0, 5);
+
+const shortDate = new Intl.DateTimeFormat('en-GB', {
+  day: '2-digit',
+  month: '2-digit',
+  year: '2-digit',
+});
+
+/** Core shows whole minutes; 200 wpm is the usual reading-speed assumption. */
+const readingMinutes = (body: string | undefined) =>
+  Math.max(1, Math.round((body?.trim().split(/\s+/).length ?? 0) / 200));
+---
+
+{/* The section is omitted entirely rather than rendered empty — a Writing
+    heading over nothing reads worse than no heading. */}
+{
+  posts.length > 0 && (
+    <Section id="writing">
+      <Overline>Writing</Overline>
+
+      <ul class="flex flex-col">
+        {posts.map((post) => (
+          <li>
+            <a
+              href={`/blog/${post.id}`}
+              class="group flex items-baseline gap-4 rounded-[var(--radius)] py-2 transition-colors hover:bg-button-hover"
+            >
+              <span class="type-overline w-20 shrink-0 text-muted-foreground tablet:w-32">
+                {shortDate.format(post.data.pubDate)}
+              </span>
+
+              <span class="type-body flex-1 text-foreground">
+                {post.data.title}
+              </span>
+
+              <span class="type-overline flex shrink-0 items-center gap-1.5 text-muted-foreground">
+                <Icon name="tabler:clock" class="size-3.5" />
+                {readingMinutes(post.body)} m
+              </span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </Section>
+  )
+}
