@@ -1,9 +1,8 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import * as React from 'react';
-
 import { cn } from '@portfolio/ui';
+import { motion } from 'motion/react';
+import * as React from 'react';
 
 type Link =
   | { active: boolean; label: string; href: string; disabled?: undefined }
