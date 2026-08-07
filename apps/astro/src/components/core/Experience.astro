@@ -1,0 +1,56 @@
+---
+import { Icon } from 'astro-icon/components';
+import Company from '~/components/core/Company.astro';
+import Monogram from '~/components/core/Monogram.astro';
+import Overline from '~/components/core/Overline.astro';
+import Section from '~/components/core/Section.astro';
+import { experience } from '~/lib/profile';
+---
+
+<Section id="experience" gap={32}>
+  <div class="flex flex-col gap-4">
+    <Overline>Experience</Overline>
+    <p class="type-body text-muted-foreground">
+      Ten years of building, most of it in the open. A brief overview.
+    </p>
+  </div>
+
+  {
+    experience.map((entry) => (
+      /* Fixed 144px date rail so every row's title starts on the same line,
+         regardless of how long the period string is. */
+      <article class="flex flex-col gap-2 tablet:flex-row tablet:gap-4">
+        {/* Core dims the date to 70% on top of the subdued colour. */}
+        <p class="type-overline shrink-0 pt-1 text-muted-foreground opacity-70 tablet:w-32">
+          {entry.period}
+        </p>
+
+        <div class="flex flex-col gap-0.5">
+          {/* Core keeps the role, the joining word and the company chip as
+              three siblings 4px apart, so the chip's own padding is what
+              spaces the mark rather than the row gap. */}
+          <h3 class="type-body flex flex-wrap items-center gap-1 font-medium text-foreground">
+            <span>{entry.role}</span>
+            <span>at</span>
+            <Company
+              name={entry.organisation}
+              url={entry.url}
+              preview={entry.preview}
+            >
+              {entry.mark === 'monogram' ? (
+                <Monogram />
+              ) : entry.mark === 'academic' ? (
+                <span class="flex size-5 shrink-0 items-center justify-center rounded-[6px] bg-foreground text-background">
+                  <Icon name="tabler:school" class="size-3" />
+                </span>
+              ) : (
+                <Icon name={entry.mark} class="size-5 shrink-0 text-foreground" />
+              )}
+            </Company>
+          </h3>
+          <p class="type-body text-muted-foreground">{entry.description}</p>
+        </div>
+      </article>
+    ))
+  }
+</Section>

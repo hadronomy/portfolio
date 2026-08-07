@@ -1,0 +1,48 @@
+---
+import { Icon } from 'astro-icon/components';
+import Overline from '~/components/core/Overline.astro';
+import Row from '~/components/core/Row.astro';
+import Section from '~/components/core/Section.astro';
+import { socials } from '~/lib/profile';
+---
+
+{/*
+  Core splits this section: the heading block is capped at 640, the rows below
+  are full width so their hover fill can bleed. Hence two siblings rather than
+  one wrapper.
+*/}
+<div id="contact" class="flex w-full flex-col gap-8">
+  <Section>
+    <Overline>Contact</Overline>
+
+    <p class="type-body text-muted-foreground">
+      The fastest way to reach me is email. Everything else below reaches me too.
+    </p>
+  </Section>
+
+  {/*
+    Core puts a form here. This is a static site with no endpoint behind it, and
+    a form that silently drops messages is worse than no form, so the rows are
+    the whole contact surface until there is somewhere to post to.
+  */}
+  <ul class="flex w-full flex-col">
+    {
+      socials.map((social) => (
+        <li>
+          <Row href={social.href} external={social.href.startsWith('http')}>
+            <Icon name={social.icon} class="size-5 shrink-0 text-foreground" />
+            <span class="type-body text-foreground">{social.label}</span>
+
+            <span class="type-body ml-auto flex items-center gap-1.5 text-muted-foreground">
+              {social.handle}
+              <Icon
+                name="tabler:arrow-up-right"
+                class="size-4 transition-transform group-hover:-translate-y-px group-hover:translate-x-px"
+              />
+            </span>
+          </Row>
+        </li>
+      ))
+    }
+  </ul>
+</div>

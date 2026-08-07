@@ -1,0 +1,118 @@
+---
+interface Props {
+  edge: 'top' | 'bottom';
+}
+
+const { edge } = Astro.props;
+
+/*
+  A port of Framer's Blur Gradient, which Core pins to both edges at 72px.
+
+  The part that matters is the masks. Each layer is a *sliding band* —
+  transparent, opaque, opaque, transparent — 37.5% wide, stepping 12.5% along
+  the axis, so consecutive bands overlap by two thirds. Any given pixel is
+  therefore covered by roughly three layers whose blur radii differ by 2x, and
+  the strength varies continuously instead of stepping. Stacking cumulative
+  ramps instead (every layer anchored at the same edge) sums to a smear; this
+  reads as frost.
+
+  Radii double from blur/128 up to blur, so almost all of the range sits in the
+  sub-pixel end where the falloff is delicate.
+*/
+const BLUR = 10;
+
+const STEPS = [
+  'rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 12.5%, rgba(0, 0, 0, 1) 25%, rgba(0, 0, 0, 0) 37.5%',
+  'rgba(0, 0, 0, 0) 12.5%, rgba(0, 0, 0, 1) 25%, rgba(0, 0, 0, 1) 37.5%, rgba(0, 0, 0, 0) 50%',
+  'rgba(0, 0, 0, 0) 25%, rgba(0, 0, 0, 1) 37.5%, rgba(0, 0, 0, 1) 50%, rgba(0, 0, 0, 0) 62.5%',
+  'rgba(0, 0, 0, 0) 37.5%, rgba(0, 0, 0, 1) 50%, rgba(0, 0, 0, 1) 62.5%, rgba(0, 0, 0, 0) 75%',
+  'rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 1) 62.5%, rgba(0, 0, 0, 1) 75%, rgba(0, 0, 0, 0) 87.5%',
+  'rgba(0, 0, 0, 0) 62.5%, rgba(0, 0, 0, 1) 75%, rgba(0, 0, 0, 1) 87.5%, rgba(0, 0, 0, 0) 100%',
+  'rgba(0, 0, 0, 0) 75%, rgba(0, 0, 0, 1) 87.5%, rgba(0, 0, 0, 1) 100%',
+  'rgba(0, 0, 0, 0) 87.5%, rgba(0, 0, 0, 1) 100%',
+];
+
+// Blur has to grow towards the screen edge, so the axis flips per side.
+const direction = edge === 'top' ? 'to top' : 'to bottom';
+
+const layers = STEPS.map((gradient, index) => ({
+  blur: BLUR / 2 ** (STEPS.length - 1 - index),
+  mask: `linear-gradient(${direction}, ${gradient})`,
+  z: index + 1,
+}));
+---
+
+<div
+  class="scroll-blur pointer-events-none fixed inset-x-0 z-30 h-[72px] overflow-hidden"
+  data-edge={edge}
+  aria-hidden="true"
+>
+  {
+    layers.map((layer) => (
+      <div
+        class="pointer-events-none absolute inset-0"
+        style={`z-index: ${layer.z}; backdrop-filter: blur(${layer.blur}px); -webkit-backdrop-filter: blur(${layer.blur}px); mask-image: ${layer.mask}; -webkit-mask-image: ${layer.mask};`}
+      />
+    ))
+  }
+</div>
+
+<style>
+  .scroll-blur {
+    opacity: 0;
+    transition: opacity 300ms ease-out;
+  }
+
+  .scroll-blur[data-edge='top'] {
+    top: 0;
+  }
+
+  .scroll-blur[data-edge='bottom'] {
+    bottom: 0;
+  }
+
+  .scroll-blur[data-visible] {
+    opacity: 1;
+  }
+</style>
+
+<script>
+  const THRESHOLD = 24;
+
+  let frame = 0;
+
+  const update = () => {
+    frame = 0;
+
+    const top = document.querySelector<HTMLElement>(
+      '.scroll-blur[data-edge="top"]',
+    );
+    const bottom = document.querySelector<HTMLElement>(
+      '.scroll-blur[data-edge="bottom"]',
+    );
+
+    const y = window.scrollY;
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+
+    if (top) {
+      if (y > THRESHOLD) top.dataset.visible = '';
+      else delete top.dataset.visible;
+    }
+
+    if (bottom) {
+      // Hidden once the page bottom is reached; there is nothing left to fade.
+      if (max - y > THRESHOLD) bottom.dataset.visible = '';
+      else delete bottom.dataset.visible;
+    }
+  };
+
+  const schedule = () => {
+    if (frame) return;
+    frame = requestAnimationFrame(update);
+  };
+
+  addEventListener('scroll', schedule, { passive: true });
+  addEventListener('resize', schedule, { passive: true });
+  document.addEventListener('astro:page-load', update);
+  update();
+</script>

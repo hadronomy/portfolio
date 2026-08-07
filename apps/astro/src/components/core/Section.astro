@@ -1,0 +1,24 @@
+---
+interface Props {
+  id?: string;
+  /** Core sets 16px between most sections, 24px after the intro, 32px around
+   *  experience and contact. Anything else is a transcription slip. */
+  gap?: 16 | 24 | 32;
+  class?: string;
+}
+
+const { id, gap = 16, class: className } = Astro.props;
+
+const gapClass = { 16: 'gap-4', 24: 'gap-6', 32: 'gap-8' }[gap];
+---
+
+<section
+  id={id}
+  class:list={[
+    'mx-auto flex w-full max-w-content flex-col px-4',
+    gapClass,
+    className,
+  ]}
+>
+  <slot />
+</section>

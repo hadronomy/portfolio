@@ -1,0 +1,86 @@
+---
+import { Icon } from 'astro-icon/components';
+import Overline from '~/components/core/Overline.astro';
+import Section from '~/components/core/Section.astro';
+
+/*
+  The photo strip is built the same way as the Work panels: a white mat with
+  the print inset, not a flat tile. Frames overlap by 16px and stack left to
+  right, each tilted a degree or two off the last, so the group reads as prints
+  laid down on a surface rather than a row of boxes.
+
+  184x248 per frame, which is what Core sets. Real photographs replace the
+  inner div and nothing else moves.
+*/
+const frames = [
+  { rotate: -3, z: 10 },
+  { rotate: 2.5, z: 20 },
+  { rotate: -2, z: 30 },
+  { rotate: 3, z: 40 },
+];
+---
+
+<div id="personal" class="flex w-full flex-col gap-4">
+  <Section>
+    <Overline>Personal</Overline>
+
+    <p class="type-body text-muted-foreground">
+      Away from the keyboard I take photographs.
+    </p>
+  </Section>
+
+  {/*
+    The strip is wider than the text column by design, so it lives outside the
+    section and clips at the viewport instead. Clipping it at the column would
+    slice the two outer frames down their edges.
+
+    Vertical padding clears the tilted corners; without it the rotation gets
+    cut flat top and bottom.
+  */}
+  <div class="w-full overflow-hidden py-5">
+    <ul class="flex scale-[0.7] items-center justify-center tablet:scale-100">
+      {
+        frames.map((frame, index) => (
+          <li
+            class="photo h-[248px] w-[184px] shrink-0 rounded-[10px] bg-white p-2"
+            style={`transform: rotate(${frame.rotate}deg); z-index: ${frame.z}; margin-left: ${index === 0 ? 0 : -16}px;`}
+          >
+            <div class="grid h-full w-full place-items-center rounded-[6px] bg-[rgb(232,232,232)]">
+              <span class="type-overline text-[rgb(150,150,150)]">—</span>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+
+  <Section>
+    <div class="flex items-center justify-end">
+      <a
+        href="https://instagram.com/hadronomy"
+        target="_blank"
+        rel="me noreferrer"
+        class="type-body flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+      >
+        See more on Instagram
+        <Icon name="simple-icons:instagram" class="size-4" />
+      </a>
+    </div>
+  </Section>
+</div>
+
+<style>
+  /* Same directional cast as the work panels — prints sitting on a surface,
+     not glowing above it. */
+  .photo {
+    box-shadow:
+      0 1px 1px rgb(0 0 0 / 0.04),
+      0 8px 20px rgb(0 0 0 / 0.14);
+  }
+
+  :global(.dark) .photo {
+    box-shadow:
+      0 1px 1px rgb(0 0 0 / 0.3),
+      0 10px 28px rgb(0 0 0 / 0.5);
+  }
+</style>

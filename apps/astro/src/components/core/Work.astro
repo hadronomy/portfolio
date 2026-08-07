@@ -1,0 +1,98 @@
+---
+import { Icon } from 'astro-icon/components';
+import Overline from '~/components/core/Overline.astro';
+import Section from '~/components/core/Section.astro';
+
+/*
+  Four placeholder panels carrying Core's Work Image geometry exactly: 300x248
+  at 12px radius, a white mat, and the picture inset at 6px — a print in a
+  frame rather than a bare screenshot. The mat is white in both themes because
+  Core hardcodes it, and it is what makes the group read as objects lit against
+  the canvas instead of holes cut out of it.
+
+  Dropping a real capture in means replacing the inner div and nothing else.
+*/
+const panels = [
+  { rotate: -9, x: -420, y: 26, z: 10 },
+  { rotate: -4, x: -150, y: -18, z: 20 },
+  { rotate: 5, x: 130, y: 34, z: 30 },
+  { rotate: 11, x: 400, y: -6, z: 20 },
+];
+---
+
+<div id="work" class="flex w-full flex-col gap-4">
+  <Section gap={24}>
+    <div class="flex flex-col gap-4">
+      <Overline>Work</Overline>
+      <p class="type-body text-muted-foreground">
+        Placeholders below. Real project captures are on the way.
+      </p>
+    </div>
+  </Section>
+
+  <div class="relative h-[340px] w-full overflow-hidden tablet:h-[540px]">
+    {/* Core runs its canvas texture at 0.2 — felt, not read. */}
+    <div class="work-canvas pointer-events-none absolute inset-0 opacity-20" aria-hidden="true">
+    </div>
+
+    <div
+      class="absolute inset-0 flex scale-[0.55] items-center justify-center tablet:scale-100"
+    >
+      {
+        panels.map((panel) => (
+          <div
+            class="work-panel group absolute h-[248px] w-[300px] rounded-[12px] bg-white p-2"
+            style={`transform: translate(${panel.x}px, ${panel.y}px) rotate(${panel.rotate}deg); z-index: ${panel.z};`}
+          >
+            <div class="grid h-full w-full place-items-center rounded-[6px] bg-[rgb(232,232,232)]">
+              <span class="type-overline text-[rgb(150,150,150)]">—</span>
+            </div>
+
+            {/* Core reveals an icon button on hover rather than moving the
+                card; the panel itself never shifts. */}
+            <span class="pointer-events-none absolute right-4 bottom-4 grid size-8 place-items-center rounded-pill bg-[rgb(18,18,18)] text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+              <Icon name="tabler:arrow-up-right" class="size-4" />
+            </span>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</div>
+
+<style>
+  /*
+    Core tiles a halftone SVG here: 1.5px circles on an 11px square lattice,
+    drawn at 0.6545 scale — so 7.2px pitch and a 0.98px radius on screen.
+
+    The gradient stops are 0.5px and 1.4px rather than a hard edge at 0.98,
+    because a hard stop under two pixels across aliases into a moiré. The pair
+    integrates to the same disc area, so the field reads at the same weight.
+
+    Framer fills the dots #8F8F8F in both themes, which is exactly what
+    --muted-foreground resolves to in the dark palette; the light palette's
+    value is a shade darker, which is the right direction against white.
+  */
+  .work-canvas {
+    background-image: radial-gradient(
+      circle at center,
+      hsl(var(--muted-foreground)) 0.5px,
+      transparent 1.4px
+    );
+    background-size: 7.2px 7.2px;
+  }
+
+  /* A tight, directional cast rather than an all-round bloom, so the panels
+     sit on the canvas instead of glowing above it. */
+  .work-panel {
+    box-shadow:
+      0 1px 1px rgb(0 0 0 / 0.04),
+      0 8px 24px rgb(0 0 0 / 0.12);
+  }
+
+  :global(.dark) .work-panel {
+    box-shadow:
+      0 1px 1px rgb(0 0 0 / 0.3),
+      0 12px 32px rgb(0 0 0 / 0.55);
+  }
+</style>

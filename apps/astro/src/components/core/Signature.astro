@@ -1,0 +1,52 @@
+---
+import { Icon } from 'astro-icon/components';
+import Weather from '~/components/core/Weather.astro';
+import { profile } from '~/lib/profile';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="w-full pt-16 pb-10">
+  {/*
+    Set as text in the signature face rather than drawn, so it inherits the
+    theme colour and needs no script to appear.
+  */}
+  <p
+    class="signature text-center text-4xl leading-none text-foreground"
+    aria-hidden="true"
+  >
+    {profile.name}
+  </p>
+
+  <p class="type-overline mt-14 text-center text-muted-foreground">
+    &copy; {year} {profile.name}
+  </p>
+
+  {/*
+    Place and conditions push to the edges of the same 640px column the rest of
+    the page sits in — not the viewport. Letting them reach the window edges
+    breaks the column the whole layout is built on.
+  */}
+  <div
+    class="mx-auto mt-20 flex w-full max-w-content items-center justify-between gap-4 px-4"
+  >
+    <p class="type-overline flex items-center gap-2 text-muted-foreground">
+      <Icon name="tabler:map-pin" class="size-4 shrink-0" />
+      {profile.location}
+    </p>
+
+    <Weather />
+  </div>
+</footer>
+
+<style>
+  @font-face {
+    font-family: 'Brittany Signature';
+    src: url('/fonts/BrittanySignature.ttf') format('truetype');
+    font-display: swap;
+  }
+
+  .signature {
+    font-family: 'Brittany Signature', cursive;
+  }
+</style>

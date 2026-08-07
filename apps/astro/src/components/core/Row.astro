@@ -1,0 +1,27 @@
+---
+interface Props {
+  href: string;
+  external?: boolean;
+}
+
+const { href, external = false } = Astro.props;
+---
+
+{/*
+  A list row whose hover fill runs the full width of the viewport while its
+  content stays inside the 640px column. Core builds these as full-width nodes
+  with only the inner block constrained, which is why the fill is square-edged:
+  rounding it would put corners in the middle of a bleed.
+*/}
+<a
+  href={href}
+  class="group block w-full transition-colors hover:bg-surface"
+  rel={external ? 'me noreferrer' : undefined}
+  target={external ? '_blank' : undefined}
+>
+  <span
+    class="mx-auto flex w-full max-w-content items-center gap-3 px-4 py-3 tablet:py-2"
+  >
+    <slot />
+  </span>
+</a>
