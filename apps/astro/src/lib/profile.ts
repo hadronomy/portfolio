@@ -105,7 +105,7 @@ export const socials = [
   },
   {
     label: 'LinkedIn',
-    handle: '@hadronomy',
+    handle: '/in/hadronomy',
     href: 'https://linkedin.com/in/hadronomy',
     icon: 'simple-icons:linkedin',
   },

@@ -32,10 +32,7 @@ const panels = [
 
   <div class="relative h-[340px] w-full overflow-hidden tablet:h-[540px]">
     {/* Core runs its canvas texture at 0.2 — felt, not read. */}
-    <div
-      class="pointer-events-none absolute inset-0 opacity-20 [background-image:linear-gradient(to_right,hsl(var(--border-subtle))_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border-subtle))_1px,transparent_1px)] [background-size:40px_40px]"
-      aria-hidden="true"
-    >
+    <div class="work-canvas pointer-events-none absolute inset-0 opacity-20" aria-hidden="true">
     </div>
 
     <div
@@ -64,6 +61,27 @@ const panels = [
 </div>
 
 <style>
+  /*
+    Core tiles a halftone SVG here: 1.5px circles on an 11px square lattice,
+    drawn at 0.6545 scale — so 7.2px pitch and a 0.98px radius on screen.
+
+    The gradient stops are 0.5px and 1.4px rather than a hard edge at 0.98,
+    because a hard stop under two pixels across aliases into a moiré. The pair
+    integrates to the same disc area, so the field reads at the same weight.
+
+    Framer fills the dots #8F8F8F in both themes, which is exactly what
+    --muted-foreground resolves to in the dark palette; the light palette's
+    value is a shade darker, which is the right direction against white.
+  */
+  .work-canvas {
+    background-image: radial-gradient(
+      circle at center,
+      hsl(var(--muted-foreground)) 0.5px,
+      transparent 1.4px
+    );
+    background-size: 7.2px 7.2px;
+  }
+
   /* A tight, directional cast rather than an all-round bloom, so the panels
      sit on the canvas instead of glowing above it. */
   .work-panel {
