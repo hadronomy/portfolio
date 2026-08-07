@@ -27,7 +27,10 @@
   aria-hidden="true"
   class="pointer-events-none fixed top-0 left-0 z-[60] hidden"
 >
-  <div id="cursor-shape" class="flex items-center overflow-hidden bg-cursor">
+  <div
+    id="cursor-shape"
+    class="flex items-center overflow-hidden bg-cursor backdrop-blur-md backdrop-saturate-150"
+  >
     {/* Sized to the box rather than fixed, so it grows with the card instead
         of popping in at full size once the morph finishes. */}
     <img
@@ -74,10 +77,26 @@
     padding: 2px;
   }
 
+  /* Core tints this variant green rather than using the cursor token, and
+     pads it 2px/6px with a 6px gap. */
   #cursor[data-state='label'] #cursor-shape {
     width: var(--cursor-label-width, 120px);
-    height: 28px;
-    border-radius: 999px;
+    height: fit-content;
+    border-radius: 16px;
+    padding: 2px 6px;
+    gap: 6px;
+    background-color: rgb(22 191 94 / 0.08);
+  }
+
+  /*
+    The click. Core carries a `pressed` gesture on two variants: the dot goes
+    20px to 16px, while the preview card holds its size. So the press only
+    applies to the resting dot.
+  */
+  #cursor[data-pressed]:not([data-state='preview']):not([data-state='label'])
+    #cursor-shape {
+    width: 16px;
+    height: 16px;
   }
 
   #cursor[data-state='preview'] #cursor-media {
@@ -230,9 +249,12 @@
           'hidden',
           !target.hasAttribute('data-cursor-active'),
         );
-        // Measure once so the pill animates to a real width.
-        root.style.setProperty('--cursor-label-width', 'auto');
+        // The label is display:none until the state applies, so it has to be
+        // laid out before it can be measured — otherwise the pill animates to
+        // the width of its own padding.
+        label.style.display = 'flex';
         const width = label.getBoundingClientRect().width;
+        label.style.removeProperty('display');
         root.style.setProperty('--cursor-label-width', `${Math.ceil(width)}px`);
         return setState('label');
       }
@@ -240,10 +262,32 @@
       setState('dot');
     });
 
+    // The press gesture. Kept on pointerdown/up rather than :active so it
+    // still reads when the press lands on something that is not a control.
+    document.addEventListener(
+      'pointerdown',
+      (event) => {
+        if (event.pointerType !== 'mouse') return;
+        root.dataset.pressed = '';
+        trackMorph();
+      },
+      { passive: true },
+    );
+
+    const release = () => {
+      if (!('pressed' in root.dataset)) return;
+      delete root.dataset.pressed;
+      trackMorph();
+    };
+
+    document.addEventListener('pointerup', release, { passive: true });
+    document.addEventListener('pointercancel', release, { passive: true });
+
     // Leaving the window fades the follower but keeps its position, so coming
     // back does not send it flying in from wherever it was parked.
     document.addEventListener('pointerleave', () => {
       root.dataset.away = '';
+      release();
     });
 
     document.addEventListener('pointerenter', () => {
