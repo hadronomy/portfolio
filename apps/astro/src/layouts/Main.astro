@@ -19,11 +19,11 @@ const {
 } = Astro.props;
 ---
 
-<html lang="en" class="dark antialiased">
+<html lang="en" class="antialiased">
   <head>
     <Metadata title={title} description={description} />
   </head>
-  <body class="min-h-screen bg-background text-foreground font-mono selection:bg-white selection:text-black overflow-x-hidden">
+  <body class="min-h-screen bg-background text-foreground font-sans selection:bg-foreground selection:text-background overflow-x-hidden">
     <div class="grid grid-cols-1 lg:grid-cols-12 min-h-screen w-full relative">
       <aside class="hidden lg:flex col-span-3 border-r border-white/20 flex-col z-30 sticky top-0 h-screen bg-background">
         <div class="h-20 shrink-0 flex items-center px-8"/>
