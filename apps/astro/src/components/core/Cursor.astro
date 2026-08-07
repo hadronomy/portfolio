@@ -1,15 +1,24 @@
 ---
 /*
-  A soft follower that trails the pointer and morphs over anything carrying a
-  `data-cursor` attribute. Ported from Core's Elements/Cursor: a 20px dot at
-  16px radius in the translucent cursor token, a preview card at 10px radius
-  with 2px padding around 104px-tall media, and a label pill with a 10px
-  activity dot.
+  A follower that trails the pointer and morphs over anything carrying a
+  `data-cursor` attribute. Ported from Core's Elements/Cursor, with the timing
+  read off a screen recording frame by frame rather than guessed.
 
-  The native cursor stays visible. Core's fill is 15%/30% alpha, which reads as
-  something travelling *with* the pointer rather than replacing it — and hiding
-  the real cursor to substitute a div is a bet against every accessibility
-  setting the visitor might rely on.
+  What the recording shows, at 60fps:
+
+  - The card grows from small to full over 8-9 frames, so roughly 140ms.
+  - It starts heavily blurred and sharpens as it grows. The soft edges during
+    the morph are the element's own `filter`, not a backdrop effect.
+  - There is no overshoot; it settles straight into place.
+  - What reads as a border is the 2px padding ring showing the background
+    through, measured at rgba(255,255,255,0.29) over an 11-value backdrop,
+    which is the cursor token itself.
+  - The card centres on the pointer rather than hanging off one corner.
+
+  The native cursor stays. Core fills its dot at 15%/30% alpha, which reads as
+  something travelling with the pointer rather than replacing it, and swapping
+  a div for the real cursor bets against every pointer setting a visitor might
+  depend on.
 */
 ---
 
@@ -18,18 +27,13 @@
   aria-hidden="true"
   class="pointer-events-none fixed top-0 left-0 z-[60] hidden"
 >
-  <div
-    id="cursor-shape"
-    class="flex origin-top-left items-center overflow-hidden bg-cursor backdrop-blur-[2px]"
-  >
-    {/* Media and label both live in the DOM so a morph never waits on a fetch;
-        the image is only fetched once a link declares it. */}
+  <div id="cursor-shape" class="flex items-center overflow-hidden bg-cursor">
+    {/* Sized to the box rather than fixed, so it grows with the card instead
+        of popping in at full size once the morph finishes. */}
     <img
       id="cursor-media"
       alt=""
-      width="168"
-      height="104"
-      class="hidden h-[104px] w-[168px] rounded-[8px] object-cover"
+      class="h-full w-full rounded-[8px] object-cover opacity-0"
     />
 
     <span
@@ -50,14 +54,19 @@
     height: 20px;
     border-radius: 16px;
     padding: 0;
+    /* 140ms measured; the ease-out is what stops it reading as a snap. */
     transition:
-      width 260ms cubic-bezier(0.22, 1, 0.36, 1),
-      height 260ms cubic-bezier(0.22, 1, 0.36, 1),
-      border-radius 260ms cubic-bezier(0.22, 1, 0.36, 1),
-      padding 260ms cubic-bezier(0.22, 1, 0.36, 1);
+      width 150ms cubic-bezier(0.22, 1, 0.36, 1),
+      height 150ms cubic-bezier(0.22, 1, 0.36, 1),
+      border-radius 150ms cubic-bezier(0.22, 1, 0.36, 1),
+      padding 150ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
-  /* Core's Link Preview variant: fit-content at 2px padding, 10px radius. */
+  #cursor-media {
+    transition: opacity 150ms ease-out;
+  }
+
+  /* Core's Link Preview variant: 2px padding, 10px radius, 104px of media. */
   #cursor[data-state='preview'] #cursor-shape {
     width: 172px;
     height: 108px;
@@ -71,9 +80,30 @@
     border-radius: 999px;
   }
 
-  #cursor[data-state='preview'] #cursor-media,
+  #cursor[data-state='preview'] #cursor-media {
+    opacity: 1;
+  }
+
   #cursor[data-state='label'] #cursor-label {
     display: flex;
+  }
+
+  /* Blurred at the start of a morph, sharp by the end. Runs on entering either
+     expanded state, which is why it lives on the state selector rather than in
+     the transition above — a transition cannot start from a value the resting
+     state never holds. */
+  #cursor[data-state='preview'] #cursor-shape,
+  #cursor[data-state='label'] #cursor-shape {
+    animation: cursor-morph 150ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  @keyframes cursor-morph {
+    from {
+      filter: blur(8px);
+    }
+    to {
+      filter: blur(0);
+    }
   }
 
   /* A pointing device that can hover, and a visitor who wants motion. */
@@ -93,7 +123,11 @@
 <script>
   type State = 'dot' | 'preview' | 'label';
 
-  const FOLLOW = 0.18;
+  /*
+    Tight enough to read as the pointer's own, loose enough to smooth the jitter
+    of a real hand. At 60fps this closes ~97% of a gap in four frames.
+  */
+  const FOLLOW = 0.55;
 
   const root = document.getElementById('cursor');
   const shape = document.getElementById('cursor-shape');
@@ -117,22 +151,17 @@
     let frame = 0;
     let state: State = 'dot';
 
-    // The shape grows from its own top-left, so the offset that keeps it
-    // centred on the pointer changes as it morphs.
-    const offset = () => {
-      const rect = shape.getBoundingClientRect();
-      return state === 'dot'
-        ? { dx: rect.width / 2, dy: rect.height / 2 }
-        : { dx: 18, dy: 18 };
-    };
-
     const render = () => {
       frame = 0;
       x += (targetX - x) * FOLLOW;
       y += (targetY - y) * FOLLOW;
 
-      const { dx, dy } = offset();
-      root.style.transform = `translate3d(${Math.round(x - dx)}px, ${Math.round(y - dy)}px, 0)`;
+      // Centred on the pointer in every state, so the morph grows outward
+      // rather than dragging one corner across the screen.
+      const rect = shape.getBoundingClientRect();
+      const left = Math.round(x - rect.width / 2);
+      const top = Math.round(y - rect.height / 2);
+      root.style.transform = `translate3d(${left}px, ${top}px, 0)`;
 
       if (Math.abs(targetX - x) > 0.1 || Math.abs(targetY - y) > 0.1) schedule();
     };
@@ -141,11 +170,23 @@
       if (!frame) frame = requestAnimationFrame(render);
     };
 
+    // The box keeps changing for the length of the morph, so keep re-centring
+    // through it rather than only while the pointer is moving.
+    const trackMorph = () => {
+      let elapsed = 0;
+      const step = () => {
+        elapsed += 16;
+        render();
+        if (elapsed < 200) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    };
+
     const setState = (next: State) => {
       if (next === state) return;
       state = next;
       root.dataset.state = next === 'dot' ? '' : next;
-      schedule();
+      trackMorph();
     };
 
     document.addEventListener(
@@ -172,10 +213,7 @@
     document.addEventListener('pointerover', (event) => {
       const target = (event.target as Element | null)?.closest?.('[data-cursor]');
 
-      if (!target) {
-        setState('dot');
-        return;
-      }
+      if (!target) return setState('dot');
 
       const kind = target.getAttribute('data-cursor');
 
@@ -183,8 +221,7 @@
         const src = target.getAttribute('data-cursor-src');
         if (!src) return setState('dot');
         if (media.getAttribute('src') !== src) media.setAttribute('src', src);
-        setState('preview');
-        return;
+        return setState('preview');
       }
 
       if (kind === 'label' && label && text) {
@@ -193,19 +230,18 @@
           'hidden',
           !target.hasAttribute('data-cursor-active'),
         );
-        // Measure once so the pill can animate to a real width.
+        // Measure once so the pill animates to a real width.
         root.style.setProperty('--cursor-label-width', 'auto');
         const width = label.getBoundingClientRect().width;
         root.style.setProperty('--cursor-label-width', `${Math.ceil(width)}px`);
-        setState('label');
-        return;
+        return setState('label');
       }
 
       setState('dot');
     });
 
-    // Leaving the window fades the follower out but keeps its last position, so
-    // coming back does not send it flying in from wherever it was parked.
+    // Leaving the window fades the follower but keeps its position, so coming
+    // back does not send it flying in from wherever it was parked.
     document.addEventListener('pointerleave', () => {
       root.dataset.away = '';
     });
