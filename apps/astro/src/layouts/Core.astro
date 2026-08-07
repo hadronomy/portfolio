@@ -1,10 +1,10 @@
 ---
 import CopyShortcut from '~/components/core/CopyShortcut.astro';
-import Cursor from '~/components/core/Cursor.astro';
 import Header from '~/components/core/Header.astro';
 import ScrollBlur from '~/components/core/ScrollBlur.astro';
 import Signature from '~/components/core/Signature.astro';
 import Metadata from '~/components/Metadata.astro';
+import Cursor from '~/components/react/Cursor';
 import { SITE_DESCRIPTION, SITE_TITLE } from '~/consts';
 
 interface Props {
@@ -40,6 +40,9 @@ const { title = SITE_TITLE, description = SITE_DESCRIPTION } = Astro.props;
     <ScrollBlur edge="bottom" />
 
     <CopyShortcut />
-    <Cursor />
+
+    {/* Decorative, so it waits for an idle moment rather than blocking the
+        first paint on react + motion. */}
+    <Cursor client:idle />
   </body>
 </html>

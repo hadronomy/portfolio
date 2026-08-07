@@ -1,20 +1,16 @@
 import path from 'node:path';
-
-import { defineConfig, envField } from 'astro/config';
-
 import mdx from '@astrojs/mdx';
 import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
-import preserveDirectives from 'rollup-preserve-directives';
-
+import { defineConfig, envField } from 'astro/config';
 import icon from 'astro-icon';
-import { rehypeAccessibleEmojis } from 'rehype-accessible-emojis';
-import remarkGemoji from 'remark-gemoji';
-
 import { rehypeCode } from 'fumadocs-core/mdx-plugins';
+import { rehypeAccessibleEmojis } from 'rehype-accessible-emojis';
 import rehypeKatex from 'rehype-katex';
+import remarkGemoji from 'remark-gemoji';
 import remarkMath from 'remark-math';
+import preserveDirectives from 'rollup-preserve-directives';
 
 import { remarkReadingTime } from './plugins/remark-reading-time.mjs';
 
@@ -75,6 +71,9 @@ export default defineConfig({
     //   transformer: 'lightningcss',
     // },
     resolve: {
+      // Motion pulls React in through its own pre-bundled copy in dev, which
+      // hands an island a second React and breaks every hook it calls.
+      dedupe: ['react', 'react-dom'],
       alias: {
         '@portfolio/ui': path.resolve(
           import.meta.dirname,
