@@ -1,25 +1,23 @@
 ---
-import { type CollectionEntry, getCollection, render } from 'astro:content';
-import { components } from '~/components/react/mdx';
+import Pre from '~/components/mdx/Pre.astro';
 import BlogPost from '~/layouts/BlogPost.astro';
+import { getPosts } from '~/lib/posts';
+import { render } from 'astro:content';
 
 export async function getStaticPaths() {
-  const posts = await getCollection('blog');
-  return posts.filter(
-    (post) => post.data.state === 'published'
-  ).map((post) => ({
+  const posts = await getPosts();
+  return posts.map((post) => ({
     params: { slug: post.id },
-    props: post,
+    props: { post },
   }));
 }
-type Props = CollectionEntry<'blog'>;
 
-const post = Astro.props;
-// Get headings from render
-const { Content, headings, remarkPluginFrontmatter } = await render(post);
+const { post } = Astro.props;
+const { Content } = await render(post);
 ---
 
-<!-- Pass headings to the layout -->
-<BlogPost {remarkPluginFrontmatter} headings={headings} {...post.data}>
-  <Content components={{ ...components }} />
+{/* Only the code block needs behaviour of its own; every other element in the
+    document is styled from `src/styles/article.css`. */}
+<BlogPost {post}>
+  <Content components={{ pre: Pre }} />
 </BlogPost>

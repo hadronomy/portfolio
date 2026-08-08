@@ -1,25 +1,82 @@
 ---
-import { cn } from '@portfolio/ui';
-import { CodeBlock, Pre as CodeBlockPre } from '~/components/react/codeblock';
+import { Icon } from 'astro-icon/components';
+import type { HTMLAttributes } from 'astro/types';
 
-type Props = Omit<typeof CodeBlock, 'className' | 'children' | 'tabIndex'> & {
-  class?: string;
-  tabindex?: number;
-};
+interface Props extends HTMLAttributes<'pre'> {
+  /** Set from the code fence meta, e.g. ```ts title="posts.ts" */
+  title?: string;
+}
 
-const { class: className, tabindex, ...props } = Astro.props;
+// Everything else the fence produced — the `shiki` and `twoslash` classes, the
+// theme custom properties, `data-line-numbers` — has to reach the real `pre`,
+// because both stylesheets key off attributes the highlighter put there.
+const { title, class: className, ...rest } = Astro.props;
+
+// Twoslash builds its hover cards out of `pre` too, and MDX routes every one of
+// them through here. The two are identical as elements, so `rehypeMarkCodeBlocks`
+// tags the real ones by their place in the tree; without that gate every card
+// grows a frame and a copy button of its own.
+const highlighted = String(className ?? '').includes('code-block-root');
 ---
 
-<CodeBlock
-  client:visible
-  className={cn(
-    className,
-    'relative overflow-hidden w-full rounded-none border border-white/20 bg-[#050505] my-8'
-  )}
-  tabIndex={tabindex}
-  {...props}
->
-  <CodeBlockPre client:visible className="font-mono text-sm">
-    <slot />
-  </CodeBlockPre>
-</CodeBlock>
+{
+  highlighted ? (
+    /*
+      Shiki has already produced the whole block as markup, so nothing here
+      needs to run on the client except the copy button — one delegated listener
+      for the page rather than a component instance per block.
+    */
+    <figure class="code-block group relative my-8">
+      {title && (
+        <figcaption class="type-overline border-b border-border px-4 py-2.5 text-muted-foreground">
+          {title}
+        </figcaption>
+      )}
+
+      <button
+        type="button"
+        class="copy-code absolute top-2.5 right-2.5 z-10 grid size-8 place-items-center rounded-[8px] border border-border bg-button text-muted-foreground opacity-0 transition-[opacity,background-color,color] hover:bg-button-hover hover:text-foreground focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none group-hover:opacity-100"
+        aria-label="Copy code"
+      >
+        <Icon name="tabler:copy" class="size-4 [[data-copied]>&]:hidden" />
+        <Icon name="tabler:check" class="hidden size-4 [[data-copied]>&]:block" />
+      </button>
+
+      {/* No line break inside: `pre` keeps whitespace, and one would render
+          as an empty first row of code. */}
+      <pre class={className} {...rest}><slot /></pre>
+    </figure>
+  ) : (
+    <pre class={className} {...rest}><slot /></pre>
+  )
+}
+
+<script>
+  const RESET_MS = 1600;
+
+  document.addEventListener('click', async (event) => {
+    const button = (event.target as Element | null)?.closest('.copy-code');
+    if (!(button instanceof HTMLButtonElement)) return;
+
+    const code = button.parentElement?.querySelector('pre');
+    if (!code) return;
+
+    // Twoslash renders its hover cards inside the block, so copying the raw
+    // text content would drag every type signature along with the code.
+    const clone = code.cloneNode(true) as HTMLElement;
+    for (const noise of clone.querySelectorAll(
+      '.twoslash-popup-container, .twoslash-completion-list, .twoslash-meta-line',
+    )) {
+      noise.remove();
+    }
+
+    await navigator.clipboard.writeText(clone.textContent ?? '');
+
+    button.dataset.copied = '';
+    button.setAttribute('aria-label', 'Copied');
+    window.setTimeout(() => {
+      delete button.dataset.copied;
+      button.setAttribute('aria-label', 'Copy code');
+    }, RESET_MS);
+  });
+</script>

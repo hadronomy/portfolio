@@ -1,169 +1,50 @@
 ---
-import { Icon } from 'astro-icon/components';
-import MainLayout from '~/layouts/Main.astro';
-
-
-const sidebarItems = [
-  { label: 'FATAL_ERR', id: 'crash' },
-  { label: 'Err_Log', id: 'console' },
-  { label: 'Power', id: 'recovery' },
-];
+import Shortcut from '~/components/core/Shortcut.astro';
+import CoreLayout from '~/layouts/Core.astro';
 ---
 
-<MainLayout title="404 | System Failure" sidebarItems={sidebarItems}>
-  
-  <div id="crt-overlay" class="fixed inset-0 z-[9999] pointer-events-none opacity-0 bg-white mix-blend-overlay"></div>
-  <div id="blackout-overlay" class="fixed inset-0 z-[9998] pointer-events-none opacity-0 bg-black"></div>
+<CoreLayout
+  title="Not found | Pablo Hernández"
+  description="That page does not exist."
+>
+  {/*
+    Core gives this page a 76vh block and centres one line in it. The header and
+    signature stay, so a visitor who lands here still sees a working site rather
+    than an error screen — hence no back link and no chrome of its own.
+  */}
+  <section
+    class="flex h-[76vh] w-full flex-col items-center justify-center gap-4 px-4"
+  >
+    <p class="type-body-sm text-muted-foreground select-none" aria-hidden="true">
+      ¯\_(ツ)_/¯
+    </p>
 
-  <div class="relative w-full h-full flex flex-col bg-[#050505] selection:bg-red-500/30 overflow-hidden">
-    
-    <!-- Background: Hex Grid (Subtle) -->
-    <div class="absolute inset-0 z-0 overflow-hidden opacity-[0.03] pointer-events-none animate-bg-pan">
-       <div class="hex-grid h-full w-full"></div>
-    </div>
+    <p class="type-body flex flex-wrap items-center justify-center gap-1.5 text-center text-muted-foreground">
+      Go back <a
+        href="/"
+        class="font-medium text-foreground underline decoration-muted-foreground/50 underline-offset-[3px] transition-[text-decoration-color] hover:decoration-current"
+        >home</a
+      > or press <Shortcut key="H" />
+    </p>
+  </section>
+</CoreLayout>
 
-    <!-- SECTION 1: ERROR HEADER -->
-    <div id="crash" class="relative z-20 w-full p-8 md:p-12 border-b border-white/20 bg-black/20 backdrop-blur-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
-      
-      <!-- Glitch 404 Title -->
-      <div class="relative group cursor-default select-none">
-        <h1 class="text-8xl md:text-9xl font-black text-white leading-none tracking-tighter mix-blend-difference">
-          404
-        </h1>
-        <h1 class="text-8xl md:text-9xl font-black text-red-500/50 leading-none tracking-tighter absolute top-0 left-0 -translate-x-1 translate-y-1 -z-10 animate-glitch-1 opacity-0 group-hover:opacity-100">404</h1>
-        <h1 class="text-8xl md:text-9xl font-black text-cyan-500/50 leading-none tracking-tighter absolute top-0 left-0 translate-x-1 -translate-y-1 -z-10 animate-glitch-2 opacity-0 group-hover:opacity-100">404</h1>
-      </div>
+<script is:inline>
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'h' && event.key !== 'H') return;
+    if (event.metaKey || event.ctrlKey || event.altKey) return;
 
-      <!-- Error Description -->
-      <div class="flex flex-col items-start md:items-end text-left md:text-right max-w-md">
-        <div class="flex items-center gap-2 mb-2">
-          <span class="w-2 h-2 bg-red-500 rounded-full animate-ping"></span>
-          <span class="font-mono text-xs text-red-500 font-bold uppercase tracking-widest">Signal Lost</span>
-        </div>
-        <h2 class="text-xl md:text-2xl font-bold text-white uppercase tracking-tight mb-1">
-          Sector Not Found
-        </h2>
-        <p class="font-mono text-xs text-muted-foreground leading-relaxed">
-          The requested trajectory leads to void space. <br class="hidden md:block" /> Coordinates invalid or corrupted.
-        </p>
-      </div>
-    </div>
+    // Same guards as the copy shortcut: never steal a keystroke from a field,
+    // and never fire while the visitor is selecting text.
+    const el = document.activeElement;
+    if (
+      el instanceof HTMLElement &&
+      (el.isContentEditable || /^(input|textarea|select)$/i.test(el.tagName))
+    ) {
+      return;
+    }
+    if (window.getSelection()?.toString()) return;
 
-    <!-- SECTION 2: ERROR READOUT -->
-    <div id="console" class="relative z-10 flex-1 w-full flex flex-col justify-center min-h-0 bg-black/80 p-8 md:p-12">
-      <div class="font-mono text-xs md:text-sm leading-relaxed text-white/50 space-y-1 select-none">
-        <p><span class="text-yellow-500">[WARN]</span> Connection lost with upstream server.</p>
-        <p><span class="text-green-500">[INFO]</span> Hardware: OK</p>
-        <p><span class="text-red-500">[ERROR]</span> 0x00000000 &mdash; SECTOR_NOT_FOUND</p>
-        <p class="text-white/30">The requested resource vanished into the ether.</p>
-      </div>
-    </div>
-
-    <!-- SECTION 3: CONTROL DECK -->
-    <div id="recovery" class="relative z-20 shrink-0 h-24 border-t border-white/20 bg-[#0A0A0A] flex items-center justify-between px-8 md:px-12">
-      
-      <div class="absolute inset-0 opacity-[0.03] pointer-events-none" style="background-image: repeating-linear-gradient(-45deg, transparent, transparent 10px, white 10px, white 20px);"></div>
-
-      <div class="hidden md:flex flex-col">
-        <span class="font-mono text-[10px] text-white/30 uppercase tracking-widest">Emergency Protocol</span>
-        <span class="font-mono text-xs text-white/60">Ready to execute</span>
-      </div>
-
-      <!-- THE BUTTON -->
-      <button 
-        id="btn-reboot"
-        class="group relative flex items-center justify-center h-12 px-8 bg-transparent border border-white/20 overflow-hidden hover:border-white/50 transition-colors cursor-pointer"
-      >
-        <div class="absolute inset-0 bg-white transform translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></div>
-        <div class="absolute inset-0 opacity-0 group-hover:opacity-10 pointer-events-none" style="background-image: repeating-linear-gradient(-45deg, transparent, transparent 5px, black 5px, black 10px);"></div>
-
-        <div class="relative z-10 flex items-center gap-3">
-          <Icon name="tabler:power" class="w-4 h-4 text-white group-hover:text-black transition-colors" />
-          <span class="font-mono text-xs font-bold uppercase tracking-[0.2em] text-white group-hover:text-black transition-colors">
-            Initiate Reboot
-          </span>
-        </div>
-
-        <div class="absolute top-0 left-0 w-1 h-1 bg-white transition-colors group-hover:bg-black"></div>
-        <div class="absolute bottom-0 right-0 w-1 h-1 bg-white transition-colors group-hover:bg-black"></div>
-      </button>
-
-    </div>
-
-  </div>
-</MainLayout>
-
-<style>
-  .hex-grid {
-    background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-    background-size: 40px 40px;
-    animation: bg-pan 60s linear infinite;
-  }
-
-  @keyframes bg-pan {
-    0% { background-position: 0% 0%; }
-    100% { background-position: 100% 100%; }
-  }
-
-  @keyframes glitch-1 {
-    0% { clip-path: inset(20% 0 80% 0); transform: translate(-2px, 1px); }
-    20% { clip-path: inset(60% 0 10% 0); transform: translate(2px, -1px); }
-    100% { clip-path: inset(40% 0 50% 0); transform: translate(-2px, 2px); }
-  }
-  @keyframes glitch-2 {
-    0% { clip-path: inset(10% 0 60% 0); transform: translate(2px, -1px); }
-    20% { clip-path: inset(80% 0 5% 0); transform: translate(-2px, 1px); }
-    100% { clip-path: inset(30% 0 10% 0); transform: translate(1px, -2px); }
-  }
-  .animate-glitch-1 { animation: glitch-1 2.5s infinite linear alternate-reverse; }
-  .animate-glitch-2 { animation: glitch-2 3s infinite linear alternate-reverse; }
-
-  /* Global Body Animation Class */
-  :global(body.animate-crt-off) {
-    animation: turn-off 0.55s cubic-bezier(0.230, 1.000, 0.320, 1.000) forwards;
-    transform-origin: center;
-    background-color: #050505;
-    overflow: hidden;
-  }
-
-  @keyframes turn-off {
-    0% { transform: scale(1, 1.3) translate3d(0, 0, 0); filter: brightness(1); opacity: 1; }
-    60% { transform: scale(1, 0.001) translate3d(0, 0, 0); filter: brightness(10); }
-    100% { transform: scale(0, 0.001) translate3d(0, 0, 0); opacity: 0; }
-  }
-</style>
-
-<script>
-  document.addEventListener('astro:page-load', () => {
-    const rebootBtn = document.getElementById('btn-reboot');
-    if (!rebootBtn) return;
-
-    const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
-    const triggerReboot = async () => {
-      const crt = document.getElementById('crt-overlay');
-      const black = document.getElementById('blackout-overlay');
-
-      if (crt && black) {
-        crt.style.opacity = '0.2';
-        await sleep(50);
-        crt.style.opacity = '0';
-
-        // Drives the turn-off keyframes defined on body.animate-crt-off.
-        document.body.classList.add('animate-crt-off');
-
-        black.style.transition = 'opacity 2s ease-in';
-        black.style.opacity = '1';
-      }
-
-      await sleep(800);
-      window.location.href = '/';
-    };
-
-    rebootBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      triggerReboot();
-    });
+    window.location.href = '/';
   });
 </script>
