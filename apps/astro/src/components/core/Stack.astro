@@ -24,7 +24,7 @@ import { stack } from '~/lib/profile';
     class="flex flex-wrap items-center justify-start gap-2.5 tablet:flex-nowrap tablet:justify-between"
   >
     {
-      stack.map((tool, index) => (
+      stack.map((tool) => (
         <li class="group relative size-10 shrink-0">
           {/*
             Bare marks on a die-cut, no tile — Core's weight comes from each
@@ -36,12 +36,19 @@ import { stack } from '~/lib/profile';
             logo legible in both themes and gives the row one silhouette, which
             the raw glyphs do not have.
 
-            The fold runs straight across the top. Angling it per sticker looked
-            like variety on paper, but a diagonal crease on a mark this small
-            reads as a loose sheet lying over the logo rather than as its own
-            corner lifting.
+            The fold lifts the top-right corner. Angling it per sticker looked
+            like variety on paper, but a crease that differs on every mark reads
+            as noise at this size.
+
+            The id is derived from the name rather than the loop index, because
+            it keys where each sticker was left. An index would hand one
+            sticker's position to another the first time this list is reordered.
           */}
-          <Sticker icon={tool.icon} label={tool.name} uid={String(index)} />
+          <Sticker
+            icon={tool.icon}
+            label={tool.name}
+            uid={tool.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}
+          />
 
           {/*
             Centred under the mark with a 15px gap, taken off the rendered

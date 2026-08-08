@@ -63,7 +63,8 @@ const pad = Math.ceil(corner + size * 0.05);
   corner follows the logo's silhouette rather than a rectangle around it.
 */}
 <div
-  class="sticker"
+  class="sticker-slot"
+  data-sticker={uid}
   style={`--s:${size}px;--p:${pad}px;--rot:${rotate}deg;--dir:${direction}deg;--peel-hover:${peelHover};--peel-active:${peelActive}`}
 >
   <svg class="sticker-defs" aria-hidden="true" focusable="false">
@@ -97,6 +98,16 @@ const pad = Math.ceil(corner + size * 0.05);
           <feMergeNode in="cut" />
           <feMergeNode in="SourceGraphic" />
         </feMerge>
+      </filter>
+
+      {/*
+        The hole the sticker leaves behind: its own silhouette, filled with a
+        recess rather than a colour. Both stops are the foreground at low alpha,
+        so it reads as an absence in either theme without introducing a hue.
+      */}
+      <filter id={`hole-${uid}`} color-interpolation-filters="sRGB">
+        <feFlood flood-color="currentColor" result="flood" />
+        <feComposite operator="in" in="flood" in2="SourceAlpha" />
       </filter>
 
       {/* The blank back of the vinyl, in the die-cut's own silhouette. */}
@@ -143,7 +154,15 @@ const pad = Math.ceil(corner + size * 0.05);
     </defs>
   </svg>
 
-  <div class="sticker-container">
+  {/* Stays in the slot when the sticker does not. */}
+  <div class="sticker-cutout" aria-hidden="true">
+    <span class="cutout-art" style={`filter:url(#cut-${uid}) url(#hole-${uid})`}>
+      <Icon name={icon} class="mark" />
+    </span>
+  </div>
+
+  <div class="sticker">
+   <div class="sticker-container">
     <div class="sticker-main">
       <div class="upright">
         <div class="sticker-lighting" style={`filter:url(#sheen-${uid})`}>
@@ -172,7 +191,9 @@ const pad = Math.ceil(corner + size * 0.05);
           </span>
         </div>
       </div>
+      </div>
     </div>
+   </div>
   </div>
 </div>
 
@@ -183,6 +204,53 @@ const pad = Math.ceil(corner + size * 0.05);
     and settles back. No cubic-bezier can do that, and its absence is why this
     read as mechanical however the durations were tuned.
   */
+  .sticker-slot {
+    position: relative;
+    width: var(--s);
+    height: var(--s);
+  }
+
+  /*
+    The hole. Only there once the sticker has been taken out of it, and it
+    brightens as a sticker is brought back within snapping distance — that
+    highlight is the whole affordance for putting one back.
+  */
+  .sticker-cutout {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    /*
+      The recess is carried by `opacity`, not by an alpha on the flood colour.
+      `feFlood` takes `flood-color` and `flood-opacity` as separate inputs and
+      drops the alpha channel of a colour handed to it, which paints the hole
+      solid white instead of a faint dent.
+    */
+    color: hsl(var(--foreground));
+    opacity: 0;
+    transition:
+      opacity 200ms ease-out,
+      scale 160ms ease-out;
+    pointer-events: none;
+  }
+
+  .sticker-slot[data-displaced] .sticker-cutout {
+    opacity: 0.1;
+  }
+
+  .sticker-slot[data-near] .sticker-cutout {
+    opacity: 0.26;
+    scale: 1.06;
+  }
+
+  .cutout-art {
+    display: grid;
+    place-items: center;
+    width: var(--s);
+    height: var(--s);
+    rotate: var(--rot);
+  }
+
   .sticker {
     --peel-easing: 2s
       linear(
@@ -206,7 +274,8 @@ const pad = Math.ceil(corner + size * 0.05);
     --start: calc(-1 * var(--p));
     --end: calc(100% + var(--p));
 
-    position: relative;
+    position: absolute;
+    inset: 0;
     width: var(--s);
     height: var(--s);
     touch-action: none;
@@ -359,6 +428,11 @@ const pad = Math.ceil(corner + size * 0.05);
     will-change: clip-path, transform;
   }
 
+  /* Stuck somewhere other than its slot, so it sits above the page. */
+  .sticker-slot[data-displaced] .sticker {
+    z-index: 30;
+  }
+
   .sticker:hover {
     cursor: grab;
   }
@@ -377,37 +451,141 @@ const pad = Math.ceil(corner + size * 0.05);
 
 <script>
   import { animate } from 'motion';
+  import {
+    clearSticker,
+    placeSticker,
+    placements,
+    type Placement,
+  } from '~/lib/stickers';
 
   /*
     Drag is written against pointer events rather than pulled in from a library.
     Motion's drag is React-only — the vanilla entry point has no equivalent —
     and mounting ten islands to move ten 40px marks costs far more than this.
-    Motion still does the part worth having: the spring that carries the sticker
-    home.
+    Motion still does the part worth having: the springs.
   */
 
   const MAX_TILT = 24;
   const TILT_SCALE = 0.6;
-  const RESET_MS = 1600;
+  /** Release inside this many pixels of the slot and it goes back in. */
+  const SNAP_PX = 30;
+  /** Keep a stuck sticker this far inside the page. */
+  const MARGIN = 8;
 
   const reduced = () =>
     window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  const spring = { type: 'spring', stiffness: 260, damping: 22, mass: 0.7 } as const;
+
+  const transform = (p: Placement) =>
+    `translate3d(${p.x}px, ${p.y}px, 0) rotate(${p.r}deg)`;
+
+  const stickerOf = (slot: HTMLElement) =>
+    slot.querySelector<HTMLElement>('.sticker');
+
+  /*
+    The slot never moves, so its box is where the sticker belongs. Clamping
+    against it here rather than at drop time is what keeps a sticker stuck at
+    1200px from ending up off the side of a phone.
+  */
+  const clamp = (slot: HTMLElement, p: Placement): Placement => {
+    const home = slot.getBoundingClientRect();
+    const pageW = document.documentElement.clientWidth;
+    const pageH = document.documentElement.scrollHeight;
+    const top = home.top + window.scrollY;
+
+    // The sticker paints up to its clip margin beyond its own box — the cast
+    // shadow and the die-cut live out there. Clamping the box alone still lets
+    // that overhang push a scrollbar onto the page.
+    const overhang =
+      Number.parseFloat(getComputedStyle(slot).getPropertyValue('--p')) || 0;
+    const edge = MARGIN + overhang;
+
+    return {
+      x: Math.min(
+        Math.max(p.x, edge - home.left),
+        pageW - edge - home.width - home.left,
+      ),
+      y: Math.min(Math.max(p.y, edge - top), pageH - edge - home.height - top),
+      r: p.r,
+    };
+  };
+
+  const HOME = transform({ x: 0, y: 0, r: 0 });
+
+  /*
+    Both keyframes are given explicitly. Handed a single target, Motion starts
+    from its own cached value for the element — the end of whatever it animated
+    last — not from the transform the drag wrote straight to the style. A
+    sticker moved twice without a reload would otherwise snap back to where it
+    was previously dropped and travel from there.
+  */
+  const glideTo = (el: HTMLElement, to: string) =>
+    animate(el, { transform: [el.style.transform || HOME, to] }, spring);
+
+  const render = (slot: HTMLElement, p: Placement | undefined, glide: boolean) => {
+    const el = stickerOf(slot);
+    if (!el) return;
+
+    if (!p) {
+      delete slot.dataset.displaced;
+      if (glide && !reduced()) {
+        glideTo(el, HOME).finished.then(() => {
+          el.style.transform = '';
+        });
+      } else {
+        el.style.transform = '';
+      }
+      return;
+    }
+
+    slot.dataset.displaced = '';
+    const target = clamp(slot, p);
+
+    if (glide && !reduced()) {
+      glideTo(el, transform(target));
+    } else {
+      el.style.transform = transform(target);
+    }
+  };
+
+  const restore = (glide: boolean) => {
+    const stored = placements.get();
+    for (const slot of document.querySelectorAll<HTMLElement>('.sticker-slot')) {
+      const id = slot.dataset.sticker;
+      if (id) render(slot, stored[id], glide);
+    }
+  };
+
+  /*
+    The subscription exists to pick up changes made elsewhere — another tab.
+    A change this document just made is already being rendered, with a spring
+    the subscriber would cut short by writing the final transform underneath it.
+  */
+  let writingLocally = false;
+
+  const writeLocally = (mutate: () => void) => {
+    writingLocally = true;
+    try {
+      mutate();
+    } finally {
+      writingLocally = false;
+    }
+  };
+
   let held: {
+    slot: HTMLElement;
     el: HTMLElement;
     pointerId: number;
     startX: number;
     startY: number;
     lastX: number;
-    tilt: number;
+    origin: Placement;
+    current: Placement;
   } | null = null;
 
   /** The most recently grabbed sticker sits above the rest, as a real one would. */
-  let topmost = 1;
-
-  const place = (el: HTMLElement, x: number, y: number, tilt: number) => {
-    el.style.transform = `translate3d(${x}px, ${y}px, 0) rotate(${tilt}deg)`;
-  };
+  let topmost = 30;
 
   const moveLight = (el: HTMLElement, clientX: number, clientY: number) => {
     const box = el.getBoundingClientRect();
@@ -426,69 +604,124 @@ const pad = Math.ceil(corner + size * 0.05);
     );
   };
 
+  const nearHome = (p: Placement) => Math.hypot(p.x, p.y) <= SNAP_PX;
+
   document.addEventListener('pointerdown', (event) => {
-    const el = (event.target as Element | null)?.closest<HTMLElement>('.sticker');
-    if (!el || event.button !== 0) return;
+    const slot = (event.target as Element | null)?.closest<HTMLElement>(
+      '.sticker-slot',
+    );
+    const el = slot && stickerOf(slot);
+    if (!slot || !el || event.button !== 0) return;
+
+    const id = slot.dataset.sticker;
+    const origin = (id && placements.get()[id]) || { x: 0, y: 0, r: 0 };
 
     held = {
+      slot,
       el,
       pointerId: event.pointerId,
       startX: event.clientX,
       startY: event.clientY,
       lastX: event.clientX,
-      tilt: 0,
+      origin,
+      current: origin,
     };
 
-    el.setPointerCapture(event.pointerId);
+    // Capture keeps the drag alive if the pointer leaves the sticker, but it
+    // throws when the pointer is already gone. Losing it is survivable; letting
+    // it abort the handler strands the sticker mid-drag.
+    try {
+      el.setPointerCapture(event.pointerId);
+    } catch {}
+
     el.dataset.dragging = '';
     el.style.zIndex = String(++topmost);
   });
 
   document.addEventListener('pointermove', (event) => {
-    const over = (event.target as Element | null)?.closest<HTMLElement>('.sticker');
-    if (over && !held) moveLight(over, event.clientX, event.clientY);
+    if (!held) {
+      const over = (event.target as Element | null)?.closest<HTMLElement>(
+        '.sticker',
+      );
+      if (over) moveLight(over, event.clientX, event.clientY);
+      return;
+    }
 
-    if (!held || event.pointerId !== held.pointerId) return;
-
-    const dx = event.clientX - held.startX;
-    const dy = event.clientY - held.startY;
+    if (event.pointerId !== held.pointerId) return;
 
     // Tilt follows how fast the pointer moves sideways, not how far it has
     // travelled — that is what gives the sticker a sense of weight.
     const step = event.clientX - held.lastX;
     held.lastX = event.clientX;
-    held.tilt = Math.max(
+    const tilt = Math.max(
       -MAX_TILT,
-      Math.min(MAX_TILT, held.tilt * 0.8 + step * TILT_SCALE),
+      Math.min(MAX_TILT, held.current.r * 0.8 + step * TILT_SCALE),
     );
 
-    place(held.el, dx, dy, held.tilt);
+    held.current = {
+      x: held.origin.x + (event.clientX - held.startX),
+      y: held.origin.y + (event.clientY - held.startY),
+      r: tilt,
+    };
+
+    held.el.style.transform = transform(held.current);
+    held.slot.toggleAttribute('data-near', nearHome(held.current));
     moveLight(held.el, event.clientX, event.clientY);
   });
 
   const release = (event: PointerEvent) => {
     if (!held || event.pointerId !== held.pointerId) return;
 
-    const { el } = held;
+    const { slot, el, current } = held;
+    const id = slot.dataset.sticker;
     held = null;
 
     delete el.dataset.dragging;
-    el.releasePointerCapture?.(event.pointerId);
+    slot.removeAttribute('data-near');
+    try {
+      el.releasePointerCapture(event.pointerId);
+    } catch {}
 
-    if (reduced()) {
-      el.style.transform = '';
+    if (!id) return;
+
+    // Let go near the hole and it drops back in; anywhere else it stays put.
+    if (nearHome(current)) {
+      writeLocally(() => clearSticker(id));
+      render(slot, undefined, true);
       return;
     }
 
-    animate(
-      el,
-      { transform: 'translate3d(0px, 0px, 0) rotate(0deg)' },
-      { type: 'spring', stiffness: 260, damping: 22, mass: 0.7 },
-    ).finished.then(() => {
-      el.style.transform = '';
-    });
+    /*
+      Dropped, not thrown: it stays under the cursor where it was let go. Only
+      the tilt relaxes, and only the journey home is worth animating.
+    */
+    const settled = clamp(slot, { ...current, r: current.r * 0.35 });
+    writeLocally(() => placeSticker(id, settled));
+    render(slot, settled, false);
   };
 
   document.addEventListener('pointerup', release);
   document.addEventListener('pointercancel', release);
+
+  // A second way back, for anyone who does not want to drag it all the way.
+  document.addEventListener('dblclick', (event) => {
+    const slot = (event.target as Element | null)?.closest<HTMLElement>(
+      '.sticker-slot',
+    );
+    const id = slot?.dataset.sticker;
+    if (!slot || !id || !placements.get()[id]) return;
+
+    writeLocally(() => clearSticker(id));
+    render(slot, undefined, true);
+  });
+
+  // Fires immediately, and again on any change — including one made in another
+  // tab, which is what keeps two open windows agreeing on where things are.
+  placements.subscribe(() => {
+    if (!held && !writingLocally) restore(false);
+  });
+
+  // The clamp depends on the page's width, so a resize has to re-run it.
+  window.addEventListener('resize', () => restore(false));
+  document.addEventListener('astro:page-load', () => restore(false));
 </script>
