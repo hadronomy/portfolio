@@ -2,23 +2,58 @@
 import { Icon } from 'astro-icon/components';
 import ThemeToggle from '~/components/ThemeToggle.astro';
 import { profile } from '~/lib/profile';
+
+interface Props {
+  /** Where the up-arrow leads. Set on pages below the root. */
+  back?: string;
+}
+
+const { back } = Astro.props;
 ---
 
 {/*
   The toggle sits in this row rather than pinned to the viewport corner, where
   it would land on top of the clock once the column stops being centred.
+
+  Core swaps the establishment line for a back link on its post pages and drops
+  the rest of the row. The clock goes with it, but the toggle stays: a post is
+  the page most likely to be opened from a shared link, and stranding that
+  visitor in the wrong theme with no way out is not a trade worth the fidelity.
 */}
 <header
   class="mx-auto flex w-full max-w-content items-center justify-between gap-4 px-4 py-6"
 >
-  <p class="type-overline text-muted-foreground">Est. {profile.established}</p>
+  {
+    back ? (
+      <a
+        href={back}
+        class="type-overline group flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+      >
+        <Icon
+          name="tabler:corner-down-left"
+          class="size-3.5 transition-transform group-hover:-translate-x-0.5"
+        />
+        Back
+      </a>
+    ) : (
+      <p class="type-overline text-muted-foreground">
+        Est. {profile.established}
+      </p>
+    )
+  }
 
   <div class="flex items-center gap-3">
-    <p class="type-overline flex items-center gap-1.5 text-muted-foreground">
-      <Icon name="tabler:clock" class="size-3.5" />
-      {/* Rendered at full width up front so the row never reflows on hydrate. */}
-      <time id="utc-clock" datetime="" class="tabular-nums">--:--:-- UTC</time>
-    </p>
+    {
+      !back && (
+        <p class="type-overline flex items-center gap-1.5 text-muted-foreground">
+          <Icon name="tabler:clock" class="size-3.5" />
+          {/* Rendered at full width up front so the row never reflows on hydrate. */}
+          <time id="utc-clock" datetime="" class="tabular-nums">
+            --:--:-- UTC
+          </time>
+        </p>
+      )
+    }
 
     <ThemeToggle class="size-7" />
   </div>

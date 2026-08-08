@@ -1,0 +1,533 @@
+/*
+  Article typography for the Core system.
+
+  Everything below is built from the eight `type-*` styles and the achromatic
+  token set — no new sizes, no new colours. Running text sits in
+  `muted-foreground` and anything that raises its voice moves to `foreground`;
+  that one move carries hierarchy through the whole document, which is why
+  headings need no rules, bars or accent colour to separate them.
+
+  Scoped to `.article` throughout. fumadocs-ui's preset styles `pre`, `code`,
+  `table` and `kbd` on the bare element, so a class-plus-element selector is the
+  minimum that reliably wins in both themes.
+*/
+
+.article {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: 0.01em;
+  color: hsl(var(--muted-foreground));
+  /* A long URL or identifier in running text must break rather than push the
+     640px column sideways. */
+  overflow-wrap: break-word;
+}
+
+/*
+  20px between blocks, measured off the reference render (44px between the last
+  line of one paragraph and the first of the next, less the 24px leading).
+  Headings take more room above than below so they bind to the text they open.
+*/
+.article > * + * {
+  margin-top: 20px;
+}
+
+.article > h1 {
+  margin-top: 56px;
+}
+.article > h2 {
+  margin-top: 48px;
+}
+.article > h3 {
+  margin-top: 40px;
+}
+.article > h4 {
+  margin-top: 32px;
+}
+
+.article > :is(h1, h2, h3) + * {
+  margin-top: 16px;
+}
+.article > h4 + * {
+  margin-top: 8px;
+}
+
+.article > :first-child {
+  margin-top: 0;
+}
+
+/* ── Headings ──────────────────────────────────────────────────────────── */
+
+.article :is(h1, h2, h3, h4) {
+  color: hsl(var(--foreground));
+  scroll-margin-top: 96px;
+}
+
+.article h1 {
+  font-weight: 500;
+  font-size: 36px;
+  line-height: 48px;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+}
+
+.article h2 {
+  font-weight: 500;
+  font-size: 28px;
+  line-height: 1.4;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.article h3 {
+  font-weight: 500;
+  font-size: 22px;
+  line-height: 1.4;
+  letter-spacing: -0.02em;
+}
+
+/*
+  Core has no size between body and h3, and inventing one would put a ninth
+  style in an eight-style system. A fourth-level heading is a kicker, so it gets
+  the kicker treatment the design already owns — the one place mono appears.
+*/
+.article h4 {
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+}
+
+/* ── Inline ────────────────────────────────────────────────────────────── */
+
+.article :is(strong, b) {
+  font-weight: 500;
+  color: hsl(var(--foreground));
+}
+
+.article em {
+  font-style: italic;
+}
+
+.article a {
+  color: hsl(var(--foreground));
+  text-decoration: underline;
+  text-decoration-color: hsl(var(--muted-foreground) / 0.5);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transition: text-decoration-color 150ms ease;
+}
+
+.article a:hover {
+  text-decoration-color: hsl(var(--foreground));
+}
+
+/* Twoslash's hover cards are built from a bare `code` too. Left in, this chip
+   paints their inner surface `inset` while the card itself and its tip stay on
+   the card colour, so the card reads as two different greys with a mismatched
+   tip. */
+.article :not(pre) > code:not(.twoslash-popup-code) {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+  color: hsl(var(--foreground));
+  background: hsl(var(--inset));
+  border: 0;
+  border-radius: 6px;
+  padding: 0.15em 0.4em;
+}
+
+.article mark {
+  background: hsl(var(--inset));
+  color: hsl(var(--foreground));
+  border-radius: 4px;
+  padding: 0.1em 0.25em;
+  box-shadow: none;
+  text-shadow: none;
+}
+
+/* ── Lists ─────────────────────────────────────────────────────────────── */
+
+.article :is(ul, ol) {
+  padding-left: 24px;
+}
+
+/* The trailing non-breaking spaces are the marker's only source of gap —
+   `::marker` has no box to pad. */
+.article ul {
+  list-style-type: '–\a0\a0';
+}
+.article ul ul {
+  list-style-type: '·\a0\a0';
+}
+.article ol {
+  list-style-type: decimal;
+}
+
+.article li::marker {
+  color: hsl(var(--muted-foreground) / 0.6);
+  font-variant-numeric: tabular-nums;
+}
+
+.article li + li,
+.article li > :is(ul, ol) {
+  margin-top: 8px;
+}
+
+.article li > p {
+  margin: 0;
+}
+
+/* ── Quote ─────────────────────────────────────────────────────────────── */
+
+/*
+  A tonal panel rather than a left rule: `surface` is the same 2% lift the row
+  hover uses, so the page has one idea of a raised surface instead of two. The
+  italic is switched off deliberately — Inter's variable italic is a synthesised
+  oblique and sets badly at body size.
+*/
+.article blockquote {
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius-lg);
+  background: hsl(var(--surface));
+  padding: 20px;
+  color: hsl(var(--foreground));
+  font-style: normal;
+}
+
+.article blockquote > * + * {
+  margin-top: 12px;
+}
+
+/* ── Code blocks ───────────────────────────────────────────────────────── */
+
+.article .code-block {
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius-lg);
+  background: hsl(var(--inset));
+}
+
+/*
+  Code wraps rather than scrolls. The column is 608px, and a horizontal
+  scrollbar inside it is a worse read than a wrapped line — the line padding
+  doubles as the hanging indent, so a continuation stays under its own line.
+
+  Wrapping is also what makes twoslash usable: nothing between the token and the
+  page clips, so a hover card can sit outside the block.
+*/
+.article .code-block pre {
+  background: transparent !important;
+  margin: 0;
+  padding: 16px 0;
+  border: 0;
+  border-radius: 0;
+  overflow: visible;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 22px;
+  tab-size: 2;
+}
+
+/*
+  Grid, not block: shiki leaves a literal newline between every line span, and a
+  grid container drops whitespace-only children instead of rendering each one as
+  an empty row.
+
+  Direct child only. Twoslash's hover cards carry their own nested `code`, and
+  turning that into a grid puts every token on a line of its own.
+*/
+.article .code-block > pre > code {
+  display: grid;
+  width: 100%;
+  font-family: inherit;
+  font-size: inherit;
+  background: none;
+  padding: 0;
+  border-radius: 0;
+  white-space: pre-wrap;
+}
+
+/* Padding lives on the line, not the block, so a highlighted or errored row
+   fills the full width instead of stopping short of the rounded edge. */
+.article .code-block .line {
+  padding-inline: 16px;
+}
+
+.article .code-block .highlighted {
+  background: hsl(var(--foreground) / 0.05);
+  box-shadow: inset 2px 0 0 hsl(var(--muted-foreground));
+}
+
+.article .code-block .highlighted-word {
+  background: hsl(var(--foreground) / 0.08);
+  border-radius: 3px;
+  padding: 0.1em 0.2em;
+}
+
+/* fumadocs' preset already runs the counter and pins the number at 16px inside
+   the line, so the only thing missing is a gutter wide enough for the code to
+   clear it, and a colour from this palette rather than its own. */
+.article .code-block pre[data-line-numbers] .line {
+  padding-left: 48px;
+}
+
+.article .code-block .line::after {
+  color: hsl(var(--muted-foreground) / 0.5);
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+  The rich renderer positions its hover cards `fixed` with no offsets, which
+  resolves against the document origin rather than the scroll position and puts
+  every card hundreds of pixels down the page. Anchoring to the token it belongs
+  to is both correct and simpler.
+*/
+/* Anchor to the line, not the token. A card hung off a token halfway across a
+   line runs past the right edge on a phone, and CSS has no way to shift it
+   back. Starting at the line's own left edge keeps it inside the block at any
+   width. */
+.article .code-block .line {
+  position: relative;
+}
+
+.article .code-block .twoslash-hover {
+  position: static;
+}
+
+.article .code-block .twoslash-popup-container {
+  /* Out of layout at rest, not merely transparent — an absolutely positioned
+     card still counts towards scrollable overflow, which put a horizontal
+     scrollbar on the whole page at 390. */
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 16px;
+  z-index: 20;
+  width: max-content;
+  max-width: calc(100% - 32px);
+  margin: 4px 0 0;
+  transform: none;
+  border-radius: var(--radius);
+}
+
+.article .code-block .twoslash-hover:hover .twoslash-popup-container,
+.article .code-block .twoslash-query-line .twoslash-popup-container {
+  display: flex;
+}
+
+.article .code-block :is(.twoslash-popup-code, .twoslash-popup-docs, .twoslash-popup-error) {
+  padding: 8px 10px !important;
+}
+
+/*
+  The tip is a rotated square showing only its top corner. The half that should
+  disappear cannot simply sit under the card — a child always paints over its
+  parent's background, whatever its z-index — so the square lives inside a box
+  the height of the visible triangle and is clipped by it. That box's bottom
+  edge lands exactly on the card's top edge, which is what makes the join read
+  as one shape.
+
+  1em in keeps it clear of the 8px corner radius, and it carries the card's own
+  fill and stroke so the two edges continue into the card's border.
+*/
+.article .code-block .twoslash-popup-arrow {
+  position: absolute;
+  top: -6px;
+  left: 1em;
+  width: 12px;
+  height: 6px;
+  overflow: hidden;
+  border: 0;
+  background: none;
+  transform: none;
+  pointer-events: none;
+}
+
+.article .code-block .twoslash-popup-arrow::before {
+  content: '';
+  position: absolute;
+  /* Centred at 5.66px down — half the 8px square's diagonal — so its top corner
+     touches the top of the clipping box. */
+  top: 1.66px;
+  left: 2px;
+  width: 8px;
+  height: 8px;
+  background: var(--twoslash-popup-bg);
+  border: 1px solid var(--twoslash-border-color);
+  transform: rotate(45deg);
+}
+
+/* The query row is a sibling of the code lines but carries no `line` class, so
+   the block's gutter has to be spelled out or it sits flush against the edge
+   while every line above it is inset. */
+.article .code-block .twoslash-query-line {
+  padding-inline: 16px;
+}
+
+/*
+  This one stays in the flow, and inline so it follows the spaces the renderer
+  puts in front of it — that indent is what lands the card under the token the
+  `^?` points at. As an inline-level box its height and margins count towards
+  the line, so the row below is pushed clear rather than overlapped.
+*/
+.article .code-block .twoslash-query-line .twoslash-popup-container {
+  position: relative;
+  display: inline-flex;
+  vertical-align: top;
+  top: auto;
+  left: 0;
+  margin: 2px 0 6px;
+}
+
+/* ── Tables ────────────────────────────────────────────────────────────── */
+
+/*
+  No outer box and no vertical rules — a single hairline under the header and
+  between rows is all a table this narrow needs to stay readable, and it keeps
+  the column looking like text rather than a widget.
+*/
+.article table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.article :is(th, td) {
+  padding: 10px 12px;
+  text-align: left;
+  vertical-align: top;
+  border: 0;
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.article :is(th, td):first-child {
+  padding-left: 0;
+}
+.article :is(th, td):last-child {
+  padding-right: 0;
+}
+
+.article th {
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
+  background: transparent;
+}
+
+.article tbody tr:last-child :is(th, td) {
+  border-bottom: 0;
+}
+
+/* ── Figures ───────────────────────────────────────────────────────────── */
+
+.article img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-lg);
+  border: 1px solid hsl(var(--border));
+}
+
+/* ── Rule ──────────────────────────────────────────────────────────────── */
+
+/*
+  A short centred mark, not a full-bleed hairline. A break between passages is a
+  beat, and a line across the whole measure reads as the end of the document.
+*/
+.article hr {
+  width: 48px;
+  height: 1px;
+  margin: 48px auto;
+  border: 0;
+  background: hsl(var(--muted-foreground) / 0.4);
+}
+
+/* ── Maths ─────────────────────────────────────────────────────────────── */
+
+.article .katex {
+  font-size: 1.05em;
+  color: hsl(var(--foreground));
+}
+
+.article .katex-display {
+  margin: 28px 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-block: 4px;
+}
+
+/* ── Footnotes ─────────────────────────────────────────────────────────── */
+
+.article :is(sup, sub) {
+  font-size: 0.75em;
+  line-height: 0;
+}
+
+.article [data-footnote-ref] {
+  text-decoration: none;
+  padding-inline: 2px;
+}
+
+.article .footnotes {
+  margin-top: 56px;
+  padding-top: 24px;
+  border-top: 1px solid hsl(var(--border));
+  font-size: 14px;
+  line-height: 20px;
+}
+
+/* The generated "Footnotes" heading is for screen readers; the rule above is
+   what a sighted reader needs, so it stays out of the visual flow. */
+.article .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.article .footnotes li + li {
+  margin-top: 8px;
+}
+
+.article .footnotes p {
+  display: inline;
+}
+
+/* ── Keys ──────────────────────────────────────────────────────────────── */
+
+/*
+  fumadocs-ui's preset draws every `kbd` as a dark gradient keycap, which is
+  unreadable in light mode. This is the same key the homepage shortcut uses,
+  driven by the same two tokens.
+*/
+.article kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 18px;
+  padding-inline: 6px;
+  border: 0;
+  border-radius: 6px;
+  background: hsl(var(--shortcut));
+  background-image: none;
+  box-shadow: 0 1px 0 0 hsl(var(--shortcut-shadow));
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 18px;
+  color: hsl(var(--foreground));
+  text-shadow: none;
+}

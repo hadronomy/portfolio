@@ -1,7 +1,7 @@
 ---
-import { Icon } from 'astro-icon/components';
 import Overline from '~/components/core/Overline.astro';
 import Section from '~/components/core/Section.astro';
+import Sticker from '~/components/core/Sticker.astro';
 import { stack } from '~/lib/profile';
 
 /*
@@ -25,70 +25,33 @@ import { stack } from '~/lib/profile';
   >
     {
       stack.map((tool) => (
-        <li class="stack-item group relative size-10 shrink-0">
+        <li class="group relative size-10 shrink-0">
           {/*
-            Bare marks, no tile — Core's weight comes from each brand's artwork
-            filling its 40px box, not from a surface behind it.
+            Bare marks on a die-cut, no tile — Core's weight comes from each
+            brand's artwork filling its 40px box, not from a surface behind it.
 
-            The white sticker outline is ours, not Core's: Core can afford
-            near-black marks because every asset is drawn on its own tile, and
-            without tiles those marks vanish on the dark background. Outlining
-            them keeps every logo legible in both themes and gives the row a
-            consistent silhouette, which the raw glyphs do not have.
-          */}
-          <span class="sticker flex size-10 items-center justify-center">
-            <Icon name={tool.icon} class="size-9" aria-label={tool.name} />
-          </span>
+            The white cut is ours, not Core's: Core can afford near-black marks
+            because every asset there sits on its own tile, and without tiles
+            those marks vanish on the dark background. Cutting them keeps every
+            logo legible in both themes and gives the row one silhouette, which
+            the raw glyphs do not have.
 
-          {/*
-            Centred under the mark with a 15px gap, taken off the rendered
-            reference — the canvas parks this node somewhere the live site
-            never shows it.
+            The fold lifts the top-right corner. Angling it per sticker looked
+            like variety on paper, but a crease that differs on every mark reads
+            as noise at this size.
+
+            The id is derived from the name rather than the loop index, because
+            it keys where each sticker was left. An index would hand one
+            sticker's position to another the first time this list is reordered.
           */}
-          <span
-            role="tooltip"
-            class="type-body-xs pointer-events-none absolute top-[55px] left-1/2 z-20 -translate-x-1/2 rounded-[6px] bg-inset px-2 py-1 whitespace-nowrap text-foreground opacity-0 transition-opacity duration-200 ease-out group-hover:opacity-100 group-focus-within:opacity-100"
-          >
-            {tool.name}
-          </span>
+          <Sticker
+            icon={tool.icon}
+            label={tool.name}
+            uid={tool.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}
+          />
+
         </li>
       ))
     }
   </ul>
 </Section>
-
-<style>
-  /*
-    A sticker cut-out: eight offset copies of the mark's own alpha shape in
-    white, laid under it. Chained drop-shadows compound, so the radii stay
-    small — anything larger reads as a blob rather than a die-cut edge.
-  */
-  .sticker {
-    filter: drop-shadow(1.5px 0 0 #fff) drop-shadow(-1.5px 0 0 #fff)
-      drop-shadow(0 1.5px 0 #fff) drop-shadow(0 -1.5px 0 #fff)
-      drop-shadow(1.1px 1.1px 0 #fff) drop-shadow(-1.1px 1.1px 0 #fff)
-      drop-shadow(1.1px -1.1px 0 #fff) drop-shadow(-1.1px -1.1px 0 #fff);
-  }
-
-  /* Grows a little, slowly. Scale comes off the reference at ~1.06; the long
-     ease-out is what keeps it from feeling like a snap. */
-  .stack-item {
-    transition: transform 400ms cubic-bezier(0.22, 1, 0.36, 1);
-  }
-
-  .stack-item:hover,
-  .stack-item:focus-within {
-    transform: scale(1.06);
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .stack-item {
-      transition: none;
-    }
-
-    .stack-item:hover,
-    .stack-item:focus-within {
-      transform: none;
-    }
-  }
-</style>

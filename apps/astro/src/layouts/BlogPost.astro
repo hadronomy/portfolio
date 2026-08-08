@@ -1,107 +1,94 @@
 ---
-import type { MarkdownHeading } from 'astro'; // Import type
 import { Icon } from 'astro-icon/components';
-import type { CollectionEntry } from 'astro:content';
-import { format } from 'date-fns';
-import { Penflow } from 'penflow/react';
+import Overline from '~/components/core/Overline.astro';
+import Section from '~/components/core/Section.astro';
+import WritingList from '~/components/core/WritingList.astro';
+import CoreLayout from '~/layouts/Core.astro';
+import {
+  getPosts,
+  longDate,
+  type Post,
+  readingMinutes,
+  wordCount,
+} from '~/lib/posts';
 
-import MainLayout from '~/layouts/Main.astro';
+// KaTeX, twoslash and the article styles load with this layout rather than
+// globally, so no other page pays for them.
+import 'katex/dist/katex.min.css';
+import '~/styles/article.css';
+import '~/styles/twoslash.css';
 
-type Props = CollectionEntry<'blog'>['data'] & {
-  remarkPluginFrontmatter: Record<string, any>;
-  headings: MarkdownHeading[]; // Receive headings
-};
-
-const { title, description, pubDate, remarkPluginFrontmatter, headings } = Astro.props;
-const { duration } = remarkPluginFrontmatter;
-
-function formatDuration(duration: number) {
-  const seconds = Math.ceil(duration / 1000);
-  const minutes = Math.ceil(seconds / 60);
-  return `${minutes} min read`;
+interface Props {
+  post: Post;
 }
 
-const baseItems = [
-  { label: '00. Metadata', id: 'post-header', depth: 1 },
-];
+const { post } = Astro.props;
+const { title, description, pubDate, heroImage, state } = post.data;
 
-const contentItems = headings
-  // Filter out h1 (usually title) and anything too deep (h4+)
-  .filter(h => h.depth > 1 && h.depth < 4)
-  .map(h => ({
-    label: h.text,
-    id: h.slug,
-    depth: h.depth
-  }));
+const words = wordCount(post.body);
 
-const footerItems = [
-  { label: 'End of File', id: 'post-footer', depth: 1 }
-];
-
-// Combine
-const postSidebar = [...baseItems, ...contentItems, ...footerItems];
+const more = (await getPosts())
+  .filter((entry) => entry.id !== post.id)
+  .slice(0, 4);
 ---
 
-<MainLayout title={title} description={description} sidebarItems={postSidebar}>
-  
-  <article class="flex flex-col min-h-screen">
-    
-    <!-- Post Header -->
-    <header id="post-header" class="relative p-8 md:p-16 border-b border-white/20 bg-white/5 overflow-hidden">
-      <!-- Clean Repeating Diagonal Stripes -->
-      <div class="absolute inset-0 opacity-10 pointer-events-none" 
-           style="background-image: repeating-linear-gradient(45deg, #ffffff 0, #ffffff 1px, transparent 0, transparent 50%); background-size: 10px 10px;">
-      </div>
-
-      <div class="relative z-10 flex flex-col gap-6">
-        <!-- Meta Data -->
-        <div class="flex flex-wrap items-center gap-4 font-mono text-xs uppercase tracking-widest text-muted-foreground">
-          <div class="flex items-center gap-2 px-3 py-1 border border-white/10 bg-black/40">
-            <Icon name="tabler:calendar" class="w-4 h-4" />
-            <time datetime={format(pubDate, 'yyyy-MM-dd')}>
-              {format(new Date(pubDate), 'dd MMM yyyy')}
-            </time>
-          </div>
-          <div class="flex items-center gap-2 px-3 py-1 border border-white/10 bg-black/40">
-            <Icon name="tabler:clock" class="w-4 h-4" />
-            <span>{formatDuration(duration)}</span>
-          </div>
-        </div>
-
-        <h1 class="text-3xl md:text-5xl lg:text-6xl font-black uppercase tracking-tighter leading-tight text-white">
-          {title}
-        </h1>
-        
-        <p class="text-lg md:text-xl text-muted-foreground font-mono border-l-2 border-green-500/50 pl-6 max-w-3xl">
-          {description}
+<CoreLayout
+  {title}
+  {description}
+  back="/blog"
+  type="article"
+  image={heroImage.src}
+  publishedTime={pubDate.toISOString()}
+>
+  {/*
+    Core sets 24px between the metadata row, the title and the body, on a 640px
+    column with 16px of gutter. Read off the canvas, not measured.
+  */}
+  <article>
+    <Section gap={24}>
+      <div class="flex items-center gap-2.5">
+        <p class="type-overline flex-1 text-muted-foreground">
+          <time datetime={pubDate.toISOString()}>{longDate.format(pubDate)}</time
+          >
+          {
+            state === 'draft' && (
+              <span class="ml-2 text-foreground">· Draft</span>
+            )
+          }
         </p>
-      </div>
-    </header>
 
-    <!-- Post Content -->
-    <!-- Note: We ensure headings have IDs (Astro MDX does this automatically) -->
-    <div id="post-content" class="p-8 md:p-12 w-full max-w-none">
-      <div class="prose prose-invert prose-lg prose-mono w-full max-w-4xl mx-auto
-           prose-headings:font-bold prose-headings:uppercase prose-headings:tracking-tight prose-headings:scroll-mt-32
-           prose-p:text-muted-foreground prose-p:leading-relaxed
-           prose-a:text-green-400 prose-a:no-underline hover:prose-a:underline
-           prose-code:text-white prose-code:bg-white/10 prose-code:px-1 prose-code:py-0.5 prose-code:rounded-none prose-code:before:content-none prose-code:after:content-none
-           prose-pre:bg-transparent prose-pre:p-0 prose-pre:m-0 prose-pre:border-0 prose-pre:rounded-none
-           prose-blockquote:border-l-2 prose-blockquote:border-white/20 prose-blockquote:bg-white/5 prose-blockquote:py-2 prose-blockquote:px-6 prose-blockquote:not-italic
-           prose-img:rounded-none prose-img:border prose-img:border-white/20
-           ">
+        <div
+          class="type-overline flex shrink-0 items-center gap-3 text-muted-foreground"
+        >
+          <span class="flex items-center gap-1.5">
+            <Icon name="tabler:clock" class="size-4" />
+            {readingMinutes(post.body)} m
+          </span>
+          <span class="flex items-center gap-1.5">
+            <Icon name="tabler:align-left" class="size-4" />
+            {words} words
+          </span>
+        </div>
+      </div>
+
+      <h1 class="type-h1 text-foreground">{title}</h1>
+
+      <div class="article">
         <slot />
       </div>
-    </div>
-
-    <!-- Article Footer -->
-    <footer id="post-footer">
-      <Penflow client:only className="pl-10 h-20" size={42} color="white" text="Pablo Hernández J." fontUrl="/fonts/BrittanySignature.ttf" />
-      <div class="flex items-center justify-between font-mono text-xs uppercase tracking-widest p-8 md:p-12 border-t border-white/20 mt-auto opacity-60">
-         <span>End of File</span>
-         <span>Hash: {Math.random().toString(36).substring(7).toUpperCase()}</span>
-      </div>
-    </footer>
-
+    </Section>
   </article>
-</MainLayout>
+
+  {
+    more.length > 0 && (
+      <div class="flex w-full flex-col gap-4">
+        <Section>
+          <Overline class="opacity-70">More</Overline>
+        </Section>
+
+        <WritingList posts={more} />
+      </div>
+    )
+  }
+
+</CoreLayout>

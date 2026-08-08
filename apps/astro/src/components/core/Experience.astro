@@ -2,6 +2,7 @@
 import { Icon } from 'astro-icon/components';
 import Company from '~/components/core/Company.astro';
 import Monogram from '~/components/core/Monogram.astro';
+import Ull from '~/components/svg/Ull.astro';
 import Overline from '~/components/core/Overline.astro';
 import Section from '~/components/core/Section.astro';
 import { experience } from '~/lib/profile';
@@ -39,10 +40,9 @@ import { experience } from '~/lib/profile';
             >
               {entry.mark === 'monogram' ? (
                 <Monogram />
-              ) : entry.mark === 'academic' ? (
-                <span class="flex size-5 shrink-0 items-center justify-center rounded-[6px] bg-foreground text-background">
-                  <Icon name="tabler:school" class="size-3" />
-                </span>
+              ) : entry.mark === 'ull' ? (
+                /* Bare, like the GitHub glyph beside it — no tile behind it. */
+                <Ull class="size-5 shrink-0 text-foreground" />
               ) : (
                 <Icon name={entry.mark} class="size-5 shrink-0 text-foreground" />
               )}

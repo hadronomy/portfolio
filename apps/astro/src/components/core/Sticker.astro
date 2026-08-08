@@ -1,0 +1,782 @@
+---
+import { Icon } from 'astro-icon/components';
+
+interface Props {
+  /** astro-icon name. Rendered three times: face, cast shadow, underside. */
+  icon: string;
+  label: string;
+  /** Unique per sticker — the filters below are referenced by id. */
+  uid: string;
+  /** Edge of the sticker box, in px. */
+  size?: number;
+  /** Jaunty angle on the artwork itself, as the reference applies it. */
+  rotate?: number;
+  /**
+   * Which corner lifts, in degrees clockwise from the top edge. 45 peels the
+   * top-right corner, 0 the whole top edge, -45 the top-left, 135 the
+   * bottom-right, and so on.
+   */
+  direction?: number;
+  /** Crease position on hover, and while held. */
+  peelHover?: string;
+  peelActive?: string;
+}
+
+const {
+  icon,
+  label,
+  uid,
+  size = 40,
+  rotate = 0,
+  direction = 45,
+  peelHover = '30%',
+  peelActive = '52%',
+} = Astro.props;
+
+/*
+  Slack around the artwork, in the sticker's own rotated frame.
+
+  Turning the crease means turning the whole box, and an upright square inside a
+  turned box needs room for its corners or the clip shears them off — which is
+  the clipping the reference warns about next to its own padding value. The
+  first term is exactly how far a corner reaches past the box at this angle; the
+  second is the die-cut's own spread.
+*/
+const radians = (direction * Math.PI) / 180;
+const corner =
+  ((Math.abs(Math.cos(radians)) + Math.abs(Math.sin(radians)) - 1) * size) / 2;
+const pad = Math.ceil(corner + size * 0.05);
+---
+
+{/*
+  A fold, done as two clip paths moving in step: the face is cut back from the
+  top edge and a mirrored copy of the same mark is revealed above the cut, so
+  the two meet along the crease.
+
+  Three layers, not two. The middle one is a blackened, blurred copy of the
+  flap that animates with it — the shadow the lifted corner throws back onto
+  the sticker. Without it the fold reads as a flat grey band stuck on top,
+  which is what it did here for several attempts.
+
+  The underside is the same artwork flooded solid grey, which is what makes
+  this work on a die-cut: the flood takes the mark's own alpha, so the lifted
+  corner follows the logo's silhouette rather than a rectangle around it.
+*/}
+<div
+  class="sticker-slot"
+  data-sticker={uid}
+  style={`--s:${size}px;--p:${pad}px;--rot:${rotate}deg;--dir:${direction}deg;--peel-hover:${peelHover};--peel-active:${peelActive}`}
+>
+  <svg class="sticker-defs" aria-hidden="true" focusable="false">
+    <defs>
+      {/*
+        The die-cut. `feMorphology` pushes the mark's own silhouette out evenly;
+        the blur and matrix round the square kernel's corners back off, which is
+        how a real blade behaves. The matrix's first three rows force red, green
+        and blue to 1, so the cut comes out white without a separate flood.
+      */}
+      <filter
+        id={`cut-${uid}`}
+        x="-30%"
+        y="-30%"
+        width="160%"
+        height="160%"
+        color-interpolation-filters="sRGB"
+      >
+        <feMorphology in="SourceAlpha" operator="dilate" radius="2" result="spread" />
+        <feGaussianBlur in="spread" stdDeviation="1.4" result="soft" />
+        <feColorMatrix
+          in="soft"
+          type="matrix"
+          values="0 0 0 0 1
+                  0 0 0 0 1
+                  0 0 0 0 1
+                  0 0 0 22 -9"
+          result="cut"
+        />
+        <feMerge>
+          <feMergeNode in="cut" />
+          <feMergeNode in="SourceGraphic" />
+        </feMerge>
+      </filter>
+
+      {/*
+        The hole the sticker leaves behind: its own silhouette, filled with a
+        recess rather than a colour. Both stops are the foreground at low alpha,
+        so it reads as an absence in either theme without introducing a hue.
+      */}
+      <filter id={`hole-${uid}`} color-interpolation-filters="sRGB">
+        <feFlood flood-color="currentColor" result="flood" />
+        <feComposite operator="in" in="flood" in2="SourceAlpha" />
+      </filter>
+
+      {/*
+        The blank back of the vinyl, in the die-cut's own silhouette, casting
+        its own shadow.
+
+        The reference throws that shadow with a third copy of the sticker,
+        blackened and blurred. A separate layer cannot work here: it is empty
+        whenever the corner is down, and an element carrying a filter paints its
+        own box even with nothing in it — visible in light mode as a faint
+        rotated square behind every mark. Casting from the underside itself
+        needs no such layer.
+
+        `dy` is negative because the flap is mirrored; it lands downwards once
+        the flip is applied.
+      */}
+      <filter
+        id={`back-${uid}`}
+        x="-50%"
+        y="-50%"
+        width="200%"
+        height="200%"
+        color-interpolation-filters="sRGB"
+      >
+        <feFlood flood-color="rgb(179 179 179)" result="flood" />
+        <feComposite operator="in" in="flood" in2="SourceAlpha" result="vinyl" />
+        <feDropShadow
+          in="vinyl"
+          dx="0"
+          dy="-2"
+          stdDeviation="2"
+          flood-color="black"
+          flood-opacity="0.45"
+        />
+      </filter>
+
+      {/*
+        Gloss that tracks the pointer. Composited with `screen`, not `over`:
+        a specular highlight adds light to what is under it, and painting it
+        over the artwork instead washes the colour out.
+      */}
+      <filter id={`sheen-${uid}`} color-interpolation-filters="sRGB">
+        <feGaussianBlur stdDeviation="1" result="blur" />
+        <feSpecularLighting
+          result="spec"
+          in="blur"
+          specularExponent="100"
+          specularConstant="0.1"
+          lighting-color="white"
+        >
+          <fePointLight class="sheen-light" x="20" y="20" z="60" />
+        </feSpecularLighting>
+        <feComposite in="spec" in2="SourceGraphic" operator="screen" result="lit" />
+        <feComposite in="lit" in2="SourceAlpha" operator="in" />
+      </filter>
+
+      {/* The underside catches far more light — it is turned towards the eye. */}
+      <filter id={`sheen-flap-${uid}`} color-interpolation-filters="sRGB">
+        <feGaussianBlur stdDeviation="4" result="blur" />
+        <feSpecularLighting
+          result="spec"
+          in="blur"
+          specularExponent="100"
+          specularConstant="0.7"
+          lighting-color="white"
+        >
+          <fePointLight class="sheen-light-flap" x="20" y="20" z="60" />
+        </feSpecularLighting>
+        <feComposite in="spec" in2="SourceGraphic" operator="screen" result="lit" />
+        <feComposite in="lit" in2="SourceAlpha" operator="in" />
+      </filter>
+    </defs>
+  </svg>
+
+  {/* Stays in the slot when the sticker does not. */}
+  <div class="sticker-cutout" aria-hidden="true">
+    <span class="cutout-art" style={`filter:url(#cut-${uid}) url(#hole-${uid})`}>
+      <Icon name={icon} class="mark" />
+    </span>
+  </div>
+
+  <div class="sticker-move">
+   <div class="sticker">
+    <div class="sticker-container">
+    <div class="sticker-main">
+      <div class="upright">
+        <div class="sticker-lighting" style={`filter:url(#sheen-${uid})`}>
+          <span class="sticker-image" style={`filter:url(#cut-${uid})`}>
+            <Icon name={icon} class="mark" aria-label={label} />
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="flap" aria-hidden="true">
+      <div class="upright">
+        <div class="flap-lighting" style={`filter:url(#sheen-flap-${uid})`}>
+          <span class="flap-image" style={`filter:url(#cut-${uid}) url(#back-${uid})`}>
+            <Icon name={icon} class="mark" />
+          </span>
+        </div>
+      </div>
+      </div>
+    </div>
+   </div>
+
+   {/*
+     Centred under the mark with a 15px gap, taken off the rendered reference.
+     It lives here rather than in the row so that it follows a sticker that has
+     been stuck elsewhere, instead of naming an empty slot.
+   */}
+   <span role="tooltip" class="sticker-tooltip type-body-xs">{label}</span>
+  </div>
+</div>
+
+<style>
+  /*
+    The reference's own curves, kept verbatim. Both overshoot past 1 — the hover
+    to 1.114, the press to 1.197 — so the corner springs past its resting angle
+    and settles back. No cubic-bezier can do that, and its absence is why this
+    read as mechanical however the durations were tuned.
+  */
+  .sticker-slot {
+    position: relative;
+    width: var(--s);
+    height: var(--s);
+  }
+
+  /*
+    The hole. Only there once the sticker has been taken out of it, and it
+    brightens as a sticker is brought back within snapping distance — that
+    highlight is the whole affordance for putting one back.
+  */
+  .sticker-cutout {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    /*
+      The recess is carried by `opacity`, not by an alpha on the flood colour.
+      `feFlood` takes `flood-color` and `flood-opacity` as separate inputs and
+      drops the alpha channel of a colour handed to it, which paints the hole
+      solid white instead of a faint dent.
+    */
+    color: hsl(var(--foreground));
+    opacity: 0;
+    transition:
+      opacity 200ms ease-out,
+      scale 160ms ease-out;
+    pointer-events: none;
+  }
+
+  .sticker-slot[data-displaced] .sticker-cutout {
+    opacity: 0.1;
+  }
+
+  .sticker-slot[data-near] .sticker-cutout {
+    opacity: 0.26;
+    scale: 1.06;
+  }
+
+  .cutout-art {
+    display: grid;
+    place-items: center;
+    width: var(--s);
+    height: var(--s);
+    rotate: var(--rot);
+  }
+
+  .sticker-move {
+    position: absolute;
+    inset: 0;
+  }
+
+  .sticker-tooltip {
+    position: absolute;
+    top: calc(var(--s) + 15px);
+    left: 50%;
+    z-index: 20;
+    translate: -50% 0;
+    border-radius: 6px;
+    background: hsl(var(--inset));
+    color: hsl(var(--foreground));
+    padding: 4px 8px;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 200ms ease-out;
+    pointer-events: none;
+  }
+
+  .sticker:is(:hover, :focus-within) ~ .sticker-tooltip {
+    opacity: 1;
+  }
+
+  /* Naming it while it is in flight is noise. */
+  .sticker[data-dragging] ~ .sticker-tooltip {
+    opacity: 0;
+  }
+
+  .sticker {
+    --peel-easing: 2s
+      linear(
+        0, 0.002 0.4%, 0.008 0.9%, 0.02 1.4%, 0.035 1.9%, 0.055 2.4%, 0.083 3%,
+        0.11 3.5%, 0.146 4.1%, 0.214 5.1%, 0.297 6.2%, 0.624 10.2%, 0.756 11.9%,
+        0.821 12.8%, 0.874 13.6%, 0.93 14.5%, 0.975 15.3%, 1.016 16.1%,
+        1.053 16.9%, 1.085 17.7%, 1.116 18.6%, 1.139 19.4%, 1.16 20.3%,
+        1.176 21.2%, 1.187 22.1%, 1.195 23.2%, 1.197 24.4%, 1.193 25.6%,
+        1.183 26.9%, 1.17 28.1%, 1.153 29.4%, 1.055 35.6%, 1.031 37.3%,
+        1.012 38.8%, 0.994 40.6%, 0.98 42.3%, 0.97 44.1%, 0.964 45.9%,
+        0.961 48.3%, 0.964 51.1%, 0.97 53.7%, 0.997 62.7%, 1.003 66%,
+        1.007 69.3%, 1.007 74.4%, 1 89.2%, 1
+      );
+    --peel-hover-easing: 1s
+      linear(
+        0, 0.008 1.1%, 0.031 2.2%, 0.129 4.8%, 0.257 7.2%, 0.671 14.2%,
+        0.789 16.5%, 0.881 18.6%, 0.957 20.7%, 1.019 22.9%, 1.063 25.1%,
+        1.094 27.4%, 1.114 30.7%, 1.112 34.5%, 1.018 49.9%, 0.99 59.1%, 1
+      );
+
+    --start: calc(-1 * var(--p));
+    --end: calc(100% + var(--p));
+
+    position: absolute;
+    inset: 0;
+    width: var(--s);
+    height: var(--s);
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+
+    /*
+      At rest the flap is parked a full height above the sticker, clipped to
+      nothing. Turning the container swings that parked box out sideways, and
+      it still counts towards the page's scrollable width — 31px of horizontal
+      overflow at 390 from a box that renders nothing. `clip` bounds it without
+      making a scroll container, and the margin leaves the cast shadow room.
+    */
+    overflow: clip;
+    overflow-clip-margin: var(--p);
+  }
+
+  .sticker-defs {
+    position: absolute;
+    width: 0;
+    height: 0;
+  }
+
+  /*
+    Turning the container turns the crease with it, because the fold is always
+    written against this box's top edge. The artwork is turned back by the same
+    amount inside, so only the fold moves and the logos stay upright.
+  */
+  .sticker-container {
+    position: relative;
+    width: var(--s);
+    height: var(--s);
+    rotate: var(--dir);
+  }
+
+  .upright {
+    rotate: calc(-1 * var(--dir));
+  }
+
+  .sticker-container * {
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+
+  .sticker-image,
+  .flap-image {
+    display: grid;
+    place-items: center;
+    width: var(--s);
+    height: var(--s);
+    rotate: var(--rot);
+  }
+
+  .mark {
+    width: calc(var(--s) * 0.9);
+    height: calc(var(--s) * 0.9);
+  }
+
+  /* ── Face ─────────────────────────────────────────────────────────────── */
+
+  .sticker-main {
+    clip-path: polygon(
+      var(--start) var(--start),
+      var(--end) var(--start),
+      var(--end) var(--end),
+      var(--start) var(--end)
+    );
+    transition: clip-path var(--peel-hover-easing);
+  }
+
+  .sticker:hover .sticker-main,
+  .sticker:focus-within .sticker-main {
+    clip-path: polygon(
+      var(--start) var(--peel-hover),
+      var(--end) var(--peel-hover),
+      var(--end) var(--end),
+      var(--start) var(--end)
+    );
+  }
+
+  .sticker:active .sticker-main,
+  .sticker[data-dragging] .sticker-main {
+    clip-path: polygon(
+      var(--start) var(--peel-active),
+      var(--end) var(--peel-active),
+      var(--end) var(--end),
+      var(--start) var(--end)
+    );
+    transition: clip-path var(--peel-easing);
+  }
+
+  /* ── Flap, and the shadow it throws ───────────────────────────────────── */
+
+  /*
+    Mirrored and parked a full height above, so that as the clip band opens the
+    strip appears to hinge on the crease. `top` and the band are animated with
+    one easing so they cannot fall out of step.
+  */
+  .flap {
+    position: absolute;
+    left: 0;
+    top: calc(-100% - var(--p) - var(--p));
+    width: 100%;
+    height: 100%;
+    clip-path: polygon(
+      var(--start) var(--start),
+      var(--end) var(--start),
+      var(--end) var(--start),
+      var(--start) var(--start)
+    );
+    transform: scaleY(-1);
+    transition: all var(--peel-hover-easing);
+  }
+
+  .sticker:hover .flap,
+  .sticker:focus-within .flap {
+    clip-path: polygon(
+      var(--start) var(--start),
+      var(--end) var(--start),
+      var(--end) var(--peel-hover),
+      var(--start) var(--peel-hover)
+    );
+    top: calc(-100% + 2 * var(--peel-hover) - 1px);
+  }
+
+  .sticker:active .flap,
+  .sticker[data-dragging] .flap {
+    clip-path: polygon(
+      var(--start) var(--start),
+      var(--end) var(--start),
+      var(--end) var(--peel-active),
+      var(--start) var(--peel-active)
+    );
+    top: calc(-100% + 2 * var(--peel-active) - 1px);
+    transition: all var(--peel-easing);
+  }
+
+  .sticker-main,
+  .flap {
+    will-change: clip-path, transform;
+  }
+
+  /* Stuck somewhere other than its slot, so it sits above the page. */
+  .sticker-slot[data-displaced] .sticker {
+    z-index: 30;
+  }
+
+  .sticker:hover {
+    cursor: grab;
+  }
+
+  .sticker[data-dragging] {
+    cursor: grabbing;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sticker-main,
+    .flap {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  import { animate } from 'motion';
+  import {
+    clearSticker,
+    placeSticker,
+    placements,
+    type Placement,
+  } from '~/lib/stickers';
+
+  /*
+    Drag is written against pointer events rather than pulled in from a library.
+    Motion's drag is React-only — the vanilla entry point has no equivalent —
+    and mounting ten islands to move ten 40px marks costs far more than this.
+    Motion still does the part worth having: the springs.
+  */
+
+  const MAX_TILT = 24;
+  const TILT_SCALE = 0.6;
+  /** Release inside this many pixels of the slot and it goes back in. */
+  const SNAP_PX = 30;
+  /** Keep a stuck sticker this far inside the page. */
+  const MARGIN = 8;
+
+  const reduced = () =>
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const spring = { type: 'spring', stiffness: 260, damping: 22, mass: 0.7 } as const;
+
+  const transform = (p: Placement) =>
+    `translate3d(${p.x}px, ${p.y}px, 0) rotate(${p.r}deg)`;
+
+  /* The mover carries the drag transform; the sticker inside it is the part
+     you grab and the part that peels. They are separate because the sticker
+     clips its own overflow and the label must not be clipped with it. */
+  const moverOf = (slot: HTMLElement) =>
+    slot.querySelector<HTMLElement>('.sticker-move');
+
+  /*
+    The slot never moves, so its box is where the sticker belongs. Clamping
+    against it here rather than at drop time is what keeps a sticker stuck at
+    1200px from ending up off the side of a phone.
+  */
+  const clamp = (slot: HTMLElement, p: Placement): Placement => {
+    const home = slot.getBoundingClientRect();
+    const pageW = document.documentElement.clientWidth;
+    const pageH = document.documentElement.scrollHeight;
+    const top = home.top + window.scrollY;
+
+    // The sticker paints up to its clip margin beyond its own box — the cast
+    // shadow and the die-cut live out there. Clamping the box alone still lets
+    // that overhang push a scrollbar onto the page.
+    const overhang =
+      Number.parseFloat(getComputedStyle(slot).getPropertyValue('--p')) || 0;
+    const edge = MARGIN + overhang;
+
+    return {
+      x: Math.min(
+        Math.max(p.x, edge - home.left),
+        pageW - edge - home.width - home.left,
+      ),
+      y: Math.min(Math.max(p.y, edge - top), pageH - edge - home.height - top),
+      r: p.r,
+    };
+  };
+
+  const HOME = transform({ x: 0, y: 0, r: 0 });
+
+  /*
+    Both keyframes are given explicitly. Handed a single target, Motion starts
+    from its own cached value for the element — the end of whatever it animated
+    last — not from the transform the drag wrote straight to the style. A
+    sticker moved twice without a reload would otherwise snap back to where it
+    was previously dropped and travel from there.
+  */
+  const glideTo = (el: HTMLElement, to: string) =>
+    animate(el, { transform: [el.style.transform || HOME, to] }, spring);
+
+  const render = (slot: HTMLElement, p: Placement | undefined, glide: boolean) => {
+    const el = moverOf(slot);
+    if (!el) return;
+
+    if (!p) {
+      delete slot.dataset.displaced;
+      if (glide && !reduced()) {
+        glideTo(el, HOME).finished.then(() => {
+          el.style.transform = '';
+        });
+      } else {
+        el.style.transform = '';
+      }
+      return;
+    }
+
+    slot.dataset.displaced = '';
+    const target = clamp(slot, p);
+
+    if (glide && !reduced()) {
+      glideTo(el, transform(target));
+    } else {
+      el.style.transform = transform(target);
+    }
+  };
+
+  const restore = (glide: boolean) => {
+    const stored = placements.get();
+    for (const slot of document.querySelectorAll<HTMLElement>('.sticker-slot')) {
+      const id = slot.dataset.sticker;
+      if (id) render(slot, stored[id], glide);
+    }
+  };
+
+  /*
+    The subscription exists to pick up changes made elsewhere — another tab.
+    A change this document just made is already being rendered, with a spring
+    the subscriber would cut short by writing the final transform underneath it.
+  */
+  let writingLocally = false;
+
+  const writeLocally = (mutate: () => void) => {
+    writingLocally = true;
+    try {
+      mutate();
+    } finally {
+      writingLocally = false;
+    }
+  };
+
+  let held: {
+    slot: HTMLElement;
+    el: HTMLElement;
+    art: HTMLElement;
+    pointerId: number;
+    startX: number;
+    startY: number;
+    lastX: number;
+    origin: Placement;
+    current: Placement;
+  } | null = null;
+
+  /** The most recently grabbed sticker sits above the rest, as a real one would. */
+  let topmost = 30;
+
+  const moveLight = (el: HTMLElement, clientX: number, clientY: number) => {
+    const box = el.getBoundingClientRect();
+    const x = clientX - box.left;
+    const y = clientY - box.top;
+
+    el.querySelector('.sheen-light')?.setAttribute('x', String(x));
+    el.querySelector('.sheen-light')?.setAttribute('y', String(y));
+
+    // The flap is mirrored, so its light is mirrored with it or the highlight
+    // slides the wrong way across the lifted corner.
+    el.querySelector('.sheen-light-flap')?.setAttribute('x', String(x));
+    el.querySelector('.sheen-light-flap')?.setAttribute(
+      'y',
+      String(box.height - y),
+    );
+  };
+
+  const nearHome = (p: Placement) => Math.hypot(p.x, p.y) <= SNAP_PX;
+
+  document.addEventListener('pointerdown', (event) => {
+    /*
+      The sticker, not the slot it belongs to. Once a sticker has been moved
+      away, its slot is an empty hole — grabbing that would drag a sticker that
+      is nowhere near the pointer. The sticker covers its slot exactly while it
+      is at home, so this is the same grab as before for one that has not moved.
+    */
+    const art = (event.target as Element | null)?.closest<HTMLElement>('.sticker');
+    const slot = art?.closest<HTMLElement>('.sticker-slot');
+    const el = slot && moverOf(slot);
+    if (!slot || !art || !el || event.button !== 0) return;
+
+    const id = slot.dataset.sticker;
+    const origin = (id && placements.get()[id]) || { x: 0, y: 0, r: 0 };
+
+    held = {
+      slot,
+      el,
+      art,
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      lastX: event.clientX,
+      origin,
+      current: origin,
+    };
+
+    // Capture keeps the drag alive if the pointer leaves the sticker, but it
+    // throws when the pointer is already gone. Losing it is survivable; letting
+    // it abort the handler strands the sticker mid-drag.
+    try {
+      art.setPointerCapture(event.pointerId);
+    } catch {}
+
+    art.dataset.dragging = '';
+    el.style.zIndex = String(++topmost);
+  });
+
+  document.addEventListener('pointermove', (event) => {
+    if (!held) {
+      const over = (event.target as Element | null)?.closest<HTMLElement>(
+        '.sticker',
+      );
+      if (over) moveLight(over, event.clientX, event.clientY);
+      return;
+    }
+
+    if (event.pointerId !== held.pointerId) return;
+
+    // Tilt follows how fast the pointer moves sideways, not how far it has
+    // travelled — that is what gives the sticker a sense of weight.
+    const step = event.clientX - held.lastX;
+    held.lastX = event.clientX;
+    const tilt = Math.max(
+      -MAX_TILT,
+      Math.min(MAX_TILT, held.current.r * 0.8 + step * TILT_SCALE),
+    );
+
+    held.current = {
+      x: held.origin.x + (event.clientX - held.startX),
+      y: held.origin.y + (event.clientY - held.startY),
+      r: tilt,
+    };
+
+    held.el.style.transform = transform(held.current);
+    held.slot.toggleAttribute('data-near', nearHome(held.current));
+    moveLight(held.el, event.clientX, event.clientY);
+  });
+
+  const release = (event: PointerEvent) => {
+    if (!held || event.pointerId !== held.pointerId) return;
+
+    const { slot, art, current } = held;
+    const id = slot.dataset.sticker;
+    held = null;
+
+    delete art.dataset.dragging;
+    slot.removeAttribute('data-near');
+    try {
+      art.releasePointerCapture(event.pointerId);
+    } catch {}
+
+    if (!id) return;
+
+    // Let go near the hole and it drops back in; anywhere else it stays put.
+    if (nearHome(current)) {
+      writeLocally(() => clearSticker(id));
+      render(slot, undefined, true);
+      return;
+    }
+
+    /*
+      Dropped, not thrown: it stays under the cursor where it was let go. Only
+      the tilt relaxes, and only the journey home is worth animating.
+    */
+    const settled = clamp(slot, { ...current, r: current.r * 0.35 });
+    writeLocally(() => placeSticker(id, settled));
+    render(slot, settled, false);
+  };
+
+  document.addEventListener('pointerup', release);
+  document.addEventListener('pointercancel', release);
+
+  // A second way back, for anyone who does not want to drag it all the way.
+  document.addEventListener('dblclick', (event) => {
+    const slot = (event.target as Element | null)
+      ?.closest<HTMLElement>('.sticker')
+      ?.closest<HTMLElement>('.sticker-slot');
+    const id = slot?.dataset.sticker;
+    if (!slot || !id || !placements.get()[id]) return;
+
+    writeLocally(() => clearSticker(id));
+    render(slot, undefined, true);
+  });
+
+  // Fires immediately, and again on any change — including one made in another
+  // tab, which is what keeps two open windows agreeing on where things are.
+  placements.subscribe(() => {
+    if (!held && !writingLocally) restore(false);
+  });
+
+  // The clamp depends on the page's width, so a resize has to re-run it.
+  window.addEventListener('resize', () => restore(false));
+  document.addEventListener('astro:page-load', () => restore(false));
+</script>

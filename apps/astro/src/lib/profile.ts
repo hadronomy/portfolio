@@ -22,7 +22,7 @@ export type ExperienceEntry = {
   period: string;
   role: string;
   organisation: string;
-  /** Icon set name for astro-icon, or `monogram` for the in-house mark. */
+  /** Icon set name for astro-icon, or `monogram` / `ull` for an in-house mark. */
   mark: string;
   description: string;
   /** Makes the company chip a link. */
@@ -48,7 +48,7 @@ export const experience: ExperienceEntry[] = [
     period: '2021 — NOW',
     role: 'B.S. Computer Engineering',
     organisation: 'Universidad de La Laguna',
-    mark: 'academic',
+    mark: 'ull',
     description:
       'Algorithms, software architecture and distributed systems. Led student project teams and competed in algorithm contests.',
     url: 'https://www.ull.es',
