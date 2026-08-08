@@ -110,10 +110,38 @@ const pad = Math.ceil(corner + size * 0.05);
         <feComposite operator="in" in="flood" in2="SourceAlpha" />
       </filter>
 
-      {/* The blank back of the vinyl, in the die-cut's own silhouette. */}
-      <filter id={`back-${uid}`} color-interpolation-filters="sRGB">
+      {/*
+        The blank back of the vinyl, in the die-cut's own silhouette, casting
+        its own shadow.
+
+        The reference throws that shadow with a third copy of the sticker,
+        blackened and blurred. A separate layer cannot work here: it is empty
+        whenever the corner is down, and an element carrying a filter paints its
+        own box even with nothing in it — visible in light mode as a faint
+        rotated square behind every mark. Casting from the underside itself
+        needs no such layer.
+
+        `dy` is negative because the flap is mirrored; it lands downwards once
+        the flip is applied.
+      */}
+      <filter
+        id={`back-${uid}`}
+        x="-50%"
+        y="-50%"
+        width="200%"
+        height="200%"
+        color-interpolation-filters="sRGB"
+      >
         <feFlood flood-color="rgb(179 179 179)" result="flood" />
-        <feComposite operator="in" in="flood" in2="SourceAlpha" />
+        <feComposite operator="in" in="flood" in2="SourceAlpha" result="vinyl" />
+        <feDropShadow
+          in="vinyl"
+          dx="0"
+          dy="-2"
+          stdDeviation="2"
+          flood-color="black"
+          flood-opacity="0.45"
+        />
       </filter>
 
       {/*
@@ -161,23 +189,14 @@ const pad = Math.ceil(corner + size * 0.05);
     </span>
   </div>
 
-  <div class="sticker">
-   <div class="sticker-container">
+  <div class="sticker-move">
+   <div class="sticker">
+    <div class="sticker-container">
     <div class="sticker-main">
       <div class="upright">
         <div class="sticker-lighting" style={`filter:url(#sheen-${uid})`}>
           <span class="sticker-image" style={`filter:url(#cut-${uid})`}>
             <Icon name={icon} class="mark" aria-label={label} />
-          </span>
-        </div>
-      </div>
-    </div>
-
-    <div class="shadow" aria-hidden="true">
-      <div class="flap">
-        <div class="upright">
-          <span class="flap-image" style={`filter:url(#cut-${uid}) url(#back-${uid})`}>
-            <Icon name={icon} class="mark" />
           </span>
         </div>
       </div>
@@ -194,6 +213,13 @@ const pad = Math.ceil(corner + size * 0.05);
       </div>
     </div>
    </div>
+
+   {/*
+     Centred under the mark with a 15px gap, taken off the rendered reference.
+     It lives here rather than in the row so that it follows a sticker that has
+     been stuck elsewhere, instead of naming an empty slot.
+   */}
+   <span role="tooltip" class="sticker-tooltip type-body-xs">{label}</span>
   </div>
 </div>
 
@@ -249,6 +275,36 @@ const pad = Math.ceil(corner + size * 0.05);
     width: var(--s);
     height: var(--s);
     rotate: var(--rot);
+  }
+
+  .sticker-move {
+    position: absolute;
+    inset: 0;
+  }
+
+  .sticker-tooltip {
+    position: absolute;
+    top: calc(var(--s) + 15px);
+    left: 50%;
+    z-index: 20;
+    translate: -50% 0;
+    border-radius: 6px;
+    background: hsl(var(--inset));
+    color: hsl(var(--foreground));
+    padding: 4px 8px;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 200ms ease-out;
+    pointer-events: none;
+  }
+
+  .sticker:is(:hover, :focus-within) ~ .sticker-tooltip {
+    opacity: 1;
+  }
+
+  /* Naming it while it is in flight is noise. */
+  .sticker[data-dragging] ~ .sticker-tooltip {
+    opacity: 0;
   }
 
   .sticker {
@@ -412,17 +468,6 @@ const pad = Math.ceil(corner + size * 0.05);
     transition: all var(--peel-easing);
   }
 
-  /* The cast shadow: the same flap, blackened and blurred, offset down. */
-  .shadow {
-    position: absolute;
-    top: calc(var(--s) * 0.08);
-    left: calc(var(--s) * 0.04);
-    width: 100%;
-    height: 100%;
-    filter: brightness(0) blur(calc(var(--s) * 0.04));
-    opacity: 0.4;
-  }
-
   .sticker-main,
   .flap {
     will-change: clip-path, transform;
@@ -480,8 +525,11 @@ const pad = Math.ceil(corner + size * 0.05);
   const transform = (p: Placement) =>
     `translate3d(${p.x}px, ${p.y}px, 0) rotate(${p.r}deg)`;
 
-  const stickerOf = (slot: HTMLElement) =>
-    slot.querySelector<HTMLElement>('.sticker');
+  /* The mover carries the drag transform; the sticker inside it is the part
+     you grab and the part that peels. They are separate because the sticker
+     clips its own overflow and the label must not be clipped with it. */
+  const moverOf = (slot: HTMLElement) =>
+    slot.querySelector<HTMLElement>('.sticker-move');
 
   /*
     The slot never moves, so its box is where the sticker belongs. Clamping
@@ -524,7 +572,7 @@ const pad = Math.ceil(corner + size * 0.05);
     animate(el, { transform: [el.style.transform || HOME, to] }, spring);
 
   const render = (slot: HTMLElement, p: Placement | undefined, glide: boolean) => {
-    const el = stickerOf(slot);
+    const el = moverOf(slot);
     if (!el) return;
 
     if (!p) {
@@ -576,6 +624,7 @@ const pad = Math.ceil(corner + size * 0.05);
   let held: {
     slot: HTMLElement;
     el: HTMLElement;
+    art: HTMLElement;
     pointerId: number;
     startX: number;
     startY: number;
@@ -613,9 +662,10 @@ const pad = Math.ceil(corner + size * 0.05);
       is nowhere near the pointer. The sticker covers its slot exactly while it
       is at home, so this is the same grab as before for one that has not moved.
     */
-    const el = (event.target as Element | null)?.closest<HTMLElement>('.sticker');
-    const slot = el?.closest<HTMLElement>('.sticker-slot');
-    if (!slot || !el || event.button !== 0) return;
+    const art = (event.target as Element | null)?.closest<HTMLElement>('.sticker');
+    const slot = art?.closest<HTMLElement>('.sticker-slot');
+    const el = slot && moverOf(slot);
+    if (!slot || !art || !el || event.button !== 0) return;
 
     const id = slot.dataset.sticker;
     const origin = (id && placements.get()[id]) || { x: 0, y: 0, r: 0 };
@@ -623,6 +673,7 @@ const pad = Math.ceil(corner + size * 0.05);
     held = {
       slot,
       el,
+      art,
       pointerId: event.pointerId,
       startX: event.clientX,
       startY: event.clientY,
@@ -635,10 +686,10 @@ const pad = Math.ceil(corner + size * 0.05);
     // throws when the pointer is already gone. Losing it is survivable; letting
     // it abort the handler strands the sticker mid-drag.
     try {
-      el.setPointerCapture(event.pointerId);
+      art.setPointerCapture(event.pointerId);
     } catch {}
 
-    el.dataset.dragging = '';
+    art.dataset.dragging = '';
     el.style.zIndex = String(++topmost);
   });
 
@@ -676,14 +727,14 @@ const pad = Math.ceil(corner + size * 0.05);
   const release = (event: PointerEvent) => {
     if (!held || event.pointerId !== held.pointerId) return;
 
-    const { slot, el, current } = held;
+    const { slot, art, current } = held;
     const id = slot.dataset.sticker;
     held = null;
 
-    delete el.dataset.dragging;
+    delete art.dataset.dragging;
     slot.removeAttribute('data-near');
     try {
-      el.releasePointerCapture(event.pointerId);
+      art.releasePointerCapture(event.pointerId);
     } catch {}
 
     if (!id) return;
