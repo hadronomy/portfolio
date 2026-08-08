@@ -27,34 +27,15 @@ const { class: className, ...props } = Astro.props;
 </button>
 
 <script>
-  type Theme = 'light' | 'dark';
-
-  const STORAGE_KEY = 'theme';
-
-  const apply = (theme: Theme) => {
-    document.documentElement.classList.toggle('dark', theme === 'dark');
-    document.documentElement.style.colorScheme = theme;
-  };
-
-  const current = (): Theme =>
-    document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+  import { toggleTheme } from '~/lib/theme';
 
   // Delegated from document so a view transition swapping the button in does
   // not stack a second listener on it — that would toggle twice per click.
+  // Applying the change is the store's job, not this handler's.
   document.addEventListener('click', (event) => {
     const target = event.target as Element | null;
     if (!target?.closest('#theme-toggle')) return;
 
-    const next: Theme = current() === 'dark' ? 'light' : 'dark';
-    localStorage.setItem(STORAGE_KEY, next);
-    apply(next);
+    toggleTheme();
   });
-
-  // Only follow the OS while the visitor has not made an explicit choice.
-  window
-    .matchMedia('(prefers-color-scheme: dark)')
-    .addEventListener('change', (event) => {
-      if (localStorage.getItem(STORAGE_KEY)) return;
-      apply(event.matches ? 'dark' : 'light');
-    });
 </script>
