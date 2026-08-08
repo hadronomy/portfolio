@@ -607,10 +607,14 @@ const pad = Math.ceil(corner + size * 0.05);
   const nearHome = (p: Placement) => Math.hypot(p.x, p.y) <= SNAP_PX;
 
   document.addEventListener('pointerdown', (event) => {
-    const slot = (event.target as Element | null)?.closest<HTMLElement>(
-      '.sticker-slot',
-    );
-    const el = slot && stickerOf(slot);
+    /*
+      The sticker, not the slot it belongs to. Once a sticker has been moved
+      away, its slot is an empty hole — grabbing that would drag a sticker that
+      is nowhere near the pointer. The sticker covers its slot exactly while it
+      is at home, so this is the same grab as before for one that has not moved.
+    */
+    const el = (event.target as Element | null)?.closest<HTMLElement>('.sticker');
+    const slot = el?.closest<HTMLElement>('.sticker-slot');
     if (!slot || !el || event.button !== 0) return;
 
     const id = slot.dataset.sticker;
@@ -705,9 +709,9 @@ const pad = Math.ceil(corner + size * 0.05);
 
   // A second way back, for anyone who does not want to drag it all the way.
   document.addEventListener('dblclick', (event) => {
-    const slot = (event.target as Element | null)?.closest<HTMLElement>(
-      '.sticker-slot',
-    );
+    const slot = (event.target as Element | null)
+      ?.closest<HTMLElement>('.sticker')
+      ?.closest<HTMLElement>('.sticker-slot');
     const id = slot?.dataset.sticker;
     if (!slot || !id || !placements.get()[id]) return;
 
