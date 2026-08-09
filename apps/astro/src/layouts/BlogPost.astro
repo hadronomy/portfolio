@@ -3,7 +3,7 @@ import { Icon } from 'astro-icon/components';
 import Overline from '~/components/core/Overline.astro';
 import Section from '~/components/core/Section.astro';
 import WritingList from '~/components/core/WritingList.astro';
-import CoreLayout from '~/layouts/Core.astro';
+import Layout from '~/layouts/Layout.astro';
 import {
   getPosts,
   longDate,
@@ -32,7 +32,7 @@ const more = (await getPosts())
   .slice(0, 4);
 ---
 
-<CoreLayout
+<Layout
   {title}
   {description}
   back="/blog"
@@ -87,4 +87,4 @@ const more = (await getPosts())
     )
   }
 
-</CoreLayout>
+</Layout>
