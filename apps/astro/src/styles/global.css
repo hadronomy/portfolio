@@ -16,11 +16,10 @@
 
 @layer base {
   /*
-    Palette ported from the Framer "Core" project's color styles. Every value is
-    achromatic (hue 0, saturation 0) — the design carries contrast through
-    lightness alone, so introducing a hue anywhere will read as a mistake.
-    Alpha-bearing tokens use the `H S% L% / A` form, which `hsl(var(--x))`
-    resolves correctly.
+    Every value is achromatic (hue 0, saturation 0) — the design carries
+    contrast through lightness alone, so introducing a hue anywhere will read
+    as a mistake. Alpha-bearing tokens use the `H S% L% / A` form, which
+    `hsl(var(--x))` resolves correctly.
   */
   :root {
     --background: 0 0% 100%;
@@ -68,7 +67,7 @@
     --nav-item: 0 0% 12.2%;
     --cursor: 0 0% 100% / 0.3;
     --shortcut: 0 0% 14.9%;
-    /* Core drops the shortcut shadow entirely in dark rather than darkening it. */
+    /* The shortcut shadow drops out entirely in dark rather than darkening. */
     --shortcut-shadow: 0 0% 70.2% / 0;
 
     color-scheme: dark;
@@ -94,8 +93,8 @@
     --radius-lg: 12px;
     --radius-pill: 999px;
 
-    /* The whole page is one 640px column inside a 1200px frame; 608px is the
-       measure Core sets on running text so lines break before the column does. */
+    /* The whole page is one column inside a wider frame; the running-text
+       measure is narrower so lines break before the column does. */
     --content-width: 640px;
     --measure: 608px;
 
@@ -158,12 +157,10 @@
 }
 
 /*
-  Core's eight text styles, one utility each. Sizes, tracking and leading are
-  taken verbatim from the project's text styles rather than re-derived, so a
-  section can be checked against the canvas without arguing about the ramp.
+  Eight text styles, one utility each.
 
-  Heading 1 is deliberately largest on phones (40px) and smallest on tablet
-  (32px) — that inversion is what Core ships, not a transcription slip.
+  Heading 1 is deliberately largest on phones and smallest on tablet — that
+  inversion is intentional, not a transcription slip.
 */
 @utility type-h1 {
   font-family: var(--font-sans);

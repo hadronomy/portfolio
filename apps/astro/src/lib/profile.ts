@@ -67,9 +67,9 @@ export const experience: ExperienceEntry[] = [
 ];
 
 /**
- * Ten marks, not twenty-four — the row is a signal, not an inventory. Core
- * shows real brand colour here, so these are the multicolour sets rather than
- * the monochrome `simple-icons` variants.
+ * Ten marks, not twenty-four — the row is a signal, not an inventory. The
+ * design shows real brand colour here, so these are the multicolour sets
+ * rather than the monochrome `simple-icons` variants.
  */
 export const stack = [
   { name: 'TypeScript', icon: 'logos:typescript-icon' },

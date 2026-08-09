@@ -6,7 +6,8 @@ interface Props {
 const { edge } = Astro.props;
 
 /*
-  A port of Framer's Blur Gradient, which Core pins to both edges at 72px.
+  A progressive blur pinned to both edges, so content fades out smoothly
+  instead of clipping hard at the viewport edge.
 
   The part that matters is the masks. Each layer is a *sliding band* —
   transparent, opaque, opaque, transparent — 37.5% wide, stepping 12.5% along

@@ -9,12 +9,12 @@ const { key } = Astro.props;
 
 {/*
   The shadow is a real offset cast rather than a second element, and it is
-  dropped entirely in dark mode — Core sets the token to zero alpha there
-  rather than darkening it, which is why this is one token and not two rules.
+  dropped entirely in dark mode — the token goes to zero alpha there rather
+  than darkening, which is why this is one token and not two rules.
 */}
 {/*
-  Exactly 18px tall with no vertical padding, as Core sets it — any extra
-  height pushes the whole line and shows up as a spacing drift below.
+  No vertical padding — any extra height pushes the whole line and shows up
+  as a spacing drift below.
 
   fumadocs-ui's preset styles every `kbd` as a chunky dark keycap: a gradient
   fill, a 3px bottom border and a text shadow. Those win in light mode and clip

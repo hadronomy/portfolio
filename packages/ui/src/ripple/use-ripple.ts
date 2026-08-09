@@ -23,13 +23,10 @@ export function useRipple(props: UseRippleProps = {}) {
   const [ripples, setRipples] = React.useState<RippleType[]>([]);
 
   React.useEffect(() => {
-    const timeoutIds = ripples.map(
-      (_, i) =>
-        setTimeout(() => {
-          setRipples((prevState) =>
-            prevState.filter((_, index) => index !== i),
-          );
-        }, removeAfter), // remove after 1s
+    const timeoutIds = ripples.map((_, i) =>
+      setTimeout(() => {
+        setRipples((prevState) => prevState.filter((_, index) => index !== i));
+      }, removeAfter),
     );
 
     return () => {

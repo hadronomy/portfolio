@@ -11,7 +11,6 @@ export async function GET(_context: APIContext) {
     document as React.ReactElement<DocumentProps>,
   );
 
-  // Sign the PDF with digital signature
   const signingOptions: SigningOptions = {
     signerName: 'Pablo Hernandez',
     location: 'San Cristóbal de La Laguna, Santa Cruz de Tenerife, Spain',
