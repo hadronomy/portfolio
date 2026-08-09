@@ -1,6 +1,6 @@
 import { Slot } from '@radix-ui/react-slot';
 import * as React from 'react';
-import { type VariantProps, tv } from 'tailwind-variants';
+import { tv, type VariantProps } from 'tailwind-variants';
 import { cn } from './utils/cn';
 
 const buttonVariants = tv({
@@ -17,7 +17,6 @@ const buttonVariants = tv({
         'bg-secondary text-secondary-foreground border-2 border-transparent hover:bg-secondary/80',
       ghost: 'hover:bg-accent hover:text-accent-foreground',
       link: 'text-primary underline-offset-4 hover:underline',
-      // ... keep other fancy variants if needed, or brutalize them
       linkHover2:
         'relative after:absolute after:bg-foreground after:bottom-1 after:h-[2px] after:w-full after:origin-bottom-right after:scale-x-0 hover:after:origin-bottom-left hover:after:scale-x-100 after:transition-transform after:ease-in-out after:duration-300 font-bold uppercase tracking-wide',
     },
@@ -34,7 +33,6 @@ const buttonVariants = tv({
   },
 });
 
-/* ... Rest of the file stays the same ... */
 interface IconProps {
   Icon: React.ElementType;
   iconPlacement: 'left' | 'right';

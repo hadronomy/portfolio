@@ -18,18 +18,17 @@ import { experience } from '~/lib/profile';
 
   {
     experience.map((entry) => (
-      /* Fixed 144px date rail so every row's title starts on the same line,
-         regardless of how long the period string is. */
+      /* A fixed-width date rail keeps every row's title starting on the same
+         line, regardless of how long the period string is. */
       <article class="flex flex-col gap-2 tablet:flex-row tablet:gap-4">
-        {/* Core dims the date to 70% on top of the subdued colour. */}
         <p class="type-overline shrink-0 pt-1 text-muted-foreground opacity-70 tablet:w-32">
           {entry.period}
         </p>
 
         <div class="flex flex-col gap-0.5">
-          {/* Core keeps the role, the joining word and the company chip as
-              three siblings 4px apart, so the chip's own padding is what
-              spaces the mark rather than the row gap. */}
+          {/* The role, the joining word and the company chip are three
+              siblings, so the chip's own padding is what spaces the mark
+              rather than the row gap. */}
           <h3 class="type-body flex flex-wrap items-center gap-1 font-medium text-foreground">
             <span>{entry.role}</span>
             <span>at</span>

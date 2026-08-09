@@ -5,12 +5,11 @@ import Section from '~/components/core/Section.astro';
 
 /*
   The photo strip is built the same way as the Work panels: a white mat with
-  the print inset, not a flat tile. Frames overlap by 16px and stack left to
-  right, each tilted a degree or two off the last, so the group reads as prints
-  laid down on a surface rather than a row of boxes.
+  the print inset, not a flat tile. Frames overlap and stack left to right,
+  each tilted a degree or two off the last, so the group reads as prints laid
+  down on a surface rather than a row of boxes.
 
-  184x248 per frame, which is what Core sets. Real photographs replace the
-  inner div and nothing else moves.
+  Real photographs replace the inner div and nothing else moves.
 */
 const frames = [
   { rotate: -3, z: 10 },

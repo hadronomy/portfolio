@@ -40,10 +40,6 @@ const more = (await getPosts())
   image={heroImage.src}
   publishedTime={pubDate.toISOString()}
 >
-  {/*
-    Core sets 24px between the metadata row, the title and the body, on a 640px
-    column with 16px of gutter. Read off the canvas, not measured.
-  */}
   <article>
     <Section gap={24}>
       <div class="flex items-center gap-2.5">

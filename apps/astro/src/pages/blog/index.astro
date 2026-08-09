@@ -14,15 +14,20 @@ const posts = await getPosts();
   back="/"
 >
   {/*
-    Core has no index page for its writing route — the list lives on the home
-    page and under each post. This is the same list given a page of its own, so
-    the kicker row and the rows below it are the components that already exist.
+    There is no dedicated writing index elsewhere — the list lives on the
+    home page and under each post. This is the same list given a page of its
+    own, so the kicker row and the rows below it are the components that
+    already exist.
   */}
   <Section gap={24}>
     <div class="flex items-baseline justify-between gap-4">
       <Overline>Writing</Overline>
-      {/* One expression, not two either side of a space — Astro drops the
-          literal whitespace between them. */}
+      {/* One expression, not two, for the count and the word. Astro keeps a
+          literal space between adjacent expressions — the compiler does not
+          drop it. But the row above is a flex container, and a flex
+          container never renders a whitespace-only run between two items,
+          so splitting this into two Overlines would still need gap-4 to do
+          the spacing. One expression is simpler. */}
       <Overline>
         {`${posts.length} ${posts.length === 1 ? 'note' : 'notes'}`}
       </Overline>

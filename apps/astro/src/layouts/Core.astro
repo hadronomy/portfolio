@@ -36,13 +36,10 @@ const {
   <body
     class="min-h-screen bg-background font-sans text-foreground selection:bg-foreground selection:text-background"
   >
-    {/* One centred column, no chrome — Core carries navigation in the page
-        itself rather than in a bar. */}
+    {/* One centred column, no chrome — navigation lives in the page itself
+        rather than in a bar. */}
     <Header {back} />
 
-    {/* 40px between sections, measured off the reference render — the canvas
-        reports a zero gap here and puts the spacing somewhere it does not
-        expose, so this comes from the pixels rather than the API. */}
     <main class="flex w-full flex-col gap-10 pb-8">
       <slot />
     </main>
