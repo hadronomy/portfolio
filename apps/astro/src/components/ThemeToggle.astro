@@ -1,6 +1,7 @@
 ---
 import { Icon } from 'astro-icon/components';
 import type { HTMLAttributes } from 'astro/types';
+import IconSwap from '~/components/IconSwap.astro';
 
 interface Props extends HTMLAttributes<'button'> {}
 
@@ -8,9 +9,9 @@ const { class: className, ...props } = Astro.props;
 ---
 
 {/*
-  Both icons are rendered and one is hidden by the `.dark` class rather than
-  swapped in script, so the correct glyph is painted on first frame and the
-  button never flashes the wrong state during hydration.
+  Sun for light, moon for dark, cross-faded rather than switched. Both glyphs
+  stay in the DOM in one grid cell, so the button never changes size and the
+  swap has something to travel between.
 */}
 <button
   id="theme-toggle"
@@ -22,12 +23,64 @@ const { class: className, ...props } = Astro.props;
   aria-label="Switch between light and dark theme"
   {...props}
 >
-  <Icon name="tabler:sun" class="h-4 w-4 text-foreground dark:hidden" />
-  <Icon name="tabler:moon" class="hidden h-4 w-4 text-foreground dark:block" />
+  <IconSwap>
+    <Icon slot="a" name="tabler:sun" class="h-4 w-4 text-foreground" />
+    <Icon slot="b" name="tabler:moon" class="h-4 w-4 text-foreground" />
+  </IconSwap>
 </button>
 
+{/*
+  The state has to be right before the first paint, and the module below is
+  fetched far too late for that — the same reason the theme class itself is
+  resolved by a blocking script in the document head.
+
+  This runs while the parser is still on this element, so the attribute is in
+  place before any style is resolved for it. No style has been computed yet, so
+  there is nothing for the transition to run from and the correct glyph is
+  simply painted.
+*/}
+<script is:inline>
+  (() => {
+    const swap = document
+      .getElementById('theme-toggle')
+      ?.querySelector('.t-icon-swap');
+
+    if (swap) {
+      swap.dataset.state = document.documentElement.classList.contains('dark')
+        ? 'b'
+        : 'a';
+    }
+  })();
+</script>
+
 <script>
-  import { toggleTheme } from '~/lib/theme';
+  import { resolvedTheme, theme, toggleTheme } from '~/lib/theme';
+
+  /*
+    The glyph follows the theme actually in force, which is not the same as the
+    stored choice: with nothing stored the OS decides, so the store can sit
+    still while the answer changes underneath it. Hence three triggers rather
+    than one subscription.
+  */
+  const sync = () => {
+    const swap = document.querySelector<HTMLElement>(
+      '#theme-toggle .t-icon-swap',
+    );
+    if (swap) swap.dataset.state = resolvedTheme() === 'dark' ? 'b' : 'a';
+  };
+
+  // Fires once immediately, then on every explicit choice — including one made
+  // in another tab.
+  theme.subscribe(sync);
+
+  // A view transition brings in a button built at build time, so the inline
+  // script's work above is gone and has to be redone.
+  document.addEventListener('astro:after-swap', sync);
+
+  // Only moves anything while no explicit choice is stored.
+  window
+    .matchMedia('(prefers-color-scheme: dark)')
+    .addEventListener('change', sync);
 
   // Delegated from document so a view transition swapping the button in does
   // not stack a second listener on it — that would toggle twice per click.
