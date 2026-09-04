@@ -1,6 +1,6 @@
 ---
-import { Icon } from 'astro-icon/components';
 import type { HTMLAttributes } from 'astro/types';
+import CopyButton from '~/components/CopyButton.astro';
 
 interface Props extends HTMLAttributes<'pre'> {
   /** Set from the code fence meta, e.g. ```ts title="posts.ts" */
@@ -17,14 +17,19 @@ const { title, class: className, ...rest } = Astro.props;
 // tags the real ones by their place in the tree; without that gate every card
 // grows a frame and a copy button of its own.
 const highlighted = String(className ?? '').includes('code-block-root');
+
+// Twoslash renders its hover cards inside the block, so the raw text would drag
+// every type signature into the middle of the copied code.
+const TWOSLASH_NOISE =
+  '.twoslash-popup-container, .twoslash-completion-list, .twoslash-meta-line';
 ---
 
 {
   highlighted ? (
     /*
       Shiki has already produced the whole block as markup, so nothing here
-      needs to run on the client except the copy button — one delegated listener
-      for the page rather than a component instance per block.
+      needs to run on the client except the copy button, which brings its own
+      delegated listener however many blocks a page has.
     */
     <figure class="code-block group relative my-8">
       {title && (
@@ -33,22 +38,14 @@ const highlighted = String(className ?? '').includes('code-block-root');
         </figcaption>
       )}
 
-      <button
-        type="button"
-        class="copy-code absolute top-2.5 right-2.5 z-10 grid size-8 place-items-center rounded-[8px] border border-border bg-button text-muted-foreground opacity-0 transition-[opacity,background-color,color] hover:bg-button-hover hover:text-foreground focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none group-hover:opacity-100"
-        aria-label="Copy code"
-      >
-        {/*
-          The swap container is a wrapper rather than the button, because the
-          snippet puts `position: relative` on it and this button is positioned
-          in the block's corner. Both icons stay in the DOM, stacked in one
-          grid cell, so the slot never changes size mid-swap.
-        */}
-        <span class="t-icon-swap" data-state="a">
-          <Icon name="tabler:copy" class="t-icon size-4" data-icon="a" />
-          <Icon name="tabler:check" class="t-icon size-4" data-icon="b" />
-        </span>
-      </button>
+      {/* Only placement and the hover reveal — the button's own look, its
+          confirmation and its clipboard handling all come with it. */}
+      <CopyButton
+        from="pre"
+        strip={TWOSLASH_NOISE}
+        label="Copy code"
+        class="absolute top-2.5 right-2.5 z-10 opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+      />
 
       {/* No line break inside: `pre` keeps whitespace, and one would render
           as an empty first row of code. */}
@@ -58,97 +55,3 @@ const highlighted = String(className ?? '').includes('code-block-root');
     <pre class={className} {...rest}><slot /></pre>
   )
 }
-
-<script>
-  const RESET_MS = 1600;
-
-  document.addEventListener('click', async (event) => {
-    const button = (event.target as Element | null)?.closest('.copy-code');
-    if (!(button instanceof HTMLButtonElement)) return;
-
-    const code = button.parentElement?.querySelector('pre');
-    if (!code) return;
-
-    // Twoslash renders its hover cards inside the block, so copying the raw
-    // text content would drag every type signature along with the code.
-    const clone = code.cloneNode(true) as HTMLElement;
-    for (const noise of clone.querySelectorAll(
-      '.twoslash-popup-container, .twoslash-completion-list, .twoslash-meta-line',
-    )) {
-      noise.remove();
-    }
-
-    /*
-      A denied clipboard rejects here — a policy that blocks it, a browser that
-      wants a permission this call cannot ask for. Unguarded, the rejection
-      takes the rest of the handler with it, so the button gave no feedback at
-      all and left an unhandled rejection behind.
-
-      The check is a claim that the text was copied, so it stays on the copy
-      icon when that claim would be false.
-    */
-    try {
-      await navigator.clipboard.writeText(clone.textContent ?? '');
-    } catch {
-      return;
-    }
-
-    // `b` is the check. The transition is entirely CSS — this only moves the
-    // state the stylesheet keys off.
-    const icons = button.querySelector<HTMLElement>('.t-icon-swap');
-    if (icons) icons.dataset.state = 'b';
-    button.setAttribute('aria-label', 'Copied');
-
-    window.setTimeout(() => {
-      if (icons) icons.dataset.state = 'a';
-      button.setAttribute('aria-label', 'Copy code');
-    }, RESET_MS);
-  });
-</script>
-
-<style>
-  /*
-    Icon swap, from transitions.dev. The two icons cross-fade in one grid cell,
-    the outgoing one blurring and shrinking away rather than simply switching
-    off — which is what the copy button did before, with `hidden` and `block`.
-
-    Kept verbatim, including `will-change` and the reduced-motion guard.
-  */
-  :global(:root) {
-    --icon-swap-dur: 250ms;
-    --icon-swap-blur: 2px;
-    --icon-swap-start-scale: 0.25;
-    --icon-swap-ease: ease-in-out;
-  }
-
-  .t-icon-swap {
-    position: relative;
-    display: inline-grid;
-  }
-  .t-icon-swap .t-icon {
-    grid-area: 1 / 1;
-    transition:
-      opacity var(--icon-swap-dur) var(--icon-swap-ease),
-      filter var(--icon-swap-dur) var(--icon-swap-ease),
-      transform var(--icon-swap-dur) var(--icon-swap-ease);
-    will-change: opacity, filter, transform;
-  }
-  .t-icon-swap[data-state='a'] .t-icon[data-icon='a'],
-  .t-icon-swap[data-state='b'] .t-icon[data-icon='b'] {
-    opacity: 1;
-    filter: blur(0);
-    transform: scale(1);
-  }
-  .t-icon-swap[data-state='a'] .t-icon[data-icon='b'],
-  .t-icon-swap[data-state='b'] .t-icon[data-icon='a'] {
-    opacity: 0;
-    filter: blur(var(--icon-swap-blur));
-    transform: scale(var(--icon-swap-start-scale));
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .t-icon-swap .t-icon {
-      transition: none !important;
-    }
-  }
-</style>
