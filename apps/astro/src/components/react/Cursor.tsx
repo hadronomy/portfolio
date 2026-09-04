@@ -35,32 +35,25 @@ const MORPH = { type: 'spring', stiffness: 400, damping: 30, mass: 1 } as const;
 const FOLLOW = { stiffness: 8000, damping: 180, mass: 1, restDelta: 0.1 };
 
 /*
-  The macOS arrow, drawn from its tip so that (0,0) is the hotspot — the point
-  the operating system would consider "where you are clicking". Every other
-  shape here is centred on the pointer instead, which is what a cursor and a
-  card respectively want.
+  The macOS arrow, traced from the system asset rather than drawn by eye.
+  Source: github.com/daviddarnes/mac-cursors, `src/svg/default.svg`, which
+  ships it as two filled paths — a white outline and the black body inside it.
+  Both are reproduced here verbatim, translated so the tip is (0,0).
 
-  Seven vertices: tip, down the vertical left edge, up into the heel, out and
-  back along the tail, then the long diagonal home.
+  (0,0) is the hotspot: the point the system considers "where you are
+  clicking". Every other shape here is positioned against the pointer instead,
+  which is what a card wants and a cursor does not.
+
+  Worth knowing, because the internet will tell you otherwise: the macOS arrow
+  has a *vertical* left edge, and its tail ends in a bevel rather than a point.
+  It is 11.4 by 18.1, which is smaller than it looks — an arrow guessed at from
+  memory comes out wider, taller and sharper than the real one.
 */
-const ARROW =
-  'M0 0 L0 18.5 L4.5 14.4 L7.4 21.6 L10.4 20.3 L7.5 13.4 L12.6 13.4 Z';
-const ARROW_BOX = { width: 13, height: 22 };
-
-/*
-  The rim is drawn as a stroke straddling the outline, so half of it falls
-  outside the shape and is cut away by the same path used as a clip. What is
-  left is an even inner rim, which is how the system arrow reads: a light edge
-  holding a darker body.
-
-  Both are translucent and both sit over the blur, so the arrow stays glass —
-  it darkens and refracts what is behind it rather than covering it. The pair
-  is fixed rather than themed on purpose: a light rim and a dark body is what
-  keeps an arrow legible over *any* backdrop, which is the entire reason the
-  system draws it that way.
-*/
-const RIM = 'rgba(255,255,255,0.72)';
-const BODY = 'rgba(0,0,0,0.42)';
+const ARROW_OUTER =
+  'M0 0 L0 16.015 L3.316 12.794 L6.137 18.066 L8 17.063 L9.615 16.224 L7.047 11.408 L11.379 11.408 Z';
+const ARROW_INNER =
+  'M0.989 2.407 L0.989 13.595 L3.519 11.153 L6.42 16.593 L8.185 15.652 L5.41 10.45 L9.014 10.45 Z';
+const ARROW_BOX = { width: 11.379, height: 18.066 };
 
 /* Link Preview: 164x104 of media inside 2px of padding. The pressed variant
    carries its own smaller media, so the card dips by about 4% under a click. */
@@ -300,11 +293,11 @@ export default function Cursor() {
         with nothing on screen telling them where.
       */}
       <motion.div
-        className="absolute top-0 left-0"
+        className="bg-cursor absolute top-0 left-0"
         style={{
           width: ARROW_BOX.width,
           height: ARROW_BOX.height,
-          clipPath: `path('${ARROW}')`,
+          clipPath: `path('${ARROW_OUTER}')`,
           backdropFilter: 'blur(10px)',
           WebkitBackdropFilter: 'blur(10px)',
           transformOrigin: '0 0',
@@ -312,6 +305,17 @@ export default function Cursor() {
         animate={{ scale: pressed ? 0.88 : 1 }}
         transition={MORPH}
       >
+        {/*
+          The whole arrow is the material the dot was: one translucent tint over
+          a blurred backdrop, themed by the same token. What the system draws as
+          a white outline around a black body is here the plain material around
+          a darkened core — the same relationship, in the page's own glass,
+          rather than two opaque colours pasted on top of it.
+
+          The core is a black tint in both themes because "darker" only means
+          one thing. Lightening it in dark mode would read as *lighter* than the
+          surround, since it composites over the tint rather than replacing it.
+        */}
         <svg
           width={ARROW_BOX.width}
           height={ARROW_BOX.height}
@@ -320,13 +324,7 @@ export default function Cursor() {
           aria-hidden="true"
           focusable="false"
         >
-          <path
-            d={ARROW}
-            fill={BODY}
-            stroke={RIM}
-            strokeWidth="2.5"
-            strokeLinejoin="round"
-          />
+          <path d={ARROW_INNER} fill="hsl(var(--cursor-core))" />
         </svg>
       </motion.div>
 

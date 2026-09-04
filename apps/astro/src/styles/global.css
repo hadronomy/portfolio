@@ -41,6 +41,10 @@
     --ring: 0 0% 7.1% / 0.1;
     --nav-item: 0 0% 100%;
     --cursor: 0 0% 5.1% / 0.15;
+    /* The darkened core of the pointer, where the system arrow is solid black.
+       A black tint in both themes: it composites over --cursor rather than
+       replacing it, so lightening it would read as lighter, not darker. */
+    --cursor-core: 0 0% 0% / 0.28;
     --shortcut: 0 0% 94.1%;
     --shortcut-shadow: 0 0% 85.1%;
     /*
@@ -72,6 +76,7 @@
     --ring: 0 0% 100% / 0.1;
     --nav-item: 0 0% 12.2%;
     --cursor: 0 0% 100% / 0.3;
+    --cursor-core: 0 0% 0% / 0.34;
     --shortcut: 0 0% 14.9%;
     /* The shortcut shadow drops out entirely in dark rather than darkening. */
     --shortcut-shadow: 0 0% 70.2% / 0;
