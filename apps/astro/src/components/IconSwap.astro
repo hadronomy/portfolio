@@ -1,0 +1,81 @@
+---
+interface Props {
+  /** Which icon is showing. Flip it later by writing `data-state` on the element. */
+  state?: 'a' | 'b';
+  class?: string;
+}
+
+const { state = 'a', class: className } = Astro.props;
+---
+
+{/*
+  Two icons in one grid cell, cross-fading with blur and scale — the
+  transitions.dev icon swap. Both stay in the DOM, so the slot never changes
+  size mid-swap and nothing around it reflows.
+
+  State is one attribute and the transition is pure CSS, so anything that can
+  write `data-state` can drive this: a script, a delegated handler, or a parent
+  that renders the right value on the server.
+
+  The `.t-icon` wrappers are rendered here rather than asked of the caller.
+  Astro scopes a component's styles to its own template, and slotted content
+  carries the *parent's* scope attribute instead — so a rule written here would
+  never reach an icon passed in. Owning the wrapper is what keeps the
+  transition working without a `:global` escape hatch, and it leaves callers
+  free to pass any icon they like.
+*/}
+<span class:list={['t-icon-swap', className]} data-state={state}>
+  <span class="t-icon" data-icon="a"><slot name="a" /></span>
+  <span class="t-icon" data-icon="b"><slot name="b" /></span>
+</span>
+
+<style>
+  /*
+    transitions.dev — icon swap. Kept verbatim, including `will-change` and the
+    reduced-motion guard.
+
+    One addition: `.t-icon` is a grid of its own. The snippet expects the icon
+    itself to be the grid item, and here it is a wrapper — without this the
+    wrapper's line box adds a couple of pixels of height that the bare icon
+    never had.
+  */
+  :global(:root) {
+    --icon-swap-dur: 250ms;
+    --icon-swap-blur: 2px;
+    --icon-swap-start-scale: 0.25;
+    --icon-swap-ease: ease-in-out;
+  }
+
+  .t-icon-swap {
+    position: relative;
+    display: inline-grid;
+  }
+  .t-icon-swap .t-icon {
+    grid-area: 1 / 1;
+    display: grid;
+    place-items: center;
+    transition:
+      opacity var(--icon-swap-dur) var(--icon-swap-ease),
+      filter var(--icon-swap-dur) var(--icon-swap-ease),
+      transform var(--icon-swap-dur) var(--icon-swap-ease);
+    will-change: opacity, filter, transform;
+  }
+  .t-icon-swap[data-state='a'] .t-icon[data-icon='a'],
+  .t-icon-swap[data-state='b'] .t-icon[data-icon='b'] {
+    opacity: 1;
+    filter: blur(0);
+    transform: scale(1);
+  }
+  .t-icon-swap[data-state='a'] .t-icon[data-icon='b'],
+  .t-icon-swap[data-state='b'] .t-icon[data-icon='a'] {
+    opacity: 0;
+    filter: blur(var(--icon-swap-blur));
+    transform: scale(var(--icon-swap-start-scale));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .t-icon-swap .t-icon {
+      transition: none !important;
+    }
+  }
+</style>
