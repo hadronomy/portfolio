@@ -316,6 +316,20 @@
   display: flex;
 }
 
+/*
+  A card you are hovering always wins over one that is simply always there.
+
+  Both kinds are the same element and both sat on the same z-index, so paint
+  order fell through to document order — and a `^?` row is always further down
+  the block than the line whose token you are pointing at. The card you asked
+  for therefore lost to one you did not. Ranking by how transient a card is
+  keeps that true however many permanent ones a block grows.
+*/
+.article .code-block .twoslash-hover:hover .twoslash-popup-container,
+.article .code-block .twoslash-error-hover:hover .twoslash-popup-container {
+  z-index: 30;
+}
+
 .article .code-block :is(.twoslash-popup-code, .twoslash-popup-docs, .twoslash-popup-error) {
   padding: 8px 10px !important;
 }
