@@ -72,14 +72,11 @@ export default defineConfig({
   integrations: [
     mdx(),
     sitemap(),
-    icon({
-      include: {
-        tabler: ['*'],
-        icons: ['*'],
-        'simple-icons': ['*'],
-        octicon: ['*'],
-      },
-    }),
+    // No `include`: astro-icon loads every installed `@iconify-json/*` pack
+    // whole unless a collection names a subset, so the dependency list is
+    // already the set of collections. Listing them here as `['*']` restates it
+    // and goes stale the moment one is added.
+    icon(),
     react(),
   ],
   vite: {
