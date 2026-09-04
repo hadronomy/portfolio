@@ -13,6 +13,14 @@ export const profile = {
   /** Santa Cruz de Tenerife, for the footer's current conditions. */
   coordinates: { latitude: 28.4636, longitude: -16.2518 },
   email: 'hadronomy@gmail.com',
+  /**
+   * What the green dot on the avatar claims, shown in the pointer on hover.
+   *
+   * This is a statement about Pablo rather than a label, so it is here to be
+   * owned rather than buried in a component. Change it or empty it — an empty
+   * string leaves the dot with no pointer label at all.
+   */
+  status: 'Available',
   avatar: 'https://github.com/hadronomy.png',
   intro:
     'I build across the whole stack, from bare-metal systems to the interfaces on top of them, with a particular interest in agentic AI. Most of my work is open source.',

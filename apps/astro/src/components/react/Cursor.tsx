@@ -4,20 +4,21 @@ import { motion, useSpring } from 'motion/react';
 import * as React from 'react';
 
 /*
-  A follower that trails the pointer and morphs over anything carrying a
-  `data-cursor` attribute.
+  The pointer. Not a follower any more — this replaces the native cursor, so
+  the native one is hidden for as long as this is on screen.
 
-  All five variants share one spring — stiffness 400, damping 30, mass 1.
-  That is a damping ratio of 0.75: it reaches full size around 200ms, drifts
-  under 3% past it, and is back down by 430ms. The overshoot is small
-  relative to the growth, so it never reads as a bounce — it reads as weight.
-  No bezier has that tail, which is why this is a React island rather than a
-  CSS transition.
+  That is a real trade and it is made deliberately. A translucent dot beside
+  the system arrow could afford to leave the arrow alone; an arrow that *is*
+  the arrow cannot, or there are two. The cost is that OS cursor settings —
+  size, contrast, trails — stop applying. It is bought back by only ever
+  hiding the native cursor from script, and only once this component has
+  decided it will render: no JavaScript, a coarse pointer, or reduced motion
+  and the system cursor is untouched.
 
-  The native cursor stays: the follower's dot is translucent, which reads as
-  something travelling with the pointer rather than replacing it, and
-  swapping a div for the real cursor bets against every pointer setting a
-  visitor might depend on.
+  Every variant shares one spring — stiffness 400, damping 30, mass 1. That is
+  a damping ratio of 0.75: it reaches full size around 200ms, drifts under 3%
+  past it, and is back down by 430ms. The overshoot is small relative to the
+  growth, so it never reads as a bounce — it reads as weight.
 */
 
 type Variant = 'dot' | 'preview' | 'label';
@@ -26,17 +27,49 @@ const MORPH = { type: 'spring', stiffness: 400, damping: 30, mass: 1 } as const;
 
 /*
   The follow is a separate, far stiffer spring. Critically damped at ω≈89 rad/s,
-  it closes 98% of a jump inside four frames — the dot has to read as part of
-  the pointer, not as something chasing it. A spring rather than a per-frame
-  lerp because a lerp is tied to the display: the same constant runs twice as
-  fast on a 120Hz panel.
+  it closes 98% of a jump inside four frames — the arrow has to read as the
+  pointer, not as something chasing it. A spring rather than a per-frame lerp
+  because a lerp is tied to the display: the same constant runs twice as fast
+  on a 120Hz panel.
 */
 const FOLLOW = { stiffness: 8000, damping: 180, mass: 1, restDelta: 0.1 };
+
+/*
+  The macOS arrow, drawn from its tip so that (0,0) is the hotspot — the point
+  the operating system would consider "where you are clicking". Every other
+  shape here is centred on the pointer instead, which is what a cursor and a
+  card respectively want.
+
+  Seven vertices: tip, down the vertical left edge, up into the heel, out and
+  back along the tail, then the long diagonal home.
+*/
+const ARROW =
+  'M0 0 L0 18.5 L4.5 14.4 L7.4 21.6 L10.4 20.3 L7.5 13.4 L12.6 13.4 Z';
+const ARROW_BOX = { width: 13, height: 22 };
+
+/*
+  The rim is drawn as a stroke straddling the outline, so half of it falls
+  outside the shape and is cut away by the same path used as a clip. What is
+  left is an even inner rim, which is how the system arrow reads: a light edge
+  holding a darker body.
+
+  Both are translucent and both sit over the blur, so the arrow stays glass —
+  it darkens and refracts what is behind it rather than covering it. The pair
+  is fixed rather than themed on purpose: a light rim and a dark body is what
+  keeps an arrow legible over *any* backdrop, which is the entire reason the
+  system draws it that way.
+*/
+const RIM = 'rgba(255,255,255,0.72)';
+const BODY = 'rgba(0,0,0,0.42)';
 
 /* Link Preview: 164x104 of media inside 2px of padding. The pressed variant
    carries its own smaller media, so the card dips by about 4% under a click. */
 const PREVIEW = { width: 168, height: 108 };
 const PREVIEW_PRESSED = { width: 162, height: 104 };
+
+/* Where the card starts from and returns to. Small enough to read as growing
+   out of the arrow's tip rather than fading in at size. */
+const SEED = { width: 14, height: 14 };
 
 export default function Cursor() {
   // Nothing is rendered on the server, or on a device that cannot hover, or for
@@ -61,6 +94,34 @@ export default function Cursor() {
         !window.matchMedia('(prefers-reduced-motion: reduce)').matches,
     );
   }, []);
+
+  /*
+    Hidden from script rather than from the stylesheet, and only once this
+    component has committed to rendering. A page that never runs this — no
+    JavaScript, a touch device, reduced motion — keeps the system cursor it
+    has always had.
+  */
+  React.useEffect(() => {
+    if (!enabled) return;
+    const root = document.documentElement;
+
+    /*
+      Re-applied after a view transition as well as on mount. A swap replaces
+      the `html` element's attributes with the incoming document's, and those
+      come from the static build with no class on them — the same thing that
+      once lost the theme on every client-side navigation. Without this the
+      system cursor comes back mid-session and there are two again.
+    */
+    const hide = () => root.classList.add('cursor-hidden');
+
+    hide();
+    document.addEventListener('astro:after-swap', hide);
+
+    return () => {
+      document.removeEventListener('astro:after-swap', hide);
+      root.classList.remove('cursor-hidden');
+    };
+  }, [enabled]);
 
   React.useEffect(() => {
     if (!enabled) return;
@@ -151,6 +212,7 @@ export default function Cursor() {
 
   const isPreview = variant === 'preview';
   const isLabel = variant === 'label';
+  const isArrow = variant === 'dot';
 
   const size = isPreview
     ? pressed
@@ -158,7 +220,22 @@ export default function Cursor() {
       : PREVIEW
     : isLabel
       ? pill
-      : { width: pressed ? 16 : 20, height: pressed ? 16 : 20 };
+      : SEED;
+
+  /*
+    Where the card sits relative to the tip, in px on both axes so the two
+    positions interpolate — a percentage and a number do not.
+
+    A preview is centred on the pointer, the way it always was. A label is not:
+    it is describing the thing under the pointer, and a pill centred on the tip
+    covers exactly what you are pointing at. Offsetting it clear of the arrow
+    is what lets you read the label and see the dot at the same time.
+  */
+  const offset = isPreview
+    ? { x: -size.width / 2, y: -size.height / 2 }
+    : isLabel
+      ? { x: 16, y: 12 }
+      : { x: -SEED.width / 2, y: -SEED.height / 2 };
 
   return (
     <motion.div
@@ -168,15 +245,21 @@ export default function Cursor() {
       animate={{ opacity: away ? 0 : 1 }}
       transition={{ opacity: { duration: 0.16, ease: 'easeOut' } }}
     >
-      {/* Half its own size back on both axes, so the box stays centred on the
-          pointer at every point in the morph without any JS re-centring. */}
+      {/*
+        What the pointer opens: a preview centred on the tip, or a label beside
+        it. Both grow out of a seed the size of the arrow's shoulder, so the
+        card reads as unfolding from the pointer rather than fading in at size.
+
+        Drawn before the arrow so the arrow stays on top of it.
+      */}
       <motion.div
-        className={`flex items-center justify-center overflow-hidden backdrop-blur-[10px] transition-colors duration-200 ${
-          isLabel ? 'bg-[rgba(22,191,94,0.08)]' : 'bg-cursor'
+        className={`absolute top-0 left-0 flex items-center justify-center overflow-hidden backdrop-blur-[10px] ${
+          isLabel ? 'cursor-pill' : 'bg-cursor'
         }`}
-        style={{ translate: '-50% -50%' }}
         animate={{
           ...size,
+          ...offset,
+          opacity: isArrow ? 0 : 1,
           borderRadius: isPreview ? 10 : 16,
           padding: isPreview ? 2 : 0,
         }}
@@ -195,23 +278,64 @@ export default function Cursor() {
         )}
 
         <motion.span
-          className="type-body-xs absolute inset-0 flex items-center justify-center gap-1.5 px-1.5 py-0.5 whitespace-nowrap text-foreground"
+          className="type-body-xs absolute inset-0 flex items-center justify-center gap-1.5 px-2.5 py-1 whitespace-nowrap text-foreground"
           animate={{ opacity: isLabel ? 1 : 0 }}
           transition={{ duration: 0.12, ease: 'easeOut' }}
         >
           {label.active && (
-            <span className="size-2.5 shrink-0 rounded-pill bg-[rgb(22,191,94)]" />
+            <span className="size-2 shrink-0 rounded-pill bg-[rgb(22,191,94)]" />
           )}
           {label.text}
         </motion.span>
       </motion.div>
 
+      {/*
+        The arrow, anchored by its tip rather than centred, because a pointer's
+        hotspot is its point — centring it would put the click half a glyph
+        from where it looks like it lands.
+
+        It never leaves. It used to fade out when the follower morphed, which
+        was fine while the system cursor was still underneath it; now that this
+        *is* the cursor, fading it out would leave a visitor pointing at a link
+        with nothing on screen telling them where.
+      */}
+      <motion.div
+        className="absolute top-0 left-0"
+        style={{
+          width: ARROW_BOX.width,
+          height: ARROW_BOX.height,
+          clipPath: `path('${ARROW}')`,
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          transformOrigin: '0 0',
+        }}
+        animate={{ scale: pressed ? 0.88 : 1 }}
+        transition={MORPH}
+      >
+        <svg
+          width={ARROW_BOX.width}
+          height={ARROW_BOX.height}
+          viewBox={`0 0 ${ARROW_BOX.width} ${ARROW_BOX.height}`}
+          className="block"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <path
+            d={ARROW}
+            fill={BODY}
+            stroke={RIM}
+            strokeWidth="2.5"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </motion.div>
+
       <span
         ref={ghost}
         aria-hidden="true"
-        className="type-body-xs pointer-events-none invisible absolute top-0 left-0 flex items-center gap-1.5 px-1.5 py-0.5 whitespace-nowrap"
+        className="type-body-xs pointer-events-none invisible absolute top-0 left-0 flex items-center gap-1.5 px-2.5 py-1 whitespace-nowrap"
       >
-        {label.active && <span className="size-2.5 shrink-0" />}
+        {label.active && <span className="size-2 shrink-0" />}
         {label.text}
       </span>
     </motion.div>

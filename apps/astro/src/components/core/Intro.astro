@@ -30,7 +30,7 @@ import { profile } from '~/lib/profile';
         class="absolute -right-0.5 -bottom-0.5 size-3 rounded-pill bg-[rgb(22,191,94)] ring-2 ring-background"
         aria-hidden="true"></span>
 
-      <Presence client:idle />
+      <Presence status={profile.status} client:idle />
     </div>
 
     <div class="flex flex-col">

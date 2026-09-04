@@ -136,7 +136,12 @@ function Eye({
   );
 }
 
-export default function Presence() {
+interface Props {
+  /** What the dot claims, shown in the pointer on hover. Empty means silent. */
+  status?: string;
+}
+
+export default function Presence({ status }: Props) {
   const [enabled, setEnabled] = React.useState(false);
   const [open, setOpen] = React.useState(false);
   const [asleep, setAsleep] = React.useState(false);
@@ -438,6 +443,26 @@ export default function Presence() {
           <Eye nx={nx} ny={ny} size={size} lid={eyeLid} side={1} />
         </motion.span>
       </motion.div>
+
+      {/*
+        What the pointer reads to know it is over the dot. It has to be a real
+        element taking real pointer events, because the pointer decides its
+        shape from the event's target — and everything else in here is
+        `pointer-events: none` so that it can never take a click from the page
+        underneath.
+
+        Sized to the open dot rather than the resting one: by the time a
+        pointer is close enough to be over this, the dot has already opened to
+        meet it.
+      */}
+      {status && (
+        <span
+          className="pointer-events-auto absolute inset-0 rounded-pill"
+          data-cursor="label"
+          data-cursor-label={status}
+          data-cursor-active
+        />
+      )}
     </div>
   );
 }
