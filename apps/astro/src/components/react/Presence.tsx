@@ -21,6 +21,12 @@ import * as React from 'react';
   It answers the copy shortcut too, with a squash and a double blink. That
   keypress is offered two lines under the dot, in this same block, so the
   acknowledgement lands where the visitor is already looking.
+
+  Left alone for twenty seconds it dozes: lids down, eyes lowered, body settled
+  by a hair. Any movement wakes it with a gasp. Pressing it squashes it wide
+  and short, the way a soft thing gives under a finger. Neither is a control —
+  the dot never takes pointer events, and the press is hit-tested against its
+  own radius so it cannot swallow a click meant for anything underneath.
 */
 
 /** The existing accent, and the only hue on the page. */
@@ -46,6 +52,22 @@ const RANGE = 140;
 const MORPH = { stiffness: 400, damping: 30, mass: 1 } as const;
 /** Looser on purpose — an eye lags the thing it follows. */
 const GAZE = { stiffness: 220, damping: 22, mass: 0.6 } as const;
+/** Going down under a press is the system responding, so it is quick and flat. */
+const PRESS = { type: 'spring', stiffness: 700, damping: 30 } as const;
+/** Coming back is the material, so it is allowed to overshoot. */
+const RELEASE = { type: 'spring', stiffness: 500, damping: 14 } as const;
+/*
+  Opening the lids again. Softer than RELEASE on purpose: RELEASE overshoots
+  about 35%, which is a good pop across the 0.16 a press travels and a bad one
+  across the 0.78 a lid does — it lands the eyes 27% oversized and reads as
+  alarm rather than as waking up. This overshoots nearer 13%.
+*/
+const WAKE = { type: 'spring', stiffness: 500, damping: 24 } as const;
+
+/** Pointer still for this long and it dozes. */
+const IDLE_MS = 20000;
+/** Lid openness while dozing. Lidded, never shut — shut only reads as a blink. */
+const DROWSE = 0.22;
 
 /** Half the angular separation between the eyes, in radians. */
 const EYE_ANGLE = 0.44;
@@ -117,6 +139,7 @@ function Eye({
 export default function Presence() {
   const [enabled, setEnabled] = React.useState(false);
   const [open, setOpen] = React.useState(false);
+  const [asleep, setAsleep] = React.useState(false);
 
   const anchor = React.useRef<HTMLDivElement>(null);
 
@@ -126,16 +149,30 @@ export default function Presence() {
   const ny = useSpring(rawY, GAZE);
   const lid = useMotionValue(1);
   const size = useSpring(REST, MORPH);
-  /* Squash rides on top of the size, so the nod composes with the morph
-     instead of fighting it for the same property. */
+  /*
+    Three things want to scale this body: the nod that answers a copy, the
+    press, and the size morph. They are separate values multiplied together at
+    the end rather than one shared value, so a press part-way through a nod
+    composes with it instead of cutting it off.
+  */
   const squashX = useMotionValue(1);
   const squashY = useMotionValue(1);
+  const pressX = useMotionValue(1);
+  const pressY = useMotionValue(1);
+  /** Lid multiplier for the doze, so blinking and dozing do not fight. */
+  const drowse = useMotionValue(1);
 
   /** The dot's centre in document space, so a scroll needs no re-measure. */
   const centre = React.useRef({ x: 0, y: 0 });
   const pointer = React.useRef({ x: 0, y: 0 });
   /** Last unit vector, kept to detect saccades. */
   const facing = React.useRef({ x: 0, y: 0 });
+  const held = React.useRef(false);
+  const idle = React.useRef(0);
+  /* State the document listeners need to read. They are registered once, so a
+     closure over `open` and `asleep` would go stale on the first change. */
+  const isOpen = React.useRef(false);
+  const isAsleep = React.useRef(false);
 
   const blink = React.useCallback(
     async (times = 1) => {
@@ -184,8 +221,40 @@ export default function Presence() {
     facing.current = { x: ux, y: uy };
 
     const next = d < RANGE;
+    isOpen.current = next;
     setOpen((was) => (was === next ? was : next));
   }, [rawX, rawY, blink]);
+
+  /*
+    Dozing is an expression of the face, never of the status. A closed dot is
+    still reporting that someone is here, and dimming or shrinking it would say
+    the opposite — so this only runs while the eyes are showing, and does
+    nothing at all when the dot is at rest.
+  */
+  const doze = React.useCallback(() => {
+    if (!isOpen.current || document.hidden) return;
+    isAsleep.current = true;
+    setAsleep(true);
+    animate(drowse, DROWSE, { duration: 0.7, ease: 'easeInOut' });
+    // Eyes settle downwards. The pointer is not moving, so nothing re-aims
+    // over the top of this until the visitor comes back.
+    rawY.set(Math.max(rawY.get(), 0.5));
+  }, [drowse, rawY]);
+
+  const wake = React.useCallback(() => {
+    window.clearTimeout(idle.current);
+    idle.current = window.setTimeout(doze, IDLE_MS);
+
+    if (!isAsleep.current) return;
+    isAsleep.current = false;
+    setAsleep(false);
+
+    animate(drowse, 1, WAKE);
+    // A small gasp: it stretches up first, which is the shape of being
+    // startled rather than of being pressed.
+    animate(squashY, [1, 1.1, 0.97, 1], { duration: 0.36, ease: 'easeOut' });
+    animate(squashX, [1, 0.93, 1.02, 1], { duration: 0.36, ease: 'easeOut' });
+  }, [doze, drowse, squashX, squashY]);
 
   React.useEffect(() => {
     setEnabled(
@@ -194,34 +263,74 @@ export default function Presence() {
     );
   }, []);
 
+  // Dozing settles it by a hair as well as lowering the lids. A body that only
+  // half-shut its eyes reads as a stare, not as sleep.
   React.useEffect(() => {
-    size.set(open ? OPEN : REST);
-  }, [open, size]);
+    size.set(asleep ? OPEN * 0.94 : open ? OPEN : REST);
+  }, [open, asleep, size]);
 
   React.useEffect(() => {
     if (!enabled) return;
     measure();
 
+    /* Hit-tested against the dot's own radius rather than by making the
+       element clickable. It stays `pointer-events: none`, so it never takes a
+       click from anything underneath and never asks to be treated as a
+       control — it is a thing that reacts to being poked, not a button. */
+    const overDot = (x: number, y: number) => {
+      const cx = centre.current.x - window.scrollX;
+      const cy = centre.current.y - window.scrollY;
+      return Math.hypot(x - cx, y - cy) <= size.get() / 2;
+    };
+
     const move = (event: PointerEvent) => {
       if (event.pointerType !== 'mouse') return;
       pointer.current = { x: event.clientX, y: event.clientY };
       aim();
+      wake();
     };
+
+    const down = (event: PointerEvent) => {
+      if (event.pointerType !== 'mouse' || event.button !== 0) return;
+      wake();
+      if (!overDot(event.clientX, event.clientY)) return;
+
+      held.current = true;
+      animate(pressX, 1.16, PRESS);
+      animate(pressY, 0.82, PRESS);
+    };
+
+    // Released anywhere, not only over the dot: a press that ends off the
+    // element still ends, and leaving it squashed would strand it.
+    const up = () => {
+      if (!held.current) return;
+      held.current = false;
+      animate(pressX, 1, RELEASE);
+      animate(pressY, 1, RELEASE);
+    };
+
     const remeasure = () => {
       measure();
       aim();
     };
 
     document.addEventListener('pointermove', move, { passive: true });
+    document.addEventListener('pointerdown', down, { passive: true });
+    document.addEventListener('pointerup', up, { passive: true });
+    document.addEventListener('pointercancel', up, { passive: true });
     window.addEventListener('resize', remeasure);
     document.addEventListener('astro:page-load', remeasure);
 
     return () => {
+      window.clearTimeout(idle.current);
       document.removeEventListener('pointermove', move);
+      document.removeEventListener('pointerdown', down);
+      document.removeEventListener('pointerup', up);
+      document.removeEventListener('pointercancel', up);
       window.removeEventListener('resize', remeasure);
       document.removeEventListener('astro:page-load', remeasure);
     };
-  }, [enabled, aim, measure]);
+  }, [enabled, aim, measure, wake, size, pressX, pressY]);
 
   /*
     The nod that answers a copy. It squashes on one axis while it stretches on
@@ -248,7 +357,7 @@ export default function Presence() {
     thing that makes a blink read as a machine rather than a face.
   */
   React.useEffect(() => {
-    if (!enabled || !open) return;
+    if (!enabled || !open || asleep) return;
 
     let timer = 0;
     const schedule = () => {
@@ -263,7 +372,7 @@ export default function Presence() {
 
     schedule();
     return () => window.clearTimeout(timer);
-  }, [enabled, open, blink]);
+  }, [enabled, open, asleep, blink]);
 
   /*
     The server-rendered dot stays in the markup and is hidden here rather than
@@ -287,6 +396,10 @@ export default function Presence() {
   const openness = useTransform(size, [REST, OPEN], [0, 1]);
   const leanX = useTransform([nx, openness], ([v, o]: number[]) => v * 1.5 * o);
   const leanY = useTransform([ny, openness], ([v, o]: number[]) => v * 1.5 * o);
+
+  const scaleX = useTransform([squashX, pressX], ([s, p]: number[]) => s * p);
+  const scaleY = useTransform([squashY, pressY], ([s, p]: number[]) => s * p);
+  const eyeLid = useTransform([lid, drowse], ([l, d]: number[]) => l * d);
 
   if (!enabled) return null;
 
@@ -313,16 +426,16 @@ export default function Presence() {
           height: size,
           x: leanX,
           y: leanY,
-          scaleX: squashX,
-          scaleY: squashY,
+          scaleX,
+          scaleY,
           borderRadius: '999px',
           background: GREEN,
           boxShadow: RING,
         }}
       >
         <motion.span className="absolute inset-0" style={{ opacity: eyes }}>
-          <Eye nx={nx} ny={ny} size={size} lid={lid} side={-1} />
-          <Eye nx={nx} ny={ny} size={size} lid={lid} side={1} />
+          <Eye nx={nx} ny={ny} size={size} lid={eyeLid} side={-1} />
+          <Eye nx={nx} ny={ny} size={size} lid={eyeLid} side={1} />
         </motion.span>
       </motion.div>
     </div>
