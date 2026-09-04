@@ -2,6 +2,7 @@
 import { Icon } from 'astro-icon/components';
 import Section from '~/components/core/Section.astro';
 import Shortcut from '~/components/core/Shortcut.astro';
+import PresencePrototype from '~/components/react/prototype/PresencePrototype';
 import { profile } from '~/lib/profile';
 ---
 
@@ -21,8 +22,15 @@ import { profile } from '~/lib/profile';
         reads as punched out of the avatar in both themes.
       */}
       <span
+        id="presence-static"
         class="absolute -right-0.5 -bottom-0.5 size-3 rounded-pill bg-[rgb(22,191,94)] ring-2 ring-background"
         aria-hidden="true"></span>
+
+      {/* PROTOTYPE — remove with src/components/react/prototype once a
+          variant wins. Gated here rather than inside the component so the
+          island is never emitted at all: returning null from the component
+          still ships a hydration stub and a chunk. */}
+      {import.meta.env.DEV && <PresencePrototype client:idle />}
     </div>
 
     <div class="flex flex-col">
