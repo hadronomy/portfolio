@@ -194,7 +194,7 @@ const pad = Math.ceil(corner + size * 0.05);
     <div class="sticker-container">
     <div class="sticker-main">
       <div class="upright">
-        <div class="sticker-lighting" style={`filter:url(#sheen-${uid})`}>
+        <div class="sticker-lighting" style={`--sheen:url(#sheen-${uid})`}>
           <span class="sticker-image" style={`filter:url(#cut-${uid})`}>
             <Icon name={icon} class="mark" aria-label={label} />
           </span>
@@ -373,6 +373,24 @@ const pad = Math.ceil(corner + size * 0.05);
   .sticker-container * {
     user-select: none;
     -webkit-touch-callout: none;
+  }
+
+  /*
+    The contact shadow that lets a sticker read as an object on a white page.
+    Only the id comes in on the element, so the value stays here beside the
+    rest of the sticker's look.
+
+    Exactly one `drop-shadow`, never two. A filter chain is sequential, so a
+    second one casts a shadow of the first shadow rather than layering with it —
+    the same thing that stopped eight of them adding up to an outline. That is
+    also why this cannot be a `box-shadow`: the sticker is a die cut, and a box
+    shadow would draw the rectangle the artwork sits in.
+
+    It sits on the lit layer rather than inside `cut-*` because that filter is
+    shared with the hole and the underside, and neither should be casting this.
+  */
+  .sticker-lighting {
+    filter: var(--sheen) drop-shadow(0 1px 1.5px hsl(var(--sticker-shadow)));
   }
 
   .sticker-image,
