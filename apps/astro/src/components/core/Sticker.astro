@@ -666,12 +666,24 @@ const pad = Math.ceil(corner + size * 0.05);
     { face: Element | null; flap: Element | null }
   >();
 
+  /*
+    Searched from the slot, not from the element being lit.
+
+    The lights are `fePointLight` nodes inside `<svg class="sticker-defs">`,
+    which is a *sibling* of the sticker rather than an ancestor of it — a
+    filter's definition cannot live inside the thing it filters. Searching
+    down from the sticker therefore found nothing, the optional call swallowed
+    it, and the gloss sat at its authored position forever. It is called with
+    the sticker on hover and with the mover while dragging; the slot is above
+    both.
+  */
   const lightsOf = (el: HTMLElement) => {
     let found = lights.get(el);
     if (!found) {
+      const slot = el.closest('.sticker-slot');
       found = {
-        face: el.querySelector('.sheen-light'),
-        flap: el.querySelector('.sheen-light-flap'),
+        face: slot?.querySelector('.sheen-light') ?? null,
+        flap: slot?.querySelector('.sheen-light-flap') ?? null,
       };
       lights.set(el, found);
     }
