@@ -41,6 +41,69 @@ const MORPH = { type: 'spring', stiffness: 400, damping: 30, mass: 1 } as const;
 const OUTLINE = { type: 'spring', stiffness: 1200, damping: 44 } as const;
 
 /*
+  The two axes are deliberately not the same spring, so the card does not
+  inflate as a rigid rectangle.
+
+  Width leads and overshoots about 4%; height follows slower and overshoots
+  about 2%. The card spreads sideways, then its height catches up — squash and
+  stretch, on a shape that has no character of its own to squash. Every offset
+  travels with its own axis, so the card stays centred on the pointer the whole
+  way rather than drifting while the two disagree.
+
+  There is no anticipation dip before the growth, and that is a decision rather
+  than an omission. On a character it costs nothing; here the move is a reply to
+  a hover, and every millisecond spent winding up before responding is felt as
+  the interface being slow to answer.
+*/
+const SPREAD = {
+  type: 'spring',
+  stiffness: 560,
+  damping: 34,
+  mass: 1,
+} as const;
+const RISE = { type: 'spring', stiffness: 320, damping: 30, mass: 1 } as const;
+
+/*
+  Going back is critically damped, and not for symmetry's sake.
+
+  A spring's overshoot is a fraction of the distance it travels, not of where
+  it lands. The 4% that reads as a pleasant stretch across a 157px expansion is
+  the same 6px coming back — and 6px against an 11px arrow crushes it to little
+  over half its width before it springs out again. Measured at 5.8px wide on
+  the way home, which is a visible pinch on the one shape that has to look
+  exactly like a system cursor.
+
+  Damping 60 against stiffness 900 is exactly critical: no overshoot at any
+  distance, settled in about 130ms. Leaving is also the moment to be quick,
+  since the pointer is on its way somewhere else.
+*/
+const SETTLE = {
+  type: 'spring',
+  stiffness: 900,
+  damping: 60,
+  mass: 1,
+} as const;
+
+/*
+  What the card holds, arriving after the card does.
+
+  Unheld, a picture is a third of the way in by 34ms, while the box is still
+  under 15px wide — so the first thing anyone sees of a screenshot is it being
+  stretched out of a slot. Holding it back until the box has most of its size
+  turns that into follow-through: the container arrives, and its contents land
+  just behind it.
+
+  Leaving is not delayed. A thing on its way out should go immediately, or it
+  reads as reluctance.
+*/
+const CONTENTS = {
+  duration: 0.2,
+  delay: 0.12,
+  ease: 'easeOut',
+} as const;
+const CONTENTS_OUT = { duration: 0.1, ease: 'easeOut' } as const;
+
+/*
   The follow is a separate, far stiffer spring. Critically damped at ω≈89 rad/s,
   it closes 98% of a jump inside four frames — the arrow has to read as the
   pointer, not as something chasing it. A spring rather than a per-frame lerp
@@ -299,7 +362,15 @@ export default function Cursor() {
           padding: isPreview ? 2 : 0,
           scale: isArrow && pressed ? 0.88 : 1,
         }}
-        transition={{ ...MORPH, clipPath: OUTLINE, borderRadius: OUTLINE }}
+        transition={{
+          ...MORPH,
+          width: isArrow ? SETTLE : SPREAD,
+          x: isArrow ? SETTLE : SPREAD,
+          height: isArrow ? SETTLE : RISE,
+          y: isArrow ? SETTLE : RISE,
+          clipPath: OUTLINE,
+          borderRadius: OUTLINE,
+        }}
       >
         {/*
           The darker body, and the only part that is arrow-shaped rather than
@@ -319,7 +390,7 @@ export default function Cursor() {
           aria-hidden="true"
           focusable="false"
           animate={{ opacity: isArrow ? 1 : 0 }}
-          transition={{ duration: 0.12, ease: 'easeOut' }}
+          transition={isArrow ? CONTENTS : CONTENTS_OUT}
         >
           <path d={ARROW_INNER} fill="hsl(var(--cursor-core))" />
         </motion.svg>
@@ -331,15 +402,20 @@ export default function Cursor() {
             src={src}
             alt=""
             className="h-full w-full rounded-[9px] object-cover"
+            /* The element only exists once there is a source, so the first
+               preview of a session mounts mid-morph. Without a starting value
+               it mounts already opaque and the hold below never applies to the
+               one hover most likely to be someone's first. */
+            initial={{ opacity: 0 }}
             animate={{ opacity: isPreview ? 1 : 0 }}
-            transition={{ duration: 0.12, ease: 'easeOut' }}
+            transition={isPreview ? CONTENTS : CONTENTS_OUT}
           />
         )}
 
         <motion.span
           className="type-body-xs absolute inset-0 flex items-center justify-center gap-1.5 px-2.5 py-1 whitespace-nowrap text-foreground"
           animate={{ opacity: isLabel ? 1 : 0 }}
-          transition={{ duration: 0.12, ease: 'easeOut' }}
+          transition={isLabel ? CONTENTS : CONTENTS_OUT}
         >
           {label.active && (
             <span className="size-2 shrink-0 rounded-pill bg-[rgb(22,191,94)]" />
