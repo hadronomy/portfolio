@@ -165,6 +165,59 @@
   }
 
   /*
+    Page entry.
+
+    Every block of the page arrives soft and slightly low and resolves sharp —
+    transitions.dev's texts-reveal, at 560ms with the blocks 80ms apart. The
+    recipe's own 500 and 40 are tuned for two lines of a headline; across nine
+    blocks a 40ms cascade is over before it reads as one, and 80ms is the top
+    of the useful range before a page stops arriving and starts queueing. The
+    travel and blur are up from the token defaults for the same reason: a
+    section is a far larger object than a line of text, and the same distance
+    across it reads as less movement.
+
+    Driven by an animation rather than a transition out of `@starting-style`,
+    which is what the prototype used. A transition needs `filter: blur(0)` left
+    declared at rest, and any filter other than `none` makes an element a
+    stacking context *and* a containing block for fixed descendants — nine
+    sections would quietly reparent anything positioned against the viewport
+    inside them. An animation with `backwards` holds the opening frame through
+    its own delay and then leaves nothing behind at all.
+
+    Nothing is gated on script. The keyframe has only a `from`, so the state
+    being animated towards is the element's own: if the animation never runs,
+    the page is simply the page.
+
+    Only the first three blocks are above the fold, so what is felt is the
+    header, the intro and the work row — three beats, the last landing around
+    800ms. The rest inherit the rhythm with nobody watching.
+  */
+  @keyframes page-entry {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+      filter: blur(4px);
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    body > header,
+    main > *,
+    body > footer {
+      animation: page-entry 560ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+    }
+
+    main > *:nth-child(1) { animation-delay: 80ms; }
+    main > *:nth-child(2) { animation-delay: 160ms; }
+    main > *:nth-child(3) { animation-delay: 240ms; }
+    main > *:nth-child(4) { animation-delay: 320ms; }
+    main > *:nth-child(5) { animation-delay: 400ms; }
+    main > *:nth-child(6) { animation-delay: 480ms; }
+    main > *:nth-child(7) { animation-delay: 560ms; }
+    body > footer { animation-delay: 640ms; }
+  }
+
+  /*
     The label the pointer becomes. Glass like the arrow, and carrying the same
     green as the presence dot it answers for, so the two read as one idea
     rather than as a tooltip that happens to be nearby.
