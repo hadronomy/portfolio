@@ -156,8 +156,15 @@ function Eye({
   const scaleX = useTransform(nx, (v) =>
     Math.max(0.18, Math.cos(v * MAX_YAW + side * EYE_ANGLE)),
   );
-  // Mirrored, so a squint leans the two marks into each other.
-  const rotate = useTransform(tilt, (t) => t * side);
+  /*
+    Mirrored, and negated so that a positive tilt raises the *inner* ends of
+    both marks — the pair arcs up like `^ ^`.
+
+    Get the sign backwards and the inner ends drop into `\ /`, which is a
+    furrowed brow. It is a real expression, just not this one: worth knowing
+    that a negative tilt is a scowl already sitting here for free.
+  */
+  const rotate = useTransform(tilt, (t) => -t * side);
 
   return (
     <motion.span
