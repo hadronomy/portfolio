@@ -198,6 +198,10 @@ export default function Cursor() {
 
   const ghost = React.useRef<HTMLSpanElement>(null);
   const placed = React.useRef(false);
+  /* Mirrors `away` so the move handler can skip the dispatch entirely when it
+     has nothing to change. React bails out on an unchanged value, but only
+     after the call has gone through the scheduler — and this runs per event. */
+  const isAway = React.useRef(true);
 
   const x = useSpring(0, FOLLOW);
   const y = useSpring(0, FOLLOW);
@@ -248,11 +252,15 @@ export default function Cursor() {
         placed.current = true;
         x.jump(event.clientX);
         y.jump(event.clientY);
+        isAway.current = false;
         setAway(false);
       } else {
         x.set(event.clientX);
         y.set(event.clientY);
-        setAway((wasAway) => (wasAway ? false : wasAway));
+        if (isAway.current) {
+          isAway.current = false;
+          setAway(false);
+        }
       }
     };
 
@@ -292,6 +300,7 @@ export default function Cursor() {
     // Leaving the window fades the follower but keeps its position, so coming
     // back does not send it flying in from wherever it was parked.
     const leave = () => {
+      isAway.current = true;
       setAway(true);
       setPressed(false);
     };
