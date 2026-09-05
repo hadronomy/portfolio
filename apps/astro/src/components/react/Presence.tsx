@@ -76,6 +76,38 @@ const MAX_PITCH = 0.46;
 /** A gaze jump wider than this is a saccade, and real eyes blink on those. */
 const SACCADE = 0.7;
 
+/*
+  Three eye shapes, as fractions of the body and a tilt in degrees.
+
+  A capsule that only ever scales can blink and look, and that is the whole of
+  what it can say. Changing its proportions and angling it is what buys an
+  expression: short and tilted reads as a squint, a circle reads as caught off
+  guard. The tilt mirrors across the two eyes, so `happy` is a pair of slashes
+  leaning into each other rather than two marks leaning the same way, which
+  reads as a stumble.
+
+  Every one of these is reached by something the visitor did. None of them is
+  on a timer, because a face that performs moods at nobody is lying about
+  having them.
+*/
+const EYES = {
+  neutral: { w: 0.13, h: 0.3, tilt: 0 },
+  happy: { w: 0.11, h: 0.24, tilt: 33 },
+  alert: { w: 0.19, h: 0.19, tilt: 0 },
+} as const;
+
+type Expression = keyof typeof EYES;
+
+/** Expressions land quickly and hold; they are reactions, not transitions. */
+const EXPR = {
+  type: 'spring',
+  stiffness: 520,
+  damping: 26,
+  mass: 0.7,
+} as const;
+/** How long a reaction holds before the face settles back. */
+const HOLD_MS = { happy: 1400, alert: 700 } as const;
+
 /**
  * One eye, placed on the surface of a sphere rather than on a flat face.
  *
@@ -93,31 +125,39 @@ function Eye({
   ny,
   size,
   lid,
+  eyeW,
+  eyeH,
+  tilt,
   side,
 }: {
   nx: MotionValue<number>;
   ny: MotionValue<number>;
   size: MotionValue<number>;
   lid: MotionValue<number>;
+  eyeW: MotionValue<number>;
+  eyeH: MotionValue<number>;
+  tilt: MotionValue<number>;
   side: -1 | 1;
 }) {
   // The reference sets the eyes at ~9.5% of body width. Taken literally that is
   // 3.4px here and reads as grit, so the ratio opens up — small features need
   // optical over-sizing.
-  const width = useTransform(size, (s) => s * 0.13);
-  const height = useTransform(size, (s) => s * 0.3);
+  const width = useTransform([size, eyeW], ([s, w]: number[]) => s * w);
+  const height = useTransform([size, eyeH], ([s, h]: number[]) => s * h);
 
-  const x = useTransform([nx, size], ([v, s]: number[]) => {
+  const x = useTransform([nx, size, eyeW], ([v, s, w]: number[]) => {
     return (
-      (s / 2) * 0.58 * Math.sin(v * MAX_YAW + side * EYE_ANGLE) - (s * 0.13) / 2
+      (s / 2) * 0.58 * Math.sin(v * MAX_YAW + side * EYE_ANGLE) - (s * w) / 2
     );
   });
-  const y = useTransform([ny, size], ([v, s]: number[]) => {
-    return (s / 2) * 0.58 * Math.sin(v * MAX_PITCH) - (s * 0.3) / 2;
+  const y = useTransform([ny, size, eyeH], ([v, s, h]: number[]) => {
+    return (s / 2) * 0.58 * Math.sin(v * MAX_PITCH) - (s * h) / 2;
   });
   const scaleX = useTransform(nx, (v) =>
     Math.max(0.18, Math.cos(v * MAX_YAW + side * EYE_ANGLE)),
   );
+  // Mirrored, so a squint leans the two marks into each other.
+  const rotate = useTransform(tilt, (t) => t * side);
 
   return (
     <motion.span
@@ -129,6 +169,7 @@ function Eye({
         height,
         scaleX,
         scaleY: lid,
+        rotate,
         borderRadius: '999px',
         background: 'hsl(var(--background))',
       }}
@@ -145,6 +186,7 @@ export default function Presence({ status }: Props) {
   const [enabled, setEnabled] = React.useState(false);
   const [open, setOpen] = React.useState(false);
   const [asleep, setAsleep] = React.useState(false);
+  const [expression, setExpression] = React.useState<Expression>('neutral');
 
   const anchor = React.useRef<HTMLDivElement>(null);
 
@@ -167,6 +209,15 @@ export default function Presence({ status }: Props) {
   /** Lid multiplier for the doze, so blinking and dozing do not fight. */
   const drowse = useMotionValue(1);
 
+  /* The face. Shape rather than scale, so an eye can change what it means and
+     not just how open it is. */
+  const eyeW = useMotionValue<number>(EYES.neutral.w);
+  const eyeH = useMotionValue<number>(EYES.neutral.h);
+  const tilt = useMotionValue<number>(EYES.neutral.tilt);
+  /* The body leans into a squint and rears back when startled — the reference's
+     whole trick is that the body carries as much of the expression as the eyes. */
+  const lean = useMotionValue<number>(0);
+
   /** The dot's centre in document space, so a scroll needs no re-measure. */
   const centre = React.useRef({ x: 0, y: 0 });
   const pointer = React.useRef({ x: 0, y: 0 });
@@ -174,6 +225,7 @@ export default function Presence({ status }: Props) {
   const facing = React.useRef({ x: 0, y: 0 });
   const held = React.useRef(false);
   const idle = React.useRef(0);
+  const mood = React.useRef(0);
   /* State the document listeners need to read. They are registered once, so a
      closure over `open` and `asleep` would go stale on the first change. */
   const isOpen = React.useRef(false);
@@ -255,11 +307,39 @@ export default function Presence({ status }: Props) {
     setAsleep(false);
 
     animate(drowse, 1, WAKE);
+    setExpression('alert');
     // A small gasp: it stretches up first, which is the shape of being
     // startled rather than of being pressed.
     animate(squashY, [1, 1.1, 0.97, 1], { duration: 0.36, ease: 'easeOut' });
     animate(squashX, [1, 0.93, 1.02, 1], { duration: 0.36, ease: 'easeOut' });
   }, [doze, drowse, squashX, squashY]);
+
+  /*
+    One place turns an expression into geometry, so a reaction is added by
+    naming it rather than by animating four values at every call site.
+  */
+  React.useEffect(() => {
+    if (!enabled) return;
+    const shape = EYES[expression];
+    animate(eyeW, shape.w, EXPR);
+    animate(eyeH, shape.h, EXPR);
+    animate(tilt, shape.tilt, EXPR);
+    animate(
+      lean,
+      expression === 'happy' ? 5 : expression === 'alert' ? -3 : 0,
+      EXPR,
+    );
+
+    if (expression === 'neutral') return;
+
+    // Reactions lapse on their own. Nothing else has to remember to clear them.
+    window.clearTimeout(mood.current);
+    mood.current = window.setTimeout(
+      () => setExpression('neutral'),
+      HOLD_MS[expression],
+    );
+    return () => window.clearTimeout(mood.current);
+  }, [enabled, expression, eyeW, eyeH, tilt, lean]);
 
   React.useEffect(() => {
     setEnabled(
@@ -350,6 +430,7 @@ export default function Presence({ status }: Props) {
       animate(squashY, [1, 0.72, 1.1, 1], { duration: 0.42, ease: 'easeOut' });
       animate(squashX, [1, 1.18, 0.94, 1], { duration: 0.42, ease: 'easeOut' });
       void blink(2);
+      setExpression('happy');
     };
 
     document.addEventListener('email-copied', nod);
@@ -433,14 +514,33 @@ export default function Presence({ status }: Props) {
           y: leanY,
           scaleX,
           scaleY,
+          rotate: lean,
           borderRadius: '999px',
           background: GREEN,
           boxShadow: RING,
         }}
       >
         <motion.span className="absolute inset-0" style={{ opacity: eyes }}>
-          <Eye nx={nx} ny={ny} size={size} lid={eyeLid} side={-1} />
-          <Eye nx={nx} ny={ny} size={size} lid={eyeLid} side={1} />
+          <Eye
+            nx={nx}
+            ny={ny}
+            size={size}
+            lid={eyeLid}
+            eyeW={eyeW}
+            eyeH={eyeH}
+            tilt={tilt}
+            side={-1}
+          />
+          <Eye
+            nx={nx}
+            ny={ny}
+            size={size}
+            lid={eyeLid}
+            eyeW={eyeW}
+            eyeH={eyeH}
+            tilt={tilt}
+            side={1}
+          />
         </motion.span>
       </motion.div>
 
