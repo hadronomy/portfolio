@@ -41,6 +41,33 @@ const MORPH = { type: 'spring', stiffness: 400, damping: 30, mass: 1 } as const;
 const OUTLINE = { type: 'spring', stiffness: 1200, damping: 44 } as const;
 
 /*
+  The two halves are sequenced rather than overlapped, which is what keeps the
+  in-betweens clean.
+
+  Run together, the outline is still part-way through resolving while the box
+  has already grown, so somewhere around 60ms there is a frame of a
+  half-unfolded arrow at four times its size — small, brief, and the one ugly
+  thing left in the morph. Letting the outline finish at cursor size first means
+  the shape that grows is always a plain rounded rectangle, and the arrow's
+  notch closes at 11px across where there is nothing to see.
+
+  So: out, the outline goes first and the growth waits for it. Back, the box
+  shrinks first and the outline waits — a card collapses to a small rounded
+  thing, and only then does it become a pointer again. The delays are short
+  enough that the whole move still lands inside the time it took before.
+*/
+const HOLD = 0.055;
+/*
+  Longer coming back than going out, because the box has much further to fall
+  than it had to climb before the outline matters. Held at 55ms the shape was
+  still 78px wide when it started growing a notch again — the same torn frame
+  the sequencing was meant to remove, just mirrored. By 100ms the box is down
+  to about 27px, where an arrow's notch is a few pixels and reads as detail
+  rather than as damage.
+*/
+const HOLD_BACK = 0.1;
+
+/*
   The two axes are deliberately not the same spring, so the card does not
   inflate as a rigid rectangle.
 
@@ -79,8 +106,8 @@ const RISE = { type: 'spring', stiffness: 320, damping: 30, mass: 1 } as const;
 */
 const SETTLE = {
   type: 'spring',
-  stiffness: 900,
-  damping: 60,
+  stiffness: 1500,
+  damping: 78,
   mass: 1,
 } as const;
 
@@ -364,12 +391,12 @@ export default function Cursor() {
         }}
         transition={{
           ...MORPH,
-          width: isArrow ? SETTLE : SPREAD,
-          x: isArrow ? SETTLE : SPREAD,
-          height: isArrow ? SETTLE : RISE,
-          y: isArrow ? SETTLE : RISE,
-          clipPath: OUTLINE,
-          borderRadius: OUTLINE,
+          width: isArrow ? SETTLE : { ...SPREAD, delay: HOLD },
+          x: isArrow ? SETTLE : { ...SPREAD, delay: HOLD },
+          height: isArrow ? SETTLE : { ...RISE, delay: HOLD },
+          y: isArrow ? SETTLE : { ...RISE, delay: HOLD },
+          clipPath: isArrow ? { ...OUTLINE, delay: HOLD_BACK } : OUTLINE,
+          borderRadius: isArrow ? { ...OUTLINE, delay: HOLD_BACK } : OUTLINE,
         }}
       >
         {/*
