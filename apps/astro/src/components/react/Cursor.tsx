@@ -228,18 +228,32 @@ export default function Cursor() {
     const root = document.documentElement;
 
     /*
-      Re-applied after a view transition as well as on mount. A swap replaces
-      the `html` element's attributes with the incoming document's, and those
-      come from the static build with no class on them — the same thing that
-      once lost the theme on every client-side navigation. Without this the
-      system cursor comes back mid-session and there are two again.
+      A swap replaces the `html` element's attributes with the incoming
+      document's, and those come from the static build with no class on them —
+      the same thing that once lost the theme on every client-side navigation.
+
+      Written onto the incoming document *before* the swap rather than onto the
+      live one after it. `astro:after-swap` repairs the class, but only once the
+      document without it is already in place, which is a frame of the system
+      cursor. Reaching into `newDocument` means there is no such frame: the page
+      that arrives already has it.
+
+      `after-swap` stays as well, for any path that reaches a new document
+      without going through `before-swap`.
     */
     const hide = () => root.classList.add('cursor-hidden');
+    const hideNext = (event: Event) => {
+      const next = (event as CustomEvent & { newDocument?: Document })
+        .newDocument;
+      next?.documentElement.classList.add('cursor-hidden');
+    };
 
     hide();
+    document.addEventListener('astro:before-swap', hideNext);
     document.addEventListener('astro:after-swap', hide);
 
     return () => {
+      document.removeEventListener('astro:before-swap', hideNext);
       document.removeEventListener('astro:after-swap', hide);
       root.classList.remove('cursor-hidden');
     };
