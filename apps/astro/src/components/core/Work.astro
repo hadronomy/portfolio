@@ -2,6 +2,7 @@
 import Overline from '~/components/core/Overline.astro';
 import Section from '~/components/core/Section.astro';
 import WorkGallery from '~/components/react/WorkGallery';
+import { terrainContours } from '~/lib/terrain';
 
 /*
   Four placeholder panels: a white mat with the picture inset — a print in a
@@ -19,202 +20,20 @@ const panels = [
 ];
 
 /*
-  The canvas behind them: contour lines traced out of a real height field, and
-  the whole thing generated here at build so the page ships finished geometry.
+  The canvas behind them. Generated at build by `~/lib/terrain`, which is where
+  the noise, the grid and the marching-squares walk live — none of that is this
+  component's business, and none of it is shipped.
 
-  Concentric rings were the earlier version of this and they read as rings —
-  the shape of one hill repeated, not terrain. What makes a contour map look
-  like ground is that the lines come from a surface: they branch, they close at
-  different sizes, they crowd where it is steep and spread where it is flat.
-  So this samples fractal noise on a grid and walks marching squares along each
-  iso-level, which is the same thing a topographic survey does to elevation
-  data.
-
-  Every fifth level is drawn heavier, the way an index contour is on a real
-  map, which is what gives the field a sense of height rather than an even
-  hatch.
+  The frame is wider than it is tall on purpose: the section is full-bleed and
+  the SVG covers it, so a landscape field crops to a strip rather than being
+  squeezed into one.
 */
 const VIEW = { w: 1600, h: 600 };
-const COLS = 92;
-const ROWS = 36;
-const LEVELS = 9;
-
-function mulberry32(seed: number) {
-  let a = seed;
-  return () => {
-    a = (a + 0x6d2b79f5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-/* Value noise over a fixed lattice, smoothed and stacked into fractal octaves.
-   Deterministic from the seed, so the terrain is the same on every build. */
-function makeField(seed: number) {
-  const rand = mulberry32(seed);
-  const SIZE = 256;
-  const lattice = Array.from({ length: SIZE * SIZE }, () => rand());
-  const at = (x: number, y: number) =>
-    lattice[(((y % SIZE) + SIZE) % SIZE) * SIZE + (((x % SIZE) + SIZE) % SIZE)];
-
-  const noise = (x: number, y: number) => {
-    const xi = Math.floor(x);
-    const yi = Math.floor(y);
-    const xf = x - xi;
-    const yf = y - yi;
-    const u = xf * xf * (3 - 2 * xf);
-    const v = yf * yf * (3 - 2 * yf);
-    const a = at(xi, yi);
-    const b = at(xi + 1, yi);
-    const c = at(xi, yi + 1);
-    const d = at(xi + 1, yi + 1);
-    return (a + (b - a) * u) * (1 - v) + (c + (d - c) * u) * v;
-  };
-
-  return (x: number, y: number) => {
-    let sum = 0;
-    let amp = 0.5;
-    let fx = x;
-    let fy = y;
-    for (let o = 0; o < 5; o += 1) {
-      sum += amp * noise(fx, fy);
-      fx *= 2.03;
-      fy *= 2.03;
-      amp *= 0.5;
-    }
-    return sum;
-  };
-}
-
-const field = makeField(20260906);
-const grid: number[] = [];
-let lo = Number.POSITIVE_INFINITY;
-let hi = Number.NEGATIVE_INFINITY;
-for (let y = 0; y <= ROWS; y += 1) {
-  for (let x = 0; x <= COLS; x += 1) {
-    const v = field((x / COLS) * 5.2, (y / ROWS) * 2.1);
-    grid[y * (COLS + 1) + x] = v;
-    if (v < lo) lo = v;
-    if (v > hi) hi = v;
-  }
-}
-
-const CELL_W = VIEW.w / COLS;
-const CELL_H = VIEW.h / ROWS;
-const height = (x: number, y: number) => grid[y * (COLS + 1) + x];
-
-/* The four cell edges, each cut where the surface crosses the level. */
-function crossing(edge: number, x: number, y: number, level: number) {
-  const a = height(x, y);
-  const b = height(x + 1, y);
-  const c = height(x + 1, y + 1);
-  const d = height(x, y + 1);
-  const mix = (v0: number, v1: number) => (level - v0) / (v1 - v0 || 1e-6);
-  if (edge === 0) return [(x + mix(a, b)) * CELL_W, y * CELL_H];
-  if (edge === 1) return [(x + 1) * CELL_W, (y + mix(b, c)) * CELL_H];
-  if (edge === 2) return [(x + mix(d, c)) * CELL_W, (y + 1) * CELL_H];
-  return [x * CELL_W, (y + mix(a, d)) * CELL_H];
-}
-
-/* Which edges a cell joins, by which of its corners are above the level.
-   Five and ten are the saddles, where the surface passes through twice. */
-const JOINS: Record<number, number[][]> = {
-  1: [[3, 0]], 14: [[3, 0]],
-  2: [[0, 1]], 13: [[0, 1]],
-  3: [[3, 1]], 12: [[3, 1]],
-  4: [[1, 2]], 11: [[1, 2]],
-  6: [[0, 2]], 9: [[0, 2]],
-  7: [[2, 3]], 8: [[2, 3]],
-  5: [[3, 0], [1, 2]],
-  10: [[0, 1], [2, 3]],
-};
-
-/*
-  Segments are chained into polylines before being written out.
-
-  Marching squares hands back one short segment per cell, and two cells sharing
-  an edge compute that crossing from the same two corner heights — so their
-  endpoints are identical, not merely close, and the pieces join exactly.
-  Emitting them separately writes every shared point twice and an `M` before
-  each: 18KB gzipped for this field. Following the chains first spends one `M`
-  per line and one point per join, which is a third of that for the same
-  geometry.
-*/
-function contour(level: number) {
-  const segments: number[][] = [];
-  for (let y = 0; y < ROWS; y += 1) {
-    for (let x = 0; x < COLS; x += 1) {
-      const code =
-        (height(x, y) >= level ? 1 : 0) |
-        (height(x + 1, y) >= level ? 2 : 0) |
-        (height(x + 1, y + 1) >= level ? 4 : 0) |
-        (height(x, y + 1) >= level ? 8 : 0);
-      const joins = JOINS[code];
-      if (!joins) continue;
-      for (const [from, to] of joins) {
-        const p0 = crossing(from, x, y, level);
-        const p1 = crossing(to, x, y, level);
-        segments.push([
-          Math.round(p0[0]), Math.round(p0[1]),
-          Math.round(p1[0]), Math.round(p1[1]),
-        ]);
-      }
-    }
-  }
-
-  const key = (x: number, y: number) => `${x},${y}`;
-  const ends = new Map<string, number[]>();
-  segments.forEach((_, i) => {
-    for (const k of [key(segments[i][0], segments[i][1]), key(segments[i][2], segments[i][3])]) {
-      const list = ends.get(k);
-      if (list) list.push(i);
-      else ends.set(k, [i]);
-    }
-  });
-
-  const used = new Array<boolean>(segments.length).fill(false);
-  const parts: string[] = [];
-
-  /** Walk away from one end of a segment for as long as another shares a point. */
-  const follow = (from: number, x: number, y: number) => {
-    const path: number[][] = [];
-    let cx = x;
-    let cy = y;
-    let current = from;
-    for (;;) {
-      const next = (ends.get(key(cx, cy)) ?? []).find(
-        (i) => i !== current && !used[i],
-      );
-      if (next === undefined) break;
-      used[next] = true;
-      const s = segments[next];
-      const headIsHere = s[0] === cx && s[1] === cy;
-      cx = headIsHere ? s[2] : s[0];
-      cy = headIsHere ? s[3] : s[1];
-      path.push([cx, cy]);
-      current = next;
-    }
-    return path;
-  };
-
-  for (let i = 0; i < segments.length; i += 1) {
-    if (used[i]) continue;
-    used[i] = true;
-    const [ax, ay, bx, by] = segments[i];
-    const forward = follow(i, bx, by);
-    const backward = follow(i, ax, ay);
-    const points = [...backward.reverse(), [ax, ay], [bx, by], ...forward];
-    parts.push(`M${points.map(([px, py]) => `${px} ${py}`).join('L')}`);
-  }
-
-  return parts.join('');
-}
-
-const contours = Array.from({ length: LEVELS }, (_, i) => {
-  const level = lo + ((hi - lo) * (i + 1)) / (LEVELS + 1);
-  return { d: contour(level), index: i % 5 === 2 };
-}).filter((c) => c.d.length > 0);
+const contours = terrainContours({
+  width: VIEW.w,
+  height: VIEW.h,
+  seed: 20260906,
+});
 ---
 
 <div id="work" class="flex w-full flex-col gap-4">
