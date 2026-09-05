@@ -26,6 +26,21 @@ type Variant = 'dot' | 'preview' | 'label';
 const MORPH = { type: 'spring', stiffness: 400, damping: 30, mass: 1 } as const;
 
 /*
+  The outline settles roughly three times faster than the box it bounds.
+
+  The arrow is concave — it has a notch between its heel and its tail — and the
+  card is not. Interpolating one into the other keeps the notch open for most
+  of the journey, so at the same rate as the growth you spend the middle of the
+  morph looking at a large torn banner. Resolving the outline while the box is
+  still small means the notch closes at a few pixels across, where it cannot be
+  read, and what actually grows is already a rounded card.
+
+  It works the same in reverse: the outline becomes an arrow early and the box
+  shrinks to meet it, which reads as the card folding down into a pointer.
+*/
+const OUTLINE = { type: 'spring', stiffness: 1200, damping: 44 } as const;
+
+/*
   The follow is a separate, far stiffer spring. Critically damped at ω≈89 rad/s,
   it closes 98% of a jump inside four frames — the arrow has to read as the
   pointer, not as something chasing it. A spring rather than a per-frame lerp
@@ -38,7 +53,8 @@ const FOLLOW = { stiffness: 8000, damping: 180, mass: 1, restDelta: 0.1 };
   The macOS arrow, traced from the system asset rather than drawn by eye.
   Source: github.com/daviddarnes/mac-cursors, `src/svg/default.svg`, which
   ships it as two filled paths — a white outline and the black body inside it.
-  Both are reproduced here verbatim, translated so the tip is (0,0).
+  Both are reproduced here verbatim, translated so the tip is (0,0): the body
+  below, and the outline as the percentages in `ARROW_CLIP`.
 
   (0,0) is the hotspot: the point the system considers "where you are
   clicking". Every other shape here is positioned against the pointer instead,
@@ -49,20 +65,35 @@ const FOLLOW = { stiffness: 8000, damping: 180, mass: 1, restDelta: 0.1 };
   It is 11.4 by 18.1, which is smaller than it looks — an arrow guessed at from
   memory comes out wider, taller and sharper than the real one.
 */
-const ARROW_OUTER =
-  'M0 0 L0 16.015 L3.316 12.794 L6.137 18.066 L8 17.063 L9.615 16.224 L7.047 11.408 L11.379 11.408 Z';
 const ARROW_INNER =
   'M0.989 2.407 L0.989 13.595 L3.519 11.153 L6.42 16.593 L8.185 15.652 L5.41 10.45 L9.014 10.45 Z';
 const ARROW_BOX = { width: 11.379, height: 18.066 };
+
+/*
+  The same eight vertices as a percentage of the box, and the box's own outline
+  written with eight points in the same order. Those two interpolate, which is
+  what lets one element travel from an arrow to a card instead of two elements
+  trading places.
+
+  The rounding is left to `border-radius` rather than baked into the target
+  polygon. A polygon can only round a corner by spending points on it — eight
+  would give a chamfer — and this way the end state is a plain box outline that
+  clips nothing at all, with the radius doing the shape.
+
+  The mapping is monotonic around both outlines: the tip goes to the top-left,
+  the heel and tail walk along the bottom edge, and the shoulder ends at the
+  top-right. Nothing crosses anything else, so the arrow inflates into the card
+  rather than folding through itself on the way.
+*/
+const ARROW_CLIP =
+  'polygon(0% 0%, 0% 88.65%, 29.14% 70.82%, 53.93% 100%, 70.31% 94.45%, 84.5% 89.8%, 61.93% 63.15%, 100% 63.15%)';
+const BOX_CLIP =
+  'polygon(0% 0%, 0% 100%, 25% 100%, 50% 100%, 75% 100%, 100% 100%, 100% 60%, 100% 0%)';
 
 /* Link Preview: 164x104 of media inside 2px of padding. The pressed variant
    carries its own smaller media, so the card dips by about 4% under a click. */
 const PREVIEW = { width: 168, height: 108 };
 const PREVIEW_PRESSED = { width: 162, height: 104 };
-
-/* Where the card starts from and returns to. Small enough to read as growing
-   out of the arrow's tip rather than fading in at size. */
-const SEED = { width: 14, height: 14 };
 
 export default function Cursor() {
   // Nothing is rendered on the server, or on a device that cannot hover, or for
@@ -213,7 +244,7 @@ export default function Cursor() {
       : PREVIEW
     : isLabel
       ? pill
-      : SEED;
+      : ARROW_BOX;
 
   /*
     Where the card sits relative to the tip, in px on both axes so the two
@@ -228,7 +259,7 @@ export default function Cursor() {
     ? { x: -size.width / 2, y: -size.height / 2 }
     : isLabel
       ? { x: 16, y: 12 }
-      : { x: -SEED.width / 2, y: -SEED.height / 2 };
+      : { x: 0, y: 0 };
 
   return (
     <motion.div
@@ -239,25 +270,60 @@ export default function Cursor() {
       transition={{ opacity: { duration: 0.16, ease: 'easeOut' } }}
     >
       {/*
-        What the pointer opens: a preview centred on the tip, or a label beside
-        it. Both grow out of a seed the size of the arrow's shoulder, so the
-        card reads as unfolding from the pointer rather than fading in at size.
+        One element for every shape it takes, so this is a morph and not a
+        hand-off between two things fading past each other.
 
-        Drawn before the arrow so the arrow stays on top of it.
+        The box travels from the arrow's own size to the card's, its offset
+        from the tip to wherever that shape belongs, and its clip from the
+        arrow's outline to the box's — which by the end clips nothing, leaving
+        `border-radius` to round the card. What the arrow is made of never
+        changes: the same tint over the same blur, all the way through.
+
+        Anchored by the tip rather than centred, because a pointer's hotspot is
+        its point. Where a card wants to sit relative to that is `offset`'s job.
       */}
       <motion.div
-        className={`absolute top-0 left-0 flex items-center justify-center overflow-hidden backdrop-blur-[10px] ${
+        className={`absolute top-0 left-0 flex items-center justify-center overflow-hidden backdrop-blur-[10px] transition-colors duration-200 ${
           isLabel ? 'cursor-pill' : 'bg-cursor'
         }`}
+        style={{
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          transformOrigin: '0 0',
+        }}
         animate={{
           ...size,
           ...offset,
-          opacity: isArrow ? 0 : 1,
-          borderRadius: isPreview ? 10 : 16,
+          clipPath: isArrow ? ARROW_CLIP : BOX_CLIP,
+          borderRadius: isArrow ? 0 : isPreview ? 10 : 16,
           padding: isPreview ? 2 : 0,
+          scale: isArrow && pressed ? 0.88 : 1,
         }}
-        transition={MORPH}
+        transition={{ ...MORPH, clipPath: OUTLINE, borderRadius: OUTLINE }}
       >
+        {/*
+          The darker body, and the only part that is arrow-shaped rather than
+          box-shaped. It is a fixed size pinned to the tip and fades out as the
+          shape opens, because there is nothing for it to become — the card's
+          interior is a picture or a word.
+
+          A black tint in both themes: "darker" only means one thing, and this
+          composites over the tint rather than replacing it, so lightening it in
+          dark mode would come out lighter than its surround.
+        */}
+        <motion.svg
+          width={ARROW_BOX.width}
+          height={ARROW_BOX.height}
+          viewBox={`0 0 ${ARROW_BOX.width} ${ARROW_BOX.height}`}
+          className="absolute top-0 left-0 block"
+          aria-hidden="true"
+          focusable="false"
+          animate={{ opacity: isArrow ? 1 : 0 }}
+          transition={{ duration: 0.12, ease: 'easeOut' }}
+        >
+          <path d={ARROW_INNER} fill="hsl(var(--cursor-core))" />
+        </motion.svg>
+
         {/* Sized to the box rather than fixed, so the picture grows with the
             card instead of popping in at full size once the morph finishes. */}
         {src && (
@@ -280,52 +346,6 @@ export default function Cursor() {
           )}
           {label.text}
         </motion.span>
-      </motion.div>
-
-      {/*
-        The arrow, anchored by its tip rather than centred, because a pointer's
-        hotspot is its point — centring it would put the click half a glyph
-        from where it looks like it lands.
-
-        It never leaves. It used to fade out when the follower morphed, which
-        was fine while the system cursor was still underneath it; now that this
-        *is* the cursor, fading it out would leave a visitor pointing at a link
-        with nothing on screen telling them where.
-      */}
-      <motion.div
-        className="bg-cursor absolute top-0 left-0"
-        style={{
-          width: ARROW_BOX.width,
-          height: ARROW_BOX.height,
-          clipPath: `path('${ARROW_OUTER}')`,
-          backdropFilter: 'blur(10px)',
-          WebkitBackdropFilter: 'blur(10px)',
-          transformOrigin: '0 0',
-        }}
-        animate={{ scale: pressed ? 0.88 : 1 }}
-        transition={MORPH}
-      >
-        {/*
-          The whole arrow is the material the dot was: one translucent tint over
-          a blurred backdrop, themed by the same token. What the system draws as
-          a white outline around a black body is here the plain material around
-          a darkened core — the same relationship, in the page's own glass,
-          rather than two opaque colours pasted on top of it.
-
-          The core is a black tint in both themes because "darker" only means
-          one thing. Lightening it in dark mode would read as *lighter* than the
-          surround, since it composites over the tint rather than replacing it.
-        */}
-        <svg
-          width={ARROW_BOX.width}
-          height={ARROW_BOX.height}
-          viewBox={`0 0 ${ARROW_BOX.width} ${ARROW_BOX.height}`}
-          className="block"
-          aria-hidden="true"
-          focusable="false"
-        >
-          <path d={ARROW_INNER} fill="hsl(var(--cursor-core))" />
-        </svg>
       </motion.div>
 
       <span
