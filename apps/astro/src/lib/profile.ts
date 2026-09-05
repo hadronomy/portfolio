@@ -1,3 +1,5 @@
+import type { Status } from '~/lib/status';
+
 /**
  * Every fact the homepage states about Pablo, in one place. Sections read from
  * here rather than inlining copy, so correcting a date or a handle is one edit
@@ -14,13 +16,14 @@ export const profile = {
   coordinates: { latitude: 28.4636, longitude: -16.2518 },
   email: 'hadronomy@gmail.com',
   /**
-   * What the green dot on the avatar claims, shown in the pointer on hover.
+   * What the dot on the avatar claims.
    *
-   * This is a statement about Pablo rather than a label, so it is here to be
-   * owned rather than buried in a component. Change it or empty it — an empty
-   * string leaves the dot with no pointer label at all.
+   * A statement about Pablo rather than a label, so it is owned here rather
+   * than buried in a component — and one of a closed set rather than free
+   * text, so it cannot claim something the dot has no way to look like. What
+   * each one says and how it appears is in `~/lib/status`.
    */
-  status: 'Available',
+  status: 'offline' satisfies Status,
   avatar: 'https://github.com/hadronomy.png',
   intro:
     'I build across the whole stack, from bare-metal systems to the interfaces on top of them, with a particular interest in agentic AI. Most of my work is open source.',

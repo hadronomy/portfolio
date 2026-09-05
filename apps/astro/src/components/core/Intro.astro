@@ -4,6 +4,9 @@ import Section from '~/components/core/Section.astro';
 import Shortcut from '~/components/core/Shortcut.astro';
 import Presence from '~/components/react/Presence';
 import { profile } from '~/lib/profile';
+import { lookOf } from '~/lib/status';
+
+const look = lookOf(profile.status);
 ---
 
 <Section id="intro" gap={24}>
@@ -27,10 +30,11 @@ import { profile } from '~/lib/profile';
       */}
       <span
         id="presence-dot"
-        class="absolute -right-0.5 -bottom-0.5 size-3 rounded-pill bg-[rgb(22,191,94)] ring-2 ring-background"
+        class="absolute -right-0.5 -bottom-0.5 size-3 rounded-pill ring-2 ring-background"
+        style={`background:${look.dot}`}
         aria-hidden="true"></span>
 
-      <Presence status={profile.status} client:idle />
+      <Presence look={look} client:idle />
     </div>
 
     <div class="flex flex-col">

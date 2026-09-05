@@ -147,7 +147,13 @@
     rather than as a tooltip that happens to be nearby.
   */
   .cursor-pill {
-    background: rgb(22 191 94 / 0.14);
+    /* Mixed from whatever the hovered trigger is reporting, so the label wears
+       the colour of the thing it describes rather than a fixed green. */
+    background: color-mix(
+      in srgb,
+      var(--cursor-tint, rgb(22, 191, 94)) 14%,
+      transparent
+    );
     box-shadow:
       inset 0 0 0 1px rgb(255 255 255 / 0.22),
       0 2px 10px rgb(0 0 0 / 0.18);

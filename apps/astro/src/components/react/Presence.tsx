@@ -29,8 +29,8 @@ import * as React from 'react';
   own radius so it cannot swallow a click meant for anything underneath.
 */
 
-/** The existing accent, and the only hue on the page. */
-const GREEN = 'rgb(22,191,94)';
+import type { StatusLook } from '~/lib/status';
+
 /*
   The same edge `ring-2 ring-background` draws on the static dot, kept at every
   size rather than faded out as it opens — the void is what holds the dot off
@@ -256,11 +256,11 @@ function Eye({
 }
 
 interface Props {
-  /** What the dot claims, shown in the pointer on hover. Empty means silent. */
-  status?: string;
+  /** Appearance and claim for the status the dot reports. */
+  look: StatusLook;
 }
 
-export default function Presence({ status }: Props) {
+export default function Presence({ look }: Props) {
   const [enabled, setEnabled] = React.useState(false);
   const [open, setOpen] = React.useState(false);
   const [asleep, setAsleep] = React.useState(false);
@@ -459,12 +459,19 @@ export default function Presence({ status }: Props) {
     return () => window.clearTimeout(mood.current);
   }, [enabled, expression, eyeW, eyeH, tilt, lean, rxTop, ryTop, rxBot, ryBot]);
 
+  /*
+    A status that is not present does not animate. `offline` leaves the dot the
+    server drew and mounts nothing over it — the same path a touch device or a
+    request for less motion already takes, so there is only one way to be
+    still rather than two.
+  */
   React.useEffect(() => {
     setEnabled(
-      window.matchMedia('(hover: hover) and (pointer: fine)').matches &&
+      look.alive &&
+        window.matchMedia('(hover: hover) and (pointer: fine)').matches &&
         !window.matchMedia('(prefers-reduced-motion: reduce)').matches,
     );
-  }, []);
+  }, [look.alive]);
 
   // Dozing settles it by a hair as well as lowering the lids. A body that only
   // half-shut its eyes reads as a stare, not as sleep.
@@ -635,7 +642,7 @@ export default function Presence({ status }: Props) {
           scaleY,
           rotate: lean,
           borderRadius: '999px',
-          background: GREEN,
+          background: look.dot,
           boxShadow: RING,
         }}
       >
@@ -682,11 +689,14 @@ export default function Presence({ status }: Props) {
         pointer is close enough to be over this, the dot has already opened to
         meet it.
       */}
-      {status && (
+      {look.label && (
         <span
           className="pointer-events-auto absolute inset-0 rounded-pill"
           data-cursor="label"
-          data-cursor-label={status}
+          data-cursor-label={look.label}
+          /* The pointer tints its label to match whatever it is reporting, so
+             a red status is never announced on a green pill. */
+          data-cursor-tint={look.dot}
           data-cursor-active
         />
       )}

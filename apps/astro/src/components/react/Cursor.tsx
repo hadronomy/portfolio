@@ -193,7 +193,11 @@ export default function Cursor() {
   const [pressed, setPressed] = React.useState(false);
   const [away, setAway] = React.useState(true);
   const [src, setSrc] = React.useState<string | null>(null);
-  const [label, setLabel] = React.useState({ text: '', active: false });
+  const [label, setLabel] = React.useState({
+    text: '',
+    active: false,
+    tint: '',
+  });
   const [pill, setPill] = React.useState({ width: 20, height: 20 });
 
   const ghost = React.useRef<HTMLSpanElement>(null);
@@ -283,6 +287,7 @@ export default function Cursor() {
         setLabel({
           text: target.getAttribute('data-cursor-label') ?? '',
           active: target.hasAttribute('data-cursor-active'),
+          tint: target.getAttribute('data-cursor-tint') ?? '',
         });
         return setVariant('label');
       }
@@ -386,6 +391,9 @@ export default function Cursor() {
           isLabel ? 'cursor-pill' : 'bg-cursor'
         }`}
         style={{
+          /* Whatever the trigger is reporting. The pill mixes its own tint
+             from this, so one variable dresses the label and its dot. */
+          ...(label.tint ? { ['--cursor-tint' as string]: label.tint } : null),
           backdropFilter: 'blur(10px)',
           WebkitBackdropFilter: 'blur(10px)',
           transformOrigin: '0 0',
@@ -454,7 +462,10 @@ export default function Cursor() {
           transition={isLabel ? CONTENTS : CONTENTS_OUT}
         >
           {label.active && (
-            <span className="size-2 shrink-0 rounded-pill bg-[rgb(22,191,94)]" />
+            <span
+              className="size-2 shrink-0 rounded-pill"
+              style={{ background: 'var(--cursor-tint, rgb(22,191,94))' }}
+            />
           )}
           {label.text}
         </motion.span>
