@@ -1,0 +1,208 @@
+---
+import Contact from '~/components/core/Contact.astro';
+import Experience from '~/components/core/Experience.astro';
+import Intro from '~/components/core/Intro.astro';
+import Personal from '~/components/core/Personal.astro';
+import Stack from '~/components/core/Stack.astro';
+import Work from '~/components/core/Work.astro';
+import Writing from '~/components/core/Writing.astro';
+import Layout from '~/layouts/Layout.astro';
+
+/*
+  THROWAWAY. Three page-entry animations to choose between, on the real
+  homepage so they can be judged in place. Delete this file once one is picked
+  — Astro serves any normal filename under `src/pages`, so this is a live route.
+
+  Switch with `?v=a|b|c`. The variant is read by a blocking script before first
+  paint, because an entry animation that is chosen after the paint has already
+  happened is not the animation.
+*/
+---
+
+<Layout title="Entry lab" description="Throwaway: page entry animations.">
+  <Intro />
+  <Work />
+  <Experience />
+  <Stack />
+  <Writing />
+  <Personal />
+  <Contact />
+</Layout>
+
+<script is:inline>
+  (() => {
+    const v = new URLSearchParams(location.search).get('v');
+    document.documentElement.dataset.entry = ['a', 'b', 'c'].includes(v)
+      ? v
+      : 'a';
+  })();
+</script>
+
+<div class="lab" role="group" aria-label="Entry animation variant">
+  <span class="lab-title">ENTRY</span>
+  <a href="?v=a" data-v="a">A · Rise</a>
+  <a href="?v=b" data-v="b">B · Focus</a>
+  <a href="?v=c" data-v="c">C · Settle</a>
+  <button type="button" id="lab-replay">Replay</button>
+</div>
+
+<script is:inline>
+  document.getElementById('lab-replay')?.addEventListener('click', () => {
+    location.reload();
+  });
+  const active = document.documentElement.dataset.entry;
+  for (const a of document.querySelectorAll('.lab a')) {
+    if (a.dataset.v === active) a.setAttribute('aria-current', 'true');
+  }
+</script>
+
+<style is:global>
+  /*
+    Every variant animates transform only — never opacity from zero — so the
+    page is readable on the first frame whether or not any of this runs. The
+    resting state is what is declared; `@starting-style` supplies the offset
+    for the first style resolution alone. A browser without it, a printer, or
+    anything that fails simply gets the page.
+
+    Motion values come from the transitions.dev token scale. Its own
+    texts-reveal opens its lines at `opacity: 0`, which is the one part not
+    taken.
+  */
+  :root {
+    --entry-ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --entry-ease-weight: cubic-bezier(0.34, 1.36, 0.64, 1);
+    --entry-rise: 10px;
+    --entry-focus-rise: 12px;
+    --entry-focus-blur: 3px;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    /* ── A · Rise ──────────────────────────────────────────────────────────
+       Rhythm. Each block arrives just behind the one above it, so the page
+       assembles top to bottom the way it is read. 45ms apart: close enough to
+       be one movement, far enough to have an order. */
+    html[data-entry='a'] body > header,
+    html[data-entry='a'] main > *,
+    html[data-entry='a'] body > footer {
+      transform: translateY(0);
+      transition: transform 380ms var(--entry-ease);
+    }
+    @starting-style {
+      html[data-entry='a'] body > header,
+      html[data-entry='a'] main > *,
+      html[data-entry='a'] body > footer {
+        transform: translateY(var(--entry-rise));
+      }
+    }
+    html[data-entry='a'] main > *:nth-child(1) { transition-delay: 45ms; }
+    html[data-entry='a'] main > *:nth-child(2) { transition-delay: 90ms; }
+    html[data-entry='a'] main > *:nth-child(3) { transition-delay: 135ms; }
+    html[data-entry='a'] main > *:nth-child(4) { transition-delay: 180ms; }
+    html[data-entry='a'] main > *:nth-child(5) { transition-delay: 225ms; }
+    html[data-entry='a'] main > *:nth-child(6) { transition-delay: 270ms; }
+    html[data-entry='a'] main > *:nth-child(7) { transition-delay: 315ms; }
+    html[data-entry='a'] body > footer { transition-delay: 360ms; }
+
+    /* ── B · Focus ─────────────────────────────────────────────────────────
+       Depth. The page arrives soft and resolves sharp, rising as it does —
+       transitions.dev's texts-reveal recipe, at its own 500ms and 40ms, with
+       the blur doing the work its opacity used to. Blur leaves the words on
+       the screen; it only puts them slightly further away. */
+    html[data-entry='b'] body > header,
+    html[data-entry='b'] main > *,
+    html[data-entry='b'] body > footer {
+      transform: translateY(0);
+      filter: blur(0);
+      transition:
+        transform 500ms var(--entry-ease),
+        filter 500ms var(--entry-ease);
+    }
+    @starting-style {
+      html[data-entry='b'] body > header,
+      html[data-entry='b'] main > *,
+      html[data-entry='b'] body > footer {
+        transform: translateY(var(--entry-focus-rise));
+        filter: blur(var(--entry-focus-blur));
+      }
+    }
+    html[data-entry='b'] main > *:nth-child(1) { transition-delay: 40ms; }
+    html[data-entry='b'] main > *:nth-child(2) { transition-delay: 80ms; }
+    html[data-entry='b'] main > *:nth-child(3) { transition-delay: 120ms; }
+    html[data-entry='b'] main > *:nth-child(4) { transition-delay: 160ms; }
+    html[data-entry='b'] main > *:nth-child(5) { transition-delay: 200ms; }
+    html[data-entry='b'] main > *:nth-child(6) { transition-delay: 240ms; }
+    html[data-entry='b'] main > *:nth-child(7) { transition-delay: 280ms; }
+    html[data-entry='b'] body > footer { transition-delay: 320ms; }
+
+    /* ── C · Settle ────────────────────────────────────────────────────────
+       Weight. No stagger at all: the column arrives as one object, quickly,
+       on a curve that carries a little past its mark and comes back. The only
+       thing that breaks rank is the sticker row, which lands a beat later —
+       one piece of follow-through, on the page's own signature. */
+    html[data-entry='c'] body > header,
+    html[data-entry='c'] main,
+    html[data-entry='c'] body > footer {
+      transform: translateY(0);
+      transition: transform 280ms var(--entry-ease-weight);
+    }
+    html[data-entry='c'] #stack {
+      transform: translateY(0);
+      transition: transform 340ms var(--entry-ease-weight) 70ms;
+    }
+    @starting-style {
+      html[data-entry='c'] body > header,
+      html[data-entry='c'] main,
+      html[data-entry='c'] body > footer {
+        transform: translateY(14px);
+      }
+      html[data-entry='c'] #stack {
+        transform: translateY(10px);
+      }
+    }
+  }
+
+  /* ── the switcher, not part of any variant ─────────────────────────────── */
+  .lab {
+    position: fixed;
+    bottom: 16px;
+    left: 50%;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px;
+    transform: translateX(-50%);
+    border: 1px solid hsl(var(--border));
+    border-radius: 999px;
+    background: hsl(var(--overlay));
+    backdrop-filter: blur(12px);
+  }
+  .lab-title {
+    padding: 0 8px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    color: hsl(var(--muted-foreground));
+  }
+  .lab a,
+  .lab button {
+    padding: 6px 12px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: hsl(var(--muted-foreground));
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .lab a:hover,
+  .lab button:hover {
+    background: hsl(var(--button-hover));
+    color: hsl(var(--foreground));
+  }
+  .lab a[aria-current='true'] {
+    background: hsl(var(--foreground));
+    color: hsl(var(--background));
+  }
+</style>
