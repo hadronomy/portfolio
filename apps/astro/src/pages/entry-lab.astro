@@ -47,6 +47,40 @@ import Layout from '~/layouts/Layout.astro';
 </div>
 
 <script is:inline>
+  /* THROWAWAY probe: records where things actually are, from the first frame,
+     so a jump can be told apart from the animation. `?probe=1`. */
+  if (new URLSearchParams(location.search).get('probe')) {
+    const samples = [];
+    const t0 = performance.now();
+    const dy = (el) => new DOMMatrixReadOnly(getComputedStyle(el).transform).f;
+    const tick = () => {
+      const main = document.querySelector('main');
+      if (!main) return requestAnimationFrame(tick);
+      const rows = [...main.children].map((el) => {
+        const r = el.getBoundingClientRect();
+        return Math.round(r.top - dy(el));
+      });
+      const foot = document.querySelector('body > footer');
+      const weather = document.getElementById('weather');
+      samples.push({
+        ms: Math.round(performance.now() - t0),
+        layoutTops: rows,
+        sectionHeights: [...main.children].map((el) => Math.round(el.getBoundingClientRect().height)),
+        footH: foot ? Math.round(foot.getBoundingClientRect().height) : 0,
+        weatherShown: weather ? !weather.hasAttribute('hidden') : null,
+        gallery: document.querySelectorAll('.work-panel').length,
+        presence: !!document.querySelector('.relative.shrink-0 div[style*="calc(100% - 4px)"]'),
+        cursorHidden: document.documentElement.classList.contains('cursor-hidden'),
+        height: document.documentElement.scrollHeight,
+        fonts: document.fonts.status,
+        blur: getComputedStyle(main.children[1]).filter,
+      });
+      if (performance.now() - t0 < 2500) requestAnimationFrame(tick);
+      else window.__probe = samples;
+    };
+    requestAnimationFrame(tick);
+  }
+
   document.getElementById('lab-replay')?.addEventListener('click', () => {
     location.reload();
   });
@@ -58,22 +92,20 @@ import Layout from '~/layouts/Layout.astro';
 
 <style is:global>
   /*
-    Every variant animates transform only — never opacity from zero — so the
-    page is readable on the first frame whether or not any of this runs. The
-    resting state is what is declared; `@starting-style` supplies the offset
-    for the first style resolution alone. A browser without it, a printer, or
-    anything that fails simply gets the page.
+    Every variant is driven by `@starting-style`, which is what makes any of
+    this safe: the state that is declared is the resting, visible one, and the
+    offset applies to the first style resolution alone. Nothing is gated on a
+    script running, so a browser without support, a printer, or a failure of
+    any kind simply gets the page.
 
-    Motion values come from the transitions.dev token scale. Its own
-    texts-reveal opens its lines at `opacity: 0`, which is the one part not
-    taken.
+    Motion values come from the transitions.dev token scale.
   */
   :root {
     --entry-ease: cubic-bezier(0.22, 1, 0.36, 1);
     --entry-ease-weight: cubic-bezier(0.34, 1.36, 0.64, 1);
     --entry-rise: 10px;
-    --entry-focus-rise: 12px;
-    --entry-focus-blur: 3px;
+    --entry-focus-rise: 16px;
+    --entry-focus-blur: 4px;
   }
 
   @media (prefers-reduced-motion: no-preference) {
@@ -104,35 +136,58 @@ import Layout from '~/layouts/Layout.astro';
     html[data-entry='a'] body > footer { transition-delay: 360ms; }
 
     /* ── B · Focus ─────────────────────────────────────────────────────────
-       Depth. The page arrives soft and resolves sharp, rising as it does —
-       transitions.dev's texts-reveal recipe, at its own 500ms and 40ms, with
-       the blur doing the work its opacity used to. Blur leaves the words on
-       the screen; it only puts them slightly further away. */
+       Depth. Arrives soft and slightly low, and resolves sharp — the
+       transitions.dev texts-reveal, opacity included now.
+
+       The opacity is safe here in a way it would not be from script.
+       `@starting-style` supplies a value for the first style resolution only;
+       the state that is *declared* is the visible one. A browser without it,
+       a printer, or any failure renders the page at full opacity. That is the
+       difference between this and the reveal patterns the house rule is aimed
+       at, which leave content at zero forever if their JavaScript never runs.
+
+       560ms and 80ms apart, against the recipe's own 500 and 40. The tokens
+       are tuned for two lines of a headline; here there are nine blocks, and
+       at 40ms apart a cascade across them is over before it can be read as
+       one. 80ms is the top of the useful range — past it the page stops
+       arriving and starts queueing.
+
+       The travel and the blur are up from the token defaults too, 16px and
+       4px against 12 and 3, because a section is a much larger object than a
+       line of text and the same distance across it reads as less movement.
+
+       Only the first three blocks are above the fold, so what is actually
+       felt is the header, the intro and the work row: three beats 80ms apart,
+       the last settling around 800ms. The rest inherit the rhythm without
+       anyone watching them do it. */
     html[data-entry='b'] body > header,
     html[data-entry='b'] main > *,
     html[data-entry='b'] body > footer {
+      opacity: 1;
       transform: translateY(0);
       filter: blur(0);
       transition:
-        transform 500ms var(--entry-ease),
-        filter 500ms var(--entry-ease);
+        opacity 560ms var(--entry-ease),
+        transform 560ms var(--entry-ease),
+        filter 560ms var(--entry-ease);
     }
     @starting-style {
       html[data-entry='b'] body > header,
       html[data-entry='b'] main > *,
       html[data-entry='b'] body > footer {
+        opacity: 0;
         transform: translateY(var(--entry-focus-rise));
         filter: blur(var(--entry-focus-blur));
       }
     }
-    html[data-entry='b'] main > *:nth-child(1) { transition-delay: 40ms; }
-    html[data-entry='b'] main > *:nth-child(2) { transition-delay: 80ms; }
-    html[data-entry='b'] main > *:nth-child(3) { transition-delay: 120ms; }
-    html[data-entry='b'] main > *:nth-child(4) { transition-delay: 160ms; }
-    html[data-entry='b'] main > *:nth-child(5) { transition-delay: 200ms; }
-    html[data-entry='b'] main > *:nth-child(6) { transition-delay: 240ms; }
-    html[data-entry='b'] main > *:nth-child(7) { transition-delay: 280ms; }
-    html[data-entry='b'] body > footer { transition-delay: 320ms; }
+    html[data-entry='b'] main > *:nth-child(1) { transition-delay: 80ms; }
+    html[data-entry='b'] main > *:nth-child(2) { transition-delay: 160ms; }
+    html[data-entry='b'] main > *:nth-child(3) { transition-delay: 240ms; }
+    html[data-entry='b'] main > *:nth-child(4) { transition-delay: 320ms; }
+    html[data-entry='b'] main > *:nth-child(5) { transition-delay: 400ms; }
+    html[data-entry='b'] main > *:nth-child(6) { transition-delay: 480ms; }
+    html[data-entry='b'] main > *:nth-child(7) { transition-delay: 560ms; }
+    html[data-entry='b'] body > footer { transition-delay: 640ms; }
 
     /* ── C · Settle ────────────────────────────────────────────────────────
        Weight. No stagger at all: the column arrives as one object, quickly,

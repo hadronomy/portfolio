@@ -112,9 +112,32 @@
     --content-width: 640px;
     --measure: 608px;
 
-    --font-sans: 'Inter Variable', system-ui, sans-serif;
+    --font-sans: 'Inter Variable', 'Inter Fallback', system-ui, sans-serif;
     --font-mono: 'Geist Mono Variable', ui-monospace, monospace;
   }
+}
+
+/*
+  A fallback cut to Inter's metrics.
+
+  Until Inter arrives the page is set in whatever `system-ui` resolves to, whose
+  letters are a different size and sit on a different baseline. When the real
+  face lands every line re-measures and the document changes height — 76px on
+  the home page, arriving around 77ms, which is squarely inside any entrance
+  animation and reads as the page lurching.
+
+  Overriding the fallback's ascent, descent and scale makes it occupy the space
+  Inter will occupy, so the swap changes the shapes and not the layout. `Arial`
+  rather than `system-ui` because the override has to be measured against one
+  known face, and `system-ui` is a different font on every platform.
+*/
+@font-face {
+  font-family: 'Inter Fallback';
+  src: local('Arial');
+  ascent-override: 90.2%;
+  descent-override: 22.48%;
+  line-gap-override: 0%;
+  size-adjust: 107.4%;
 }
 
 @layer base {
