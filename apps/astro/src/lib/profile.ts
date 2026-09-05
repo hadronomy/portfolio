@@ -23,7 +23,7 @@ export const profile = {
    * text, so it cannot claim something the dot has no way to look like. What
    * each one says and how it appears is in `~/lib/status`.
    */
-  status: 'offline' satisfies Status,
+  status: 'available' satisfies Status,
   avatar: 'https://github.com/hadronomy.png',
   intro:
     'I build across the whole stack, from bare-metal systems to the interfaces on top of them, with a particular interest in agentic AI. Most of my work is open source.',
