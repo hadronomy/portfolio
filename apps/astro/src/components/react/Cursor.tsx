@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, useSpring } from 'motion/react';
+import { motion } from 'motion/react';
 import * as React from 'react';
 
 /*
@@ -131,13 +131,36 @@ const CONTENTS = {
 const CONTENTS_OUT = { duration: 0.1, ease: 'easeOut' } as const;
 
 /*
-  The follow is a separate, far stiffer spring. Critically damped at ω≈89 rad/s,
-  it closes 98% of a jump inside four frames — the arrow has to read as the
-  pointer, not as something chasing it. A spring rather than a per-frame lerp
-  because a lerp is tied to the display: the same constant runs twice as fast
-  on a 120Hz panel.
+  Position is not animated at all, and that is the whole point.
+
+  It used to follow on a very stiff spring, on the theory that a spring is what
+  makes a thing feel physical. It is not — it is what makes a thing feel like it
+  is being dragged along behind the pointer. Measured: 113ms to arrive after a
+  jump, and running up to 361px behind during a continuous sweep. A native
+  cursor is never anywhere but under the hand, and that is the bar here.
+
+  So the transform is written straight to the element in the event handler,
+  outside React and outside Motion. Motion's `x` and `y` are not
+  hardware-accelerated — they drive a main-thread frame loop — whereas a bare
+  `translate3d` on a promoted layer is a compositor property, which is as close
+  to the path the system cursor takes as a page can get.
+
+  Everything else about the pointer stays sprung. Shape is where the character
+  lives; position is where it does damage.
 */
-const FOLLOW = { stiffness: 8000, damping: 180, mass: 1, restDelta: 0.1 };
+/*
+  `pointerrawupdate` reports movement as the system sees it, without being
+  coalesced down to one event per frame, so it is the earliest a page can learn
+  where the pointer is. It is not everywhere — Chromium has it, others do not —
+  and it is listened to *in addition to* `pointermove` rather than instead of
+  it. Both write the same transform, so the duplicate is one redundant style
+  write on a compositor property, which is the cheap side of the trade against
+  a cursor that stops moving anywhere the event is missing.
+*/
+const RAW_POSITION =
+  typeof window !== 'undefined' && 'onpointerrawupdate' in window
+    ? 'pointerrawupdate'
+    : null;
 
 /*
   The macOS arrow, traced from the system asset rather than drawn by eye.
@@ -207,8 +230,7 @@ export default function Cursor() {
      after the call has gone through the scheduler — and this runs per event. */
   const isAway = React.useRef(true);
 
-  const x = useSpring(0, FOLLOW);
-  const y = useSpring(0, FOLLOW);
+  const root = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     setEnabled(
@@ -265,20 +287,17 @@ export default function Cursor() {
     const move = (event: PointerEvent) => {
       if (event.pointerType !== 'mouse') return;
 
-      if (!placed.current) {
-        // Land on the pointer instead of flying in from the corner.
-        placed.current = true;
-        x.jump(event.clientX);
-        y.jump(event.clientY);
+      const el = root.current;
+      if (el) {
+        el.style.transform = `translate3d(${event.clientX}px, ${event.clientY}px, 0)`;
+      }
+
+      // Landing on the pointer rather than flying in from the corner is now
+      // just the first write; there is no travel to suppress.
+      placed.current = true;
+      if (isAway.current) {
         isAway.current = false;
         setAway(false);
-      } else {
-        x.set(event.clientX);
-        y.set(event.clientY);
-        if (isAway.current) {
-          isAway.current = false;
-          setAway(false);
-        }
       }
     };
 
@@ -325,6 +344,11 @@ export default function Cursor() {
     };
 
     document.addEventListener('pointermove', move, { passive: true });
+    if (RAW_POSITION) {
+      document.addEventListener(RAW_POSITION as 'pointermove', move, {
+        passive: true,
+      });
+    }
     document.addEventListener('pointerover', over, { passive: true });
     document.addEventListener('pointerdown', down, { passive: true });
     document.addEventListener('pointerup', up, { passive: true });
@@ -333,13 +357,16 @@ export default function Cursor() {
 
     return () => {
       document.removeEventListener('pointermove', move);
+      if (RAW_POSITION) {
+        document.removeEventListener(RAW_POSITION as 'pointermove', move);
+      }
       document.removeEventListener('pointerover', over);
       document.removeEventListener('pointerdown', down);
       document.removeEventListener('pointerup', up);
       document.removeEventListener('pointercancel', up);
       document.removeEventListener('pointerleave', leave);
     };
-  }, [enabled, x, y]);
+  }, [enabled]);
 
   // The pill is sized by its own text, and Motion needs a number to spring
   // towards, so the copy is laid out once in a hidden twin and measured.
@@ -380,14 +407,19 @@ export default function Cursor() {
       : { x: 0, y: 0 };
 
   return (
-    <motion.div
+    /* Two elements, so that nothing but this handler ever writes `transform`.
+       Motion owns opacity on the child; the position is written here and by
+       nobody else, which is what keeps it a compositor property. */
+    <div
+      ref={root}
       aria-hidden="true"
-      className="pointer-events-none fixed top-0 left-0 z-[60]"
-      style={{ x, y }}
-      animate={{ opacity: away ? 0 : 1 }}
-      transition={{ opacity: { duration: 0.16, ease: 'easeOut' } }}
+      className="pointer-events-none fixed top-0 left-0 z-[60] will-change-transform"
     >
-      {/*
+      <motion.div
+        animate={{ opacity: away ? 0 : 1 }}
+        transition={{ opacity: { duration: 0.16, ease: 'easeOut' } }}
+      >
+        {/*
         One element for every shape it takes, so this is a morph and not a
         hand-off between two things fading past each other.
 
@@ -400,37 +432,39 @@ export default function Cursor() {
         Anchored by the tip rather than centred, because a pointer's hotspot is
         its point. Where a card wants to sit relative to that is `offset`'s job.
       */}
-      <motion.div
-        className={`absolute top-0 left-0 flex items-center justify-center overflow-hidden backdrop-blur-[10px] transition-colors duration-200 ${
-          isLabel ? 'cursor-pill' : 'bg-cursor'
-        }`}
-        style={{
-          /* Whatever the trigger is reporting. The pill mixes its own tint
+        <motion.div
+          className={`absolute top-0 left-0 flex items-center justify-center overflow-hidden backdrop-blur-[10px] transition-colors duration-200 ${
+            isLabel ? 'cursor-pill' : 'bg-cursor'
+          }`}
+          style={{
+            /* Whatever the trigger is reporting. The pill mixes its own tint
              from this, so one variable dresses the label and its dot. */
-          ...(label.tint ? { ['--cursor-tint' as string]: label.tint } : null),
-          backdropFilter: 'blur(10px)',
-          WebkitBackdropFilter: 'blur(10px)',
-          transformOrigin: '0 0',
-        }}
-        animate={{
-          ...size,
-          ...offset,
-          clipPath: isArrow ? ARROW_CLIP : BOX_CLIP,
-          borderRadius: isArrow ? 0 : isPreview ? 10 : 16,
-          padding: isPreview ? 2 : 0,
-          scale: isArrow && pressed ? 0.88 : 1,
-        }}
-        transition={{
-          ...MORPH,
-          width: isArrow ? SETTLE : { ...SPREAD, delay: HOLD },
-          x: isArrow ? SETTLE : { ...SPREAD, delay: HOLD },
-          height: isArrow ? SETTLE : { ...RISE, delay: HOLD },
-          y: isArrow ? SETTLE : { ...RISE, delay: HOLD },
-          clipPath: isArrow ? { ...OUTLINE, delay: HOLD_BACK } : OUTLINE,
-          borderRadius: isArrow ? { ...OUTLINE, delay: HOLD_BACK } : OUTLINE,
-        }}
-      >
-        {/*
+            ...(label.tint
+              ? { ['--cursor-tint' as string]: label.tint }
+              : null),
+            backdropFilter: 'blur(10px)',
+            WebkitBackdropFilter: 'blur(10px)',
+            transformOrigin: '0 0',
+          }}
+          animate={{
+            ...size,
+            ...offset,
+            clipPath: isArrow ? ARROW_CLIP : BOX_CLIP,
+            borderRadius: isArrow ? 0 : isPreview ? 10 : 16,
+            padding: isPreview ? 2 : 0,
+            scale: isArrow && pressed ? 0.88 : 1,
+          }}
+          transition={{
+            ...MORPH,
+            width: isArrow ? SETTLE : { ...SPREAD, delay: HOLD },
+            x: isArrow ? SETTLE : { ...SPREAD, delay: HOLD },
+            height: isArrow ? SETTLE : { ...RISE, delay: HOLD },
+            y: isArrow ? SETTLE : { ...RISE, delay: HOLD },
+            clipPath: isArrow ? { ...OUTLINE, delay: HOLD_BACK } : OUTLINE,
+            borderRadius: isArrow ? { ...OUTLINE, delay: HOLD_BACK } : OUTLINE,
+          }}
+        >
+          {/*
           The darker body, and the only part that is arrow-shaped rather than
           box-shaped. It is a fixed size pinned to the tip and fades out as the
           shape opens, because there is nothing for it to become — the card's
@@ -440,59 +474,60 @@ export default function Cursor() {
           composites over the tint rather than replacing it, so lightening it in
           dark mode would come out lighter than its surround.
         */}
-        <motion.svg
-          width={ARROW_BOX.width}
-          height={ARROW_BOX.height}
-          viewBox={`0 0 ${ARROW_BOX.width} ${ARROW_BOX.height}`}
-          className="absolute top-0 left-0 block"
-          aria-hidden="true"
-          focusable="false"
-          animate={{ opacity: isArrow ? 1 : 0 }}
-          transition={isArrow ? CONTENTS : CONTENTS_OUT}
-        >
-          <path d={ARROW_INNER} fill="hsl(var(--cursor-core))" />
-        </motion.svg>
+          <motion.svg
+            width={ARROW_BOX.width}
+            height={ARROW_BOX.height}
+            viewBox={`0 0 ${ARROW_BOX.width} ${ARROW_BOX.height}`}
+            className="absolute top-0 left-0 block"
+            aria-hidden="true"
+            focusable="false"
+            animate={{ opacity: isArrow ? 1 : 0 }}
+            transition={isArrow ? CONTENTS : CONTENTS_OUT}
+          >
+            <path d={ARROW_INNER} fill="hsl(var(--cursor-core))" />
+          </motion.svg>
 
-        {/* Sized to the box rather than fixed, so the picture grows with the
+          {/* Sized to the box rather than fixed, so the picture grows with the
             card instead of popping in at full size once the morph finishes. */}
-        {src && (
-          <motion.img
-            src={src}
-            alt=""
-            className="h-full w-full rounded-[9px] object-cover"
-            /* The element only exists once there is a source, so the first
+          {src && (
+            <motion.img
+              src={src}
+              alt=""
+              className="h-full w-full rounded-[9px] object-cover"
+              /* The element only exists once there is a source, so the first
                preview of a session mounts mid-morph. Without a starting value
                it mounts already opaque and the hold below never applies to the
                one hover most likely to be someone's first. */
-            initial={{ opacity: 0 }}
-            animate={{ opacity: isPreview ? 1 : 0 }}
-            transition={isPreview ? CONTENTS : CONTENTS_OUT}
-          />
-        )}
-
-        <motion.span
-          className="type-body-xs absolute inset-0 flex items-center justify-center gap-1.5 px-2.5 py-1 whitespace-nowrap text-foreground"
-          animate={{ opacity: isLabel ? 1 : 0 }}
-          transition={isLabel ? CONTENTS : CONTENTS_OUT}
-        >
-          {label.active && (
-            <span
-              className="size-2 shrink-0 rounded-pill"
-              style={{ background: 'var(--cursor-tint, rgb(22,191,94))' }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: isPreview ? 1 : 0 }}
+              transition={isPreview ? CONTENTS : CONTENTS_OUT}
             />
           )}
-          {label.text}
-        </motion.span>
-      </motion.div>
 
-      <span
-        ref={ghost}
-        aria-hidden="true"
-        className="type-body-xs pointer-events-none invisible absolute top-0 left-0 flex items-center gap-1.5 px-2.5 py-1 whitespace-nowrap"
-      >
-        {label.active && <span className="size-2 shrink-0" />}
-        {label.text}
-      </span>
-    </motion.div>
+          <motion.span
+            className="type-body-xs absolute inset-0 flex items-center justify-center gap-1.5 px-2.5 py-1 whitespace-nowrap text-foreground"
+            animate={{ opacity: isLabel ? 1 : 0 }}
+            transition={isLabel ? CONTENTS : CONTENTS_OUT}
+          >
+            {label.active && (
+              <span
+                className="size-2 shrink-0 rounded-pill"
+                style={{ background: 'var(--cursor-tint, rgb(22,191,94))' }}
+              />
+            )}
+            {label.text}
+          </motion.span>
+        </motion.div>
+
+        <span
+          ref={ghost}
+          aria-hidden="true"
+          className="type-body-xs pointer-events-none invisible absolute top-0 left-0 flex items-center gap-1.5 px-2.5 py-1 whitespace-nowrap"
+        >
+          {label.active && <span className="size-2 shrink-0" />}
+          {label.text}
+        </span>
+      </motion.div>
+    </div>
   );
 }
