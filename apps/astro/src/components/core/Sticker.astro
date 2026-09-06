@@ -145,9 +145,8 @@ const pad = Math.ceil(corner + size * 0.05);
       </filter>
 
       {/*
-        Gloss that tracks the pointer. Composited with `screen`, not `over`:
-        a specular highlight adds light to what is under it, and painting it
-        over the artwork instead washes the colour out.
+        Screen blending brightens the artwork under the specular highlight.
+        The final composite keeps that light inside the artwork's alpha.
       */}
       <filter id={`sheen-${uid}`} color-interpolation-filters="sRGB">
         <feGaussianBlur stdDeviation="1" result="blur" />
@@ -160,7 +159,7 @@ const pad = Math.ceil(corner + size * 0.05);
         >
           <fePointLight class="sheen-light" x="20" y="20" z="60" />
         </feSpecularLighting>
-        <feComposite in="spec" in2="SourceGraphic" operator="screen" result="lit" />
+        <feBlend in="spec" in2="SourceGraphic" mode="screen" result="lit" />
         <feComposite in="lit" in2="SourceAlpha" operator="in" />
       </filter>
 
@@ -176,7 +175,7 @@ const pad = Math.ceil(corner + size * 0.05);
         >
           <fePointLight class="sheen-light-flap" x="20" y="20" z="60" />
         </feSpecularLighting>
-        <feComposite in="spec" in2="SourceGraphic" operator="screen" result="lit" />
+        <feBlend in="spec" in2="SourceGraphic" mode="screen" result="lit" />
         <feComposite in="lit" in2="SourceAlpha" operator="in" />
       </filter>
     </defs>
