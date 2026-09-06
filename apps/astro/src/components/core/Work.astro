@@ -2,6 +2,7 @@
 import Overline from '~/components/core/Overline.astro';
 import Section from '~/components/core/Section.astro';
 import WorkGallery from '~/components/react/WorkGallery';
+import { terrainContours } from '~/lib/terrain';
 
 /*
   Four placeholder panels: a white mat with the picture inset — a print in a
@@ -17,6 +18,22 @@ const panels = [
   { rotate: 5, x: 130, y: 34, z: 30 },
   { rotate: 11, x: 400, y: -6, z: 20 },
 ];
+
+/*
+  The canvas behind them. Generated at build by `~/lib/terrain`, which is where
+  the noise, the grid and the marching-squares walk live — none of that is this
+  component's business, and none of it is shipped.
+
+  The frame is wider than it is tall on purpose: the section is full-bleed and
+  the SVG covers it, so a landscape field crops to a strip rather than being
+  squeezed into one.
+*/
+const VIEW = { w: 1600, h: 600 };
+const contours = terrainContours({
+  width: VIEW.w,
+  height: VIEW.h,
+  seed: 20260906,
+});
 ---
 
 <div id="work" class="flex w-full flex-col gap-4">
@@ -30,9 +47,16 @@ const panels = [
   </Section>
 
   <div class="relative h-[340px] w-full overflow-hidden tablet:h-[540px]">
-    {/* The canvas texture runs faint — felt, not read. */}
-    <div class="work-canvas pointer-events-none absolute inset-0 opacity-20" aria-hidden="true">
-    </div>
+    {/* The canvas runs faint — felt, not read. */}
+    <svg
+      class="work-canvas pointer-events-none absolute inset-0 h-full w-full"
+      viewBox={`0 0 ${VIEW.w} ${VIEW.h}`}
+      preserveAspectRatio="xMidYMid slice"
+      aria-hidden="true"
+      focusable="false"
+    >
+      {contours.map((c) => <path d={c.d} class={c.index ? 'index' : undefined} />)}
+    </svg>
 
     {/* Hydrates only once the section is close, since none of it means
         anything until there is a pointer over it. */}
@@ -42,24 +66,21 @@ const panels = [
 
 <style>
   /*
-    A halftone SVG tiled at a 7.2px pitch, with dots landing at roughly a
-    0.98px radius on screen.
-
-    The gradient stops sit at 0.5px and 1.4px rather than a hard edge at 0.98,
-    because a hard stop under two pixels across aliases into a moiré. The pair
-    integrates to the same disc area, so the field reads at the same weight.
-
-    The dot colour matches --muted-foreground exactly in the dark palette;
-    the light palette's value is a shade darker, which is the right direction
-    against white.
+    Hairlines, and hairlines at any size: `non-scaling-stroke` keeps them one
+    pixel however far the viewBox is stretched to cover the section. Without it
+    a full-bleed canvas draws them thicker on a wide window than a narrow one,
+    which is the tell that a background was scaled rather than drawn.
   */
-  .work-canvas {
-    background-image: radial-gradient(
-      circle at center,
-      hsl(var(--muted-foreground)) 0.5px,
-      transparent 1.4px
-    );
-    background-size: 7.2px 7.2px;
+  .work-canvas path {
+    fill: none;
+    stroke: hsl(var(--muted-foreground) / 0.2);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+  }
+
+  /* The index contour, heavier every fifth level, as a survey draws it. */
+  .work-canvas path.index {
+    stroke: hsl(var(--muted-foreground) / 0.38);
   }
 
   /*

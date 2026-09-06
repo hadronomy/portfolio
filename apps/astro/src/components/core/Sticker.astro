@@ -654,22 +654,83 @@ const pad = Math.ceil(corner + size * 0.05);
   /** The most recently grabbed sticker sits above the rest, as a real one would. */
   let topmost = 30;
 
+  /*
+    The two lights of a sticker, looked up once and kept.
+
+    A sticker's filter primitives are built with it and never replaced, so
+    finding them again on every pointer sample is work with a known answer.
+    Keyed weakly, so a sticker that leaves the document takes its entry with it.
+  */
+  const lights = new WeakMap<
+    HTMLElement,
+    { face: Element | null; flap: Element | null }
+  >();
+
+  /*
+    Searched from the slot, not from the element being lit.
+
+    The lights are `fePointLight` nodes inside `<svg class="sticker-defs">`,
+    which is a *sibling* of the sticker rather than an ancestor of it — a
+    filter's definition cannot live inside the thing it filters. Searching
+    down from the sticker therefore found nothing, the optional call swallowed
+    it, and the gloss sat at its authored position forever. It is called with
+    the sticker on hover and with the mover while dragging; the slot is above
+    both.
+  */
+  const lightsOf = (el: HTMLElement) => {
+    let found = lights.get(el);
+    if (!found) {
+      const slot = el.closest('.sticker-slot');
+      found = {
+        face: slot?.querySelector('.sheen-light') ?? null,
+        flap: slot?.querySelector('.sheen-light-flap') ?? null,
+      };
+      lights.set(el, found);
+    }
+    return found;
+  };
+
   const moveLight = (el: HTMLElement, clientX: number, clientY: number) => {
     const box = el.getBoundingClientRect();
     const x = clientX - box.left;
     const y = clientY - box.top;
+    const { face, flap } = lightsOf(el);
 
-    el.querySelector('.sheen-light')?.setAttribute('x', String(x));
-    el.querySelector('.sheen-light')?.setAttribute('y', String(y));
+    face?.setAttribute('x', String(x));
+    face?.setAttribute('y', String(y));
 
     // The flap is mirrored, so its light is mirrored with it or the highlight
     // slides the wrong way across the lifted corner.
-    el.querySelector('.sheen-light-flap')?.setAttribute('x', String(x));
-    el.querySelector('.sheen-light-flap')?.setAttribute(
-      'y',
-      String(box.height - y),
-    );
+    flap?.setAttribute('x', String(x));
+    flap?.setAttribute('y', String(box.height - y));
   };
+
+  /*
+    Which sticker the pointer is over, resolved when it crosses into a new
+    element rather than on every sample of its movement.
+
+    `pointerover` fires on entering an element and not while moving inside one,
+    so this answers the same question as searching up from the target on every
+    move — and away from the stack, which is nearly all of the page, it costs
+    nothing at all instead of a walk up the tree per sample.
+
+    No matching `pointerout` handler: leaving a sticker means entering
+    something else, and that fires `pointerover` with a target the search does
+    not match, which clears this on its own. Clearing on `pointerout` would be
+    wrong anyway — it fires when moving between two children of the same
+    sticker.
+  */
+  let hovered: HTMLElement | null = null;
+
+  document.addEventListener(
+    'pointerover',
+    (event) => {
+      hovered =
+        (event.target as Element | null)?.closest<HTMLElement>('.sticker') ??
+        null;
+    },
+    { passive: true },
+  );
 
   const nearHome = (p: Placement) => Math.hypot(p.x, p.y) <= SNAP_PX;
 
@@ -713,10 +774,7 @@ const pad = Math.ceil(corner + size * 0.05);
 
   document.addEventListener('pointermove', (event) => {
     if (!held) {
-      const over = (event.target as Element | null)?.closest<HTMLElement>(
-        '.sticker',
-      );
-      if (over) moveLight(over, event.clientX, event.clientY);
+      if (hovered) moveLight(hovered, event.clientX, event.clientY);
       return;
     }
 

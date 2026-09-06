@@ -1,3 +1,5 @@
+import type { Status } from '~/lib/status';
+
 /**
  * Every fact the homepage states about Pablo, in one place. Sections read from
  * here rather than inlining copy, so correcting a date or a handle is one edit
@@ -13,6 +15,15 @@ export const profile = {
   /** Santa Cruz de Tenerife, for the footer's current conditions. */
   coordinates: { latitude: 28.4636, longitude: -16.2518 },
   email: 'hadronomy@gmail.com',
+  /**
+   * What the dot on the avatar claims.
+   *
+   * A statement about Pablo rather than a label, so it is owned here rather
+   * than buried in a component — and one of a closed set rather than free
+   * text, so it cannot claim something the dot has no way to look like. What
+   * each one says and how it appears is in `~/lib/status`.
+   */
+  status: 'available' satisfies Status,
   avatar: 'https://github.com/hadronomy.png',
   intro:
     'I build across the whole stack, from bare-metal systems to the interfaces on top of them, with a particular interest in agentic AI. Most of my work is open source.',
