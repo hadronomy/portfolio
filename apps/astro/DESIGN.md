@@ -97,7 +97,7 @@ independently of their visual size.
 | Section internal gaps     | 16px, 24px, 32px                                |
 | Gap between page sections | 40px, owned by `Layout.astro`                   |
 | Row hover fill            | Full width, square edges, aligned inner content |
-| Work panels               | 300×248px, 12px radius, 5px mat inset           |
+| Work prints               | 4:3 artwork; placement owns width and rotation |
 | Personal photos           | 184×248px, 10px radius, 8px mat inset           |
 
 The reference widths are checkpoints, not a complete responsive test.
@@ -112,6 +112,13 @@ The work canvas uses contours from a seeded synthetic height field.
 It is decorative terrain, not a map of the Canary Islands.
 `src/lib/terrain.ts` generates the SVG paths at build time.
 The browser receives the paths without the generator.
+
+Stacks is the work presentation. Project records contain content and destinations;
+`canvas-layout.ts` owns the print positions. Additional projects form groups of four.
+Select a print to update its description and project link. Keep browsing on the canvas.
+Pan, zoom, fit, and Spread prints support exploration. On touch screens, preserve page
+scrolling until the visitor enables Move. Restore selection and camera position when
+visitors return from a project page.
 
 Keep the contours subordinate to the project captures. Use theme tokens and
 non-scaling strokes. The contour canvas supersedes the original halftone field.
@@ -143,12 +150,16 @@ pointers with motion enabled. Without that enhancement, the native cursor remain
 - Persist the island across Astro navigation and carry its cursor class through the swap.
 - Restore the native cursor when the enhancement stops.
 - Retain the traced arrow silhouette and its tip as the hotspot.
-- Morph one element through a small rounded shape into the preview or label.
+- Morph one element through a small rounded shape into the preview or status label.
 - Resolve the outline before expansion. Shrink the box before restoring the arrow outline.
 - Let preview contents arrive after the container has enough space.
 
 The arrow uses the translucent cursor token with a darker core in both themes.
 A preview centers on the pointer. A status label sits clear of the status dot.
+Interaction hints use `data-cursor="hint"`. Keep the arrow distinct and fixed at the
+pointer. Grow the neutral glass label from its lower-right edge. Do not use the
+status dot's green appearance for an interaction hint. Avoid outer shadows inside
+the cursor's shape mask; they produce square corners around a rounded label.
 The native arrow asset comes from
 [`daviddarnes/mac-cursors`](https://github.com/daviddarnes/mac-cursors/blob/main/src/svg/default.svg).
 
@@ -212,7 +223,7 @@ See [MDN's Bézier reference](https://developer.mozilla.org/en-US/docs/Web/CSS/R
 
 Astro owns static content. React islands own interactions that need their state
 and Motion hooks. The current islands are `Cursor`, `Presence`, and `WorkGallery`.
-The cursor and presence use `client:idle`. The gallery uses `client:visible`.
+The cursor and presence use `client:idle`. The interactive gallery uses `client:load`.
 See [Astro islands](https://docs.astro.build/en/concepts/islands/).
 
 - Use installed library versions and types before adopting examples from newer documentation.
