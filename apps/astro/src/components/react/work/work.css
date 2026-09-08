@@ -1,0 +1,83 @@
+:root {
+  --work-fast: 150ms;
+  --work-settle: 250ms;
+  --work-close: 200ms;
+  --work-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.work-gallery {
+  --work-ink: hsl(var(--foreground));
+  --work-muted: color-mix(in srgb, var(--work-ink) 64%, hsl(var(--background)));
+  --work-surface: hsl(var(--surface));
+  --work-edge: hsl(var(--border));
+  font-family: var(--font-sans);
+  color: var(--work-ink);
+  padding-bottom: 24px;
+}
+
+#work {
+  scroll-margin-top: 70px;
+  animation: none;
+}
+.work-measure {
+  width: min(100%, var(--content-width));
+  margin-inline: auto;
+  padding-inline: 16px;
+}
+.work-caption {
+  color: var(--work-muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.work-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.work-heading h2 {
+  color: var(--work-muted);
+}
+.work-gallery :is(button, a):focus-visible {
+  outline: 2px solid var(--work-ink);
+  outline-offset: 5px;
+}
+.work-gallery button {
+  cursor: pointer;
+}
+.work-gallery button:disabled {
+  cursor: default;
+  opacity: 0.3;
+}
+.project-cover {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.work-project-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 44px;
+  width: fit-content;
+  font-size: 13px;
+  font-weight: 500;
+}
+.work-project-link svg {
+  transition: transform var(--work-settle) var(--work-ease);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .work-project-link:hover svg { transform: translate(2px, -2px); }
+}
+.work-arrow { transition: transform var(--work-settle) var(--work-ease); }
+.work-gallery [data-keyboard='true'] *,
+.work-gallery :focus-visible svg { transition: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  .work-gallery *, .work-gallery *::before {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

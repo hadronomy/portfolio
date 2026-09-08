@@ -1,0 +1,387 @@
+.work-canvas-layout {
+  margin-top: 16px;
+}
+.canvas-stage {
+  position: relative;
+  width: 100%;
+  height: clamp(580px, 51vw, 720px);
+  overflow: hidden;
+  isolation: isolate;
+  cursor: grab;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.canvas-stage[data-dragging='true'],
+.canvas-stage[data-dragging='true'] button {
+  cursor: grabbing;
+}
+.canvas-stage:focus-visible {
+  outline: none;
+}
+.canvas-stage:focus-visible::after {
+  content: '';
+  position: absolute;
+  inset: 12px max(16px, calc((100% - 1160px) / 2));
+  border-radius: 16px;
+  outline: 2px solid hsl(var(--foreground) / 0.5);
+  pointer-events: none;
+}
+.canvas-ground-mask {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  mask-image: linear-gradient(transparent, black 22%, black 78%, transparent);
+}
+.canvas-ground {
+  position: absolute;
+  inset: -100px;
+  pointer-events: none;
+  opacity: 0.65;
+}
+.work-terrain {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.work-terrain path {
+  fill: none;
+  stroke: hsl(var(--muted-foreground) / 0.2);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.work-terrain path[data-index='true'] {
+  stroke: hsl(var(--muted-foreground) / 0.38);
+}
+.canvas-camera {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  transform-origin: 0 0;
+}
+.canvas-node {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+.canvas-print {
+  display: block;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  padding: 7px 7px 0;
+  border-radius: 9px;
+  background: #fff;
+  color: #181818;
+  box-shadow:
+    0 1px 2px #0000000d,
+    0 12px 20px -9px #00000038;
+  transition:
+    box-shadow var(--work-settle) var(--work-ease),
+    scale var(--work-fast) var(--work-ease);
+}
+.dark .canvas-print {
+  box-shadow:
+    0 1px 2px #00000040,
+    0 14px 24px -10px #00000080;
+}
+.canvas-art {
+  display: block;
+  aspect-ratio: 4 / 3;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #e8e8e8;
+}
+.canvas-art .project-cover {
+  pointer-events: none;
+}
+.canvas-caption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 11px 10px 13px;
+}
+.canvas-name {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 3px 12px;
+}
+.canvas-name strong {
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+.canvas-name > span {
+  color: #696969;
+  font-size: 11px;
+  line-height: 16px;
+}
+.canvas-print-arrow {
+  display: grid;
+  flex: 0 0 20px;
+  place-items: center;
+  color: #6b6b6b;
+}
+.canvas-print-arrow svg {
+  transition: transform var(--work-settle) var(--work-ease);
+}
+.canvas-print:active:not(:focus-visible) {
+  scale: 0.987;
+}
+.canvas-print:focus-visible {
+  outline: 2px solid var(--work-ink);
+  outline-offset: 6px;
+}
+.canvas-stage[data-dragging='true'] .canvas-print {
+  scale: 1;
+}
+
+[data-layout='stacks'] .canvas-print {
+  padding: 9px 9px 0;
+  border-radius: 6px;
+}
+[data-layout='stacks'] .canvas-art {
+  border-radius: 2px;
+}
+[data-layout='stacks'] .canvas-caption {
+  padding-block: 13px 15px;
+}
+
+.canvas-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 4px;
+}
+.canvas-tools,
+.canvas-pager {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.canvas-tools {
+  padding: 3px;
+  background: hsl(var(--surface));
+  border-radius: 10px;
+}
+.canvas-controls button,
+.canvas-touch-move {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 44px;
+  height: 44px;
+  border-radius: 7px;
+  color: var(--work-ink);
+  transition:
+    background-color var(--work-fast) ease,
+    opacity var(--work-fast) ease;
+}
+.canvas-controls button svg,
+.canvas-touch-move svg {
+  transition:
+    transform var(--work-settle) var(--work-ease),
+    scale var(--work-fast) var(--work-ease);
+}
+.canvas-tools .canvas-fit {
+  padding-inline: 9px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.canvas-fit > span {
+  min-width: 4ch;
+}
+.canvas-pager button {
+  background: hsl(var(--button));
+}
+.canvas-position {
+  margin-right: 12px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.canvas-position-total {
+  color: var(--work-muted);
+}
+.canvas-controls button:active:not(:disabled):not(:focus-visible) svg {
+  scale: 0.88;
+}
+.canvas-below {
+  margin-top: 12px;
+}
+.canvas-instructions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  min-height: 32px;
+}
+.canvas-spread {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.spread-leaf {
+  transform-origin: 10px 15px;
+  transition: transform var(--work-settle) var(--work-ease);
+}
+.canvas-spread[aria-expanded='true'] .spread-leaf {
+  transform: translateX(2px) rotate(12deg);
+}
+.canvas-touch-move {
+  display: none;
+  padding-inline: 10px;
+  font-size: 12px;
+}
+.canvas-touch-move[aria-pressed='true'] {
+  background: hsl(var(--foreground));
+  color: hsl(var(--background));
+}
+.canvas-touch-help {
+  display: none;
+}
+.canvas-project-picker {
+  display: flex;
+  gap: 4px;
+  margin-top: 18px;
+  overflow-x: auto;
+  padding: 6px;
+  margin-inline: -6px;
+  scrollbar-width: thin;
+}
+.canvas-project-picker button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 0 auto;
+  padding: 0 10px;
+  min-height: 44px;
+  border-radius: 7px;
+  font-size: 13px;
+  color: var(--work-muted);
+  transition:
+    color var(--work-fast) ease,
+    background-color var(--work-fast) ease;
+}
+.canvas-project-picker button[aria-pressed='true'] {
+  color: var(--work-ink);
+  background: hsl(var(--button));
+}
+.canvas-picker-number {
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  color: var(--work-muted);
+}
+.canvas-detail {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  gap: 30px;
+  margin-top: 20px;
+}
+.canvas-description-stack {
+  display: grid;
+}
+.canvas-description {
+  grid-area: 1 / 1;
+  visibility: hidden;
+  transform: translateY(4px);
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--work-muted);
+  transition: transform var(--work-settle) var(--work-ease);
+  text-wrap: pretty;
+}
+.canvas-description[data-active='true'] {
+  visibility: visible;
+  transform: translateY(0);
+}
+.canvas-detail .work-project-link {
+  white-space: nowrap;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .canvas-print:hover .canvas-print-arrow svg {
+    transform: translate(2px, -2px);
+  }
+  .canvas-controls button:not(:disabled):hover,
+  .canvas-project-picker button:hover {
+    background: hsl(var(--button-hover));
+    color: var(--work-ink);
+  }
+  .canvas-pager button:not(:disabled):hover .work-arrow-left {
+    transform: translateX(-2px);
+  }
+  .canvas-pager button:not(:disabled):hover .work-arrow-right {
+    transform: translateX(2px);
+  }
+}
+@media (hover: none), (pointer: coarse) {
+  .canvas-touch-move {
+    display: inline-flex;
+  }
+  .canvas-mouse-help {
+    display: none;
+  }
+  .canvas-touch-help {
+    display: inline;
+  }
+}
+@media (width < 700px) {
+  .canvas-stage {
+    height: 520px;
+  }
+  .canvas-ground {
+    inset: -80px -300px;
+  }
+  .canvas-caption {
+    min-height: 52px;
+  }
+  .canvas-name {
+    flex-direction: column;
+    gap: 2px;
+  }
+  .canvas-detail {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .canvas-project-picker button {
+    justify-content: center;
+    padding-inline: 7px;
+  }
+  .canvas-picker-number {
+    display: none;
+  }
+}
+@media (width < 370px) {
+  .canvas-position {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .canvas-stage {
+    height: 470px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .canvas-print {
+    transform: none !important;
+    scale: 1 !important;
+  }
+  .canvas-print-arrow svg {
+    transform: none !important;
+  }
+}

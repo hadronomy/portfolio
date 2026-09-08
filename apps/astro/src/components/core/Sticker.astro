@@ -223,12 +223,13 @@ const pad = Math.ceil(corner + size * 0.05);
 </div>
 
 <style>
-  /*
-    The reference's own curves, kept verbatim. Both overshoot past 1 — the hover
-    to 1.114, the press to 1.197 — so the corner springs past its resting angle
-    and settles back. No cubic-bezier can do that, and its absence is why this
-    read as mechanical however the durations were tuned.
-  */
+  /* One inherited crease keeps the face and underside on the same animation sample. */
+  @property --sticker-crease {
+    syntax: '<length-percentage>';
+    inherits: true;
+    initial-value: 0px;
+  }
+
   .sticker-slot {
     position: relative;
     width: var(--s);
@@ -328,6 +329,9 @@ const pad = Math.ceil(corner + size * 0.05);
 
     --start: calc(-1 * var(--p));
     --end: calc(100% + var(--p));
+    --sticker-crease: var(--start);
+
+    transition: --sticker-crease var(--peel-hover-easing);
 
     position: absolute;
     inset: 0;
@@ -410,79 +414,43 @@ const pad = Math.ceil(corner + size * 0.05);
 
   .sticker-main {
     clip-path: polygon(
-      var(--start) var(--start),
-      var(--end) var(--start),
-      var(--end) var(--end),
-      var(--start) var(--end)
-    );
-    transition: clip-path var(--peel-hover-easing);
-  }
-
-  .sticker:hover .sticker-main,
-  .sticker:focus-within .sticker-main {
-    clip-path: polygon(
-      var(--start) var(--peel-hover),
-      var(--end) var(--peel-hover),
+      var(--start) var(--sticker-crease),
+      var(--end) var(--sticker-crease),
       var(--end) var(--end),
       var(--start) var(--end)
     );
   }
 
-  .sticker:active .sticker-main,
-  .sticker[data-dragging] .sticker-main {
-    clip-path: polygon(
-      var(--start) var(--peel-active),
-      var(--end) var(--peel-active),
-      var(--end) var(--end),
-      var(--start) var(--end)
-    );
-    transition: clip-path var(--peel-easing);
+  .sticker:hover,
+  .sticker:focus-within {
+    --sticker-crease: var(--peel-hover);
+  }
+
+  .sticker:active,
+  .sticker[data-dragging] {
+    --sticker-crease: var(--peel-active);
+    transition: --sticker-crease var(--peel-easing);
   }
 
   /* ── Flap, and the shadow it throws ───────────────────────────────────── */
 
   /*
-    Mirrored and parked a full height above, so that as the clip band opens the
-    strip appears to hinge on the crease. `top` and the band are animated with
-    one easing so they cannot fall out of step.
+    Reflection moves the underside by twice the crease position. A one-pixel
+    overlap covers the antialiased seam between the two clipped layers.
   */
   .flap {
     position: absolute;
     left: 0;
-    top: calc(-100% - var(--p) - var(--p));
+    top: 0;
     width: 100%;
     height: 100%;
     clip-path: polygon(
       var(--start) var(--start),
       var(--end) var(--start),
-      var(--end) var(--start),
-      var(--start) var(--start)
+      var(--end) var(--sticker-crease),
+      var(--start) var(--sticker-crease)
     );
-    transform: scaleY(-1);
-    transition: all var(--peel-hover-easing);
-  }
-
-  .sticker:hover .flap,
-  .sticker:focus-within .flap {
-    clip-path: polygon(
-      var(--start) var(--start),
-      var(--end) var(--start),
-      var(--end) var(--peel-hover),
-      var(--start) var(--peel-hover)
-    );
-    top: calc(-100% + 2 * var(--peel-hover) - 1px);
-  }
-
-  .sticker:active .flap,
-  .sticker[data-dragging] .flap {
-    clip-path: polygon(
-      var(--start) var(--start),
-      var(--end) var(--start),
-      var(--end) var(--peel-active),
-      var(--start) var(--peel-active)
-    );
-    top: calc(-100% + 2 * var(--peel-active) - 1px);
-    transition: all var(--peel-easing);
+    transform: translateY(calc(-100% + 2 * var(--sticker-crease) - 1px)) scaleY(-1);
   }
 
   .sticker-main,
@@ -504,8 +472,9 @@ const pad = Math.ceil(corner + size * 0.05);
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .sticker-main,
-    .flap {
+    .sticker,
+    .sticker:active,
+    .sticker[data-dragging] {
       transition: none;
     }
   }

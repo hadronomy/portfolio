@@ -2,6 +2,7 @@
 
 import { motion } from 'motion/react';
 import * as React from 'react';
+import CursorHint from './CursorHint';
 
 /*
   The pointer. Not a follower any more — this replaces the native cursor, so
@@ -21,7 +22,7 @@ import * as React from 'react';
   growth, so it never reads as a bounce — it reads as weight.
 */
 
-type Variant = 'dot' | 'preview' | 'label';
+type Variant = 'dot' | 'preview' | 'label' | 'hint';
 
 const MORPH = { type: 'spring', stiffness: 400, damping: 30, mass: 1 } as const;
 
@@ -316,13 +317,13 @@ export default function Cursor() {
         return setVariant('preview');
       }
 
-      if (kind === 'label') {
+      if (kind === 'label' || kind === 'hint') {
         setLabel({
           text: target.getAttribute('data-cursor-label') ?? '',
           active: target.hasAttribute('data-cursor-active'),
           tint: target.getAttribute('data-cursor-tint') ?? '',
         });
-        return setVariant('label');
+        return setVariant(kind);
       }
 
       setVariant('dot');
@@ -381,7 +382,8 @@ export default function Cursor() {
 
   const isPreview = variant === 'preview';
   const isLabel = variant === 'label';
-  const isArrow = variant === 'dot';
+  const isHint = variant === 'hint';
+  const isArrow = variant === 'dot' || isHint;
 
   const size = isPreview
     ? pressed
@@ -413,7 +415,7 @@ export default function Cursor() {
     <div
       ref={root}
       aria-hidden="true"
-      className="pointer-events-none fixed top-0 left-0 z-[60] will-change-transform"
+      className="pointer-events-none fixed top-0 left-0 z-[2147483647] will-change-transform"
     >
       <motion.div
         animate={{ opacity: away ? 0 : 1 }}
@@ -519,6 +521,12 @@ export default function Cursor() {
           </motion.span>
         </motion.div>
 
+        <CursorHint
+          active={isHint}
+          text={label.text}
+          width={pill.width}
+          height={pill.height}
+        />
         <span
           ref={ghost}
           aria-hidden="true"
