@@ -8,9 +8,10 @@ import {
 import * as m from 'motion/react-m';
 import { type ReactNode, useId, useRef, useState } from 'react';
 import type { WorkProject } from '~/lib/work';
-import { CanvasDetails, CanvasIcon, CanvasToolbar } from './CanvasControls';
+import { CanvasDetails } from './CanvasControls';
 import CanvasPrint from './CanvasPrint';
 import { placePrints } from './canvas-layout';
+import { useCanvasGestures } from './use-canvas-gestures';
 import { useCanvasSession } from './use-canvas-session';
 import { useWorkCamera } from './use-work-camera';
 import './canvas.css';
@@ -32,7 +33,6 @@ function Canvas({ projects, terrain }: Props) {
   const [spread, setSpread] = useState(false);
   const [hovered, setHovered] = useState<number | null>(null);
   const [keyboard, setKeyboard] = useState(false);
-  const [touchPan, setTouchPan] = useState(false);
   const suppressClick = useRef(false);
   const drag = useDragControls();
   const reduced = useReducedMotion();
@@ -70,6 +70,32 @@ function Canvas({ projects, terrain }: Props) {
     else camera.focus(next, fromKeyboard, prints);
   }
 
+  function reset(fromKeyboard: boolean) {
+    setKeyboard(fromKeyboard);
+    camera.fit(fromKeyboard);
+  }
+
+  function toggleSpread(fromKeyboard: boolean) {
+    setSpread(!spread);
+    setKeyboard(fromKeyboard);
+    setHovered(null);
+    camera.fit(
+      fromKeyboard,
+      placePrints(projects.length, selectedIndex, !spread, null),
+    );
+  }
+
+  const gestures = useCanvasGestures(
+    camera,
+    suppressClick,
+    (direction) =>
+      choose(
+        (selectedIndex + direction + projects.length) % projects.length,
+        false,
+      ),
+    () => setKeyboard(false),
+  );
+
   return (
     <div
       className="work-canvas-layout"
@@ -84,11 +110,15 @@ function Canvas({ projects, terrain }: Props) {
         aria-describedby={helpId}
         // biome-ignore lint/a11y/noNoninteractiveTabindex: The canvas supports keyboard pan, zoom, and recentering.
         tabIndex={0}
-        data-touch-pan={touchPan}
         data-cursor="hint"
         data-cursor-label="Drag to explore"
-        style={{ touchAction: touchPan ? 'none' : 'pan-y' }}
+        style={{ touchAction: 'pan-y pinch-zoom' }}
+        onDoubleClick={(event) => {
+          if (!(event.target as Element).closest('button')) toggleSpread(false);
+        }}
+        onPointerUp={gestures.end}
         onPointerMove={(event) => {
+          gestures.move(event);
           if (
             keyboard &&
             event.pointerType === 'mouse' &&
@@ -98,11 +128,11 @@ function Canvas({ projects, terrain }: Props) {
         }}
         onPointerDown={(event) => {
           suppressClick.current = false;
-          if (
-            (event.pointerType === 'touch' && !touchPan) ||
-            (event.pointerType === 'mouse' && event.button !== 0)
-          )
+          if (event.pointerType === 'touch') {
+            gestures.start(event);
             return;
+          }
+          if (event.pointerType === 'mouse' && event.button !== 0) return;
           setKeyboard(false);
           setHovered(null);
           camera.x.stop();
@@ -111,6 +141,7 @@ function Canvas({ projects, terrain }: Props) {
           drag.start(event, { distanceThreshold: 7 });
         }}
         onPointerCancel={() => {
+          gestures.cancel();
           drag.cancel();
           camera.viewport.current?.removeAttribute('data-dragging');
         }}
@@ -125,13 +156,23 @@ function Canvas({ projects, terrain }: Props) {
         onKeyDown={(event) => {
           if (event.target !== event.currentTarget) return;
           const shifts: Record<string, [number, number]> = {
-            ArrowLeft: [100, 0],
-            ArrowRight: [-100, 0],
             ArrowUp: [0, 100],
             ArrowDown: [0, -100],
           };
           const shift = shifts[event.key];
-          if (shift) {
+          if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+            event.preventDefault();
+            choose(
+              (selectedIndex +
+                (event.key === 'ArrowRight' ? 1 : -1) +
+                projects.length) %
+                projects.length,
+              true,
+            );
+          } else if (event.key.toLowerCase() === 's') {
+            event.preventDefault();
+            toggleSpread(true);
+          } else if (shift) {
             event.preventDefault();
             setKeyboard(true);
             camera.move(
@@ -157,7 +198,6 @@ function Canvas({ projects, terrain }: Props) {
           ) {
             event.preventDefault();
             setKeyboard(true);
-            setTouchPan(false);
             camera.fit(true);
           }
         }}
@@ -176,7 +216,7 @@ function Canvas({ projects, terrain }: Props) {
             x: camera.x,
             y: camera.y,
             scale: camera.scale,
-            touchAction: touchPan ? 'none' : 'pan-y',
+            touchAction: 'pan-y pinch-zoom',
           }}
           drag
           dragListener={false}
@@ -206,74 +246,20 @@ function Canvas({ projects, terrain }: Props) {
           ))}
         </m.div>
       </section>
-      <CanvasToolbar
-        camera={camera}
-        viewportId={viewportId}
+      <p className="sr-only" id={helpId}>
+        Select a print or swipe horizontally to browse. Drag with a mouse to
+        explore. Pinch a trackpad to zoom. Left and right arrow keys select
+        projects. Press S to spread or gather prints. Press Home to reset the
+        view.
+      </p>
+      <CanvasDetails
+        projects={projects}
         selectedIndex={selectedIndex}
-        count={projects.length}
         onChoose={choose}
+        spread={spread}
+        onSpread={toggleSpread}
+        onReset={reset}
       />
-      <div className="canvas-below work-measure">
-        <div className="canvas-instructions">
-          <button
-            type="button"
-            className="canvas-touch-move"
-            aria-pressed={touchPan}
-            aria-controls={viewportId}
-            onClick={() => setTouchPan(!touchPan)}
-          >
-            <CanvasIcon kind="move" />
-            <span>Move</span>
-          </button>
-          <p className="work-caption" id={helpId}>
-            <span className="canvas-mouse-help">
-              Select a print to read about it. Drag to explore.
-            </span>
-            <span className="canvas-touch-help">
-              Tap a print to select it. Turn on Move to explore.
-            </span>
-            <span className="sr-only">
-              Focus the canvas to pan with arrow keys. Press Home to fit all
-              projects.
-            </span>
-          </p>
-          {
-            <button
-              type="button"
-              className="canvas-spread"
-              aria-expanded={spread}
-              aria-controls={viewportId}
-              onClick={(event) => {
-                setSpread(!spread);
-                setKeyboard(event.detail === 0);
-                camera.fit(
-                  event.detail === 0,
-                  placePrints(projects.length, selectedIndex, !spread, null),
-                );
-              }}
-            >
-              {spread ? 'Gather prints' : 'Spread prints'}
-              <svg
-                aria-hidden="true"
-                width="18"
-                height="18"
-                viewBox="0 0 20 20"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.4"
-              >
-                <path d="m4 5 7-1 2 11-7 1z" />
-                <path className="spread-leaf" d="m10 5 6 1-2 10-3-.5" />
-              </svg>
-            </button>
-          }
-        </div>
-        <CanvasDetails
-          projects={projects}
-          selectedIndex={selectedIndex}
-          onChoose={choose}
-        />
-      </div>
     </div>
   );
 }

@@ -116,9 +116,15 @@ The browser receives the paths without the generator.
 Stacks is the work presentation. Project records contain content and destinations;
 `canvas-layout.ts` owns the print positions. Additional projects form groups of four.
 Select a print to update its description and project link. Keep browsing on the canvas.
-Pan, zoom, fit, and Spread prints support exploration. On touch screens, preserve page
-scrolling until the visitor enables Move. Restore selection and camera position when
-visitors return from a project page.
+Keep controls in one compact caption with a linked title, summary, project count,
+and bare previous, next, spread, and reset icons. Cross-blur changed text with the
+same 2px blur as the copy and theme buttons. Keep the first caption visible.
+
+Horizontal touch swipes browse projects; vertical gestures scroll the page.
+Trackpad pinch zooms around the pointer. Touch pinch retains browser page zoom.
+Mouse dragging pans the canvas. Left and right arrow keys browse projects;
+S spreads or gathers prints, and Home resets the view. Keep button alternatives.
+Restore selection and camera position when visitors return from a project page.
 
 Keep the contours subordinate to the project captures. Use theme tokens and
 non-scaling strokes. The contour canvas supersedes the original halftone field.

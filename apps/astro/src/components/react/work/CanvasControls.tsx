@@ -1,152 +1,146 @@
 import type { WorkProject } from '~/lib/work';
-import type { useWorkCamera } from './use-work-camera';
-import { Arrow, ProjectLink } from './WorkShared';
-
-export function CanvasIcon({
-  kind,
-}: {
-  kind: 'plus' | 'minus' | 'fit' | 'move';
-}) {
-  return (
-    <svg
-      aria-hidden="true"
-      width="18"
-      height="18"
-      viewBox="0 0 20 20"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      {kind === 'plus' ? (
-        <path d="M4 10h12M10 4v12" />
-      ) : kind === 'minus' ? (
-        <path d="M4 10h12" />
-      ) : kind === 'fit' ? (
-        <path d="M7 3H3v4m10-4h4v4M3 13v4h4m10-4v4h-4" />
-      ) : (
-        <path d="M10 2v16M2 10h16M7 5l3-3 3 3M7 15l3 3 3-3M5 7l-3 3 3 3m10-6 3 3-3 3" />
-      )}
-    </svg>
-  );
-}
-
-export function CanvasToolbar({
-  camera,
-  viewportId,
-  selectedIndex,
-  count,
-  onChoose,
-}: {
-  camera: ReturnType<typeof useWorkCamera>;
-  viewportId: string;
-  selectedIndex: number;
-  count: number;
-  onChoose: (index: number, keyboard: boolean) => void;
-}) {
-  return (
-    <div className="canvas-controls work-measure">
-      <fieldset className="canvas-tools" aria-label="Canvas controls">
-        <button
-          type="button"
-          aria-label="Zoom out"
-          aria-controls={viewportId}
-          disabled={camera.zoom <= 0.1}
-          onClick={(event) => camera.zoomBy(1 / 1.2, event.detail === 0)}
-        >
-          <CanvasIcon kind="minus" />
-        </button>
-        <button
-          type="button"
-          className="canvas-fit"
-          aria-label="Fit all projects"
-          aria-controls={viewportId}
-          onClick={(event) => camera.fit(event.detail === 0)}
-        >
-          <CanvasIcon kind="fit" />
-          <span>{Math.round(camera.zoom * 100)}%</span>
-        </button>
-        <button
-          type="button"
-          aria-label="Zoom in"
-          aria-controls={viewportId}
-          disabled={camera.zoom >= 1.6}
-          onClick={(event) => camera.zoomBy(1.2, event.detail === 0)}
-        >
-          <CanvasIcon kind="plus" />
-        </button>
-      </fieldset>
-      <div className="canvas-pager">
-        <span className="canvas-position" aria-live="polite" aria-atomic="true">
-          <span className="sr-only">Project </span>
-          {selectedIndex + 1}
-          <span className="canvas-position-total"> / {count}</span>
-        </span>
-        <button
-          type="button"
-          aria-label="Previous project"
-          disabled={selectedIndex === 0}
-          onClick={(event) => onChoose(selectedIndex - 1, event.detail === 0)}
-        >
-          <Arrow direction="left" />
-        </button>
-        <button
-          type="button"
-          aria-label="Next project"
-          disabled={selectedIndex === count - 1}
-          onClick={(event) => onChoose(selectedIndex + 1, event.detail === 0)}
-        >
-          <Arrow direction="right" />
-        </button>
-      </div>
-    </div>
-  );
-}
+import { Arrow } from './WorkShared';
 
 export function CanvasDetails({
   projects,
   selectedIndex,
   onChoose,
+  spread,
+  onSpread,
+  onReset,
 }: {
   projects: readonly WorkProject[];
   selectedIndex: number;
   onChoose: (index: number, keyboard: boolean) => void;
+  spread: boolean;
+  onSpread: (keyboard: boolean) => void;
+  onReset: (keyboard: boolean) => void;
 }) {
-  const selected = projects[selectedIndex];
   return (
-    <>
-      {' '}
-      <fieldset className="canvas-project-picker" aria-label="Choose a project">
-        {projects.map((project, index) => (
-          <button
-            key={project.id}
-            type="button"
-            aria-pressed={index === selectedIndex}
-            onClick={(event) => onChoose(index, event.detail === 0)}
-          >
-            <span className="canvas-picker-number" aria-hidden="true">
-              {String(index + 1).padStart(2, '0')}
-            </span>
-            {project.title}
-          </button>
-        ))}
-      </fieldset>
-      <div className="canvas-detail">
-        <div className="canvas-description-stack">
-          {projects.map((project) => (
-            <p
+    <div className="canvas-below work-measure">
+      <div className="canvas-caption-head">
+        <div className="canvas-title-stack">
+          {projects.map((project, index) => (
+            <a
               key={project.id}
-              className="canvas-description"
-              data-active={project.id === selected.id}
-              aria-hidden={project.id !== selected.id}
+              href={project.href}
+              className="canvas-project-title t-panel-slide"
+              data-open={index === selectedIndex}
+              inert={index !== selectedIndex}
+              tabIndex={index === selectedIndex ? 0 : -1}
+              data-cursor="hint"
+              data-cursor-label={`Explore ${project.title}`}
             >
-              {project.summary}
-            </p>
+              {project.title}
+              <Arrow />
+            </a>
           ))}
         </div>
-        <ProjectLink project={selected} />
+        <div className="canvas-actions">
+          <button
+            type="button"
+            aria-label="Previous project"
+            onClick={(event) =>
+              onChoose(
+                (selectedIndex - 1 + projects.length) % projects.length,
+                event.detail === 0,
+              )
+            }
+          >
+            <Arrow direction="left" />
+          </button>
+          <span
+            className="canvas-position"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            <span className="sr-only">Project </span>
+            <span className="canvas-count-stack" aria-hidden="true">
+              {projects.map((project, index) => (
+                <span
+                  key={project.id}
+                  className="t-panel-slide"
+                  data-open={index === selectedIndex}
+                >
+                  {String(index + 1).padStart(2, '0')}
+                </span>
+              ))}
+            </span>
+            <span className="sr-only">{selectedIndex + 1}</span>
+            <span className="canvas-position-total">
+              {' '}
+              / {String(projects.length).padStart(2, '0')}
+            </span>
+          </span>
+          <button
+            type="button"
+            aria-label="Next project"
+            onClick={(event) =>
+              onChoose(
+                (selectedIndex + 1) % projects.length,
+                event.detail === 0,
+              )
+            }
+          >
+            <Arrow direction="right" />
+          </button>
+          <button
+            type="button"
+            className="canvas-spread"
+            aria-label={spread ? 'Gather prints' : 'Spread prints'}
+            aria-pressed={spread}
+            data-cursor="hint"
+            data-cursor-label={spread ? 'Gather prints' : 'Spread prints'}
+            onClick={(event) => onSpread(event.detail === 0)}
+          >
+            <svg
+              aria-hidden="true"
+              width="18"
+              height="18"
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.4"
+            >
+              <path d="m4 5 7-1 2 11-7 1z" />
+              <path className="spread-leaf" d="m10 5 6 1-2 10-3-.5" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            aria-label="Reset canvas"
+            data-cursor="hint"
+            data-cursor-label="Reset view"
+            onClick={(event) => onReset(event.detail === 0)}
+          >
+            <svg
+              aria-hidden="true"
+              width="16"
+              height="16"
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M4 7a6.5 6.5 0 1 1-.3 5M4 3v4h4" />
+            </svg>
+          </button>
+        </div>
       </div>
-    </>
+      <div className="canvas-description-stack">
+        {projects.map((project, index) => (
+          <p
+            key={project.id}
+            className="canvas-description t-panel-slide"
+            data-open={index === selectedIndex}
+            aria-hidden={index !== selectedIndex}
+          >
+            {project.summary}
+          </p>
+        ))}
+      </div>
+    </div>
   );
 }

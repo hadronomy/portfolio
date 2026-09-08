@@ -1,5 +1,5 @@
 import { animate, useMotionValue, useReducedMotion } from 'motion/react';
-import { useCallback, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useLayoutEffect, useRef } from 'react';
 import {
   compositionBounds,
   type PrintPlacement,
@@ -14,7 +14,6 @@ export function useWorkCamera(
   const x = useMotionValue(0);
   const y = useMotionValue(0);
   const scale = useMotionValue(1);
-  const [zoom, setZoom] = useState(1);
   const reduced = useReducedMotion();
   const initial = useRef({ placements, initialIndex });
   useLayoutEffect(() => {
@@ -27,7 +26,6 @@ export function useWorkCamera(
       y.stop();
       scale.stop();
       const target = Math.max(0.1, Math.min(1.6, next.scale));
-      setZoom(target);
       if (instant || reduced) {
         x.jump(next.x);
         y.jump(next.y);
@@ -133,5 +131,5 @@ export function useWorkCamera(
     };
   }, [move, x, y, scale]);
 
-  return { viewport, x, y, scale, zoom, move, fit, focus, zoomBy };
+  return { viewport, x, y, scale, move, fit, focus, zoomBy };
 }
