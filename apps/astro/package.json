@@ -9,7 +9,9 @@
     "fonts:download": "bun run scripts/fonts/download-pdf-fonts.mjs",
     "build": "astro check && astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "test:routing": "node --test tests/start-routing.test.mjs",
+    "test:dev": "node --test tests/start-dev.test.mjs"
   },
   "dependencies": {
     "@astrojs/check": "catalog:prod",
@@ -44,7 +46,11 @@
     "remark-math": "catalog:prod",
     "sharp": "catalog:prod",
     "sharp-ico": "catalog:prod",
-    "tailwindcss": "catalog:style"
+    "tailwindcss": "catalog:style",
+    "@portfolio/site-routing": "workspace:*",
+    "@astrojs/node": "11.1.5",
+    "@astrojs/vercel": "11.0.10",
+    "@astrojs/markdown-remark": "^7.3.0"
   },
   "devDependencies": {
     "@astrojs/language-server": "catalog:dev",

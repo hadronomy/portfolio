@@ -1,0 +1,134 @@
+@import '@fontsource-variable/inter';
+:root {
+  color-scheme: light;
+  --foreground: #171717;
+  --background: #fff;
+  --muted: #626262;
+  --border: #d8d8d8;
+  --field: #fafafa;
+  --button: #eaeaea;
+  --button-hover: #dedede;
+  font-family: 'Inter Variable', system-ui, sans-serif;
+  color: var(--foreground);
+  background: var(--background);
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.65;
+}
+.app-shell {
+  max-width: 672px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+header,
+footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+header {
+  margin-bottom: 64px;
+}
+a {
+  color: inherit;
+  text-underline-offset: 4px;
+}
+header a,
+footer a {
+  text-decoration: none;
+}
+h1 {
+  font-size: 28px;
+  line-height: 1.2;
+  font-weight: 500;
+  letter-spacing: -0.035em;
+}
+p,
+.counts,
+output span {
+  color: var(--muted);
+}
+label {
+  display: block;
+  margin: 28px 0 8px;
+}
+textarea {
+  display: block;
+  width: 100%;
+  resize: vertical;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  background: var(--field);
+  color: inherit;
+  font: inherit;
+}
+button {
+  min-height: 44px;
+  border: 0;
+  border-radius: 8px;
+  padding: 10px 16px;
+  background: var(--button);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+button:hover:not(:disabled) {
+  background: var(--button-hover);
+}
+button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+}
+output {
+  display: grid;
+  gap: 8px;
+  margin-top: 24px;
+}
+code {
+  overflow-wrap: anywhere;
+  font-size: 13px;
+}
+footer {
+  margin-top: 48px;
+  font-size: 13px;
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --foreground: #ededed;
+  --background: #0d0d0d;
+  --muted: #a6a6a6;
+  --border: #393939;
+  --field: #171717;
+  --button: #292929;
+  --button-hover: #353535;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --foreground: #ededed;
+    --background: #0d0d0d;
+    --muted: #a6a6a6;
+    --border: #393939;
+    --field: #171717;
+    --button: #292929;
+    --button-hover: #353535;
+  }
+}

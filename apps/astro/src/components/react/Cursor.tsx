@@ -378,7 +378,8 @@ export default function Cursor() {
     setPill({ width: Math.ceil(box.width), height: Math.ceil(box.height) });
   }, [label, enabled]);
 
-  if (!enabled) return null;
+  // The empty React element identifies this idle island before it has visible content.
+  if (!enabled) return <React.Fragment />;
 
   const isPreview = variant === 'preview';
   const isLabel = variant === 'label';

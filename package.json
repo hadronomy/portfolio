@@ -2,7 +2,7 @@
   "name": "@hadronomy/portfolio",
   "private": true,
   "engines": {
-    "node": ">=20.18.0"
+    "node": ">=22.12.0"
   },
   "packageManager": "bun@1.3.2",
   "scripts": {
@@ -12,7 +12,10 @@
     "lint:ws": "bunx sherif@latest",
     "ci": "bun biome check --write --no-errors-on-unmatched",
     "update:plan": "bun taze",
-    "update:write": "bun taze --write"
+    "update:write": "bun taze --write",
+    "dev": "bun run --cwd apps/astro dev",
+    "dev:stop": "bun run --cwd apps/astro astro dev stop",
+    "build": "turbo run build --filter=@portfolio/astro"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:lint",
@@ -79,11 +82,11 @@
         "turbo": "2.7.0"
       },
       "prod": {
-        "@astrojs/check": "^0.9.6",
-        "@astrojs/mdx": "^4.3.13",
-        "@astrojs/react": "^4.4.2",
-        "@astrojs/rss": "^4.0.14",
-        "@astrojs/sitemap": "^3.6.0",
+        "@astrojs/check": "^0.9.10",
+        "@astrojs/mdx": "^8.0.0",
+        "@astrojs/react": "^6.0.5",
+        "@astrojs/rss": "^4.0.19",
+        "@astrojs/sitemap": "^3.7.4",
         "@nextui-org/button": "2.2.9",
         "@radix-ui/react-avatar": "1.1.11",
         "@radix-ui/react-hover-card": "^1.1.15",
@@ -94,7 +97,7 @@
         "@signpdf/placeholder-plain": "^3.2.5",
         "@signpdf/signer-p12": "^3.2.4",
         "@signpdf/signpdf": "^3.2.5",
-        "astro": "^5.16.6",
+        "astro": "^7.3.1",
         "motion": "^12.23.26",
         "fumadocs-core": "^16.3.1",
         "fumadocs-ui": "^16.3.1",
@@ -132,5 +135,8 @@
         "clsx": "2.1.1"
       }
     }
+  },
+  "patchedDependencies": {
+    "@tanstack/router-generator@1.167.34": "patches/@tanstack%2Frouter-generator@1.167.34.patch"
   }
 }

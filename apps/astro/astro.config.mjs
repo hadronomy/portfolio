@@ -1,6 +1,9 @@
+import { unified } from '@astrojs/markdown-remark';
 import mdx from '@astrojs/mdx';
+import node from '@astrojs/node';
 import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
+import vercel from '@astrojs/vercel';
 import { rendererRich, transformerTwoslash } from '@shikijs/twoslash';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig, envField } from 'astro/config';
@@ -14,45 +17,49 @@ import rehypeKatex from 'rehype-katex';
 import remarkGemoji from 'remark-gemoji';
 import remarkMath from 'remark-math';
 import preserveDirectives from 'rollup-preserve-directives';
+import startIntegration from './integrations/start.mjs';
 
 import { rehypeMarkCodeBlocks } from './plugins/rehype-mark-code-blocks.mjs';
 
 export default defineConfig({
   site: 'https://hadronomy.com',
+  adapter: process.env.VERCEL ? vercel() : node({ mode: 'standalone' }),
   markdown: {
     syntaxHighlight: false,
-    remarkPlugins: [remarkGemoji, remarkMath],
-    rehypePlugins: [
-      rehypeAccessibleEmojis,
-      rehypeKatex,
-      [
-        rehypeCode,
-        {
-          themes: {
-            light: 'catppuccin-latte',
-            dark: 'catppuccin-mocha',
+    processor: unified({
+      remarkPlugins: [remarkGemoji, remarkMath],
+      rehypePlugins: [
+        rehypeAccessibleEmojis,
+        rehypeKatex,
+        [
+          rehypeCode,
+          {
+            themes: {
+              light: 'catppuccin-latte',
+              dark: 'catppuccin-mocha',
+            },
+            // fumadocs ships a per-language logo for its own React code block to
+            // consume. Nothing renders it here, and the palette is achromatic, so
+            // a brand-coloured mark would be the only hue on the page.
+            icon: false,
+            // Passing this key replaces fumadocs' defaults rather than extending
+            // them, so the notation transformers are re-listed here.
+            transformers: [
+              ...rehypeCodeDefaultOptions.transformers,
+              // Only blocks tagged ```ts twoslash pay the type-checking cost.
+              transformerTwoslash({
+                explicitTrigger: true,
+                // A `^?` query is meant to be read without hovering. The default
+                // renders it as a floating card injected mid-line, which splits
+                // the code around it; `line` gives it a row of its own.
+                renderer: rendererRich({ queryRendering: 'line' }),
+              }),
+            ],
           },
-          // fumadocs ships a per-language logo for its own React code block to
-          // consume. Nothing renders it here, and the palette is achromatic, so
-          // a brand-coloured mark would be the only hue on the page.
-          icon: false,
-          // Passing this key replaces fumadocs' defaults rather than extending
-          // them, so the notation transformers are re-listed here.
-          transformers: [
-            ...rehypeCodeDefaultOptions.transformers,
-            // Only blocks tagged ```ts twoslash pay the type-checking cost.
-            transformerTwoslash({
-              explicitTrigger: true,
-              // A `^?` query is meant to be read without hovering. The default
-              // renders it as a floating card injected mid-line, which splits
-              // the code around it; `line` gives it a row of its own.
-              renderer: rendererRich({ queryRendering: 'line' }),
-            }),
-          ],
-        },
+        ],
+        rehypeMarkCodeBlocks,
       ],
-      rehypeMarkCodeBlocks,
-    ],
+    }),
   },
   env: {
     schema: {
@@ -70,6 +77,9 @@ export default defineConfig({
     },
   },
   integrations: [
+    startIntegration(),
+    // MDX probes components by calling them. Let React claim components with hooks first.
+    react(),
     mdx(),
     sitemap(),
     // No `include`: astro-icon loads every installed `@iconify-json/*` pack
@@ -77,7 +87,6 @@ export default defineConfig({
     // already the set of collections. Listing them here as `['*']` restates it
     // and goes stale the moment one is added.
     icon(),
-    react(),
   ],
   vite: {
     plugins: [tailwindcss(), preserveDirectives()],

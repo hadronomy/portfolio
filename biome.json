@@ -1,6 +1,12 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.3.10/schema.json",
-  "assist": { "actions": { "source": { "organizeImports": "on" } } },
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  },
   "linter": {
     "enabled": true,
     "rules": {
@@ -52,6 +58,6 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "includes": ["**", "!**/*.astro"]
+    "includes": ["**", "!**/*.astro", "!**/routeTree.gen.ts"]
   }
 }

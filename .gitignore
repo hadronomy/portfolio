@@ -41,3 +41,6 @@ next-env.d.ts
 # turbo
 .turbo
 .astro
+# generated app routes
+apps/start/src/astro-routes.gen.json
+apps/start/.tanstack

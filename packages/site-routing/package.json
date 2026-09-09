@@ -1,0 +1,9 @@
+{
+  "name": "@portfolio/site-routing",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "scripts": {
+    "test": "node --experimental-strip-types --test src/*.test.ts"
+  }
+}
