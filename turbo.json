@@ -28,6 +28,8 @@
         "$TURBO_ROOT$/apps/start/vite.config.ts",
         "$TURBO_ROOT$/apps/start/tsconfig.json",
         "$TURBO_ROOT$/packages/site-routing/src/**",
+        "$TURBO_ROOT$/packages/invoices/**",
+        "!$TURBO_ROOT$/packages/invoices/node_modules/**",
         "!$TURBO_ROOT$/apps/start/src/astro-routes.gen.json",
         "!$TURBO_ROOT$/apps/start/src/routeTree.gen.ts"
       ],

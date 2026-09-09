@@ -44,3 +44,6 @@ next-env.d.ts
 # generated app routes
 apps/start/src/astro-routes.gen.json
 apps/start/.tanstack
+
+# Private local invoice database
+.invoice-data
