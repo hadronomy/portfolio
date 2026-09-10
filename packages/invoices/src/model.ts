@@ -14,6 +14,11 @@ export const RecordId = Schema.String.check(Schema.isUUID()).pipe(
 export type RecordId = typeof RecordId.Type;
 export const Language = Schema.Literals(['en', 'es']);
 export type Language = typeof Language.Type;
+export const Currency = Schema.Literals(['EUR', 'USD', 'GBP']);
+export type Currency = typeof Currency.Type;
+/** DID of the workspace owner. Store methods take it as the audit actor so anonymous strings never reach the audit log. */
+export const OwnerDid = Schema.String.pipe(Schema.brand('OwnerDid'));
+export type OwnerDid = typeof OwnerDid.Type;
 export const Party = Schema.Struct({
   name: Schema.String,
   taxId: Schema.String,
@@ -84,7 +89,7 @@ export interface Line extends Schema.Schema.Type<typeof Line> {}
 export const InvoiceData = Schema.Struct({
   kind: Schema.Literals(['invoice', 'rectification', 'proforma']),
   language: Language,
-  currency: Schema.Literals(['EUR', 'USD', 'GBP']),
+  currency: Currency,
   title: Schema.String,
   issuer: Issuer,
   customer: Party,
@@ -182,7 +187,7 @@ export class InvalidInvoice extends Schema.TaggedError<InvalidInvoice>()(
 ) {}
 export class MissingInvoice extends Schema.TaggedError<MissingInvoice>()(
   'MissingInvoice',
-  { id: Schema.String },
+  { id: Schema.Union([InvoiceId, RecordId]) },
 ) {}
 export class RevisionConflict extends Schema.TaggedError<RevisionConflict>()(
   'RevisionConflict',

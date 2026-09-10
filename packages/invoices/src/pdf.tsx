@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import type { CSSProperties } from 'react';
 import { render } from 'takumi-pdf';
 import { PageNumber, TotalPages } from 'takumi-pdf/primitives';
-import { calculate, formatMoney } from './calculate';
+import { calculate, formatMoney, type Totals } from './calculate';
 import bold from './fonts/DMSans-Bold.ttf?inline';
 import regular from './fonts/DMSans-Regular.ttf?inline';
 import { documentLabels } from './labels';
@@ -50,6 +50,17 @@ function Address({ party, label }: { party: Party; label: string }) {
   );
 }
 
+// Screen and print output only: this renderer makes no PDF/A or tagged-PDF
+// claim. Validate any conformance target with veraPDF against real invoices
+// before advertising it.
+function lineNet(lines: Totals['lines'], index: number, id: string): string {
+  const found = lines[index];
+  if (found === undefined || found.id !== id)
+    throw new Error('The printed line does not match the calculated totals.');
+  return found.net;
+}
+
+/** Renders the invoice document for preview, download, and print. */
 export function InvoiceDocument({
   invoice,
   language = invoice.data.language,
@@ -198,7 +209,9 @@ export function InvoiceDocument({
                   }).format(Number(line.quantity))}
                 </td>
                 <td style={amount}>{money(line.unitPrice)}</td>
-                <td style={amount}>{money(totals.lines[index].net)}</td>
+                <td style={amount}>
+                  {money(lineNet(totals.lines, index, line.id))}
+                </td>
               </tr>
             ),
           )}
@@ -349,6 +362,7 @@ export async function renderInvoice(
     ),
   });
 }
+/** SHA-256 hex of rendered bytes, used to skip duplicate artifact writes. */
 export function pdfDigest(bytes: Uint8Array): string {
   return createHash('sha256').update(bytes).digest('hex');
 }

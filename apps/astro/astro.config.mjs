@@ -91,6 +91,14 @@ export default defineConfig({
   vite: {
     plugins: [tailwindcss(), preserveDirectives()],
     ssr: {
+      // Keep in sync with apps/start/vite.config.ts: native-only modules the
+      // server runtime must not bundle.
+      external: [
+        'takumi-pdf',
+        '@electric-sql/pglite',
+        'pg',
+        '@atproto/oauth-client-node',
+      ],
       noExternal: ['fumadocs-ui'],
     },
     resolve: {

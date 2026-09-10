@@ -2,6 +2,7 @@ import Decimal from 'decimal.js';
 import { calculate } from './calculate';
 import type { InvoiceData } from './model';
 import { igicRates, repepLegend } from './tax-policy';
+/** One field-addressed issuance blocker. */
 export interface Issue {
   readonly path: string;
   readonly message: string;

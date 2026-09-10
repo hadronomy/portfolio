@@ -1,6 +1,8 @@
 /** IGIC rate values require a matching legal supply category. They are not inferred from item descriptions. */
 export const igicRates = ['0', '3', '5', '7', '9.5', '15', '20'] as const;
+/** Statutory exemption line required on REPEP invoices. */
 export const repepLegend = 'Exención franquicia fiscal';
+/** Official sources for the rates and regime above. */
 export const taxSources = {
   rates: 'https://www.boe.es/buscar/act.php?id=BOC-j-2025-90249',
   repep:

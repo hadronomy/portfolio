@@ -1,15 +1,34 @@
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { once } from 'node:events';
-import { mkdir, readFile, rename, unlink, writeFile } from 'node:fs/promises';
+import {
+  mkdir,
+  mkdtemp,
+  readFile,
+  rename,
+  rm,
+  unlink,
+  writeFile,
+} from 'node:fs/promises';
+import { createRequire } from 'node:module';
 import { createServer } from 'node:net';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { after, before, test } from 'node:test';
+import { pathToFileURL } from 'node:url';
 import { dev } from 'astro';
 
 const root = new URL('../', import.meta.url);
 const parentRoute = new URL('../start/src/routes/experiments.tsx', root);
 const routeTree = new URL('../start/src/routeTree.gen.ts', root);
 let server;
+let invoiceData;
+const invoiceEnvironment = Object.fromEntries(
+  ['INVOICE_DATA_DIRECTORY', 'DATABASE_URL', 'INVOICE_SECRET'].map((key) => [
+    key,
+    process.env[key],
+  ]),
+);
 let origin;
 let fixtureCreated = false;
 let portBlocker;
@@ -43,6 +62,10 @@ async function textTool() {
 }
 
 before(async () => {
+  invoiceData = await mkdtemp(join(tmpdir(), 'portfolio-auth-test-'));
+  process.env.INVOICE_DATA_DIRECTORY = invoiceData;
+  delete process.env.DATABASE_URL;
+  delete process.env.INVOICE_SECRET;
   portBlocker = createServer();
   await new Promise((resolve, reject) => {
     portBlocker.once('error', (error) =>
@@ -62,9 +85,108 @@ after(async () => {
   if (fixtureCreated) await unlink(parentRoute).catch(() => {});
   for (const file of fixtures) await unlink(file).catch(() => {});
   await server?.stop();
+  if (globalThis.invoiceRuntime)
+    await (await globalThis.invoiceRuntime).database.close();
+  delete globalThis.invoiceRuntime;
+  if (invoiceData) await rm(invoiceData, { recursive: true, force: true });
+  for (const [key, value] of Object.entries(invoiceEnvironment)) {
+    if (value === undefined) delete process.env[key];
+    else process.env[key] = value;
+  }
   console.error = originalConsoleError;
   if (portBlocker?.listening)
     await new Promise((resolve) => portBlocker.close(resolve));
+});
+
+test('invoice OAuth metadata uses the public origin through the development proxy', async () => {
+  const response = await fetch(`${origin}/invoices/auth/client-metadata.json`, {
+    headers: { 'x-forwarded-host': 'attacker.example' },
+  });
+  assert.equal(response.status, 200);
+  const metadata = await response.json();
+  assert.deepEqual(metadata.redirect_uris, [
+    `${origin}/invoices/auth/callback`,
+  ]);
+});
+
+test('invoice OAuth rejects an invalid callback with a readable response', async () => {
+  const response = await fetch(
+    `${origin}/invoices/auth/callback?state=invalid&iss=https%3A%2F%2Fbsky.social&code=invalid`,
+    {
+      headers: { cookie: 'invoice-login=invalid' },
+    },
+  );
+  assert.equal(response.status, 400);
+  assert.match(await response.text(), /Start again/);
+});
+
+test('invoice OAuth sets the session cookie and redirects after owner authentication', async (t) => {
+  const requireStart = createRequire(
+    new URL('../../start/package.json', import.meta.url),
+  );
+  const { NodeOAuthClient } = await import(
+    pathToFileURL(requireStart.resolve('@atproto/oauth-client-node')).href
+  );
+  t.mock.method(NodeOAuthClient.prototype, 'callback', async () => ({
+    session: { did: 'did:plc:tvgjv46t4ebxbrvekr2vrnls' },
+    state: 'test-browser-nonce',
+  }));
+  const response = await fetch(`${origin}/invoices/auth/callback?state=test`, {
+    headers: { cookie: 'invoice-login=test-browser-nonce' },
+    redirect: 'manual',
+  });
+  assert.equal(response.status, 303);
+  assert.equal(response.headers.get('location'), `${origin}/invoices`);
+  const cookies = response.headers.getSetCookie();
+  assert.ok(
+    cookies.some(
+      (cookie) =>
+        cookie.startsWith('invoice-login=') && /Max-Age=0/i.test(cookie),
+    ),
+  );
+  const session = cookies.find((cookie) =>
+    cookie.startsWith('invoice-session='),
+  );
+  assert.ok(session);
+  assert.match(session, /HttpOnly/i);
+  assert.match(session, /SameSite=Lax/i);
+  const workspace = await fetch(`${origin}/invoices`, {
+    headers: { cookie: session.split(';')[0] },
+  });
+  assert.equal(workspace.status, 200);
+  assert.match(await workspace.text(), /Invoice workspace/);
+});
+
+test('invoice OAuth refuses a different account without a browser session', async (t) => {
+  const requireStart = createRequire(
+    new URL('../../start/package.json', import.meta.url),
+  );
+  const { NodeOAuthClient } = await import(
+    pathToFileURL(requireStart.resolve('@atproto/oauth-client-node')).href
+  );
+  const otherDid = 'did:plc:other-account';
+  t.mock.method(NodeOAuthClient.prototype, 'callback', async () => ({
+    session: { did: otherDid },
+    state: 'test-browser-nonce',
+  }));
+  const revoke = t.mock.method(
+    NodeOAuthClient.prototype,
+    'revoke',
+    async () => {},
+  );
+  const response = await fetch(`${origin}/invoices/auth/callback?state=test`, {
+    headers: { cookie: 'invoice-login=test-browser-nonce' },
+    redirect: 'manual',
+  });
+  assert.equal(response.status, 403);
+  assert.match(await response.text(), /belongs to hadronomy.com/);
+  assert.equal(
+    response.headers
+      .getSetCookie()
+      .some((cookie) => cookie.startsWith('invoice-session=')),
+    false,
+  );
+  assert.equal(revoke.mock.calls[0].arguments[0], otherDid);
 });
 
 test('removing a Start parent keeps its child route working without a restart', async () => {

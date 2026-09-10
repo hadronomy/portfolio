@@ -1,6 +1,6 @@
-import { type Invoice, newInvoice, newLine } from './model';
+import { type Invoice, type Language, newInvoice, newLine } from './model';
 /** Synthetic records for renderer and calculation tests; they never enter the owner's database. */
-export function specimen(language: 'en' | 'es' = 'en', count = 3): Invoice {
+export function specimen(language: Language = 'en', count = 3): Invoice {
   const draft = newInvoice(undefined, new Date('2026-09-09T12:00:00Z'));
   return {
     ...draft,

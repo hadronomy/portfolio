@@ -9,38 +9,173 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as InvoicesRouteImport } from './routes/invoices'
 import { Route as ExperimentsTextRouteImport } from './routes/experiments/text'
+import { Route as InvoicesIndexRouteImport } from './routes/invoices.index'
+import { Route as InvoicesInvoiceIdRouteImport } from './routes/invoices.$invoiceId'
+import { Route as InvoicesCustomersRouteImport } from './routes/invoices.customers'
+import { Route as InvoicesItemsRouteImport } from './routes/invoices.items'
+import { Route as InvoicesSettingsRouteImport } from './routes/invoices.settings'
+import { Route as InvoicesAuthCallbackRouteImport } from './routes/invoices_.auth.callback'
+import { Route as InvoicesAuthClientMetadataDotjsonRouteImport } from './routes/invoices_.auth.client-metadata[.]json'
+import { Route as InvoicesAuthJwksDotjsonRouteImport } from './routes/invoices_.auth.jwks[.]json'
+import { Route as InvoicesPdfInvoiceIdRouteImport } from './routes/invoices_.pdf.$invoiceId'
 
+const InvoicesRoute = InvoicesRouteImport.update({
+  id: '/invoices',
+  path: '/invoices',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ExperimentsTextRoute = ExperimentsTextRouteImport.update({
   id: '/experiments/text',
   path: '/experiments/text',
   getParentRoute: () => rootRouteImport,
 } as any)
+const InvoicesIndexRoute = InvoicesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => InvoicesRoute,
+} as any)
+const InvoicesInvoiceIdRoute = InvoicesInvoiceIdRouteImport.update({
+  id: '/$invoiceId',
+  path: '/$invoiceId',
+  getParentRoute: () => InvoicesRoute,
+} as any)
+const InvoicesCustomersRoute = InvoicesCustomersRouteImport.update({
+  id: '/customers',
+  path: '/customers',
+  getParentRoute: () => InvoicesRoute,
+} as any)
+const InvoicesItemsRoute = InvoicesItemsRouteImport.update({
+  id: '/items',
+  path: '/items',
+  getParentRoute: () => InvoicesRoute,
+} as any)
+const InvoicesSettingsRoute = InvoicesSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => InvoicesRoute,
+} as any)
+const InvoicesAuthCallbackRoute = InvoicesAuthCallbackRouteImport.update({
+  id: '/invoices_/auth/callback',
+  path: '/invoices/auth/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InvoicesAuthClientMetadataDotjsonRoute =
+  InvoicesAuthClientMetadataDotjsonRouteImport.update({
+    id: '/invoices_/auth/client-metadata.json',
+    path: '/invoices/auth/client-metadata.json',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const InvoicesAuthJwksDotjsonRoute = InvoicesAuthJwksDotjsonRouteImport.update({
+  id: '/invoices_/auth/jwks.json',
+  path: '/invoices/auth/jwks.json',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InvoicesPdfInvoiceIdRoute = InvoicesPdfInvoiceIdRouteImport.update({
+  id: '/invoices_/pdf/$invoiceId',
+  path: '/invoices/pdf/$invoiceId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
+  '/invoices': typeof InvoicesRouteWithChildren
   '/experiments/text': typeof ExperimentsTextRoute
+  '/invoices/$invoiceId': typeof InvoicesInvoiceIdRoute
+  '/invoices/customers': typeof InvoicesCustomersRoute
+  '/invoices/items': typeof InvoicesItemsRoute
+  '/invoices/settings': typeof InvoicesSettingsRoute
+  '/invoices/': typeof InvoicesIndexRoute
+  '/invoices/auth/callback': typeof InvoicesAuthCallbackRoute
+  '/invoices/auth/client-metadata.json': typeof InvoicesAuthClientMetadataDotjsonRoute
+  '/invoices/auth/jwks.json': typeof InvoicesAuthJwksDotjsonRoute
+  '/invoices/pdf/$invoiceId': typeof InvoicesPdfInvoiceIdRoute
 }
 export interface FileRoutesByTo {
   '/experiments/text': typeof ExperimentsTextRoute
+  '/invoices/$invoiceId': typeof InvoicesInvoiceIdRoute
+  '/invoices/customers': typeof InvoicesCustomersRoute
+  '/invoices/items': typeof InvoicesItemsRoute
+  '/invoices/settings': typeof InvoicesSettingsRoute
+  '/invoices': typeof InvoicesIndexRoute
+  '/invoices/auth/callback': typeof InvoicesAuthCallbackRoute
+  '/invoices/auth/client-metadata.json': typeof InvoicesAuthClientMetadataDotjsonRoute
+  '/invoices/auth/jwks.json': typeof InvoicesAuthJwksDotjsonRoute
+  '/invoices/pdf/$invoiceId': typeof InvoicesPdfInvoiceIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/invoices': typeof InvoicesRouteWithChildren
   '/experiments/text': typeof ExperimentsTextRoute
+  '/invoices/$invoiceId': typeof InvoicesInvoiceIdRoute
+  '/invoices/customers': typeof InvoicesCustomersRoute
+  '/invoices/items': typeof InvoicesItemsRoute
+  '/invoices/settings': typeof InvoicesSettingsRoute
+  '/invoices/': typeof InvoicesIndexRoute
+  '/invoices_/auth/callback': typeof InvoicesAuthCallbackRoute
+  '/invoices_/auth/client-metadata.json': typeof InvoicesAuthClientMetadataDotjsonRoute
+  '/invoices_/auth/jwks.json': typeof InvoicesAuthJwksDotjsonRoute
+  '/invoices_/pdf/$invoiceId': typeof InvoicesPdfInvoiceIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/experiments/text'
+  fullPaths:
+    | '/invoices'
+    | '/experiments/text'
+    | '/invoices/$invoiceId'
+    | '/invoices/customers'
+    | '/invoices/items'
+    | '/invoices/settings'
+    | '/invoices/'
+    | '/invoices/auth/callback'
+    | '/invoices/auth/client-metadata.json'
+    | '/invoices/auth/jwks.json'
+    | '/invoices/pdf/$invoiceId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/experiments/text'
-  id: '__root__' | '/experiments/text'
+  to:
+    | '/experiments/text'
+    | '/invoices/$invoiceId'
+    | '/invoices/customers'
+    | '/invoices/items'
+    | '/invoices/settings'
+    | '/invoices'
+    | '/invoices/auth/callback'
+    | '/invoices/auth/client-metadata.json'
+    | '/invoices/auth/jwks.json'
+    | '/invoices/pdf/$invoiceId'
+  id:
+    | '__root__'
+    | '/invoices'
+    | '/experiments/text'
+    | '/invoices/$invoiceId'
+    | '/invoices/customers'
+    | '/invoices/items'
+    | '/invoices/settings'
+    | '/invoices/'
+    | '/invoices_/auth/callback'
+    | '/invoices_/auth/client-metadata.json'
+    | '/invoices_/auth/jwks.json'
+    | '/invoices_/pdf/$invoiceId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  InvoicesRoute: typeof InvoicesRouteWithChildren
   ExperimentsTextRoute: typeof ExperimentsTextRoute
+  InvoicesAuthCallbackRoute: typeof InvoicesAuthCallbackRoute
+  InvoicesAuthClientMetadataDotjsonRoute: typeof InvoicesAuthClientMetadataDotjsonRoute
+  InvoicesAuthJwksDotjsonRoute: typeof InvoicesAuthJwksDotjsonRoute
+  InvoicesPdfInvoiceIdRoute: typeof InvoicesPdfInvoiceIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/invoices': {
+      id: '/invoices'
+      path: '/invoices'
+      fullPath: '/invoices'
+      preLoaderRoute: typeof InvoicesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/experiments/text': {
       id: '/experiments/text'
       path: '/experiments/text'
@@ -48,11 +183,100 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ExperimentsTextRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/invoices/': {
+      id: '/invoices/'
+      path: '/'
+      fullPath: '/invoices/'
+      preLoaderRoute: typeof InvoicesIndexRouteImport
+      parentRoute: typeof InvoicesRoute
+    }
+    '/invoices/$invoiceId': {
+      id: '/invoices/$invoiceId'
+      path: '/$invoiceId'
+      fullPath: '/invoices/$invoiceId'
+      preLoaderRoute: typeof InvoicesInvoiceIdRouteImport
+      parentRoute: typeof InvoicesRoute
+    }
+    '/invoices/customers': {
+      id: '/invoices/customers'
+      path: '/customers'
+      fullPath: '/invoices/customers'
+      preLoaderRoute: typeof InvoicesCustomersRouteImport
+      parentRoute: typeof InvoicesRoute
+    }
+    '/invoices/items': {
+      id: '/invoices/items'
+      path: '/items'
+      fullPath: '/invoices/items'
+      preLoaderRoute: typeof InvoicesItemsRouteImport
+      parentRoute: typeof InvoicesRoute
+    }
+    '/invoices/settings': {
+      id: '/invoices/settings'
+      path: '/settings'
+      fullPath: '/invoices/settings'
+      preLoaderRoute: typeof InvoicesSettingsRouteImport
+      parentRoute: typeof InvoicesRoute
+    }
+    '/invoices_/auth/callback': {
+      id: '/invoices_/auth/callback'
+      path: '/invoices/auth/callback'
+      fullPath: '/invoices/auth/callback'
+      preLoaderRoute: typeof InvoicesAuthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/invoices_/auth/client-metadata.json': {
+      id: '/invoices_/auth/client-metadata.json'
+      path: '/invoices/auth/client-metadata.json'
+      fullPath: '/invoices/auth/client-metadata.json'
+      preLoaderRoute: typeof InvoicesAuthClientMetadataDotjsonRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/invoices_/auth/jwks.json': {
+      id: '/invoices_/auth/jwks.json'
+      path: '/invoices/auth/jwks.json'
+      fullPath: '/invoices/auth/jwks.json'
+      preLoaderRoute: typeof InvoicesAuthJwksDotjsonRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/invoices_/pdf/$invoiceId': {
+      id: '/invoices_/pdf/$invoiceId'
+      path: '/invoices/pdf/$invoiceId'
+      fullPath: '/invoices/pdf/$invoiceId'
+      preLoaderRoute: typeof InvoicesPdfInvoiceIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
+interface InvoicesRouteChildren {
+  InvoicesInvoiceIdRoute: typeof InvoicesInvoiceIdRoute
+  InvoicesCustomersRoute: typeof InvoicesCustomersRoute
+  InvoicesItemsRoute: typeof InvoicesItemsRoute
+  InvoicesSettingsRoute: typeof InvoicesSettingsRoute
+  InvoicesIndexRoute: typeof InvoicesIndexRoute
+}
+
+const InvoicesRouteChildren: InvoicesRouteChildren = {
+  InvoicesInvoiceIdRoute: InvoicesInvoiceIdRoute,
+  InvoicesCustomersRoute: InvoicesCustomersRoute,
+  InvoicesItemsRoute: InvoicesItemsRoute,
+  InvoicesSettingsRoute: InvoicesSettingsRoute,
+  InvoicesIndexRoute: InvoicesIndexRoute,
+}
+
+const InvoicesRouteWithChildren = InvoicesRoute._addFileChildren(
+  InvoicesRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
+  InvoicesRoute: InvoicesRouteWithChildren,
   ExperimentsTextRoute: ExperimentsTextRoute,
+  InvoicesAuthCallbackRoute: InvoicesAuthCallbackRoute,
+  InvoicesAuthClientMetadataDotjsonRoute:
+    InvoicesAuthClientMetadataDotjsonRoute,
+  InvoicesAuthJwksDotjsonRoute: InvoicesAuthJwksDotjsonRoute,
+  InvoicesPdfInvoiceIdRoute: InvoicesPdfInvoiceIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -1,4 +1,5 @@
 import type { Language } from './model';
+/** Document strings per language. Keys stay stable because the PDF renderer and tests read them by name. */
 export const documentLabels = {
   en: {
     invoice: 'Invoice',

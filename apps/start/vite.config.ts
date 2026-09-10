@@ -4,6 +4,16 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+  // Keep in sync with apps/astro/astro.config.mjs: native-only modules the
+  // server runtime must not bundle.
+  ssr: {
+    external: [
+      'takumi-pdf',
+      '@electric-sql/pglite',
+      'pg',
+      '@atproto/oauth-client-node',
+    ],
+  },
   base: '/_apps/',
   plugins: [
     tanstackStart({

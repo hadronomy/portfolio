@@ -4,6 +4,7 @@ import { drizzle as pglite } from 'drizzle-orm/pglite';
 import { Pool } from 'pg';
 import migration from './migrations/0001.sql?raw';
 import * as tables from './tables';
+/** Connection settings. Omit both fields for an in-memory database. */
 export interface DatabaseOptions {
   readonly url?: string;
   readonly directory?: string;
@@ -24,4 +25,5 @@ export async function openDatabase(options: DatabaseOptions = {}) {
     close: () => (client instanceof Pool ? client.end() : client.close()),
   };
 }
+/** Open handle and its matching close. */
 export type Database = Awaited<ReturnType<typeof openDatabase>>;

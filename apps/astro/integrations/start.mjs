@@ -42,6 +42,12 @@ export default function startIntegration() {
                   configure(proxy, options) {
                     options.target = startOrigin;
                     proxy.options.target = startOrigin;
+                    proxy.on('proxyReq', (outgoing, incoming) => {
+                      outgoing.setHeader(
+                        'x-forwarded-host',
+                        incoming.headers.host,
+                      );
+                    });
                   },
                   bypass(request) {
                     const pathname = decodeURI(
@@ -67,7 +73,7 @@ export default function startIntegration() {
                 const url = new URL(request.url);
                 const target = new URL(url.pathname + url.search, ${JSON.stringify(origin)});
                 const headers = new Headers(request.headers);
-                headers.set('host', url.host);
+                headers.set('x-forwarded-host', url.host);
                 return fetch(target, { method: request.method, headers,
                   body: request.method === 'GET' || request.method === 'HEAD' ? undefined : request.body,
                   duplex: 'half', redirect: 'manual', signal: request.signal });

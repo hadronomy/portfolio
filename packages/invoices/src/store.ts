@@ -13,6 +13,7 @@ import {
   type InvoiceId,
   MissingInvoice,
   newInvoice,
+  type OwnerDid,
   Payment,
   Preferences,
   RecordId,
@@ -22,11 +23,13 @@ import {
 import * as tables from './tables';
 import { issueErrors } from './validate';
 
+/** Failures a store method can return. Callers match on `_tag` to render field errors, reload on conflict, or retry on storage faults. */
 export type StoreError =
   | InvalidInvoice
   | MissingInvoice
   | RevisionConflict
   | StorageFailure;
+/** Everything the workspace UI needs in one snapshot: documents, directory entries, payments, and issuer defaults. */
 export interface Workspace {
   readonly invoices: readonly Invoice[];
   readonly customers: readonly Customer[];
@@ -34,45 +37,58 @@ export interface Workspace {
   readonly payments: readonly Payment[];
   readonly preferences: Preferences;
 }
+/** Persistent invoice workspace. Eleven methods cover documents, directory, payments, and preferences. */
 export interface StoreApi {
+  /** Reads the whole workspace snapshot for the UI. */
   readonly workspace: () => Effect.Effect<Workspace, StoreError>;
+  /** Invoices. */
   readonly save: (
     invoice: Invoice,
-    actor: string,
+    actor: OwnerDid,
   ) => Effect.Effect<Invoice, StoreError>;
+  /** Issues a draft. Retrying with the same idempotency key returns the first result. */
   readonly issue: (
     input: { id: InvoiceId; revision: number; key: string },
-    actor: string,
+    actor: OwnerDid,
   ) => Effect.Effect<Invoice, StoreError>;
+  /** Deletes a draft. Issued documents are kept. */
   readonly remove: (
     id: InvoiceId,
-    actor: string,
+    actor: OwnerDid,
   ) => Effect.Effect<void, StoreError>;
+  /** Directory. */
   readonly customer: (
     customer: Customer,
   ) => Effect.Effect<Customer, StoreError>;
   readonly item: (item: CatalogItem) => Effect.Effect<CatalogItem, StoreError>;
+  /** Removes a directory entry. Invoice snapshots keep their copied data. */
   readonly forget: (
     kind: 'customer' | 'item',
     id: RecordId,
   ) => Effect.Effect<void, StoreError>;
+  /** Replaces the issuer defaults used for new drafts. */
   readonly preferences: (
     preferences: Preferences,
   ) => Effect.Effect<Preferences, StoreError>;
+  /** Payments. */
   readonly payment: (
     payment: Payment,
-    actor: string,
+    actor: OwnerDid,
   ) => Effect.Effect<Payment, StoreError>;
+  /** Marks a payment reversed. Missing or already-reversed payments are no-ops. */
   readonly reversePayment: (
     id: RecordId,
-    actor: string,
+    actor: OwnerDid,
   ) => Effect.Effect<void, StoreError>;
+  /** Creates a rectifying draft with negated lines for an issued invoice. */
   readonly rectify: (
     id: InvoiceId,
-    actor: string,
+    actor: OwnerDid,
   ) => Effect.Effect<Invoice, StoreError>;
+  /** Reads one invoice by id. */
   readonly read: (id: InvoiceId) => Effect.Effect<Invoice, StoreError>;
 }
+/** Effect service tag for the invoice store. */
 export class InvoiceStore extends Context.Service<InvoiceStore, StoreApi>()(
   'InvoiceStore',
 ) {}
@@ -88,6 +104,7 @@ const invalid = (path: string, message: string) =>
   new InvalidInvoice({ issues: [{ path, message }] });
 const decodeInvoice = Schema.decodeUnknownSync(Invoice);
 
+/** Builds the store over an open database. The idempotency-key and revision-conflict paths below are load-bearing; keep their behavior. */
 export function makeStore({ db }: Database): StoreApi {
   const read = async (id: InvoiceId) => {
     const [row] = await db
@@ -227,6 +244,8 @@ export function makeStore({ db }: Database): StoreApi {
               set: { value: sql`${tables.sequences.value} + 1` },
             })
             .returning();
+          if (!sequence)
+            throw invalid('number', 'Could not allocate an invoice number.');
           if (sequence.lastDate > d.issueDate)
             throw invalid(
               'issueDate',
@@ -448,6 +467,7 @@ export function makeStore({ db }: Database): StoreApi {
   };
 }
 
+/** Serves the store with managed database open and close. */
 export const storeLayer = (options: DatabaseOptions) =>
   Layer.effect(
     InvoiceStore,

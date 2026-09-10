@@ -5,6 +5,7 @@ import {
   Outlet,
   redirect,
   Scripts,
+  useRouterState,
 } from '@tanstack/react-router';
 import stylesheet from '../styles.css?url';
 
@@ -41,19 +42,26 @@ export const Route = createRootRouteWithContext<{
 });
 
 function Document({ children }: { children: React.ReactNode }) {
+  const isInvoicesRoute = useRouterState({
+    select: (state) => state.location.pathname.startsWith('/invoices'),
+  });
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
       <body>
-        <div className="app-shell">
-          <header>
-            <a href="/">Pablo Hernández</a>
-            <a href="/experiments">Experiments</a>
-          </header>
-          <main>{children}</main>
-        </div>
+        {isInvoicesRoute ? (
+          children
+        ) : (
+          <div className="app-shell">
+            <header>
+              <a href="/">Pablo Hernández</a>
+              <a href="/experiments">Experiments</a>
+            </header>
+            <main>{children}</main>
+          </div>
+        )}
         <Scripts />
       </body>
     </html>

@@ -1,5 +1,13 @@
 import Decimal from 'decimal.js';
-import type { Adjustment, InvoiceData, Line, Payment } from './model';
+import type {
+  Adjustment,
+  Currency,
+  InvoiceData,
+  Language,
+  Line,
+  Payment,
+  RecordId,
+} from './model';
 
 const D = Decimal.clone({ precision: 40, rounding: Decimal.ROUND_HALF_UP });
 const money = (value: Decimal) => value.toDecimalPlaces(2).toFixed(2);
@@ -9,8 +17,9 @@ const allowance = (base: Decimal, adjustment: Adjustment) =>
   adjustment.kind === 'percent'
     ? base.mul(adjustment.value).div(100)
     : new D(adjustment.value);
+/** Per-line amounts after the document allowance and tax reconciliation. */
 export interface CalculatedLine {
-  readonly id: string;
+  readonly id: RecordId;
   readonly gross: string;
   readonly discount: string;
   readonly documentDiscount: string;
@@ -18,6 +27,7 @@ export interface CalculatedLine {
   readonly tax: string;
   readonly total: string;
 }
+/** Tax base and charged tax for one treatment/rate/reason combination. */
 export interface TaxGroup {
   readonly treatment: Line['tax']['treatment'];
   readonly rate: string;
@@ -25,6 +35,7 @@ export interface TaxGroup {
   readonly base: string;
   readonly tax: string;
 }
+/** Full invoice totals. Every amount is a decimal string rounded to cents. */
 export interface Totals {
   readonly lines: readonly CalculatedLine[];
   readonly groups: readonly TaxGroup[];
@@ -89,16 +100,18 @@ export function calculate(data: InvoiceData): Totals {
         group.rate === new D(line.tax.rate).toString() &&
         group.reason === line.tax.reason,
     );
+    const found = existing < 0 ? undefined : groups[existing];
     const group =
-      existing < 0
-        ? {
-            ...line.tax,
-            rate: new D(line.tax.rate).toString(),
-            base: '0.00',
-            tax: '0.00',
-          }
-        : groups[existing];
-    const nextBase = new D(group.base).plus(lines[index].net);
+      found ??
+      ({
+        ...line.tax,
+        rate: new D(line.tax.rate).toString(),
+        base: '0.00',
+        tax: '0.00',
+      } satisfies TaxGroup);
+    const current = lines[index];
+    if (current === undefined) return;
+    const nextBase = new D(group.base).plus(current.net);
     const next = {
       ...group,
       base: money(nextBase),
@@ -108,7 +121,7 @@ export function calculate(data: InvoiceData): Totals {
           : '0.00',
     };
     if (existing < 0) groups.push(next);
-    else groups[existing] = next;
+    else groups.splice(existing, 1, next);
   });
   groups.forEach((group) => {
     const members = data.lines.flatMap((line, index) =>
@@ -122,20 +135,19 @@ export function calculate(data: InvoiceData): Totals {
     );
     let allocatedTax = new D(0);
     members.forEach((index, position) => {
+      const current = lines[index];
+      if (current === undefined) return;
       const value =
         group.treatment !== 'taxable'
           ? new D(0)
           : position === members.length - 1
             ? new D(group.tax).minus(allocatedTax)
-            : new D(lines[index].net)
-                .mul(group.rate)
-                .div(100)
-                .toDecimalPlaces(2);
+            : new D(current.net).mul(group.rate).div(100).toDecimalPlaces(2);
       allocatedTax = allocatedTax.plus(value);
       lines[index] = {
-        ...lines[index],
+        ...current,
         tax: money(value),
-        total: money(new D(lines[index].net).plus(value)),
+        total: money(new D(current.net).plus(value)),
       };
     });
   });
@@ -147,11 +159,17 @@ export function calculate(data: InvoiceData): Totals {
       .map(({ net }) => net),
   );
   const withholdingBase = sum(
-    data.lines.flatMap((line, index) =>
-      line.withholding && line.kind !== 'note' && line.kind !== 'disbursement'
-        ? [lines[index].net]
-        : [],
-    ),
+    data.lines.flatMap((line, index) => {
+      const current = lines[index];
+      if (
+        !line.withholding ||
+        line.kind === 'note' ||
+        line.kind === 'disbursement' ||
+        current === undefined
+      )
+        return [];
+      return [current.net];
+    }),
   );
   const withholding = withholdingBase
     .mul(data.withholdingRate)
@@ -169,6 +187,7 @@ export function calculate(data: InvoiceData): Totals {
     total: money(net.plus(tax).minus(withholding).plus(disbursements)),
   };
 }
+/** Outstanding balance after subtracting active payments from the invoice total. */
 export function balance(total: string, payments: readonly Payment[]): string {
   return money(
     new D(total).minus(
@@ -180,10 +199,11 @@ export function balance(total: string, payments: readonly Payment[]): string {
     ),
   );
 }
+/** Formats a decimal amount with the invoice language and currency. Stays here so existing `calculate` import paths keep working. */
 export function formatMoney(
   amount: string,
-  language: 'en' | 'es',
-  currency = 'EUR',
+  language: Language,
+  currency: Currency = 'EUR',
 ): string {
   return new Intl.NumberFormat(language === 'es' ? 'es-ES' : 'en-IE', {
     style: 'currency',

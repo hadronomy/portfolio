@@ -6,6 +6,7 @@ import {
   timestamp,
   uuid,
 } from 'drizzle-orm/pg-core';
+/** Single-table definitions for invoices, sequences, directory records, artifacts, audit, and sessions. */
 export const invoices = pgTable('invoices', {
   id: uuid().primaryKey(),
   revision: integer().notNull(),
