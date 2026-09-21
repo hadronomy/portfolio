@@ -206,6 +206,41 @@ read what you wrote to `style` directly.
 **Fix.** Pass both keyframes: `animate(el, { transform: [from, to] }, spring)`.
 **Live:** `glideTo` in `Sticker.astro`.
 
+### Motion owns `transform`, so a `translate` written beside `x` is dropped
+
+**Symptom.** Two eyes that track correctly and mirror correctly, but sit off
+centre by half their own size. The numbers look plausible enough to pass review.
+**Cause.** The element declared `translateX: '-50%'` next to `x`. Motion builds
+the whole `transform` from its own keys, and `translateX` is not one of them, so
+it never reaches the element. Its `absolute top-1/2 left-1/2` then pins the
+element's top-left corner to the centre, not its middle.
+**Fix.** Fold the centring into `x` and `y` themselves — subtract half the
+element's own width and height inside the same transform that positions it.
+**Live:** `Eye` in `src/components/react/Presence.tsx`.
+
+### Grid centring falls back to `start` when the item is bigger than its area
+
+**Symptom.** A dot anchored to a zero-size point with `grid place-items-center`
+lands exactly 6px right and 6px down from where it should — half its own size.
+**Cause.** Overflow alignment. When a grid item is larger than its alignment
+container, `center` degrades to `start` rather than resolving to a negative
+offset, so the item is pinned by its top-left corner.
+**Fix.** Give the anchor a real size at least as large as the biggest thing it
+holds. It costs nothing when the anchor is absolutely positioned.
+**Live:** the 36px anchor in `Presence.tsx`, sized to the open dot.
+
+### Motion cannot interpolate a `box-shadow` containing `var()`
+
+**Symptom.** A ring passed as a MotionValue resolves to zero alpha at every
+size, which looks exactly like a ring that was never drawn.
+**Cause.** Motion parses `box-shadow` into components to interpolate it, and a
+`var()` in the colour slot does not survive that parse.
+**Fix.** Pass the shadow as a constant string and let CSS resolve the variable.
+If part of it has to animate, animate a bare number into a custom property and
+let CSS substitute that instead.
+**Live:** `RING` in `Presence.tsx`, a constant and deliberately not a
+MotionValue.
+
 ### Motion's drag is React-only
 
 The vanilla entry point has no equivalent. `drag`, `dragConstraints`,
@@ -302,6 +337,14 @@ being built was inspected.
    are reliable. Screenshots are not always available.
 6. **State which values you read, which you measured, and which you approximated.**
    Put it in the comment beside the value.
+7. **A real mouse over the page corrupts synthetic pointer measurements.** Any
+   test that dispatches `pointermove` competes with the trusted events the browser
+   is generating from the actual cursor, and the trusted ones win. One idle test
+   here reported a clean failure that was entirely this. Count `event.isTrusted`
+   alongside the measurement and treat a non-zero count as an invalid run.
+8. **Anything on a timer longer than about 15 seconds outlives the browser
+   tool's evaluate timeout.** Start the routine, park the result on `window`, and
+   read it back in a second call rather than waiting inside the first.
 
 ---
 
@@ -380,7 +423,7 @@ These are not negotiable.
 
 ## 7. Where things stand
 
-Four stacked PRs, each layered on the one before:
+Stacked PRs, each layered on the one before:
 
 | PR | Branch | Contents |
 | --- | --- | --- |
@@ -388,6 +431,10 @@ Four stacked PRs, each layered on the one before:
 | #127 | `t3code/core/tokens` | Core tokens and the theme toggle |
 | #128 | `t3code/core/homepage` | Homepage |
 | #130 | `t3code/core/blog` | Blog, 404, article typography, stickers, theme persistence, work gallery, ULL mark |
+| #131 | `t3code/core/design-notes` | This file |
+| #132 | `t3code/core/comments` | Comment rules across the codebase |
+| #133 | `t3code/core/deps` | Drop the packages nothing imports |
+| #134 | `t3code/core/presence` | The presence dot (section 8) |
 
 ### Outstanding
 
@@ -403,7 +450,82 @@ Four stacked PRs, each layered on the one before:
 - Inter and Geist Mono are explicitly allowed by the user's global instructions. Do
   not flag them as generic.
 - The signature artifact of this page is the peelable sticker row. Everything else
-  is calm on purpose. Do not add a second focal object.
-- Islands are deliberate and few: `Cursor` (`client:idle`, decorative) and
-  `WorkGallery` (`client:visible`). Everything else is Astro plus a small inline
-  script. Adding an island needs a reason a spring or a pointer event cannot cover.
+  is calm on purpose. Do not add a second focal object. The presence dot is the one
+  thing that reads like an exception, and section 8 sets out the terms it is held
+  to — read them before adding anything in the same spirit.
+- Islands are deliberate and few: `Cursor` (`client:idle`, decorative), `Presence`
+  (`client:idle`, enhances a dot the server already rendered) and `WorkGallery`
+  (`client:visible`). Everything else is Astro plus a small inline script. Adding an
+  island needs a reason a spring or a pointer event cannot cover.
+
+---
+
+## 8. The presence dot
+
+The green dot on the avatar opens into a small face when the pointer comes near
+it: two eyes that follow the pointer, a blink, a doze, and a squash under a
+press. It lives in `src/components/react/Presence.tsx`.
+
+It reads like a second focal object, and section 7 says not to add one. The
+resolution is that it is not one, and the rules below are what keep that true.
+If a change breaks one of them, it has stopped being a reactive detail and
+become a mascot — which is the thing the sticker row already is, and the page
+only gets one.
+
+### The terms
+
+1. **At rest it is the dot that was already there.** Same centre, same 12px,
+   same colour, same ring — verified as a zero-pixel offset from the static dot,
+   not as "close enough". A visitor who never moves a pointer must see the page
+   exactly as it was.
+2. **It never performs unprompted.** There is no idle showreel and no attract
+   loop. Every state it enters answers something the visitor did: moved the
+   pointer, pressed it, pressed `C`, or went still.
+3. **It never introduces a hue.** The body is the existing accent and the eyes
+   are `hsl(var(--background))` — the same punch-out the ring uses. The dot was
+   already the one exception to the achromatic palette. It does not get to widen
+   that exception.
+4. **No mouth, and no named emotions.** A rig with `happy` and `proud` states
+   needs a signal to drive them, and this page has none. Inventing feelings is
+   the same failure as inventing a project capture: see section 6.
+5. **It is not a control.** The element keeps `pointer-events: none` and the
+   press is hit-tested against the dot's own radius, so it can never swallow a
+   click meant for something underneath and never asks to be treated as a
+   button. It has no cursor affordance and goes nowhere.
+6. **The dot is content, not decoration.** Unlike `Cursor`, which renders
+   nothing when disabled, the server renders the real dot and this island only
+   covers it. Without a fine pointer, or under reduced motion, the island
+   renders nothing and leaves the original untouched — with no inline style on
+   it at all.
+
+### Dozing expresses the face, never the status
+
+Twenty seconds without pointer movement and the lids drop, the eyes lower and
+the body settles to 94%. It only does this **while the eyes are showing**.
+
+A closed dot is still reporting that somebody is here. Dimming or shrinking it
+would report the opposite, so the doze is deliberately invisible at rest and the
+timer does nothing when it fires against a closed dot. Verify this by parking a
+pointer far away and waiting past the idle window: the dot must still measure
+exactly 12px.
+
+### The eyes are on a sphere
+
+Screen position is `R·sin(angle)` and width is `cos(angle)`, so the far eye
+narrows as the head turns. That foreshortening is the entire illusion — without
+it the two capsules only slide sideways and it never reads as a ball.
+
+The reference sets the eyes at about 9.5% of body width. Copied literally that is
+3.4px here and reads as grit. Small features need optical over-sizing, so the
+ratio is opened up and the numbers are tuned rather than transcribed.
+
+### What was tried and dropped
+
+- **Watching the stickers.** The dot was to follow a sticker while it was
+  dragged. It cannot: the dot sits at document y≈130 and the first sticker at
+  y≈1522, so they never share a viewport and there is no scrolling mid-drag.
+  The idea was replaced by the `C` reaction, which has the proximity the sticker
+  never had — that shortcut is offered two lines under the dot.
+- **Fading the ring as it opens.** Tried, and reverted on the user's call: the
+  void reads as part of the object rather than as scaffolding for the small
+  state. Keep the ring at every size.

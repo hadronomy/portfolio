@@ -2,6 +2,7 @@
 import { Icon } from 'astro-icon/components';
 import Section from '~/components/core/Section.astro';
 import Shortcut from '~/components/core/Shortcut.astro';
+import Presence from '~/components/react/Presence';
 import { profile } from '~/lib/profile';
 ---
 
@@ -19,10 +20,17 @@ import { profile } from '~/lib/profile';
       {/*
         The ring is drawn in the page background rather than white so the dot
         reads as punched out of the avatar in both themes.
+
+        This is the dot. `Presence` covers it with a version that can look
+        around, and hides this one while it does — so the status the dot
+        reports never depends on an island mounting.
       */}
       <span
+        id="presence-dot"
         class="absolute -right-0.5 -bottom-0.5 size-3 rounded-pill bg-[rgb(22,191,94)] ring-2 ring-background"
         aria-hidden="true"></span>
+
+      <Presence client:idle />
     </div>
 
     <div class="flex flex-col">

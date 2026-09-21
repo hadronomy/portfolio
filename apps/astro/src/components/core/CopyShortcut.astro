@@ -32,6 +32,11 @@ import { profile } from '~/lib/profile';
       toast.dataset.visible = '';
       window.clearTimeout(hideTimer);
       hideTimer = window.setTimeout(() => delete toast.dataset.visible, 2000);
+
+      // The toast is pinned to the bottom of the window, and the shortcut is
+      // offered at the top next to the avatar. Anything up there that wants to
+      // acknowledge the copy listens for this rather than watching the toast.
+      document.dispatchEvent(new CustomEvent('email-copied'));
     };
 
     document.addEventListener('keydown', (event) => {
