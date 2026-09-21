@@ -41,6 +41,10 @@
     --ring: 0 0% 7.1% / 0.1;
     --nav-item: 0 0% 100%;
     --cursor: 0 0% 5.1% / 0.15;
+    /* The darkened core of the pointer, where the system arrow is solid black.
+       A black tint in both themes: it composites over --cursor rather than
+       replacing it, so lightening it would read as lighter, not darker. */
+    --cursor-core: 0 0% 0% / 0.28;
     --shortcut: 0 0% 94.1%;
     --shortcut-shadow: 0 0% 85.1%;
     /*
@@ -72,6 +76,7 @@
     --ring: 0 0% 100% / 0.1;
     --nav-item: 0 0% 12.2%;
     --cursor: 0 0% 100% / 0.3;
+    --cursor-core: 0 0% 0% / 0.34;
     --shortcut: 0 0% 14.9%;
     /* The shortcut shadow drops out entirely in dark rather than darkening. */
     --shortcut-shadow: 0 0% 70.2% / 0;
@@ -107,9 +112,32 @@
     --content-width: 640px;
     --measure: 608px;
 
-    --font-sans: 'Inter Variable', system-ui, sans-serif;
+    --font-sans: 'Inter Variable', 'Inter Fallback', system-ui, sans-serif;
     --font-mono: 'Geist Mono Variable', ui-monospace, monospace;
   }
+}
+
+/*
+  A fallback cut to Inter's metrics.
+
+  Until Inter arrives the page is set in whatever `system-ui` resolves to, whose
+  letters are a different size and sit on a different baseline. When the real
+  face lands every line re-measures and the document changes height — 76px on
+  the home page, arriving around 77ms, which is squarely inside any entrance
+  animation and reads as the page lurching.
+
+  Overriding the fallback's ascent, descent and scale makes it occupy the space
+  Inter will occupy, so the swap changes the shapes and not the layout. `Arial`
+  rather than `system-ui` because the override has to be measured against one
+  known face, and `system-ui` is a different font on every platform.
+*/
+@font-face {
+  font-family: 'Inter Fallback';
+  src: local('Arial');
+  ascent-override: 90.2%;
+  descent-override: 22.48%;
+  line-gap-override: 0%;
+  size-adjust: 107.4%;
 }
 
 @layer base {
@@ -119,6 +147,92 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased overflow-x-hidden;
+  }
+
+  /*
+    The custom pointer draws the arrow itself, so the system one would be a
+    second cursor on the screen.
+
+    The class is added by that component and only once it has decided it will
+    render, so no JavaScript, a coarse pointer or reduced motion all keep the
+    system cursor untouched. `!important` because the rules being overridden —
+    a link's `pointer`, the sticker's `grab` — are more specific than anything
+    that can be written from the root.
+  */
+  html.cursor-hidden,
+  html.cursor-hidden * {
+    cursor: none !important;
+  }
+
+  /*
+    Page entry.
+
+    Every block of the page arrives soft and slightly low and resolves sharp —
+    transitions.dev's texts-reveal, at 560ms with the blocks 80ms apart. The
+    recipe's own 500 and 40 are tuned for two lines of a headline; across nine
+    blocks a 40ms cascade is over before it reads as one, and 80ms is the top
+    of the useful range before a page stops arriving and starts queueing. The
+    travel and blur are up from the token defaults for the same reason: a
+    section is a far larger object than a line of text, and the same distance
+    across it reads as less movement.
+
+    Driven by an animation rather than a transition out of `@starting-style`,
+    which is what the prototype used. A transition needs `filter: blur(0)` left
+    declared at rest, and any filter other than `none` makes an element a
+    stacking context *and* a containing block for fixed descendants — nine
+    sections would quietly reparent anything positioned against the viewport
+    inside them. An animation with `backwards` holds the opening frame through
+    its own delay and then leaves nothing behind at all.
+
+    Nothing is gated on script. The keyframe has only a `from`, so the state
+    being animated towards is the element's own: if the animation never runs,
+    the page is simply the page.
+
+    Only the first three blocks are above the fold, so what is felt is the
+    header, the intro and the work row — three beats, the last landing around
+    800ms. The rest inherit the rhythm with nobody watching.
+  */
+  @keyframes page-entry {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+      filter: blur(4px);
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    body > header,
+    main > *,
+    body > footer {
+      animation: page-entry 560ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+    }
+
+    main > *:nth-child(1) { animation-delay: 80ms; }
+    main > *:nth-child(2) { animation-delay: 160ms; }
+    main > *:nth-child(3) { animation-delay: 240ms; }
+    main > *:nth-child(4) { animation-delay: 320ms; }
+    main > *:nth-child(5) { animation-delay: 400ms; }
+    main > *:nth-child(6) { animation-delay: 480ms; }
+    main > *:nth-child(7) { animation-delay: 560ms; }
+    body > footer { animation-delay: 640ms; }
+  }
+
+  /*
+    The label the pointer becomes. Glass like the arrow, and carrying the same
+    green as the presence dot it answers for, so the two read as one idea
+    rather than as a tooltip that happens to be nearby.
+  */
+  .cursor-pill {
+    /* Mixed from whatever the hovered trigger is reporting, so the label wears
+       the colour of the thing it describes rather than a fixed green. */
+    background: color-mix(
+      in srgb,
+      var(--cursor-tint, rgb(22, 191, 94)) 14%,
+      transparent
+    );
+    box-shadow:
+      inset 0 0 0 1px rgb(255 255 255 / 0.22),
+      0 2px 10px rgb(0 0 0 / 0.18);
   }
 
   /* 

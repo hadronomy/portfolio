@@ -51,8 +51,17 @@ const {
 
     <CopyShortcut />
 
-    {/* Decorative, so it waits for an idle moment rather than blocking the
-        first paint on react + motion. */}
-    <Cursor client:idle />
+    {/*
+      Decorative, so it waits for an idle moment rather than blocking the first
+      paint on react + motion.
+
+      Persisted across navigations. Without it the island is inside the body
+      being swapped, so it unmounts — taking the follower out of the document
+      and running the cleanup that gives the system cursor back — and a fresh
+      one mounts needing two render passes to undo both. That gap is a frame of
+      no custom cursor and a frame of the real one. Persisting also keeps the
+      follower's position, so it does not re-enter from wherever it last was.
+    */}
+    <Cursor client:idle transition:persist />
   </body>
 </html>
