@@ -1,0 +1,155 @@
+---
+import Layout from '~/layouts/Layout.astro';
+import { demoProjects } from '~/lib/work-demos';
+import type { WorkProject } from '~/lib/work';
+
+export function getStaticPaths() {
+  return demoProjects.map((project, index) => ({
+    params: { id: project.id },
+    props: { project, next: demoProjects[(index + 1) % demoProjects.length] },
+  }));
+}
+
+interface Props {
+  project: WorkProject;
+  next: WorkProject;
+}
+const { project, next } = Astro.props;
+const back = '/work/stacks/#work';
+---
+
+<Layout title={`${project.title} — Demo project`} description={project.summary} {back}>
+  <article class="project-study">
+    <div class="study-intro">
+      <p class="study-note">Demo project / {project.category} / {project.year}</p>
+      <h1>{project.title}</h1>
+      <p class="study-summary">{project.summary}</p>
+    </div>
+    <figure>
+      <img
+        src={project.cover.src}
+        alt={project.cover.alt}
+        width={project.cover.width}
+        height={project.cover.height}
+      />
+      <figcaption>Concept artwork for this demo collection.</figcaption>
+    </figure>
+    <div class="study-body">
+      <h2>A place for the story.</h2>
+      <p>
+        This sample project shows the complete journey from a work card to a project page. The name,
+        artwork, and description are placeholders.
+      </p>
+      <p>
+        A real project can tell its story here: the problem, the choices behind the work, and the
+        result.
+      </p>
+      <a href={back}>Back to all work <span aria-hidden="true">↗</span></a>
+    </div>
+    <a class="study-next" href={next.href}
+      ><span>Next demo project</span><strong>{next.title}</strong><span aria-hidden="true">↗</span
+      ></a
+    >
+  </article>
+</Layout>
+
+<style>
+  .project-study {
+    --study-muted: color-mix(in srgb, hsl(var(--foreground)) 64%, hsl(var(--background)));
+    width: min(100%, 960px);
+    margin-inline: auto;
+    padding: 16px 24px 40px;
+  }
+  .study-intro,
+  .study-body {
+    max-width: 608px;
+    margin-inline: auto;
+  }
+  .study-note,
+  figcaption,
+  .study-next > span {
+    color: var(--study-muted);
+    font-size: 12px;
+    line-height: 1.6;
+  }
+  h1 {
+    font-size: clamp(56px, 10vw, 104px);
+    line-height: 1.1;
+    font-weight: 500;
+    letter-spacing: -0.07em;
+    margin: 20px 0;
+  }
+  .study-summary {
+    max-width: 440px;
+    font-size: 18px;
+    line-height: 1.6;
+    color: var(--study-muted);
+  }
+  figure {
+    margin: 44px 0 56px;
+  }
+  figure img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+  }
+  figcaption {
+    margin-top: 12px;
+  }
+  h2 {
+    font-size: 26px;
+    font-weight: 500;
+    letter-spacing: -0.04em;
+    margin-bottom: 18px;
+  }
+  .study-body p {
+    font-size: 16px;
+    line-height: 1.7;
+    color: var(--study-muted);
+    margin-bottom: 16px;
+  }
+  .study-body a {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    gap: 18px;
+    font-size: 14px;
+    margin-top: 12px;
+  }
+  .study-next {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 8px 24px;
+    margin-top: 70px;
+    padding: 28px;
+    border-radius: 10px;
+    background: hsl(var(--foreground) / 0.045);
+  }
+  .study-next > span:first-child {
+    grid-column: 1 / -1;
+  }
+  .study-next strong {
+    font-size: 40px;
+    font-weight: 500;
+    letter-spacing: -0.05em;
+  }
+  .study-next > span:last-child {
+    font-size: 28px;
+  }
+  a:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 5px;
+  }
+  @media (width < 600px) {
+    .project-study {
+      padding-inline: 16px;
+    }
+    .study-summary {
+      font-size: 16px;
+    }
+    figure {
+      margin-block: 30px 40px;
+    }
+  }
+</style>
