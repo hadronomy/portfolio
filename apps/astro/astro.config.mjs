@@ -57,16 +57,6 @@ export default defineConfig({
   env: {
     schema: {
       GITHUB_TOKEN: envField.string({ context: 'server', access: 'secret' }),
-      CERTIFICATE_P12: envField.string({
-        context: 'server',
-        access: 'secret',
-        optional: true,
-      }),
-      CERTIFICATE_PASSWORD: envField.string({
-        context: 'server',
-        access: 'secret',
-        optional: true,
-      }),
     },
   },
   integrations: [
@@ -81,8 +71,12 @@ export default defineConfig({
   ],
   vite: {
     plugins: [tailwindcss(), preserveDirectives()],
+    optimizeDeps: {
+      exclude: ['takumi-pdf', 'takumi-js'],
+    },
     ssr: {
       noExternal: ['fumadocs-ui'],
+      external: ['takumi-pdf', 'takumi-js'],
     },
     resolve: {
       // Motion pulls React in through its own pre-bundled copy in dev, which

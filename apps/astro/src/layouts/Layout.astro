@@ -1,6 +1,7 @@
 ---
 import CopyShortcut from '~/components/core/CopyShortcut.astro';
 import Header from '~/components/core/Header.astro';
+import PrintCV from '~/components/core/PrintCV.astro';
 import ScrollBlur from '~/components/core/ScrollBlur.astro';
 import Signature from '~/components/core/Signature.astro';
 import Metadata from '~/components/Metadata.astro';
@@ -8,6 +9,7 @@ import Cursor from '~/components/react/Cursor';
 import { SITE_DESCRIPTION, SITE_TITLE } from '~/consts';
 
 interface Props {
+  printCV?: boolean;
   title?: string;
   description?: string;
   /** Renders the header as a back link to this path instead of the clock row. */
@@ -19,6 +21,7 @@ interface Props {
 }
 
 const {
+  printCV = false,
   title = SITE_TITLE,
   description = SITE_DESCRIPTION,
   back,
@@ -63,5 +66,6 @@ const {
       follower's position, so it does not re-enter from wherever it last was.
     */}
     <Cursor client:idle transition:persist />
+    {printCV && <PrintCV />}
   </body>
 </html>
