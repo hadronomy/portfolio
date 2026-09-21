@@ -1,0 +1,138 @@
+---
+import { Icon } from 'astro-icon/components';
+import IconSwap from '~/components/IconSwap.astro';
+
+interface Props {
+  /** Literal text to copy. Use this or `from`, never both. */
+  value?: string;
+  /**
+   * Selector for the element whose text to copy, resolved against the button's
+   * own parent. Read at click time, so it follows content that changes.
+   */
+  from?: string;
+  /** Selectors removed from the copied clone before its text is read. */
+  strip?: string;
+  label?: string;
+  copiedLabel?: string;
+  /** How long the check stays up, in ms. */
+  resetMs?: number;
+  /** Placement and anything else the caller wants; the look is already here. */
+  class?: string;
+}
+
+const {
+  value,
+  from,
+  strip,
+  label = 'Copy',
+  copiedLabel = 'Copied',
+  resetMs = 1600,
+  class: className,
+} = Astro.props;
+
+if ((value === undefined) === (from === undefined)) {
+  throw new Error('CopyButton needs exactly one of `value` or `from`.');
+}
+---
+
+{/*
+  Copy-to-clipboard with the icon swap that confirms it.
+
+  Everything the handler needs rides on the element, so one delegated listener
+  serves every button on the page however many there are, and a caller adds one
+  by writing markup rather than by wiring anything up.
+
+  The look lives here because it is the same button wherever it appears; only
+  placement is passed in. That also avoids two `transition-*` utilities
+  fighting over `transition-property`, which resolves by stylesheet order
+  rather than by the order the classes are written.
+*/}
+<button
+  type="button"
+  class:list={[
+    'grid size-8 place-items-center rounded-[8px] border border-border bg-button text-muted-foreground transition-[opacity,background-color,color] hover:bg-button-hover hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
+    className,
+  ]}
+  aria-label={label}
+  data-copy
+  data-copy-value={value}
+  data-copy-from={from}
+  data-copy-strip={strip}
+  data-copy-label={label}
+  data-copied-label={copiedLabel}
+  data-copy-reset={resetMs}
+>
+  <IconSwap>
+    <Icon slot="a" name="tabler:copy" class="size-4" />
+    <Icon slot="b" name="tabler:check" class="size-4" />
+  </IconSwap>
+</button>
+
+<script>
+  /** Reset timers, per button, so a second click cannot cut the first short. */
+  const timers = new WeakMap<HTMLElement, number>();
+
+  const textFor = (button: HTMLElement): string | null => {
+    const literal = button.dataset.copyValue;
+    if (literal !== undefined) return literal;
+
+    const selector = button.dataset.copyFrom;
+    const source = selector
+      ? button.parentElement?.querySelector(selector)
+      : null;
+    if (!source) return null;
+
+    /*
+      Read from a clone, because `strip` exists to drop things that are inside
+      the source but are not part of what the reader means to copy — a code
+      block's type popups sit in the markup between the tokens, so their text
+      would otherwise land in the middle of every copied line.
+    */
+    const clone = source.cloneNode(true) as HTMLElement;
+    const strip = button.dataset.copyStrip;
+    if (strip) for (const noise of clone.querySelectorAll(strip)) noise.remove();
+
+    return clone.textContent ?? '';
+  };
+
+  document.addEventListener('click', async (event) => {
+    const button = (event.target as Element | null)?.closest<HTMLElement>(
+      '[data-copy]',
+    );
+    if (!button) return;
+
+    const text = textFor(button);
+    if (text === null) return;
+
+    /*
+      A denied clipboard rejects here — a policy that blocks it, a browser
+      wanting a permission this call cannot ask for. Unguarded, the rejection
+      takes the rest of the handler with it, so the button gives no feedback at
+      all and leaves an unhandled rejection behind.
+
+      The check is a claim that the text was copied, so it stays on the copy
+      icon when that claim would be false.
+    */
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      return;
+    }
+
+    // `b` is the check. The transition is entirely CSS — this only moves the
+    // state the stylesheet keys off.
+    const swap = button.querySelector<HTMLElement>('.t-icon-swap');
+    if (swap) swap.dataset.state = 'b';
+    button.setAttribute('aria-label', button.dataset.copiedLabel ?? 'Copied');
+
+    window.clearTimeout(timers.get(button));
+    timers.set(
+      button,
+      window.setTimeout(() => {
+        if (swap) swap.dataset.state = 'a';
+        button.setAttribute('aria-label', button.dataset.copyLabel ?? 'Copy');
+        timers.delete(button);
+      }, Number(button.dataset.copyReset) || 1600),
+    );
+  });
+</script>
