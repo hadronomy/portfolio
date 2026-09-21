@@ -10,14 +10,27 @@ import { SITE_DESCRIPTION, SITE_TITLE } from '~/consts';
 interface Props {
   title?: string;
   description?: string;
+  /** Renders the header as a back link to this path instead of the clock row. */
+  back?: string;
+  /** Social card image. Defaults to the site-wide one inside Metadata. */
+  image?: string;
+  publishedTime?: string;
+  type?: 'website' | 'article';
 }
 
-const { title = SITE_TITLE, description = SITE_DESCRIPTION } = Astro.props;
+const {
+  title = SITE_TITLE,
+  description = SITE_DESCRIPTION,
+  back,
+  image,
+  publishedTime,
+  type,
+} = Astro.props;
 ---
 
 <html lang="en" class="antialiased">
   <head>
-    <Metadata title={title} description={description} />
+    <Metadata {title} {description} {image} {publishedTime} {type} />
   </head>
 
   <body
@@ -25,7 +38,7 @@ const { title = SITE_TITLE, description = SITE_DESCRIPTION } = Astro.props;
   >
     {/* One centred column, no chrome — Core carries navigation in the page
         itself rather than in a bar. */}
-    <Header />
+    <Header {back} />
 
     {/* 40px between sections, measured off the reference render — the canvas
         reports a zero gap here and puts the spacing somewhere it does not

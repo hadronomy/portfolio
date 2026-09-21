@@ -1,16 +1,20 @@
 ---
-import { Icon } from 'astro-icon/components';
 import Overline from '~/components/core/Overline.astro';
 import Section from '~/components/core/Section.astro';
+import WorkGallery from '~/components/react/WorkGallery';
 
 /*
-  Four placeholder panels carrying Core's Work Image geometry exactly: 300x248
-  at 12px radius, a white mat, and the picture inset at 6px — a print in a
-  frame rather than a bare screenshot. The mat is white in both themes because
-  Core hardcodes it, and it is what makes the group read as objects lit against
-  the canvas instead of holes cut out of it.
+  Four placeholder panels carrying Core's Work Image geometry: 300x248 at 12px
+  radius, a white mat with the picture inset at 5px — a print in a frame rather
+  than a bare screenshot.
 
-  Dropping a real capture in means replacing the inner div and nothing else.
+  The scatter is measured off the reference render. The canvas reports zero
+  rotation on all four, which the published page plainly contradicts, so the
+  angles here come from the pixels and are marked as such.
+
+  Give a panel an `href` and it becomes a link with the reveal arrow. Until
+  then it is deliberately inert — an arrow on a placeholder is a control that
+  does nothing.
 */
 const panels = [
   { rotate: -9, x: -420, y: 26, z: 10 },
@@ -35,28 +39,9 @@ const panels = [
     <div class="work-canvas pointer-events-none absolute inset-0 opacity-20" aria-hidden="true">
     </div>
 
-    <div
-      class="absolute inset-0 flex scale-[0.55] items-center justify-center tablet:scale-100"
-    >
-      {
-        panels.map((panel) => (
-          <div
-            class="work-panel group absolute h-[248px] w-[300px] rounded-[12px] bg-white p-2"
-            style={`transform: translate(${panel.x}px, ${panel.y}px) rotate(${panel.rotate}deg); z-index: ${panel.z};`}
-          >
-            <div class="grid h-full w-full place-items-center rounded-[6px] bg-[rgb(232,232,232)]">
-              <span class="type-overline text-[rgb(150,150,150)]">—</span>
-            </div>
-
-            {/* Core reveals an icon button on hover rather than moving the
-                card; the panel itself never shifts. */}
-            <span class="pointer-events-none absolute right-4 bottom-4 grid size-8 place-items-center rounded-pill bg-[rgb(18,18,18)] text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-              <Icon name="tabler:arrow-up-right" class="size-4" />
-            </span>
-          </div>
-        ))
-      }
-    </div>
+    {/* Hydrates only once the section is close, since none of it means
+        anything until there is a pointer over it. */}
+    <WorkGallery panels={panels} client:visible />
   </div>
 </div>
 
@@ -82,17 +67,47 @@ const panels = [
     background-size: 7.2px 7.2px;
   }
 
-  /* A tight, directional cast rather than an all-round bloom, so the panels
-     sit on the canvas instead of glowing above it. */
-  .work-panel {
+  /*
+    A tight, directional cast rather than an all-round bloom, so the panels sit
+    on the canvas instead of glowing above it.
+
+    `:global` because the panels are rendered by the island, and Astro scopes a
+    component's styles with an attribute the island's own markup never carries.
+    The class name is specific enough to leave global.
+
+    The shadow deepens on hover in CSS rather than through the spring: animating
+    `box-shadow` repaints every frame while a transform does not, and it is the
+    one property here that would rather not be a motion value. Keying it to
+    `:hover` also means it still answers on a device that gets no lift.
+  */
+  :global(.work-panel) {
     box-shadow:
       0 1px 1px rgb(0 0 0 / 0.04),
       0 8px 24px rgb(0 0 0 / 0.12);
+    transition: box-shadow 260ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
-  :global(.dark) .work-panel {
+  :global(.work-panel:hover) {
+    box-shadow:
+      0 2px 3px rgb(0 0 0 / 0.06),
+      0 18px 44px rgb(0 0 0 / 0.2);
+  }
+
+  :global(.dark .work-panel) {
     box-shadow:
       0 1px 1px rgb(0 0 0 / 0.3),
       0 12px 32px rgb(0 0 0 / 0.55);
+  }
+
+  :global(.dark .work-panel:hover) {
+    box-shadow:
+      0 2px 4px rgb(0 0 0 / 0.4),
+      0 22px 56px rgb(0 0 0 / 0.7);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(.work-panel) {
+      transition: none;
+    }
   }
 </style>

@@ -1,25 +1,10 @@
 ---
-import { Icon } from 'astro-icon/components';
-import { getCollection } from 'astro:content';
 import Overline from '~/components/core/Overline.astro';
-import Row from '~/components/core/Row.astro';
 import Section from '~/components/core/Section.astro';
+import WritingList from '~/components/core/WritingList.astro';
+import { getPosts } from '~/lib/posts';
 
-const posts = (
-  await getCollection('blog', ({ data }) => data.state === 'published')
-)
-  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
-  .slice(0, 5);
-
-const shortDate = new Intl.DateTimeFormat('en-GB', {
-  day: '2-digit',
-  month: '2-digit',
-  year: '2-digit',
-});
-
-/** Core shows whole minutes; 200 wpm is the usual reading-speed assumption. */
-const readingMinutes = (body: string | undefined) =>
-  Math.max(1, Math.round((body?.trim().split(/\s+/).length ?? 0) / 200));
+const posts = (await getPosts()).slice(0, 5);
 ---
 
 {/* The section is omitted entirely rather than rendered empty — a Writing
@@ -31,26 +16,7 @@ const readingMinutes = (body: string | undefined) =>
         <Overline>Writing</Overline>
       </Section>
 
-      <ul class="flex w-full flex-col">
-        {posts.map((post) => (
-          <li>
-            <Row href={`/blog/${post.id}`}>
-              <span class="type-overline w-20 shrink-0 text-muted-foreground opacity-70 tablet:w-32">
-                {shortDate.format(post.data.pubDate)}
-              </span>
-
-              <span class="type-body flex-1 text-foreground">
-                {post.data.title}
-              </span>
-
-              <span class="type-overline flex shrink-0 items-center gap-1.5 text-muted-foreground">
-                <Icon name="tabler:clock" class="size-3.5" />
-                {readingMinutes(post.body)} m
-              </span>
-            </Row>
-          </li>
-        ))}
-      </ul>
+      <WritingList {posts} />
     </div>
   )
 }

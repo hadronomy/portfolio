@@ -1,0 +1,38 @@
+---
+import { Icon } from 'astro-icon/components';
+import Row from '~/components/core/Row.astro';
+import { type Post, readingMinutes, shortDate } from '~/lib/posts';
+
+interface Props {
+  posts: Post[];
+}
+
+const { posts } = Astro.props;
+---
+
+{/*
+  Full width rather than inside a Section, because Row bleeds its hover fill to
+  the viewport edges while keeping the text on the 640px column.
+*/}
+<ul class="flex w-full flex-col">
+  {
+    posts.map((post) => (
+      <li>
+        <Row href={`/blog/${post.id}`}>
+          <span class="type-overline w-20 shrink-0 text-muted-foreground opacity-70 tablet:w-32">
+            {shortDate.format(post.data.pubDate)}
+          </span>
+
+          <span class="type-body flex-1 text-foreground">
+            {post.data.title}
+          </span>
+
+          <span class="type-overline flex shrink-0 items-center gap-1.5 text-muted-foreground">
+            <Icon name="tabler:clock" class="size-3.5" />
+            {readingMinutes(post.body)} m
+          </span>
+        </Row>
+      </li>
+    ))
+  }
+</ul>

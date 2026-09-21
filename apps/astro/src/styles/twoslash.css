@@ -1,46 +1,33 @@
-/* ===== Basic ===== */
-:root {
-  --twoslash-border-color: #8888;
-  --twoslash-underline-color: currentColor;
-  --twoslash-highlighted-border: #c37d0d50;
-  --twoslash-highlighted-bg: #c37d0d20;
-  --twoslash-popup-bg: #f8f8f8;
-  --twoslash-popup-color: inherit;
-  --twoslash-popup-shadow: rgba(0, 0, 0, 0.08) 0px 1px 4px;
-  --twoslash-docs-color: #888;
-  --twoslash-docs-font: sans-serif;
-  --twoslash-code-font: inherit;
-  --twoslash-code-font-size: 1em;
-  --twoslash-matched-color: inherit;
-  --twoslash-unmatched-color: #888;
-  --twoslash-cursor-color: #8888;
-  --twoslash-error-color: #d45656;
-  --twoslash-error-bg: #d4565620;
-  --twoslash-warn-color: #c37d0d;
-  --twoslash-warn-bg: #c37d0d20;
-  --twoslash-tag-color: #3772cf;
-  --twoslash-tag-bg: #3772cf20;
-  --twoslash-tag-warn-color: var(--twoslash-warn-color);
-  --twoslash-tag-warn-bg: var(--twoslash-warn-bg);
-  --twoslash-tag-annotate-color: #1ba673;
-  --twoslash-tag-annotate-bg: #1ba67320;
-}
+/*
+  @shikijs/twoslash's rich renderer, with its chrome driven by the Core tokens
+  instead of the hexes it ships. One block covers both themes now that the
+  values resolve through the palette.
 
-.dark {
-  --twoslash-border-color: #8888;
-  --twoslash-underline-color: currentColor;
+  The diagnostic colours are the exception and stay hard-coded: the palette is
+  achromatic on purpose, but an error that reads as ordinary grey text is not a
+  design decision, it is a broken affordance.
+*/
+:root {
+  --twoslash-border-color: hsl(var(--border));
+  --twoslash-underline-color: hsl(var(--muted-foreground) / 0.4);
   --twoslash-highlighted-border: #c37d0d50;
   --twoslash-highlighted-bg: #c37d0d20;
-  --twoslash-popup-bg: #1a1a1a;
-  --twoslash-popup-color: inherit;
-  --twoslash-popup-shadow: rgba(0, 0, 0, 0.08) 0px 1px 4px;
-  --twoslash-docs-color: #888;
-  --twoslash-docs-font: sans-serif;
-  --twoslash-code-font: inherit;
-  --twoslash-code-font-size: 1em;
-  --twoslash-matched-color: inherit;
-  --twoslash-unmatched-color: #888;
-  --twoslash-cursor-color: #8888;
+  /*
+    The page background, not a surface: the card floats over a block already
+    filled with `inset`, so it has to move away from that value in whichever
+    direction the theme allows — lighter in light, darker in dark.
+  */
+  --twoslash-popup-bg: hsl(var(--background));
+  --twoslash-popup-color: hsl(var(--foreground));
+  /* One short directional cast, not a halo around the whole card. */
+  --twoslash-popup-shadow: 0 4px 10px -4px hsl(0 0% 0% / 0.3);
+  --twoslash-docs-color: hsl(var(--muted-foreground));
+  --twoslash-docs-font: var(--font-sans);
+  --twoslash-code-font: var(--font-mono);
+  --twoslash-code-font-size: 0.92em;
+  --twoslash-matched-color: hsl(var(--foreground));
+  --twoslash-unmatched-color: hsl(var(--muted-foreground));
+  --twoslash-cursor-color: hsl(var(--muted-foreground));
   --twoslash-error-color: #d45656;
   --twoslash-error-bg: #d4565620;
   --twoslash-warn-color: #c37d0d;

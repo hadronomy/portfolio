@@ -1,79 +1,48 @@
 ---
-import { getCollection } from 'astro:content';
-import BlogPostCard from '~/components/BlogPostCard.astro';
-import MainLayout from '~/layouts/Main.astro';
+import Overline from '~/components/core/Overline.astro';
+import Section from '~/components/core/Section.astro';
+import WritingList from '~/components/core/WritingList.astro';
+import CoreLayout from '~/layouts/Core.astro';
+import { getPosts } from '~/lib/posts';
 
-import { Penflow } from 'penflow/react';
-
-const posts = (await getCollection('blog'))
-  .filter(
-    (post) => post.data.state === 'published'
-  )
-  .sort(
-  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
-);
-
-// Sidebar for Blog Index could be simple links or filters in the future
-// For now we just show a "Directory" active state
-const blogSidebar = [
-  { label: '>> Directory Root', id: 'directory' },
-  { label: 'Latest Logs', id: 'latest' },
-  { label: 'Archive', id: 'archive' },
-];
+const posts = await getPosts();
 ---
 
-<MainLayout sidebarItems={blogSidebar} title="Blog | Archive">
-  
-  <!-- Header Section -->
-  <div id="directory" class="p-8 md:p-12 border-b border-white/20 bg-white/5">
-    <div class="flex items-center gap-3 mb-4">
-      <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-      <span class="font-mono text-xs text-green-500 tracking-widest uppercase">Database Connected</span>
+<CoreLayout
+  title="Writing | Pablo Hernández"
+  description="Notes on the things I build and the things that break."
+  back="/"
+>
+  {/*
+    Core has no index page for its writing route — the list lives on the home
+    page and under each post. This is the same list given a page of its own, so
+    the kicker row and the rows below it are the components that already exist.
+  */}
+  <Section gap={24}>
+    <div class="flex items-baseline justify-between gap-4">
+      <Overline>Writing</Overline>
+      {/* One expression, not two either side of a space — Astro drops the
+          literal whitespace between them. */}
+      <Overline>
+        {`${posts.length} ${posts.length === 1 ? 'note' : 'notes'}`}
+      </Overline>
     </div>
-    
-    <h1 class="text-4xl md:text-6xl font-black uppercase tracking-tighter mb-4">
-      Engineering<br/>Logs
+
+    <h1 class="type-h1 text-foreground">
+      Notes on the things I build, and the things that break.
     </h1>
-    
-    <p class="font-mono text-sm text-muted-foreground max-w-xl border-l-2 border-white/20 pl-4">
-      Documentation of experiments, technical breakdowns, and development notes. All records are immutable.
-    </p>
-  </div>
+  </Section>
 
-  <!-- Filter Bar (Visual only for now) -->
-  <div class="w-full flex border-b border-white/20 font-mono text-xs uppercase tracking-widest sticky top-0 z-40 bg-background/90 backdrop-blur-md">
-    <div class="px-6 py-3 border-r border-white/20 bg-white text-black font-bold">All Logs</div>
-    <div class="px-6 py-3 border-r border-white/20 text-muted-foreground hover:bg-white/5 cursor-pointer">DevLogs</div>
-    <div class="px-6 py-3 border-r border-white/20 text-muted-foreground hover:bg-white/5 cursor-pointer">Tutorials</div>
-    <div class="flex-1"></div>
-    <div class="px-6 py-3 flex items-center gap-2 text-muted-foreground">
-      <span>{posts.length} Records Found</span>
-    </div>
-  </div>
-
-  <!-- Post Grid -->
-  { posts.length > 0 && (
-      <div id="latest" class="p-6 md:p-8 flex flex-col gap-4 min-h-[50vh]">
-        {
-          posts.map((post, index) => (
-            <BlogPostCard post={post} index={index} />
-          ))
-        }
-      </div>
-    )
-  }
   {
-    posts.length === 0 && (
-      <div class="flex flex-col items-center justify-center min-h-[30vh] p-8 text-center text-muted-foreground gap-4">
-        <Penflow client:only className="h-30" size={50} color="white" text="Pablo Hernández J." fontUrl="/fonts/BrittanySignature.ttf" />
-        <p class="font-mono text-sm">Posts are underway.</p>
-      </div>
+    posts.length > 0 ? (
+      <WritingList {posts} />
+    ) : (
+      <Section>
+        <p class="type-body text-muted-foreground">
+          Nothing published yet. The feed is live, so it will show up there
+          first.
+        </p>
+      </Section>
     )
   }
-
-  <!-- Archive Section Placeholder -->
-  <div id="archive" class="p-8 border-t border-white/20 mt-auto opacity-50">
-    <span class="font-mono text-xs uppercase tracking-widest">End of Records</span>
-  </div>
-
-</MainLayout>
+</CoreLayout>

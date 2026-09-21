@@ -1,0 +1,140 @@
+---
+title: 'Typography specimen'
+description: 'Every element the article layout has to handle, on one page, so the type can be judged against itself rather than one post at a time.'
+pubDate: 2026-08-07
+heroImage: './images/blog-placeholder-1.jpg'
+state: 'draft'
+---
+
+This post is a test fixture. It stays a draft forever, so it renders under
+`astro dev` and never reaches the build, the feed or the sitemap. Its job is to
+put every element the layout has to handle on one page — dense on purpose,
+because spacing problems only show up when blocks sit next to each other.
+
+The running text is 16/24 in `muted-foreground`. Anything that raises its voice
+moves to `foreground`, and that single move carries the hierarchy. Read down the
+page and check that the greys stay consistent, that nothing collides, and that
+both themes hold.
+
+# A first-level heading
+
+The post title above is already the document's `h1`, so a post should never open
+a second one. This is here because the layout still has to style the case, and a
+specimen that skips a case is not a specimen.
+
+## A second-level heading
+
+Second-level headings open a passage. They take 48px above and 16px below, so
+they bind to the text under them instead of floating between two blocks. This
+paragraph exists to prove the binding.
+
+A second paragraph, to show the 20px that separates two blocks of running text
+from each other. It should read as a smaller gap than the one above the heading
+— if it does not, the rhythm is wrong.
+
+### A third-level heading
+
+Third-level headings sit inside a passage rather than opening one, so they take
+40px above. Some **bold text** for the weight and colour shift, some *italic
+text*, an [inline link](/blog) to check the underline offset, and some
+`inline code` to check that the chip does not push the line height around.
+
+#### A fourth-level heading
+
+Core has eight text styles and no size between body and the third-level
+heading. Rather than invent a ninth, this level takes the kicker treatment — the
+one place the design uses mono.
+
+## Lists
+
+An unordered list, one level deep and then nested:
+
+- A first item, long enough to wrap onto a second line so the hanging indent can
+  be checked against the marker column.
+- A second item.
+  - A nested item, which changes marker.
+  - Another nested item.
+- A third item.
+
+An ordered list, for steps that have an order:
+
+1. Read the values out of the design file.
+2. Only measure pixels when the file does not carry the answer.
+3. Say which of the two you did.
+
+## Quotes
+
+> A quote is a tonal panel rather than a left rule. `surface` is the same two
+> percent lift the writing rows use on hover, so the page has one idea of a
+> raised surface instead of two.
+>
+> The italic is switched off deliberately. Inter's variable italic is a
+> synthesised oblique and sets badly at body size.
+
+## Code
+
+A plain block with a title and line numbers:
+
+```css title="tokens.css" lineNumbers
+:root {
+  --background: 0 0% 100%;
+  --foreground: 0 0% 7.1%;
+  --muted-foreground: 0 0% 49.4%;
+}
+```
+
+A type-checked block. Hover any identifier for its type; the `^?` query pins one
+open:
+
+```ts twoslash
+type Post = { body?: string };
+
+/** Whole minutes at 200 wpm, which is what the writing rows show. */
+function readingMinutes(post: Post): number {
+  const words = post.body?.trim().split(/\s+/).length ?? 0;
+  return Math.max(1, Math.round(words / 200));
+}
+
+const minutes = readingMinutes({ body: 'one two three four five' });
+//    ^?
+```
+
+Press <kbd>C</kbd> anywhere on the site to copy my email — the key cap here is
+the same component the home page uses.
+
+---
+
+## Maths
+
+Inline maths, $c^2 = a^2 + b^2$, sits on the same baseline as the text around
+it. Display maths gets its own block:
+
+$$
+L^* = 116 \, f\!\left(\frac{Y}{Y_n}\right) - 16
+$$
+
+That is the CIE lightness function. The whole palette is achromatic, so
+lightness is the only channel doing any work[^1] — which is why a hue introduced
+anywhere reads as a mistake rather than an accent.
+
+## Tables
+
+| Token              | Light      | Dark       |
+| ------------------ | ---------- | ---------- |
+| `background`       | 100%       | 5.1%       |
+| `surface`          | 98%        | 7.8%       |
+| `foreground`       | 7.1%       | 100%       |
+| `muted-foreground` | 49.4%      | 56.1%      |
+| `inset`            | 94.9%      | 12.2%      |
+
+## Images
+
+![A placeholder, standing in for a real figure.](./images/blog-placeholder-1.jpg)
+
+Images fill the measure, take the same 12px radius as the code blocks and carry
+a self-coloured border so they do not float free of the column.
+
+[^1]:
+    Contrast comes from lightness alone. That is a constraint, not a shortfall:
+    it survives greyscale printing, colour-blind readers and a bad display
+    without a second thought.

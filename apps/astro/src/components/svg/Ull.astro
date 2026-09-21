@@ -1,0 +1,38 @@
+---
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+{/*
+  The Universidad de La Laguna's símbolo — the two chamfered strokes, without
+  the wordmark, which is the form the identity manual uses at small sizes.
+
+  Traced from the university's own asset, because they publish no vector: the
+  brand pages under ull.es/portal/marca ship PNG previews only. The outline was
+  read off the pixels of that PNG rather than drawn by eye, and checked back
+  against it — every edge is axis-aligned or a true 45° chamfer, and the
+  remaining difference is the reference's antialiasing against this one's hard
+  edges. Replace it if the official vector ever becomes available.
+
+  It inherits `currentColor` rather than carrying the corporate purple
+  (#670290). The mark sits inline in a sentence beside a monochrome GitHub
+  glyph, and one saturated logo in that row reads as a mistake rather than as
+  branding. Monochrome is a permitted treatment in their manual.
+*/}
+<svg
+  viewBox="0 0 148 118"
+  class={className}
+  role="img"
+  aria-label="Universidad de La Laguna"
+  fill="currentColor"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <path d="M38 0 L38 80 L72 80 L72 88 L39 118 L0 118 L0 36 Z" />
+  <path
+    d="M38 0 L38 80 L72 80 L72 88 L39 118 L0 118 L0 36 Z"
+    transform="translate(76 0)"
+  />
+</svg>

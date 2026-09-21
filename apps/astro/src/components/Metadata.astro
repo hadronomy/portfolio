@@ -4,7 +4,6 @@
 import '@fontsource-variable/inter';
 import '@fontsource-variable/geist-mono';
 import '~/styles/global.css';
-import '~/styles/twoslash.css';
 
 import { getImage } from 'astro:assets';
 import { ClientRouter } from 'astro:transitions';
@@ -86,23 +85,15 @@ const {
 <meta property="twitter:description" content={description} />
 <meta property="twitter:image" content={new URL(image, Astro.url)} />
 
-<script is:inline>
-  const html = document.querySelector('html');
-  const theme = (() => {
-    if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
-      return localStorage.getItem('theme');
-    }
-    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      return 'dark';
-    }
-    return 'light';
-  })();
+{/*
+  Keeps the choice applied after a view transition, and in step across tabs.
+  The blocking script above still owns the first paint — this module cannot,
+  because it is fetched too late to stop a flash of the wrong theme.
+*/}
+<script>
+  import { initTheme } from '~/lib/theme';
 
-  if (theme === 'light') {
-    html.classList.remove('dark');
-  } else {
-    html.classList.add('dark');
-  }
+  initTheme();
 </script>
 
 <script>
