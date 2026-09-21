@@ -1,0 +1,12 @@
+---
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+{/* The section kicker, and the only place the design uses mono. */}
+<p class:list={['type-overline text-muted-foreground', className]}>
+  <slot />
+</p>

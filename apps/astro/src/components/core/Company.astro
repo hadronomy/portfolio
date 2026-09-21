@@ -1,0 +1,52 @@
+---
+interface Props {
+  name: string;
+  /** Turns the chip into a link. */
+  url?: string;
+  /** Screenshot shown inside the cursor while the chip is hovered. */
+  preview?: string;
+}
+
+const { name, url, preview } = Astro.props;
+
+const Tag = url ? 'a' : 'span';
+
+/*
+  Core's Company chip: the mark and the name travel together as one unit with
+  6px between them and 5px of padding either side. That padding is what stops
+  the logo colliding with the word before it — the row's own 4px gap alone
+  reads as cramped, and widening the row gap instead would push the name away
+  from its own mark.
+
+  When the chip links somewhere it also declares a cursor preview, which the
+  follower reads on hover. The underline is the affordance that survives with
+  the follower switched off, so it is not doing the work of the preview.
+*/
+const attrs = url
+  ? {
+      href: url,
+      target: '_blank',
+      rel: 'noreferrer',
+      'data-cursor': preview ? 'preview' : undefined,
+      'data-cursor-src': preview,
+    }
+  : {};
+---
+
+<Tag
+  class:list={[
+    'inline-flex items-center gap-1.5 px-[5px] align-middle',
+    url &&
+      'rounded-[6px] decoration-muted-foreground/50 underline-offset-4 transition-colors hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+  ]}
+  {...attrs}
+>
+  <slot />
+  <span>{name}</span>
+</Tag>
+
+{
+  /* Warm the image so the first hover morphs into a picture rather than a
+     blank card. */
+  preview && <link rel="prefetch" as="image" href={preview} />
+}

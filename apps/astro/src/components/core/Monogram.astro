@@ -1,0 +1,35 @@
+---
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+{/*
+  The one drawn mark on the page. A prompt caret cut from the chip rather than
+  set as text, so it stays crisp at 20px and carries the same weight as the
+  real brand marks it sits beside.
+*/}
+<svg
+  viewBox="0 0 20 20"
+  fill="none"
+  role="img"
+  aria-label="Independent"
+  class:list={['size-5', className]}
+>
+  <rect width="20" height="20" rx="6" class="fill-foreground" />
+  <path
+    d="M5.4 6.6 8.6 10l-3.2 3.4"
+    class="stroke-background"
+    stroke-width="1.6"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M10.6 13.4h4"
+    class="stroke-background"
+    stroke-width="1.6"
+    stroke-linecap="round"
+  />
+</svg>
