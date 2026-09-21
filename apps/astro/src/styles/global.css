@@ -43,6 +43,12 @@
     --cursor: 0 0% 5.1% / 0.15;
     --shortcut: 0 0% 94.1%;
     --shortcut-shadow: 0 0% 85.1%;
+    /*
+      The stickers read as cut-out objects in dark because the white die-cut
+      edge separates them from the page. On a white page that edge has nothing
+      to work against, so a contact shadow does the separating instead.
+    */
+    --sticker-shadow: 0 0% 0% / 0.3;
 
     color-scheme: light;
   }
@@ -69,6 +75,9 @@
     --shortcut: 0 0% 14.9%;
     /* The shortcut shadow drops out entirely in dark rather than darkening. */
     --shortcut-shadow: 0 0% 70.2% / 0;
+    /* Same idea: the die-cut edge already separates the marks here, so the
+       contact shadow goes to zero rather than getting darker. */
+    --sticker-shadow: 0 0% 0% / 0;
 
     color-scheme: dark;
   }
