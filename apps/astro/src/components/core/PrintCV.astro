@@ -1,0 +1,64 @@
+---
+import { renderCVSvg } from '~/lib/cv';
+
+const svg = await renderCVSvg();
+const source = `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
+---
+
+<div id="print-cv">
+  <img
+    src={source}
+    alt="Pablo Hernández — Full-Stack Engineer. Curriculum vitae."
+    width="794"
+    height="1123"
+    loading="eager"
+    decoding="sync"
+  />
+</div>
+
+<style is:global>
+  #print-cv {
+    display: none;
+  }
+
+  @media print {
+    @page cv {
+      size: A4 portrait;
+      margin: 0;
+    }
+
+    html:has(#print-cv),
+    body:has(> #print-cv) {
+      width: 210mm;
+      min-width: 0;
+      height: auto;
+      min-height: 0;
+      margin: 0;
+      padding: 0;
+      background: white;
+    }
+
+    body:has(> #print-cv) > :not(#print-cv) {
+      display: none !important;
+    }
+
+    #print-cv {
+      display: block;
+      width: 210mm;
+      height: 297mm;
+      margin: 0;
+      padding: 0;
+      page: cv;
+      break-inside: avoid;
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+    }
+
+    #print-cv img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      max-width: none;
+    }
+  }
+</style>

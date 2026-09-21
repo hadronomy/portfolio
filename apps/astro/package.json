@@ -6,7 +6,6 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro preview",
-    "fonts:download": "bun run scripts/fonts/download-pdf-fonts.mjs",
     "build": "astro check && astro build",
     "preview": "astro preview",
     "astro": "astro"
@@ -25,9 +24,6 @@
     "@iconify-json/tabler": "catalog:icons",
     "@nanostores/persistent": "1.3.5",
     "@portfolio/tailwind-config": "workspace:",
-    "@signpdf/placeholder-plain": "catalog:prod",
-    "@signpdf/signer-p12": "catalog:prod",
-    "@signpdf/signpdf": "catalog:prod",
     "astro": "catalog:prod",
     "astro-icon": "catalog:icons",
     "fumadocs-core": "catalog:prod",
@@ -35,7 +31,6 @@
     "katex": "catalog:prod",
     "motion": "catalog:prod",
     "nanostores": "1.4.2",
-    "node-forge": "catalog:prod",
     "react": "catalog:prod",
     "react-dom": "catalog:prod",
     "rehype-accessible-emojis": "catalog:prod",
@@ -44,14 +39,14 @@
     "remark-math": "catalog:prod",
     "sharp": "catalog:prod",
     "sharp-ico": "catalog:prod",
-    "tailwindcss": "catalog:style"
+    "tailwindcss": "catalog:style",
+    "takumi-pdf": "catalog:prod",
+    "takumi-js": "catalog:prod"
   },
   "devDependencies": {
     "@astrojs/language-server": "catalog:dev",
-    "@react-pdf/renderer": "catalog:dev",
     "@shikijs/twoslash": "catalog:syntax",
     "@tailwindcss/vite": "catalog:build",
-    "@types/node-forge": "catalog:types",
     "@types/react": "catalog:types",
     "@types/react-dom": "catalog:types",
     "prettier": "catalog:lint",
