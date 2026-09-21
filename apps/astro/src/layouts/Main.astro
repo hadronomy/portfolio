@@ -1,7 +1,6 @@
 ---
 import { Icon } from 'astro-icon/components';
 import Footer from '~/components/Footer.astro';
-import HalftoneEffect from '~/components/HalftoneEffect.astro';
 import Metadata from '~/components/Metadata.astro';
 import Navbar from '~/components/Navbar.astro';
 import Sidebar from '~/components/Sidebar.astro';
@@ -15,7 +14,7 @@ const {
     { label: '01. Skills', id: 'skills' },
     { label: '02. Projects', id: 'projects' },
     { label: '03. Experience', id: 'experience' },
-    { label: '04. Simulation', id: 'contact' },
+    { label: '04. Contact', id: 'contact' },
   ]
 } = Astro.props;
 ---
@@ -42,7 +41,6 @@ const {
         </div>
 
         <!-- Texture Overlay -->
-        <HalftoneEffect />
       </main>
 
       <!-- 3. RIGHT GUTTER (Desktop Only) -->

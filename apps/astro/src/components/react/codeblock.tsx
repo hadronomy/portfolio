@@ -1,16 +1,14 @@
 'use client';
 
-import * as React from 'react';
-
-import { AnimatePresence, motion } from 'framer-motion';
-import { Check, Copy } from 'lucide-react';
-
 import { cn } from '@portfolio/ui';
 import {
   ScrollArea,
   ScrollBar,
   ScrollViewport,
 } from '@portfolio/ui/scroll-area';
+import { Check, Copy } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
+import * as React from 'react';
 
 export type CodeBlockProps = React.ComponentProps<'pre'> & {
   keepBackground?: boolean;

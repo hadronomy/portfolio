@@ -50,7 +50,7 @@
     "@radix-ui/react-tooltip": "catalog:prod",
     "class-variance-authority": "catalog:utils",
     "clsx": "catalog:utils",
-    "framer-motion": "catalog:prod",
+    "motion": "catalog:prod",
     "iconoir-react": "catalog:icons",
     "lucide-react": "catalog:icons",
     "react-icons": "catalog:icons",
