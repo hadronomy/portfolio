@@ -7,9 +7,9 @@ import { socials } from '~/lib/profile';
 ---
 
 {/*
-  Core splits this section: the heading block is capped at 640, the rows below
-  are full width so their hover fill can bleed. Hence two siblings rather than
-  one wrapper.
+  This section splits in two: the heading block stays capped to the column
+  width, the rows below are full width so their hover fill can bleed. Hence
+  two siblings rather than one wrapper.
 */}
 <div id="contact" class="flex w-full flex-col gap-8">
   <Section>
@@ -21,9 +21,9 @@ import { socials } from '~/lib/profile';
   </Section>
 
   {/*
-    Core puts a form here. This is a static site with no endpoint behind it, and
-    a form that silently drops messages is worse than no form, so the rows are
-    the whole contact surface until there is somewhere to post to.
+    This is a static site with no endpoint behind it, and a form that
+    silently drops messages is worse than no form, so the rows are the whole
+    contact surface until there is somewhere to post to.
   */}
   <ul class="flex w-full flex-col">
     {

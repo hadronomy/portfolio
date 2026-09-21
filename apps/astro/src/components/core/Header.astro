@@ -15,10 +15,10 @@ const { back } = Astro.props;
   The toggle sits in this row rather than pinned to the viewport corner, where
   it would land on top of the clock once the column stops being centred.
 
-  Core swaps the establishment line for a back link on its post pages and drops
-  the rest of the row. The clock goes with it, but the toggle stays: a post is
-  the page most likely to be opened from a shared link, and stranding that
-  visitor in the wrong theme with no way out is not a trade worth the fidelity.
+  Post pages swap the establishment line for a back link and drop the rest of
+  the row. The clock goes with it, but the toggle stays: a post is the page
+  most likely to be opened from a shared link, and stranding that visitor in
+  the wrong theme with no way out is not a trade worth making.
 */}
 <header
   class="mx-auto flex w-full max-w-content items-center justify-between gap-4 px-4 py-6"
@@ -71,7 +71,7 @@ const { back } = Astro.props;
     const m = now.getUTCMinutes();
     const s = now.getUTCSeconds();
 
-    // Core renders the hour unpadded (8:29:56) but pads minutes and seconds.
+    // The hour renders unpadded (8:29:56); minutes and seconds are padded.
     el.textContent = `${h}:${pad(m)}:${pad(s)} UTC`;
     el.setAttribute('datetime', now.toISOString());
     return true;

@@ -18,7 +18,7 @@ export async function getPosts(): Promise<Post[]> {
   );
 }
 
-/** Core shows whole minutes; 200 wpm is the usual reading-speed assumption. */
+/** Shown as whole minutes; 200 wpm is the usual reading-speed assumption. */
 export function readingMinutes(body: string | undefined): number {
   return Math.max(1, Math.round(wordCount(body) / 200));
 }
@@ -28,14 +28,14 @@ export function wordCount(body: string | undefined): number {
   return text ? text.split(/\s+/).length : 0;
 }
 
-/** The list format Core uses for writing rows: 11/01/25. */
+/** The list format used for writing rows: 11/01/25. */
 export const shortDate = new Intl.DateTimeFormat('en-GB', {
   day: '2-digit',
   month: '2-digit',
   year: '2-digit',
 });
 
-/** The article format Core uses above a post title: JAN 1, 2025. */
+/** The article format used above a post title: JAN 1, 2025. */
 export const longDate = new Intl.DateTimeFormat('en-US', {
   day: 'numeric',
   month: 'short',

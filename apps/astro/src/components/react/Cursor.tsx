@@ -5,21 +5,19 @@ import * as React from 'react';
 
 /*
   A follower that trails the pointer and morphs over anything carrying a
-  `data-cursor` attribute. Ported from Core's Elements/Cursor.
+  `data-cursor` attribute.
 
-  Every number below is read off the Framer document rather than sampled from
-  pixels. All five variants declare the same transition — `spring-physics
-  400 30 1 0s` — which is Framer Motion's own spring at stiffness 400, damping
-  30, mass 1. That is a damping ratio of 0.75: it reaches full size around
-  200ms, drifts under 3% past it, and is back down by 430ms. The overshoot is
-  four pixels on a 148px growth, so it never reads as a bounce — it reads as
-  weight. No bezier has that tail, which is why this is a React island rather
-  than a CSS transition.
+  All five variants share one spring — stiffness 400, damping 30, mass 1.
+  That is a damping ratio of 0.75: it reaches full size around 200ms, drifts
+  under 3% past it, and is back down by 430ms. The overshoot is small
+  relative to the growth, so it never reads as a bounce — it reads as weight.
+  No bezier has that tail, which is why this is a React island rather than a
+  CSS transition.
 
-  The native cursor stays. Core fills its dot at 15%/30% alpha, which reads as
-  something travelling with the pointer rather than replacing it, and swapping
-  a div for the real cursor bets against every pointer setting a visitor might
-  depend on.
+  The native cursor stays: the follower's dot is translucent, which reads as
+  something travelling with the pointer rather than replacing it, and
+  swapping a div for the real cursor bets against every pointer setting a
+  visitor might depend on.
 */
 
 type Variant = 'dot' | 'preview' | 'label';

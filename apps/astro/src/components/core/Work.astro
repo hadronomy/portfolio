@@ -4,13 +4,8 @@ import Section from '~/components/core/Section.astro';
 import WorkGallery from '~/components/react/WorkGallery';
 
 /*
-  Four placeholder panels carrying Core's Work Image geometry: 300x248 at 12px
-  radius, a white mat with the picture inset at 5px — a print in a frame rather
-  than a bare screenshot.
-
-  The scatter is measured off the reference render. The canvas reports zero
-  rotation on all four, which the published page plainly contradicts, so the
-  angles here come from the pixels and are marked as such.
+  Four placeholder panels: a white mat with the picture inset — a print in a
+  frame rather than a bare screenshot.
 
   Give a panel an `href` and it becomes a link with the reveal arrow. Until
   then it is deliberately inert — an arrow on a placeholder is a control that
@@ -35,7 +30,7 @@ const panels = [
   </Section>
 
   <div class="relative h-[340px] w-full overflow-hidden tablet:h-[540px]">
-    {/* Core runs its canvas texture at 0.2 — felt, not read. */}
+    {/* The canvas texture runs faint — felt, not read. */}
     <div class="work-canvas pointer-events-none absolute inset-0 opacity-20" aria-hidden="true">
     </div>
 
@@ -47,16 +42,16 @@ const panels = [
 
 <style>
   /*
-    Core tiles a halftone SVG here: 1.5px circles on an 11px square lattice,
-    drawn at 0.6545 scale — so 7.2px pitch and a 0.98px radius on screen.
+    A halftone SVG tiled at a 7.2px pitch, with dots landing at roughly a
+    0.98px radius on screen.
 
-    The gradient stops are 0.5px and 1.4px rather than a hard edge at 0.98,
+    The gradient stops sit at 0.5px and 1.4px rather than a hard edge at 0.98,
     because a hard stop under two pixels across aliases into a moiré. The pair
     integrates to the same disc area, so the field reads at the same weight.
 
-    Framer fills the dots #8F8F8F in both themes, which is exactly what
-    --muted-foreground resolves to in the dark palette; the light palette's
-    value is a shade darker, which is the right direction against white.
+    The dot colour matches --muted-foreground exactly in the dark palette;
+    the light palette's value is a shade darker, which is the right direction
+    against white.
   */
   .work-canvas {
     background-image: radial-gradient(

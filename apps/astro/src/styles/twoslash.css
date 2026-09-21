@@ -1,7 +1,7 @@
 /*
-  @shikijs/twoslash's rich renderer, with its chrome driven by the Core tokens
-  instead of the hexes it ships. One block covers both themes now that the
-  values resolve through the palette.
+  @shikijs/twoslash's rich renderer, with its chrome driven by this project's
+  design tokens instead of the hexes it ships. One block covers both themes
+  now that the values resolve through the palette.
 
   The diagnostic colours are the exception and stay hard-coded: the palette is
   achromatic on purpose, but an error that reads as ordinary grey text is not a

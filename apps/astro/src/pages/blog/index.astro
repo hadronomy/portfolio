@@ -2,27 +2,32 @@
 import Overline from '~/components/core/Overline.astro';
 import Section from '~/components/core/Section.astro';
 import WritingList from '~/components/core/WritingList.astro';
-import CoreLayout from '~/layouts/Core.astro';
+import Layout from '~/layouts/Layout.astro';
 import { getPosts } from '~/lib/posts';
 
 const posts = await getPosts();
 ---
 
-<CoreLayout
+<Layout
   title="Writing | Pablo Hernández"
   description="Notes on the things I build and the things that break."
   back="/"
 >
   {/*
-    Core has no index page for its writing route — the list lives on the home
-    page and under each post. This is the same list given a page of its own, so
-    the kicker row and the rows below it are the components that already exist.
+    There is no dedicated writing index elsewhere — the list lives on the
+    home page and under each post. This is the same list given a page of its
+    own, so the kicker row and the rows below it are the components that
+    already exist.
   */}
   <Section gap={24}>
     <div class="flex items-baseline justify-between gap-4">
       <Overline>Writing</Overline>
-      {/* One expression, not two either side of a space — Astro drops the
-          literal whitespace between them. */}
+      {/* One expression, not two, for the count and the word. Astro keeps a
+          literal space between adjacent expressions — the compiler does not
+          drop it. But the row above is a flex container, and a flex
+          container never renders a whitespace-only run between two items,
+          so splitting this into two Overlines would still need gap-4 to do
+          the spacing. One expression is simpler. */}
       <Overline>
         {`${posts.length} ${posts.length === 1 ? 'note' : 'notes'}`}
       </Overline>
@@ -45,4 +50,4 @@ const posts = await getPosts();
       </Section>
     )
   }
-</CoreLayout>
+</Layout>

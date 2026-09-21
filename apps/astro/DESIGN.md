@@ -115,7 +115,7 @@ clock. Fonts are Inter Variable and Geist Mono, both self-hosted through
 - `src/components/core/Row.astro` is the exception: full-width hover fill, content
   still on the 640px column. The fill is square-edged because rounding a bleed puts
   corners in the middle of the page.
-- `src/layouts/Core.astro` sets 40px between sections. That number is measured off
+- `src/layouts/Layout.astro` sets 40px between sections. That number is measured off
   the render; the canvas reports a zero gap and puts the spacing somewhere it does
   not expose.
 

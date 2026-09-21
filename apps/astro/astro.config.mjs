@@ -17,7 +17,6 @@ import preserveDirectives from 'rollup-preserve-directives';
 
 import { rehypeMarkCodeBlocks } from './plugins/rehype-mark-code-blocks.mjs';
 
-// https://astro.build/config
 export default defineConfig({
   site: 'https://hadronomy.com',
   markdown: {
@@ -88,9 +87,6 @@ export default defineConfig({
     ssr: {
       noExternal: ['fumadocs-ui'],
     },
-    // css: {
-    //   transformer: 'lightningcss',
-    // },
     resolve: {
       // Motion pulls React in through its own pre-bundled copy in dev, which
       // hands an island a second React and breaks every hook it calls.

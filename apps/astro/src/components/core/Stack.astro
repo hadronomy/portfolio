@@ -15,10 +15,11 @@ import { stack } from '~/lib/profile';
   <Overline>Stack</Overline>
 
   {/*
-    Core's row is `space-between` across the full column with `gap: 10px` as a
-    minimum, not a packed left-aligned run — first mark flush left, last flush
-    right. Wrapping is off there; on phones ten 40px marks cannot fit that way,
-    so wrapping comes back below the tablet breakpoint rather than overflowing.
+    The row is `space-between` across the full column with a gap as a
+    minimum, not a packed left-aligned run — first mark flush left, last
+    flush right. Wrapping is off there; on phones ten marks cannot fit that
+    way, so wrapping comes back below the tablet breakpoint rather than
+    overflowing.
   */}
   <ul
     class="flex flex-wrap items-center justify-start gap-2.5 tablet:flex-nowrap tablet:justify-between"
@@ -27,14 +28,14 @@ import { stack } from '~/lib/profile';
       stack.map((tool) => (
         <li class="group relative size-10 shrink-0">
           {/*
-            Bare marks on a die-cut, no tile — Core's weight comes from each
-            brand's artwork filling its 40px box, not from a surface behind it.
+            Bare marks on a die-cut, no tile — the weight comes from each
+            brand's artwork filling its box, not from a surface behind it.
 
-            The white cut is ours, not Core's: Core can afford near-black marks
-            because every asset there sits on its own tile, and without tiles
-            those marks vanish on the dark background. Cutting them keeps every
-            logo legible in both themes and gives the row one silhouette, which
-            the raw glyphs do not have.
+            The cut is white rather than near-black: these marks don't each
+            sit on their own background tile, so a near-black cut would
+            vanish on the dark background. Cutting them white keeps every
+            logo legible in both themes and gives the row one silhouette,
+            which the raw glyphs do not have.
 
             The fold lifts the top-right corner. Angling it per sticker looked
             like variety on paper, but a crease that differs on every mark reads

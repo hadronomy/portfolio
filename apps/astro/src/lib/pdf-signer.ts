@@ -1,17 +1,3 @@
-/**
- * PDF Digital Signature Library
- *
- * This module provides functionality to digitally sign PDF documents using @signpdf/signpdf.
- * It supports both self-signed certificates for testing and external P12 certificates for production use.
- *
- * Key features:
- * - PKCS#7 detached signatures using @signpdf/signpdf
- * - Self-signed certificate generation with node-forge
- * - P12 certificate loading
- * - Proper PDF signature field creation
- * - Adobe Acrobat compatible signatures
- */
-
 import * as fs from 'node:fs';
 
 import { plainAddPlaceholder } from '@signpdf/placeholder-plain';
@@ -28,10 +14,8 @@ export interface SigningOptions {
 }
 
 /**
- * Signs a PDF buffer with a digital signature using @signpdf/signpdf
- * @param pdfBuffer The PDF buffer to sign
- * @param options Signing options including certificate path and password
- * @returns Signed PDF buffer
+ * Signs a PDF buffer with an external P12 certificate when one is
+ * configured, and falls back to a self-signed certificate otherwise.
  */
 export async function signPdfBuffer(
   pdfBuffer: Buffer,
@@ -40,15 +24,12 @@ export async function signPdfBuffer(
   try {
     const signPdf = new SignPdf();
 
-    // Check for certificate from file path first, then environment variable
     let certificateBuffer: Buffer | null = null;
     let certificatePassword = options.certificatePassword || '';
 
     if (options.certificatePath && fs.existsSync(options.certificatePath)) {
-      // Use P12 certificate from file
       certificateBuffer = fs.readFileSync(options.certificatePath);
     } else if (process.env.CERTIFICATE_P12) {
-      // Use P12 certificate from environment variable (base64 encoded)
       certificateBuffer = Buffer.from(process.env.CERTIFICATE_P12, 'base64');
       certificatePassword =
         process.env.CERTIFICATE_PASSWORD || certificatePassword;
@@ -59,7 +40,6 @@ export async function signPdfBuffer(
         passphrase: certificatePassword,
       });
 
-      // Add placeholder to PDF
       const pdfWithPlaceholder = plainAddPlaceholder({
         pdfBuffer,
         reason: options.reason || 'Document Authentication',
@@ -68,22 +48,18 @@ export async function signPdfBuffer(
         location: options.location || '',
       });
 
-      // Sign the PDF
       const signedPdf = await signPdf.sign(pdfWithPlaceholder, signer);
       return Buffer.from(signedPdf);
     }
 
-    // Generate self-signed certificate and create P12 buffer
     console.log(
       'No certificate provided, generating self-signed certificate for signing',
     );
     const { certificate, privateKey } = generateSelfSignedCertificate();
 
-    // Convert to P12 format for @signpdf/signpdf
     const p12Buffer = createP12Buffer(certificate, privateKey);
     const signer = new P12Signer(p12Buffer, { passphrase: '' });
 
-    // Add placeholder to PDF
     const pdfWithPlaceholder = plainAddPlaceholder({
       pdfBuffer,
       reason: options.reason || 'Document Authentication',
@@ -92,7 +68,6 @@ export async function signPdfBuffer(
       location: options.location || '',
     });
 
-    // Sign the PDF
     const signedPdf = await signPdf.sign(pdfWithPlaceholder, signer);
     return Buffer.from(signedPdf);
   } catch (error) {
@@ -103,12 +78,6 @@ export async function signPdfBuffer(
   }
 }
 
-/**
- * Creates a P12 buffer from certificate and private key for use with @signpdf/signpdf
- * @param certificate The certificate
- * @param privateKey The private key
- * @returns P12 buffer
- */
 function createP12Buffer(
   certificate: forge.pki.Certificate,
   privateKey: forge.pki.rsa.PrivateKey,
@@ -126,16 +95,10 @@ function createP12Buffer(
   return Buffer.from(p12Der, 'binary');
 }
 
-/**
- * Generates a self-signed certificate for testing purposes
- * @returns Certificate and private key pair
- * @note This is intended for development/testing only. Use proper certificates in production.
- */
+/** Development/testing only — use a real certificate in production. */
 function generateSelfSignedCertificate() {
-  // Generate a key pair using the correct API
   const keys = forge.pki.rsa.generateKeyPair(2048);
 
-  // Create a certificate
   const cert = forge.pki.createCertificate();
   cert.publicKey = keys.publicKey;
   cert.serialNumber = '01';

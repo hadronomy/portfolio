@@ -1,16 +1,16 @@
 ---
 import Shortcut from '~/components/core/Shortcut.astro';
-import CoreLayout from '~/layouts/Core.astro';
+import Layout from '~/layouts/Layout.astro';
 ---
 
-<CoreLayout
+<Layout
   title="Not found | Pablo Hernández"
   description="That page does not exist."
 >
   {/*
-    Core gives this page a 76vh block and centres one line in it. The header and
-    signature stay, so a visitor who lands here still sees a working site rather
-    than an error screen — hence no back link and no chrome of its own.
+    One line centred in a block, and the header and signature stay, so a
+    visitor who lands here still sees a working site rather than an error
+    screen — hence no back link and no chrome of its own.
   */}
   <section
     class="flex h-[76vh] w-full flex-col items-center justify-center gap-4 px-4"
@@ -27,7 +27,7 @@ import CoreLayout from '~/layouts/Core.astro';
       > or press <Shortcut key="H" />
     </p>
   </section>
-</CoreLayout>
+</Layout>
 
 <script is:inline>
   document.addEventListener('keydown', (event) => {

@@ -12,11 +12,10 @@ const { name, url, preview } = Astro.props;
 const Tag = url ? 'a' : 'span';
 
 /*
-  Core's Company chip: the mark and the name travel together as one unit with
-  6px between them and 5px of padding either side. That padding is what stops
-  the logo colliding with the word before it — the row's own 4px gap alone
-  reads as cramped, and widening the row gap instead would push the name away
-  from its own mark.
+  The mark and the name travel together as one unit. The chip's own padding
+  is what stops the logo colliding with the word before it — the row's gap
+  alone reads as cramped, and widening the row gap instead would push the
+  name away from its own mark.
 
   When the chip links somewhere it also declares a cursor preview, which the
   follower reads on hover. The underline is the affordance that survives with

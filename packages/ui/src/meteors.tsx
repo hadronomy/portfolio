@@ -12,7 +12,7 @@ export function Meteors({ number, className }: MeteorsProps) {
       {meteors.map((_element, index) => (
         <span
           key={`meteor${
-            // biome-ignore lint/suspicious/noArrayIndexKey: it's okay for now
+            // biome-ignore lint/suspicious/noArrayIndexKey: the list is a fixed length and never reordered
             index
           }`}
           className={cn(

@@ -1,5 +1,5 @@
 /*
-  Article typography for the Core system.
+  Article typography.
 
   Everything below is built from the eight `type-*` styles and the achromatic
   token set — no new sizes, no new colours. Running text sits in
@@ -24,11 +24,8 @@
   overflow-wrap: break-word;
 }
 
-/*
-  20px between blocks, measured off the reference render (44px between the last
-  line of one paragraph and the first of the next, less the 24px leading).
-  Headings take more room above than below so they bind to the text they open.
-*/
+/* Headings take more room above than below so they bind to the text they
+   open. */
 .article > * + * {
   margin-top: 20px;
 }
@@ -88,9 +85,10 @@
 }
 
 /*
-  Core has no size between body and h3, and inventing one would put a ninth
-  style in an eight-style system. A fourth-level heading is a kicker, so it gets
-  the kicker treatment the design already owns — the one place mono appears.
+  There is no size between body and h3, and inventing one would put a ninth
+  style into an eight-style system. A fourth-level heading is a kicker, so it
+  gets the kicker treatment the design already owns — the one place mono
+  appears.
 */
 .article h4 {
   font-family: var(--font-mono);
