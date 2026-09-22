@@ -3,6 +3,7 @@ import { Icon } from 'astro-icon/components';
 import Overline from '~/components/core/Overline.astro';
 import Row from '~/components/core/Row.astro';
 import Section from '~/components/core/Section.astro';
+import Shortcut from '~/components/core/Shortcut.astro';
 import { socials } from '~/lib/profile';
 ---
 
@@ -15,8 +16,14 @@ import { socials } from '~/lib/profile';
   <Section>
     <Overline>Contact</Overline>
 
-    <p class="type-body text-muted-foreground">
-      The fastest way to reach me is email. Everything else below reaches me too.
+    {/*
+      The shortcut is global, so it is worth naming again this far down the
+      page. Email has no row of its own: one key is already the faster route.
+    */}
+    <p
+      class="type-body flex flex-wrap items-center gap-1.5 text-muted-foreground"
+    >
+      Press <Shortcut key="C" /> any time to copy my email. These reach me too.
     </p>
   </Section>
 

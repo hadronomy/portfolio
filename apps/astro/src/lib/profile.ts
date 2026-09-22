@@ -95,13 +95,14 @@ export const stack = [
   { name: 'PostgreSQL', icon: 'logos:postgresql' },
 ] as const;
 
+/**
+ * Where to find Pablo, minus email.
+ *
+ * `CopyShortcut` puts the address one key away from anywhere on the site, so a
+ * row here would be a second, slower route to something the page already
+ * offers. The address itself stays on `profile`.
+ */
 export const socials = [
-  {
-    label: 'Email',
-    handle: profile.email,
-    href: `mailto:${profile.email}`,
-    icon: 'tabler:mail',
-  },
   {
     label: 'GitHub',
     handle: '@hadronomy',
