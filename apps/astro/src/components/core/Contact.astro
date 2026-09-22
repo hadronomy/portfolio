@@ -8,48 +8,63 @@ import { socials } from '~/lib/profile';
 ---
 
 {/*
-  This section splits in two: the heading block stays capped to the column
-  width, the rows below are full width so their hover fill can bleed. Hence
-  two siblings rather than one wrapper.
+  Heading, then the rows and the line that introduces them. The heading block
+  stays capped to the column width; the rows are full width so their hover
+  fill can bleed, which is why these are siblings rather than one wrapper.
 */}
 <div id="contact" class="flex w-full flex-col gap-8">
   <Section>
     <Overline>Contact</Overline>
-
-    {/*
-      The shortcut is global, so it is worth naming again this far down the
-      page. Email has no row of its own: one key is already the faster route.
-    */}
-    <p
-      class="type-body flex flex-wrap items-center gap-1.5 text-muted-foreground"
-    >
-      Press <Shortcut key="C" /> any time to copy my email. These reach me too.
-    </p>
   </Section>
 
   {/*
-    This is a static site with no endpoint behind it, and a form that
+    The line belongs to the rows, not to the heading, so it sits against them:
+    32px of air above it and 16px below. "These" is then pointing at something
+    directly underneath it.
+
+    It sets in normal inline flow rather than as a flex row. A flex line treats
+    the run of text after the keycap as one item, so at narrow widths it cannot
+    break inside that run and strands the key at the end of the first line.
+
+    The shortcut is global, so it is worth naming again this far down the
+    page. Email has no row of its own — one key is already the faster route.
+
+    This is also a static site with no endpoint behind it, and a form that
     silently drops messages is worse than no form, so the rows are the whole
     contact surface until there is somewhere to post to.
   */}
-  <ul class="flex w-full flex-col">
-    {
-      socials.map((social) => (
-        <li>
-          <Row href={social.href} external={social.href.startsWith('http')}>
-            <Icon name={social.icon} class="size-5 shrink-0 text-foreground" />
-            <span class="type-body text-foreground">{social.label}</span>
+  <div class="flex w-full flex-col gap-4">
+    <Section>
+      <p class="type-body text-muted-foreground">
+        Press <Shortcut key="C" /> any time to copy my email. These reach me too.
+      </p>
+    </Section>
 
-            <span class="type-body ml-auto flex items-center gap-1.5 text-muted-foreground">
-              {social.handle}
-              <Icon
-                name="tabler:arrow-up-right"
-                class="size-4 transition-transform group-hover:-translate-y-px group-hover:translate-x-px"
-              />
-            </span>
-          </Row>
-        </li>
-      ))
-    }
-  </ul>
+    <ul class="flex w-full flex-col">
+      {
+        socials.map((social) => (
+          <li>
+            <Row href={social.href} external={social.href.startsWith('http')}>
+              <Icon name={social.icon} class="size-5 shrink-0 text-foreground" />
+              <span
+                class:list={[
+                  social.markIsName ? 'sr-only' : 'type-body text-foreground',
+                ]}
+              >
+                {social.label}
+              </span>
+
+              <span class="type-body ml-auto flex items-center gap-1.5 text-muted-foreground">
+                {social.handle}
+                <Icon
+                  name="tabler:arrow-up-right"
+                  class="size-4 transition-transform group-hover:-translate-y-px group-hover:translate-x-px"
+                />
+              </span>
+            </Row>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
 </div>

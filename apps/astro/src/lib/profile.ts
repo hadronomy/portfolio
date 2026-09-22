@@ -95,14 +95,41 @@ export const stack = [
   { name: 'PostgreSQL', icon: 'logos:postgresql' },
 ] as const;
 
+export type Social = {
+  label: string;
+  handle: string;
+  href: string;
+  icon: string;
+  /**
+   * Set when the brand mark is the brand name, as X's is.
+   *
+   * The row prints the label beside the mark, which for X puts the glyph next
+   * to a letter drawn the same way — the only row in the list that says its
+   * name twice. Where this is set the label is kept for screen readers and the
+   * mark speaks for itself. The icon column does not move, so the list keeps
+   * its rhythm.
+   */
+  markIsName?: boolean;
+};
+
 /**
  * Where to find Pablo, minus email.
  *
  * `CopyShortcut` puts the address one key away from anywhere on the site, so a
  * row here would be a second, slower route to something the page already
  * offers. The address itself stays on `profile`.
+ *
+ * X leads because it is the one row the mark alone names. Between two labelled
+ * rows its empty label column reads as a gap; at the top it reads as a choice.
  */
-export const socials = [
+export const socials: Social[] = [
+  {
+    label: 'X',
+    handle: '@hadronomy',
+    href: 'https://x.com/hadronomy',
+    icon: 'simple-icons:x',
+    markIsName: true,
+  },
   {
     label: 'GitHub',
     handle: '@hadronomy',
@@ -110,15 +137,9 @@ export const socials = [
     icon: 'simple-icons:github',
   },
   {
-    label: 'X',
-    handle: '@hadronomy',
-    href: 'https://x.com/hadronomy',
-    icon: 'simple-icons:x',
-  },
-  {
     label: 'LinkedIn',
     handle: '/in/hadronomy',
     href: 'https://linkedin.com/in/hadronomy',
     icon: 'simple-icons:linkedin',
   },
-] as const;
+];
