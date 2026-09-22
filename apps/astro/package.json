@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro preview",
+    "shaders:check": "vgpu check src/shaders/inari.wgsl --require-validation && vgpu check src/shaders/ram.wgsl --require-validation && vgpu check src/shaders/routes.wgsl --require-validation",
+    "covers:render": "node scripts/shaders/render-covers.mjs",
     "build": "astro check && astro build",
     "preview": "astro preview",
     "astro": "astro"
@@ -41,7 +43,8 @@
     "sharp-ico": "catalog:prod",
     "tailwindcss": "catalog:style",
     "takumi-pdf": "catalog:prod",
-    "takumi-js": "catalog:prod"
+    "takumi-js": "catalog:prod",
+    "vgpu": "catalog:prod"
   },
   "devDependencies": {
     "@astrojs/language-server": "catalog:dev",
@@ -49,6 +52,8 @@
     "@tailwindcss/vite": "catalog:build",
     "@types/react": "catalog:types",
     "@types/react-dom": "catalog:types",
+    "@vgpu/wgsl": "catalog:prod",
+    "@webgpu/types": "catalog:types",
     "prettier": "catalog:lint",
     "prettier-plugin-astro": "catalog:lint",
     "rollup-preserve-directives": "catalog:build",

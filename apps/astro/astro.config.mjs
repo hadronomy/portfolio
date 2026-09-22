@@ -3,6 +3,7 @@ import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
 import { rendererRich, transformerTwoslash } from '@shikijs/twoslash';
 import tailwindcss from '@tailwindcss/vite';
+import { wgslVitePlugin } from '@vgpu/wgsl/loader-vite';
 import { defineConfig, envField } from 'astro/config';
 import icon from 'astro-icon';
 import {
@@ -70,7 +71,14 @@ export default defineConfig({
     react(),
   ],
   vite: {
-    plugins: [tailwindcss(), preserveDirectives()],
+    // Shader covers import their `.wgsl` source directly; the plugin resolves each
+    // file's WGSL import graph at build time and hands vgpu one finished shader.
+    // It does not validate the result — `bun run shaders:check` is that gate.
+    plugins: [
+      tailwindcss(),
+      preserveDirectives(),
+      wgslVitePlugin({ minify: true }),
+    ],
     optimizeDeps: {
       exclude: ['takumi-pdf', 'takumi-js'],
     },

@@ -55,6 +55,31 @@
   height: 100%;
   object-fit: cover;
 }
+/*
+  A drawn cover stacks the live canvas on its own poster. The poster stays
+  opaque underneath: the canvas is an enhancement over a finished picture, so
+  there is no state in which the print is empty.
+*/
+.shader-cover {
+  display: block;
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.shader-cover-canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  /* The print owns hover, tilt, and drag. A live cover must not change that. */
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 320ms var(--work-ease);
+}
+.shader-cover-canvas[data-live='true'] {
+  opacity: 1;
+}
 .work-project-link {
   display: inline-flex;
   align-items: center;
