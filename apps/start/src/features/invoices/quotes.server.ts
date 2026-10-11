@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+import { Documents } from '@portfolio/invoices/documents';
 import {
   type InvoiceId,
   type Language,
@@ -11,6 +13,7 @@ import { getRequestIP } from '@tanstack/react-start/server';
 import { Effect, Option } from 'effect';
 import { requireOwner } from '../../server/auth.server';
 import { Mailer } from '../../server/mail.server';
+import { PageImages } from '../../server/page-images.server';
 import {
   CurrentRequest,
   origin,
@@ -97,6 +100,15 @@ const viewOf = (id: InvoiceId) =>
     unavailable,
   );
 
+/** The quote's PDF in `language`, with the digest an answer names. */
+const pdfOf = (id: InvoiceId, language: Language) =>
+  unavailable(Documents.use((documents) => documents.pdf(id, language))).pipe(
+    Effect.map(({ bytes }) => ({
+      bytes,
+      digest: createHash('sha256').update(bytes).digest('hex'),
+    })),
+  );
+
 /** What the customer's page shows, or null when the link does not open. */
 export const quotePage = Effect.fn('QuotesServer.page')(function* (
   token: string,
@@ -107,12 +119,15 @@ export const quotePage = Effect.fn('QuotesServer.page')(function* (
   const { plans } = yield* unavailable(
     InvoiceStore.use((store) => store.offer(id.value)),
   );
+  const pdf = yield* pdfOf(id.value, view.quote.data.language);
+  const sheets = yield* PageImages.use((images) => images.sheets(pdf));
   return {
     quote: view.quote,
     response: view.response,
     state: view.state,
     digests: view.digests,
     plans,
+    sheets: { ...sheets, digest: pdf.digest },
   };
 });
 
@@ -181,6 +196,37 @@ export const answerQuote = Effect.fn('QuotesServer.answer')(function* (
       yield* unavailable(Quotes.use((quotes) => quotes.confirmed(id.value)));
   }
   return { ok: true as const, response };
+});
+
+/**
+ * One page of the quote's PDF as an image, for whoever holds its link. The
+ * address names the digest of the PDF it shows, so the image never changes
+ * at that address: a newer PDF is a different address, and the old one is
+ * gone rather than showing pages the answer would not cover.
+ */
+export const quotePageImage = Effect.fn('QuotesServer.pageImage')(function* (
+  token: string,
+  language: Language,
+  digest: string,
+  page: number,
+) {
+  const id = yield* byLink(token);
+  if (Option.isNone(id))
+    return yield* new Refused({ status: 404, message: 'This link is closed.' });
+  const pdf = yield* pdfOf(id.value, language);
+  const image =
+    pdf.digest === digest
+      ? yield* PageImages.use((images) => images.page(pdf, page - 1))
+      : null;
+  if (!image)
+    return yield* new Refused({ status: 404, message: 'No such page.' });
+  return new Response(new Uint8Array(image), {
+    headers: {
+      'Content-Type': 'image/webp',
+      'Cache-Control': 'private, max-age=31536000, immutable',
+      'X-Content-Type-Options': 'nosniff',
+    },
+  });
 });
 
 /** The quote's PDF for whoever holds its link. */

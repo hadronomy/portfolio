@@ -23,6 +23,7 @@ import { authLayer } from './auth.server';
 import { AppConfig, appConfigLayer } from './config.server';
 import { geocoderLayer } from './geocoder.server';
 import { mailerLayer } from './mail.server';
+import { pageImagesLayer } from './page-images.server';
 import { paymentsLayer } from './payments.server';
 import { CurrentRequest, Refused } from './request.server';
 import { appSecretLayer } from './secret.server';
@@ -59,6 +60,7 @@ export const appLayer = Layer.mergeAll(
   authLayer,
   paymentsLayer,
   geocoderLayer,
+  pageImagesLayer,
 ).pipe(
   Layer.provideMerge(
     Layer.mergeAll(invoicesLayer, mailerLayer, appSecretLayer),
