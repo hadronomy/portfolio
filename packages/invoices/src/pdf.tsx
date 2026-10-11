@@ -1,4 +1,7 @@
 import { createHash } from 'node:crypto';
+import { translate } from '@portfolio/i18n';
+import { m } from '@portfolio/i18n/messages';
+import { Message } from '@portfolio/i18n/react';
 import type { CSSProperties, ReactNode } from 'react';
 import { render } from 'takumi-pdf';
 import { PageNumber, TotalPages } from 'takumi-pdf/primitives';
@@ -14,7 +17,6 @@ import medium from './fonts/Geist-Medium.ttf?inline';
 import regular from './fonts/Geist-Regular.ttf?inline';
 import semibold from './fonts/Geist-SemiBold.ttf?inline';
 import semiboldItalic from './fonts/Geist-SemiBoldItalic.ttf?inline';
-import { documentLabels, formatDay } from './labels';
 import type { Cover, Invoice, Language, Party } from './model';
 import { QuoteAppendix } from './page-render';
 import { partyLines } from './party-lines';
@@ -124,51 +126,55 @@ export function InvoiceDocument({
   plans?: readonly PaymentPlan[];
 }) {
   const d = invoice.data;
-  const t = documentLabels[language];
+  const t = translate(language);
   const totals = calculate(d);
   const money = (value: string) => formatMoney(value, language, d.currency);
   const quantity = new Intl.NumberFormat(language, {
     maximumFractionDigits: 6,
   });
   const dates = [
-    { title: t.issued, value: d.issueDate },
+    { title: t(m.doc_issued), value: d.issueDate },
     ...(d.supplyDate === d.issueDate
       ? []
       : [
-          { title: d.quote ? t.plannedStart : t.supplied, value: d.supplyDate },
+          {
+            title: t(d.quote ? m.doc_planned_start : m.doc_supplied),
+            value: d.supplyDate,
+          },
         ]),
     d.quote
-      ? { title: t.validUntil, value: d.quote.validUntil }
-      : { title: t.due, value: d.dueDate },
+      ? { title: t(m.doc_valid_until), value: d.quote.validUntil }
+      : { title: t(m.doc_due), value: d.dueDate },
   ];
   const summary = [
-    { title: t.subtotal, value: totals.subtotal },
+    { title: t(m.doc_subtotal), value: totals.subtotal },
     ...(totals.discount === '0.00'
       ? []
-      : [{ title: t.discount, value: `-${totals.discount}` }]),
+      : [{ title: t(m.doc_discount), value: `-${totals.discount}` }]),
     ...totals.groups.map((group) => ({
-      title:
-        group.treatment === 'taxable'
-          ? `IGIC ${group.rate}% ${t.on} ${money(group.base)}`
-          : `${t[group.treatment]} ${t.on} ${money(group.base)}`,
+      title: t(m.doc_tax_on, {
+        treatment: group.treatment,
+        rate: group.rate,
+        base: money(group.base),
+      }),
       value: group.tax,
     })),
     ...(totals.withholding === '0.00'
       ? []
       : [
           {
-            title: `${t.withholding} ${d.withholdingRate}%`,
+            title: t(m.doc_withholding_rate, { rate: d.withholdingRate }),
             value: `-${totals.withholding}`,
           },
         ]),
     ...(totals.disbursements === '0.00'
       ? []
-      : [{ title: t.disbursements, value: totals.disbursements }]),
+      : [{ title: t(m.doc_disbursements), value: totals.disbursements }]),
   ];
   const bank = [
-    d.issuer.bankName && `${t.bank}: ${d.issuer.bankName}`,
-    d.issuer.iban && `${t.iban}: ${d.issuer.iban}`,
-    d.issuer.bic && `${t.bic}: ${d.issuer.bic}`,
+    d.issuer.bankName && `${t(m.doc_bank)}: ${d.issuer.bankName}`,
+    d.issuer.iban && `${t(m.doc_iban)}: ${d.issuer.iban}`,
+    d.issuer.bic && `${t(m.doc_bic)}: ${d.issuer.bic}`,
   ].filter(Boolean);
   const legends = [
     ...new Set(d.lines.map((line) => line.tax.reason).filter(Boolean)),
@@ -220,10 +226,10 @@ export function InvoiceDocument({
               margin: 0,
             }}
           >
-            {t[d.kind]}
+            {t(m.doc_kind, { kind: d.kind })}
           </h1>
           <p style={{ fontSize: 12.5, fontWeight: 500, color: soft }}>
-            {invoice.status === 'draft' ? t.draft : invoice.number}
+            {invoice.status === 'draft' ? t(m.doc_draft) : invoice.number}
           </p>
         </div>
         <p style={{ fontSize: 12.5, fontWeight: 600, textAlign: 'right' }}>
@@ -235,16 +241,16 @@ export function InvoiceDocument({
           party={d.issuer}
           home={d.issuer.address.country}
           language={d.language}
-          title={t.from}
-          taxLabel={t.taxId}
+          title={t(m.doc_from)}
+          taxLabel={t(m.doc_tax_id)}
           extra={[d.issuer.website]}
         />
         <PartyBlock
           party={d.customer}
           home={d.issuer.address.country}
           language={d.language}
-          title={d.quote ? t.preparedFor : t.billTo}
-          taxLabel={t.taxId}
+          title={t(d.quote ? m.doc_prepared_for : m.doc_bill_to)}
+          taxLabel={t(m.doc_tax_id)}
         />
         <div
           style={{
@@ -258,7 +264,7 @@ export function InvoiceDocument({
           {dates.map((item) => (
             <Labelled key={item.title} title={item.title} align="right">
               <p style={{ fontSize: 12, color: ink }}>
-                {formatDay(item.value, language)}
+                {t(m.date_document, { date: item.value })}
               </p>
             </Labelled>
           ))}
@@ -278,13 +284,15 @@ export function InvoiceDocument({
         {d.title && <p style={{ fontSize: 13, fontWeight: 500 }}>{d.title}</p>}
         {d.reference && (
           <p style={detail}>
-            {t.reference}: {d.reference}
+            {t(m.doc_reference_line, { reference: d.reference })}
           </p>
         )}
         {d.correction && (
           <p style={detail}>
-            {t.correction} {d.correction.number}. {t.reason}:{' '}
-            {d.correction.reason}
+            {t(m.doc_correction, {
+              number: d.correction.number,
+              reason: d.correction.reason,
+            })}
           </p>
         )}
       </div>
@@ -301,11 +309,15 @@ export function InvoiceDocument({
         <thead>
           <tr>
             <th style={{ ...heading, textAlign: 'left', width: '52%' }}>
-              {t.description}
+              {t(m.doc_description)}
             </th>
-            <th style={{ ...heading, textAlign: 'right' }}>{t.quantity}</th>
-            <th style={{ ...heading, textAlign: 'right' }}>{t.price}</th>
-            <th style={{ ...heading, textAlign: 'right' }}>{t.amount}</th>
+            <th style={{ ...heading, textAlign: 'right' }}>
+              {t(m.doc_quantity)}
+            </th>
+            <th style={{ ...heading, textAlign: 'right' }}>{t(m.doc_price)}</th>
+            <th style={{ ...heading, textAlign: 'right' }}>
+              {t(m.doc_amount)}
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -328,12 +340,20 @@ export function InvoiceDocument({
                   <p style={{ fontSize: 9.5, color: faint, marginTop: 3 }}>
                     {[
                       line.unit === 'unit' ? '' : line.unit,
-                      line.tax.treatment === 'taxable'
-                        ? `IGIC ${line.tax.rate}%`
-                        : t[line.tax.treatment],
+                      t(m.doc_line_tax, {
+                        treatment: line.tax.treatment,
+                        rate: line.tax.rate,
+                      }),
                       line.discount.value === '0'
                         ? ''
-                        : `${t.discount} ${line.discount.kind === 'percent' ? `${line.discount.value}%` : money(line.discount.value)}`,
+                        : t(m.doc_line_discount, {
+                            value:
+                              line.discount.kind === 'percent'
+                                ? t(m.percent, {
+                                    value: Number(line.discount.value),
+                                  })
+                                : money(line.discount.value),
+                          }),
                     ]
                       .filter(Boolean)
                       .join(' · ')}
@@ -388,7 +408,7 @@ export function InvoiceDocument({
               fontWeight: 600,
             }}
           >
-            <span>{t.total}</span>
+            <span>{t(m.doc_total)}</span>
             <span>{money(totals.total)}</span>
           </div>
         </div>
@@ -403,16 +423,16 @@ export function InvoiceDocument({
       >
         {d.quote && plans.length > 0 && (
           <div style={{ breakInside: 'avoid' }}>
-            <Labelled title={plans.length > 1 ? t.choosePlan : t.plan}>
+            <Labelled
+              title={t(plans.length > 1 ? m.doc_choose_plan : m.doc_plan)}
+            >
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {plans.map((plan) => (
                   <p key={plan.id} style={{ ...detail, color: ink }}>
                     {plan.name && (
                       <span style={{ fontWeight: 600 }}>{plan.name}. </span>
                     )}
-                    {planTerms(plan, language, d.currency, (day) =>
-                      formatDay(day, language),
-                    )}
+                    {planTerms(plan, language, d.currency)}
                   </p>
                 ))}
               </div>
@@ -421,7 +441,7 @@ export function InvoiceDocument({
         )}
         {(d.paymentTerms || bank.length > 0) && (
           <div style={{ breakInside: 'avoid' }}>
-            <Labelled title={t.terms}>
+            <Labelled title={t(m.doc_terms)}>
               <p style={{ ...detail, whiteSpace: 'pre-wrap' }}>
                 {[d.paymentTerms, ...bank].filter(Boolean).join('\n')}
               </p>
@@ -430,7 +450,7 @@ export function InvoiceDocument({
         )}
         {d.notes && (
           <div style={{ breakInside: 'avoid' }}>
-            <Labelled title={t.notes}>
+            <Labelled title={t(m.doc_notes)}>
               <p style={{ ...detail, whiteSpace: 'pre-wrap' }}>{d.notes}</p>
             </Labelled>
           </div>
@@ -467,7 +487,7 @@ export async function renderInvoice(
   language: Language = invoice.data.language,
   plans: readonly PaymentPlan[] = [],
 ): Promise<Uint8Array> {
-  const t = documentLabels[language];
+  const t = translate(language);
   const fonts = [
     { url: regular, weight: 400, style: 'normal' },
     { url: italic, weight: 400, style: 'italic' },
@@ -493,7 +513,7 @@ export async function renderInvoice(
       tagged: 'ua1',
       lang: language,
       metadata: {
-        title: `${t[invoice.data.kind]} ${invoice.number || t.draft}`,
+        title: `${t(m.doc_kind, { kind: invoice.data.kind })} ${invoice.number || t(m.doc_draft)}`,
         authors: [invoice.data.issuer.name || 'Invoice workspace'],
         creationDate: invoice.createdAt.slice(0, 19),
       },
@@ -509,9 +529,16 @@ export async function renderInvoice(
             padding: `0 ${side}px`,
           }}
         >
-          <span>{invoice.number || t.draft}</span>
+          <span>{invoice.number || t(m.doc_draft)}</span>
           <span>
-            {t.page} <PageNumber /> {t.of} <TotalPages />
+            <Message
+              message={m.doc_page_of}
+              options={{ locale: language }}
+              markup={{
+                current: () => <PageNumber />,
+                total: () => <TotalPages />,
+              }}
+            />
           </span>
         </div>
       ),

@@ -1,3 +1,4 @@
+import { locales } from '@portfolio/i18n';
 import { Schema } from 'effect';
 import { Address, blankAddress } from './address';
 import { blankPages, Pages } from './pages';
@@ -17,7 +18,8 @@ export const RecordId = Schema.String.check(Schema.isUUID()).pipe(
   Schema.brand('RecordId'),
 );
 export type RecordId = typeof RecordId.Type;
-export const Language = Schema.Literals(['en', 'es']);
+/** The languages a document can be written in: the ones the messages speak. */
+export const Language = Schema.Literals(locales);
 export type Language = typeof Language.Type;
 export const Currency = Schema.Literals(['EUR', 'USD', 'GBP']);
 export type Currency = typeof Currency.Type;

@@ -2,6 +2,7 @@
 
 - Invoicing app (`apps/start/src/features`, `packages/invoices`): read [the invoicing plan](docs/plans/invoicing.md) before you change it. It records what each part does and why. The sources behind those decisions are in [`docs/research`](docs/research).
 - Database tables: edit `tables.ts`, then generate the migration with the `db:generate` script of that package. A migration that has run is history; change the schema with a new one on top.
+- Words a customer, a PDF or an email says live in `packages/i18n/messages/{es,en}.json` (Paraglide JS; Spanish is the base language). Add a message to both files, then call it as `t(m.key, inputs)` with `translate(locale)` on the server or `useT()` under a `<Speak>`. Never branch on a language: plurals, dates, numbers and word order belong in the message. `messages.test.ts` holds the two files to the same keys and placeholders.
 
 ## Agents can do what the owner can
 

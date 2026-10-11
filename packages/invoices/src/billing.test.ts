@@ -3,7 +3,6 @@ import { describe, expect, it } from 'vitest';
 import { billData, bills, planTerms } from './billing';
 import { calculate } from './calculate';
 import { quoteSpecimen } from './fixtures';
-import { formatDay } from './labels';
 import { RecordId } from './model';
 import { inFull, type PaymentPlan } from './plan';
 
@@ -83,12 +82,14 @@ describe('billing a quote', () => {
   });
 
   it('states a plan in words before anyone knows the dates', () => {
-    const day = (value: string) => formatDay(value, 'en');
-    expect(planTerms(thirds, 'en', 'EUR', day)).toBe(
-      '30 % on acceptance, then 33.33 % 3 weeks after acceptance, then the rest on delivery.',
+    expect(planTerms(thirds, 'en', 'EUR')).toBe(
+      '30% on acceptance, 33.33% 3 weeks after acceptance, and the rest on delivery.',
     );
-    expect(planTerms(inFull, 'es', 'EUR', day)).toBe(
-      'El importe completo a la entrega.',
+    expect(planTerms(thirds, 'es', 'EUR')).toBe(
+      '30\u00a0% al aceptar, 33,33\u00a0% 3 semanas después de la aceptación y el resto a la entrega.',
+    );
+    expect(planTerms(inFull, 'es', 'EUR')).toBe(
+      'El importe total a la entrega.',
     );
   });
 });

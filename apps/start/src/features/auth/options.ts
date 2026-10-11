@@ -2,6 +2,8 @@ import { cimd } from '@better-auth/cimd';
 import { fetchClientMetadataResource } from '@better-auth/cimd/node';
 import { mcp } from '@better-auth/mcp';
 import { type AtprotoProfile, atproto } from '@portfolio/auth-atproto';
+import { baseLocale } from '@portfolio/i18n';
+import { extractLocaleFromRequest } from '@portfolio/i18n/runtime';
 import type { Language } from '@portfolio/invoices/model';
 import { OwnerDid } from '@portfolio/invoices/model';
 import type { BetterAuthOptions, BetterAuthPlugin } from 'better-auth';
@@ -117,11 +119,14 @@ export const authOptions = (deps: AuthDependencies) =>
               : !(await deps.admits(email))
           )
             return;
-          const accept = ctx.request?.headers.get('accept-language') ?? '';
+          // The page that asked spoke the visitor's language and kept it
+          // in a cookie; the code arrives in the same one.
           await deps.sendCode({
             to: email,
             code: otp,
-            language: accept.toLowerCase().startsWith('es') ? 'es' : 'en',
+            language: ctx.request
+              ? extractLocaleFromRequest(ctx.request)
+              : baseLocale,
           });
         },
       }),

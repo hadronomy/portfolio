@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@portfolio/database": "workspace:*",
+    "@portfolio/i18n": "workspace:*",
     "@tiptap/core": "3.31.4",
     "@tiptap/extension-table": "3.31.4",
     "@tiptap/markdown": "3.31.4",

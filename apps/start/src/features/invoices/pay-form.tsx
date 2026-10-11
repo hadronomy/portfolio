@@ -1,3 +1,4 @@
+import { m } from '@portfolio/i18n/messages';
 import {
   type CheckoutInvoice,
   PayFailure,
@@ -27,16 +28,10 @@ import {
   useRef,
   useState,
 } from 'react';
+import { useT } from '../../lib/i18n';
 import { type Access, beginPayment } from './api';
 import { currencySymbol } from './choices';
-import {
-  fromCents,
-  moneyOf,
-  readAmount,
-  toCents,
-  type Words,
-  words,
-} from './pay-words';
+import { decimalMark, fromCents, moneyOf, readAmount, toCents } from './money';
 import { planLine, planName } from './plan-words';
 import { PlanSchedule, partName } from './schedule';
 import { Button, MorphText } from './ui';
@@ -209,7 +204,7 @@ function PayForm({
   const stripe = useStripe();
   const elements = useElements();
   const router = useRouter();
-  const t: Words = words[invoice.language];
+  const t = useT();
   const money = moneyOf(invoice);
   const name = useId();
   const amountId = useId();
@@ -280,7 +275,7 @@ function PayForm({
           fromCents(paymentIntent.amount),
           paymentIntent.status === 'succeeded',
         );
-      else setPhase({ _tag: 'Failed', message: t.failed });
+      else setPhase({ _tag: 'Failed', message: t(m.pay_failed) });
     });
   }, [stripe, onPaid, t]);
 
@@ -308,7 +303,8 @@ function PayForm({
           setPhase({ _tag: 'Ready' });
           router.invalidate();
         },
-        Unreachable: () => setPhase({ _tag: 'Failed', message: t.unreachable }),
+        Unreachable: () =>
+          setPhase({ _tag: 'Failed', message: t(m.pay_unreachable) }),
       });
       return;
     }
@@ -326,7 +322,7 @@ function PayForm({
         result.error.type === 'validation_error';
       setPhase({
         _tag: 'Failed',
-        message: (own && result.error.message) || t.failed,
+        message: (own && result.error.message) || t(m.pay_failed),
       });
       return;
     }
@@ -335,33 +331,36 @@ function PayForm({
       setPhase({ _tag: 'Ready' });
       setText('');
       onPaid(amount, status === 'succeeded');
-    } else setPhase({ _tag: 'Failed', message: t.failed });
+    } else setPhase({ _tag: 'Failed', message: t(m.pay_failed) });
   }
 
   const hint =
     range &&
     (touched && problem
       ? problem === 'unreadable'
-        ? t.unreadable
+        ? t(m.pay_unreadable)
         : problem === 'small'
-          ? t.tooSmall(money(range.minimum))
-          : t.tooLarge(money(range.maximum))
-      : t.range(money(range.minimum), money(range.maximum)));
+          ? t(m.pay_too_small, { from: money(range.minimum) })
+          : t(m.pay_too_large, { to: money(range.maximum) })
+      : t(m.pay_range, {
+          from: money(range.minimum),
+          to: money(range.maximum),
+        }));
 
   /** What a set payment is called, and the line under it. */
   const describe = (choice: Choice): [string, string | null] => {
     // The date is already above, in the stub's headline and the plan.
-    if (schedule.instalments.length === 1) return [t.whole, null];
+    if (schedule.instalments.length === 1) return [t(m.pay_whole), null];
     if (choice.kind === 'next' && next >= 0)
       return [partName(t, schedule.instalments, next), null];
-    return [t.choices[choice.kind], null];
+    return [t(m.pay_choice, { choice: choice.kind }), null];
   };
 
   return (
     <form className="iv-pay-form" onSubmit={submit} aria-busy={busy} noValidate>
       {plans.length > 1 && (
         <fieldset className="iv-pay-options iv-pay-plans" disabled={busy}>
-          <legend>{t.howToPay}</legend>
+          <legend>{t(m.pay_how_to_pay)}</legend>
           {plans.map((choice) => {
             const { instalments } = choice.schedule;
             const range = choice.options.range;
@@ -375,15 +374,11 @@ function PayForm({
                 />
                 <span className="iv-pay-option-what">
                   <strong>
-                    {planName(
-                      choice.schedule.plan,
-                      instalments,
-                      invoice.language,
-                    )}
+                    {planName(choice.schedule.plan, instalments, t)}
                   </strong>
                   <span>
                     {planLine(choice.schedule.plan, instalments, {
-                      language: invoice.language,
+                      t,
                       currency: invoice.currency,
                       today: today(),
                       ...(range ? { floor: range.minimum } : {}),
@@ -397,7 +392,7 @@ function PayForm({
                         ?.amount ?? invoice.remaining,
                     )}
                   </span>
-                  <small>{t.payNow}</small>
+                  <small>{t(m.pay_pay_now)}</small>
                 </span>
               </label>
             );
@@ -406,27 +401,18 @@ function PayForm({
       )}
       {locked && (
         <p className="iv-pay-plan-kept">
-          {t.yourPlan(
-            planName(
-              plan.schedule.plan,
-              schedule.instalments,
-              invoice.language,
-            ),
-          )}
+          {t(m.pay_your_plan, {
+            name: planName(plan.schedule.plan, schedule.instalments, t),
+          })}
         </p>
       )}
-      <PlanSchedule
-        schedule={schedule}
-        invoice={invoice}
-        pending={amount}
-        t={t}
-      />
+      <PlanSchedule schedule={schedule} invoice={invoice} pending={amount} />
       {offered > 1 && (
         <fieldset className="iv-pay-options" disabled={busy}>
           <legend
             className={plans.length > 1 ? 'iv-pay-amount-legend' : 'iv-sr'}
           >
-            {plans.length > 1 ? t.howMuchNow : t.howMuch}
+            {t(plans.length > 1 ? m.pay_how_much_now : m.pay_how_much)}
           </legend>
           {choices.map((choice, index) => {
             const [title, detail] = describe(choice);
@@ -463,14 +449,14 @@ function PayForm({
                   }}
                 />
                 <span className="iv-pay-option-what">
-                  <strong>{t.other}</strong>
+                  <strong>{t(m.pay_other)}</strong>
                 </span>
               </label>
               <div className="iv-pay-part" data-open={pick === 'other'}>
                 <div>
                   <div>
                     <label className="iv-sr" htmlFor={amountId}>
-                      {t.howMuch}
+                      {t(m.pay_how_much)}
                     </label>
                     <div
                       className="iv-pay-amount"
@@ -487,7 +473,7 @@ function PayForm({
                         autoComplete="off"
                         placeholder={range.minimum.replace(
                           '.',
-                          invoice.language === 'es' ? ',' : '.',
+                          decimalMark(invoice.language),
                         )}
                         disabled={busy || pick !== 'other'}
                         tabIndex={pick === 'other' ? 0 : -1}
@@ -501,9 +487,7 @@ function PayForm({
                           // what will be paid.
                           if (typed)
                             setText(
-                              invoice.language === 'es'
-                                ? typed.replace('.', ',')
-                                : typed,
+                              typed.replace('.', decimalMark(invoice.language)),
                             );
                         }}
                       />
@@ -539,7 +523,9 @@ function PayForm({
             },
           }}
           onReady={() => setLoaded(true)}
-          onLoadError={() => setPhase({ _tag: 'Failed', message: t.unloaded })}
+          onLoadError={() =>
+            setPhase({ _tag: 'Failed', message: t(m.pay_unloaded) })
+          }
         />
       </div>
       <p className="iv-pay-error" role="alert">
@@ -553,8 +539,12 @@ function PayForm({
       >
         <MorphText>
           {busy
-            ? t.confirming
-            : t.pay(money(amount ?? choices[0]?.amount ?? invoice.remaining))}
+            ? t(m.pay_confirming)
+            : t(m.pay_pay, {
+                amount: money(
+                  amount ?? choices[0]?.amount ?? invoice.remaining,
+                ),
+              })}
         </MorphText>
       </Button>
     </form>

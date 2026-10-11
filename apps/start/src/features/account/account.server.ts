@@ -63,7 +63,7 @@ export const accountPage = Effect.fn('Account.page')(function* () {
 /** One invoice's page in the account. */
 export type AccountInvoice =
   | { readonly _tag: 'SignedOut' }
-  | { readonly _tag: 'Missing' }
+  | { readonly _tag: 'Missing'; readonly language: Language }
   | {
       readonly _tag: 'Found';
       readonly id: InvoiceId;
@@ -80,7 +80,7 @@ export const accountInvoice = Effect.fn('Account.invoice')(function* (
   const found = yield* checkout({ _tag: 'Account', id });
   const result: AccountInvoice = found
     ? { _tag: 'Found', id, ...found }
-    : { _tag: 'Missing' };
+    : { _tag: 'Missing', language: yield* requestLanguage };
   return result;
 });
 

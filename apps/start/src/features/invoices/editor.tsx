@@ -1782,7 +1782,7 @@ const PlanSection = memo(function PlanSection({
             {plans.map((plan) => (
               <li key={plan.id}>
                 {plan.name && <strong>{plan.name}. </strong>}
-                {planTerms(plan, 'en', currency, day)}
+                {planTerms(plan, 'en', currency)}
               </li>
             ))}
           </ul>

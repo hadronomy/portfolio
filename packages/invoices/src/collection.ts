@@ -1,4 +1,6 @@
 import { createHash } from 'node:crypto';
+import { translate } from '@portfolio/i18n';
+import { m } from '@portfolio/i18n/messages';
 import Decimal from 'decimal.js';
 import { and, asc, eq, gt, isNotNull, ne, or } from 'drizzle-orm';
 import { Context, Effect, Layer, Schema } from 'effect';
@@ -12,7 +14,6 @@ import {
   Review,
 } from './collection-model';
 import { InvoiceDatabase } from './database';
-import { documentLabels } from './labels';
 import {
   type LinkInvalid,
   type LinkToken,
@@ -259,7 +260,7 @@ function summary(
   const totals = calculate(data);
   const { language } = data;
   const home = data.issuer.address.country;
-  const taxLabel = documentLabels[language].taxId;
+  const taxLabel = translate(language)(m.doc_tax_id);
   const active = payments
     .filter((payment) => !payment.reversedAt)
     .sort((a, b) => a.date.localeCompare(b.date));

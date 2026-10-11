@@ -1,4 +1,5 @@
 import { fileURLToPath } from 'node:url';
+import { paraglideVitePlugin } from '@inlang/paraglide-js';
 import tailwindcss from '@tailwindcss/vite';
 import { tanstackStart } from '@tanstack/react-start/plugin/vite';
 import react from '@vitejs/plugin-react';
@@ -24,6 +25,17 @@ export default defineConfig({
   // each other through it.
   resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
   plugins: [
+    // Recompiles the messages as they are edited; the i18n package's own
+    // build does the same outside Vite. Both read project.inlang.
+    paraglideVitePlugin({
+      project: fileURLToPath(
+        new URL('../../packages/i18n/project.inlang', import.meta.url),
+      ),
+      outdir: fileURLToPath(
+        new URL('../../packages/i18n/src/paraglide', import.meta.url),
+      ),
+      emitTsDeclarations: true,
+    }),
     tanstackStart({
       router: {
         basepath: '/',

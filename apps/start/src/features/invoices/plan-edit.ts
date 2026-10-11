@@ -8,7 +8,7 @@ import {
   type Terms,
 } from '@portfolio/invoices/plan';
 import { minimumCharge } from '@portfolio/invoices/stripe/projection';
-import { toCents } from './pay-words';
+import { toCents } from './money';
 import { once, percent, series } from './plan-starters';
 
 // Edits the studio makes to a plan. Each takes a plan and returns the next

@@ -1,0 +1,1219 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "date_long": [
+    {
+      "declarations": [
+        "input date",
+        "local d = date: datetime dateStyle=long timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "{d}"
+      }
+    }
+  ],
+  "date_document": [
+    {
+      "declarations": [
+        "input date",
+        "local d = date: datetime day=numeric month=short year=numeric timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "{d}"
+      }
+    }
+  ],
+  "date_short": [
+    {
+      "declarations": [
+        "input date",
+        "local d = date: datetime day=numeric month=short timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "{d}"
+      }
+    }
+  ],
+  "percent": [
+    {
+      "declarations": [
+        "input value",
+        "local p = value: number maximumFractionDigits=2"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "{p}%"
+      }
+    }
+  ],
+  "span": [
+    {
+      "declarations": [
+        "input count",
+        "input unit",
+        "local countPlural = count: plural"
+      ],
+      "selectors": ["unit", "countPlural"],
+      "match": {
+        "unit=day, countPlural=one": "{count} day",
+        "unit=day, countPlural=*": "{count} days",
+        "unit=week, countPlural=one": "{count} week",
+        "unit=week, countPlural=*": "{count} weeks",
+        "unit=month, countPlural=one": "{count} month",
+        "unit=month, countPlural=*": "{count} months",
+        "unit=*, countPlural=*": "{count}"
+      }
+    }
+  ],
+  "doc_kind": [
+    {
+      "declarations": ["input kind"],
+      "selectors": ["kind"],
+      "match": {
+        "kind=invoice": "Invoice",
+        "kind=rectification": "Rectifying invoice",
+        "kind=quote": "Quote",
+        "kind=*": "Invoice"
+      }
+    }
+  ],
+  "doc_draft": "Draft · Not issued",
+  "doc_prepared_for": "Prepared for",
+  "doc_valid_until": "Valid until",
+  "doc_planned_start": "Planned start",
+  "doc_taxes_included": "All prices include IGIC and every other applicable tax.",
+  "doc_legal": "Legal information",
+  "doc_legal_lede": "What the law asks you to know before you accept this quote.",
+  "doc_withdrawal_form": "Model withdrawal form",
+  "doc_plan": "Payment plan",
+  "doc_choose_plan": "Payment plans · choose one when accepting",
+  "doc_from": "From",
+  "doc_bill_to": "Bill to",
+  "doc_issued": "Issue date",
+  "doc_supplied": "Supply date",
+  "doc_due": "Due date",
+  "doc_tax_id": "Tax ID",
+  "doc_description": "Description",
+  "doc_quantity": "Qty",
+  "doc_price": "Price",
+  "doc_amount": "Amount",
+  "doc_subtotal": "Subtotal",
+  "doc_discount": "Discount",
+  "doc_tax_on": [
+    {
+      "declarations": [
+        "input treatment",
+        "input rate",
+        "input base",
+        "local r = rate: number maximumFractionDigits=2"
+      ],
+      "selectors": ["treatment"],
+      "match": {
+        "treatment=taxable": "IGIC {r}% on {base}",
+        "treatment=exempt": "Exempt on {base}",
+        "treatment=outside-scope": "Outside scope on {base}",
+        "treatment=reverse-charge": "Reverse charge on {base}",
+        "treatment=*": "{base}"
+      }
+    }
+  ],
+  "doc_line_discount": [
+    {
+      "declarations": ["input value"],
+      "selectors": [],
+      "match": {
+        "*": "Discount {value}"
+      }
+    }
+  ],
+  "doc_withholding": "Withholding",
+  "doc_withholding_rate": [
+    {
+      "declarations": [
+        "input rate",
+        "local r = rate: number maximumFractionDigits=2"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "Withholding {r}%"
+      }
+    }
+  ],
+  "doc_disbursements": "Disbursements",
+  "doc_total": "Total",
+  "doc_terms": "Payment details",
+  "doc_bank": "Bank",
+  "doc_iban": "IBAN",
+  "doc_bic": "SWIFT / BIC",
+  "doc_notes": "Notes",
+  "doc_reference_line": [
+    {
+      "declarations": ["input reference"],
+      "selectors": [],
+      "match": {
+        "*": "Reference: {reference}"
+      }
+    }
+  ],
+  "doc_page_of": "Page {#current/} of {#total/}",
+  "doc_treatment": [
+    {
+      "declarations": ["input treatment"],
+      "selectors": ["treatment"],
+      "match": {
+        "treatment=exempt": "Exempt",
+        "treatment=outside-scope": "Outside scope",
+        "treatment=reverse-charge": "Reverse charge",
+        "treatment=*": ""
+      }
+    }
+  ],
+  "doc_correction": [
+    {
+      "declarations": ["input number", "input reason"],
+      "selectors": [],
+      "match": {
+        "*": "Rectifies invoice {number}. Reason: {reason}"
+      }
+    }
+  ],
+  "doc_line_tax": [
+    {
+      "declarations": [
+        "input treatment",
+        "input rate",
+        "local r = rate: number maximumFractionDigits=2"
+      ],
+      "selectors": ["treatment"],
+      "match": {
+        "treatment=taxable": "IGIC {r}%",
+        "treatment=exempt": "Exempt",
+        "treatment=outside-scope": "Outside scope",
+        "treatment=reverse-charge": "Reverse charge",
+        "treatment=*": ""
+      }
+    }
+  ],
+  "notice_validity_title": "Validity",
+  "notice_validity": [
+    {
+      "declarations": [
+        "input until",
+        "local day = until: datetime day=numeric month=short year=numeric timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "This quote is valid until {day}. Once accepted, it binds both parties on its terms. It is not an invoice: each payment is invoiced when it falls due."
+      }
+    }
+  ],
+  "notice_price_title": "Price",
+  "notice_price": "The total price includes IGIC and every other applicable tax.",
+  "notice_acceptance_title": "How to accept",
+  "notice_acceptance": [
+    {
+      "declarations": ["input issuer", "input language"],
+      "selectors": [],
+      "match": {
+        "*": "The customer opens the quote's link, reads it, types their full name, draws their signature, and accepts it. That acceptance is their electronic signature. {issuer} keeps the accepted document and emails a copy within 24 hours. Before accepting, the customer can ask for a revised quote to correct anything. The contract is concluded in {language}."
+      }
+    }
+  ],
+  "notice_contract_language": [
+    {
+      "declarations": ["input language"],
+      "selectors": ["language"],
+      "match": {
+        "language=en": "English",
+        "language=es": "Spanish",
+        "language=*": ""
+      }
+    }
+  ],
+  "notice_withdrawal_title": "Right of withdrawal",
+  "notice_withdrawal": [
+    {
+      "declarations": ["input email"],
+      "selectors": [],
+      "match": {
+        "*": "The customer can withdraw from the contract within 14 calendar days of the day they accept the quote, without giving any reason and at no cost. To do so, they only need to say so clearly to {email}, for example with the form at the end of this document. Work does not start within that period unless the customer expressly asks for it when accepting. In that case, if they then withdraw, they pay for the part already done in proportion to the total price, and they lose the right once the work is fully done."
+      }
+    }
+  ],
+  "notice_complaints_title": "Customer service",
+  "notice_complaints": [
+    {
+      "declarations": ["input email"],
+      "selectors": [],
+      "match": {
+        "*": "Complaints are handled at {email}, with an answer within one month. Official complaint forms are available to the customer."
+      }
+    }
+  ],
+  "notice_privacy_title": "Data protection",
+  "notice_privacy": [
+    {
+      "declarations": ["input controller", "input email"],
+      "selectors": [],
+      "match": {
+        "*": "{controller} processes the customer's data to prepare this quote and, if it is accepted, to perform the contract. It keeps the data for the length of the relationship and the periods the law sets. The customer can ask for access, rectification, erasure, restriction, or portability of their data, or object to its processing, at {email}, and can complain to the Spanish Data Protection Agency (aepd.es)."
+      }
+    }
+  ],
+  "withdrawal_lede": "Complete and return it only if you wish to withdraw from the contract.",
+  "withdrawal_to": "To",
+  "withdrawal_notice_label": "Notice",
+  "withdrawal_notice": [
+    {
+      "declarations": ["input service"],
+      "selectors": [],
+      "match": {
+        "*": "I hereby give notice that I withdraw from my contract for the provision of the following service: {service}."
+      }
+    }
+  ],
+  "withdrawal_accepted_on": "Accepted on",
+  "withdrawal_name": "Name of consumer",
+  "withdrawal_address": "Address of consumer",
+  "withdrawal_signature": "Signature of consumer (only if this form is notified on paper)",
+  "withdrawal_date": "Date",
+  "bill_payment_of": [
+    {
+      "declarations": ["input index", "input count"],
+      "selectors": [],
+      "match": {
+        "*": "Payment {index} of {count}"
+      }
+    }
+  ],
+  "bill_reference": [
+    {
+      "declarations": ["input number"],
+      "selectors": [],
+      "match": {
+        "*": "Quote {number}"
+      }
+    }
+  ],
+  "terms_on_acceptance": "on acceptance",
+  "terms_on_delivery": "on delivery",
+  "terms_on_day": [
+    {
+      "declarations": [
+        "input date",
+        "local d = date: datetime day=numeric month=short year=numeric timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "on {d}"
+      }
+    }
+  ],
+  "terms_after_acceptance": [
+    {
+      "declarations": ["input span"],
+      "selectors": [],
+      "match": {
+        "*": "{span} after acceptance"
+      }
+    }
+  ],
+  "terms_later": [
+    {
+      "declarations": ["input span"],
+      "selectors": [],
+      "match": {
+        "*": "{span} later"
+      }
+    }
+  ],
+  "terms_rest": "the rest",
+  "terms_part": [
+    {
+      "declarations": ["input portion", "input due"],
+      "selectors": [],
+      "match": {
+        "*": "{portion} {due}"
+      }
+    }
+  ],
+  "terms_whole": [
+    {
+      "declarations": ["input due"],
+      "selectors": [],
+      "match": {
+        "*": "The full amount {due}."
+      }
+    }
+  ],
+  "terms_series": [
+    {
+      "declarations": [
+        "input portion",
+        "input count",
+        "input every",
+        "input first"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "{portion} in {count} payments {every}, the first {first}"
+      }
+    }
+  ],
+  "terms_every": [
+    {
+      "declarations": [
+        "input count",
+        "input unit",
+        "local countPlural = count: plural"
+      ],
+      "selectors": ["unit", "countPlural"],
+      "match": {
+        "unit=day, countPlural=one": "every day",
+        "unit=week, countPlural=one": "every week",
+        "unit=month, countPlural=one": "every month",
+        "unit=day, countPlural=*": "every {count} days",
+        "unit=week, countPlural=*": "every {count} weeks",
+        "unit=month, countPlural=*": "every {count} months",
+        "unit=*, countPlural=*": ""
+      }
+    }
+  ],
+  "plan_now": "now",
+  "plan_on": [
+    {
+      "declarations": ["input date"],
+      "selectors": [],
+      "match": {
+        "*": "on {date}"
+      }
+    }
+  ],
+  "plan_from": [
+    {
+      "declarations": ["input date"],
+      "selectors": [],
+      "match": {
+        "*": " from {date}"
+      }
+    }
+  ],
+  "plan_by": [
+    {
+      "declarations": ["input amount", "input date"],
+      "selectors": [],
+      "match": {
+        "*": "{amount} by {date}"
+      }
+    }
+  ],
+  "plan_any": [
+    {
+      "declarations": ["input floor", "input date"],
+      "selectors": [],
+      "match": {
+        "*": "Any amount from {floor}, until {date}"
+      }
+    }
+  ],
+  "plan_every": [
+    {
+      "declarations": [
+        "input count",
+        "input unit",
+        "local countPlural = count: plural"
+      ],
+      "selectors": ["unit", "countPlural"],
+      "match": {
+        "unit=day, countPlural=one": "daily",
+        "unit=week, countPlural=one": "weekly",
+        "unit=month, countPlural=one": "monthly",
+        "unit=day, countPlural=*": "every {count} days",
+        "unit=week, countPlural=*": "every {count} weeks",
+        "unit=month, countPlural=*": "every {count} months",
+        "unit=*, countPlural=*": ""
+      }
+    }
+  ],
+  "plan_whole": "Pay in full",
+  "plan_flexible": "Pay as you go",
+  "plan_payments": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} payment",
+        "countPlural=other": "{count} payments"
+      }
+    }
+  ],
+  "pay_title": [
+    {
+      "declarations": ["input number", "input issuer"],
+      "selectors": [],
+      "match": {
+        "*": "Invoice {number} · {issuer}"
+      }
+    }
+  ],
+  "pay_title_unknown": "Payment link",
+  "pay_invoice": "Invoice",
+  "pay_from": "From",
+  "pay_billed_to": "Billed to",
+  "pay_issued": [
+    {
+      "declarations": [
+        "input date",
+        "local d = date: datetime dateStyle=long timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "Issued {d}"
+      }
+    }
+  ],
+  "pay_more": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Show {count} more line",
+        "countPlural=other": "Show {count} more lines"
+      }
+    }
+  ],
+  "pay_fewer": "Show fewer lines",
+  "pay_subtotal": "Subtotal",
+  "pay_discount": "Discount",
+  "pay_tax": [
+    {
+      "declarations": [
+        "input rate",
+        "local r = rate: number maximumFractionDigits=2"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "IGIC {r}%"
+      }
+    }
+  ],
+  "pay_withholding": "Withholding",
+  "pay_disbursements": "Disbursements",
+  "pay_total": "Total",
+  "pay_received": [
+    {
+      "declarations": [
+        "input date",
+        "local d = date: datetime dateStyle=long timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "Received {d}"
+      }
+    }
+  ],
+  "pay_pdf": "PDF",
+  "pay_pdf_label": "Download the invoice as a PDF",
+  "pay_due": "Amount due",
+  "pay_amount_paid": "Amount paid",
+  "pay_due_on": [
+    {
+      "declarations": [
+        "input date",
+        "local d = date: datetime dateStyle=long timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "Due {d}"
+      }
+    }
+  ],
+  "pay_overdue": [
+    {
+      "declarations": [
+        "input date",
+        "local d = date: datetime dateStyle=long timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "Was due {d}"
+      }
+    }
+  ],
+  "pay_next_payment": "Next payment",
+  "pay_due_now": "Due now",
+  "pay_payment_of": [
+    {
+      "declarations": ["input index", "input count"],
+      "selectors": [],
+      "match": {
+        "*": "Payment {index} of {count}"
+      }
+    }
+  ],
+  "pay_plan": "Payment plan",
+  "pay_how_to_pay": "How would you like to pay?",
+  "pay_pay_now": "to pay now",
+  "pay_how_much_now": "How much now?",
+  "pay_your_plan": [
+    {
+      "declarations": ["input name"],
+      "selectors": [],
+      "match": {
+        "*": "Your plan: {name}"
+      }
+    }
+  ],
+  "pay_left": [
+    {
+      "declarations": ["input amount"],
+      "selectors": [],
+      "match": {
+        "*": "{amount} left"
+      }
+    }
+  ],
+  "pay_paid_part": [
+    {
+      "declarations": ["input amount"],
+      "selectors": [],
+      "match": {
+        "*": "{amount} paid"
+      }
+    }
+  ],
+  "pay_state": [
+    {
+      "declarations": ["input state"],
+      "selectors": ["state"],
+      "match": {
+        "state=paid": "Paid",
+        "state=due": "Due today",
+        "state=late": "Late",
+        "state=*": ""
+      }
+    }
+  ],
+  "pay_choice": [
+    {
+      "declarations": ["input choice"],
+      "selectors": ["choice"],
+      "match": {
+        "choice=next": "Next payment",
+        "choice=due": "Everything due now",
+        "choice=all": "Everything left",
+        "choice=*": ""
+      }
+    }
+  ],
+  "pay_whole": "Full amount",
+  "pay_other": "Another amount",
+  "pay_how_much": "Amount to pay",
+  "pay_range": [
+    {
+      "declarations": ["input from", "input to"],
+      "selectors": [],
+      "match": {
+        "*": "From {from} to {to}."
+      }
+    }
+  ],
+  "pay_too_small": [
+    {
+      "declarations": ["input from"],
+      "selectors": [],
+      "match": {
+        "*": "Pay at least {from}."
+      }
+    }
+  ],
+  "pay_too_large": [
+    {
+      "declarations": ["input to"],
+      "selectors": [],
+      "match": {
+        "*": "Pay up to {to}, or choose everything left."
+      }
+    }
+  ],
+  "pay_unreadable": "Enter an amount like 250.00.",
+  "pay_pay": [
+    {
+      "declarations": ["input amount"],
+      "selectors": [],
+      "match": {
+        "*": "Pay {amount}"
+      }
+    }
+  ],
+  "pay_confirming": "Confirming…",
+  "pay_failed": "The payment did not go through. Check the details and try again.",
+  "pay_unreachable": "Payment could not start. Nothing was charged; try again in a moment.",
+  "pay_unloaded": "The payment form did not load. Reload the page to try again.",
+  "pay_thanks": [
+    {
+      "declarations": ["input amount"],
+      "selectors": [],
+      "match": {
+        "*": "{amount} received. Thank you."
+      }
+    }
+  ],
+  "pay_settling": "Payment taken. It shows here in a moment.",
+  "pay_processing": [
+    {
+      "declarations": ["input amount"],
+      "selectors": [],
+      "match": {
+        "*": "{amount} is on its way"
+      }
+    }
+  ],
+  "pay_processing_detail": "Your bank is confirming it. This page updates by itself once it clears.",
+  "pay_check": "Check now",
+  "pay_paid": "Paid in full",
+  "pay_paid_on": [
+    {
+      "declarations": [
+        "input date",
+        "local d = date: datetime dateStyle=long timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "Settled {d}. Thank you."
+      }
+    }
+  ],
+  "pay_stamp": "Paid",
+  "pay_paused": "Online payment is paused",
+  "pay_paused_detail": [
+    {
+      "declarations": ["input issuer"],
+      "selectors": [],
+      "match": {
+        "*": "{issuer} is reconciling this invoice. Get in touch to settle it."
+      }
+    }
+  ],
+  "pay_paused_detail_anonymous": "The sender is reconciling this invoice. Get in touch to settle it.",
+  "pay_write": [
+    {
+      "declarations": ["input email"],
+      "selectors": [],
+      "match": {
+        "*": "Write to {email}"
+      }
+    }
+  ],
+  "pay_secured": "Payments are processed by Stripe",
+  "pay_invalid": "This payment link does not open",
+  "pay_invalid_detail": "It may have expired or been closed. Ask the sender for a new one.",
+  "pay_keep": "Keep your invoices",
+  "pay_keep_detail": [
+    {
+      "declarations": ["input issuer"],
+      "selectors": [],
+      "match": {
+        "*": "See every invoice from {issuer} in one place, any time."
+      }
+    }
+  ],
+  "pay_keep_detail_anonymous": "See every invoice from this sender in one place, any time.",
+  "pay_kept": "This invoice is in your account.",
+  "pay_all_invoices": "All your invoices",
+  "pay_unavailable": "Payment is unavailable right now",
+  "pay_unavailable_detail": "Try again in a moment.",
+  "pay_try_again": "Try again",
+  "quote_title": [
+    {
+      "declarations": ["input number", "input issuer"],
+      "selectors": [],
+      "match": {
+        "*": "Quote {number} · {issuer}"
+      }
+    }
+  ],
+  "quote_quote": "Quote",
+  "quote_total": "Total, taxes included",
+  "quote_valid_until": [
+    {
+      "declarations": [
+        "input date",
+        "local d = date: datetime dateStyle=long timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "Valid until {d}"
+      }
+    }
+  ],
+  "quote_days_left": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["count", "countPlural"],
+      "match": {
+        "count=0, countPlural=*": "Last day",
+        "count=*, countPlural=one": "{count} day left",
+        "count=*, countPlural=other": "{count} days left"
+      }
+    }
+  ],
+  "quote_pdf": "PDF",
+  "quote_pdf_label": "Download the quote as a PDF",
+  "quote_pages": "The proposal",
+  "quote_legal": "Legal information",
+  "quote_how_you_pay": "How you pay",
+  "quote_option": [
+    {
+      "declarations": ["input index"],
+      "selectors": [],
+      "match": {
+        "*": "Option {index}"
+      }
+    }
+  ],
+  "quote_on_acceptance": "on acceptance",
+  "quote_paying": "You pay",
+  "quote_name": "Your full name",
+  "quote_name_placeholder": "As on your ID",
+  "quote_agree": "I have read this quote, its conditions and the legal information, and I accept them.",
+  "quote_early_start": "Start the work before the 14-day withdrawal period ends",
+  "quote_early_start_detail": "If you then withdraw, you pay for the part already done. You lose the right to withdraw once the work is fully done.",
+  "quote_accept": "Accept and sign",
+  "quote_accepting": "Signing",
+  "quote_decline": "Decline this quote",
+  "quote_decline_confirm": [
+    {
+      "declarations": ["input issuer"],
+      "selectors": [],
+      "match": {
+        "*": "{issuer} will see that you do not accept it."
+      }
+    }
+  ],
+  "quote_decline_yes": "Decline",
+  "quote_decline_no": "Keep it",
+  "quote_signature": "Your name and the signature you draw are your electronic signature. We keep the time, this browser and the fingerprint of the document you accept.",
+  "quote_sign": "Your signature",
+  "quote_sign_hint": "Sign here",
+  "quote_signed_by": [
+    {
+      "declarations": ["input name"],
+      "selectors": [],
+      "match": {
+        "*": "Signature of {name}"
+      }
+    }
+  ],
+  "quote_page_of": [
+    {
+      "declarations": ["input page", "input pages"],
+      "selectors": [],
+      "match": {
+        "*": "Page {page} of {pages}"
+      }
+    }
+  ],
+  "quote_page_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} page",
+        "countPlural=other": "{count} pages"
+      }
+    }
+  ],
+  "quote_as_text": "Read it as text",
+  "quote_review": "Review and sign",
+  "quote_answer": "See the answer",
+  "quote_back": "Back to the quote",
+  "quote_fingerprint": "Fingerprint",
+  "quote_stamp_accepted": "Accepted",
+  "quote_accepted": [
+    {
+      "declarations": [
+        "input name",
+        "input date",
+        "local d = date: datetime dateStyle=long timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "Accepted by {name} on {d}"
+      }
+    }
+  ],
+  "quote_accepted_on": [
+    {
+      "declarations": [
+        "input date",
+        "local d = date: datetime dateStyle=long timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "Accepted on {d}"
+      }
+    }
+  ],
+  "quote_declined_on": [
+    {
+      "declarations": [
+        "input date",
+        "local d = date: datetime dateStyle=long timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "Declined on {d}"
+      }
+    }
+  ],
+  "quote_declined": [
+    {
+      "declarations": [
+        "input name",
+        "input date",
+        "local d = date: datetime dateStyle=long timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "Declined by {name} on {d}"
+      }
+    }
+  ],
+  "quote_emailed": [
+    {
+      "declarations": ["input email"],
+      "selectors": [],
+      "match": {
+        "*": "A copy went to {email}."
+      }
+    }
+  ],
+  "quote_early_started": "You asked for the work to start within the withdrawal period.",
+  "quote_expired": [
+    {
+      "declarations": [
+        "input date",
+        "local d = date: datetime dateStyle=long timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "This quote expired on {d}"
+      }
+    }
+  ],
+  "quote_expired_detail": [
+    {
+      "declarations": ["input issuer"],
+      "selectors": [],
+      "match": {
+        "*": "Write to {issuer} for a new one."
+      }
+    }
+  ],
+  "quote_stale": "This quote changed while the page was open. Reload it to read the current version.",
+  "quote_reload": "Reload",
+  "quote_failed": "Your answer could not be saved. Try again in a moment.",
+  "quote_write": [
+    {
+      "declarations": ["input email"],
+      "selectors": [],
+      "match": {
+        "*": "Write to {email}"
+      }
+    }
+  ],
+  "quote_invalid": "This link does not open a quote",
+  "quote_invalid_detail": "It may have expired or been closed. Ask for a new link.",
+  "quote_lines": "Items",
+  "quote_from": "From",
+  "quote_to": "For",
+  "pad_undo": "Undo",
+  "pad_redo": "Redo",
+  "pad_clear": "Clear the signature",
+  "pad_state": [
+    {
+      "declarations": [
+        "input strokes",
+        "local strokesPlural = strokes: plural"
+      ],
+      "selectors": ["strokes", "strokesPlural"],
+      "match": {
+        "strokes=0, strokesPlural=*": "Empty. Draw with a mouse, a pen or a finger.",
+        "strokes=*, strokesPlural=one": "1 stroke. Draw with a mouse, a pen or a finger.",
+        "strokes=*, strokesPlural=other": "{strokes} strokes. Draw with a mouse, a pen or a finger."
+      }
+    }
+  ],
+  "pad_keys": "Control or Command Z undoes, with Shift it redoes, and Delete clears.",
+  "pad_added": [
+    {
+      "declarations": [
+        "input strokes",
+        "local strokesPlural = strokes: plural"
+      ],
+      "selectors": ["strokesPlural"],
+      "match": {
+        "strokesPlural=one": "Stroke added.",
+        "strokesPlural=other": "Stroke added. {strokes} in all."
+      }
+    }
+  ],
+  "pad_undone": "Undone",
+  "pad_redone": "Redone",
+  "pad_cleared": "Signature cleared. Undo brings it back.",
+  "account_page_title": "Your invoices",
+  "account_title": "Your invoices",
+  "account_intro": "Sign in with the email address your invoices are sent to.",
+  "account_unavailable": "Accounts are not open here yet. Your payment link still shows your invoice.",
+  "account_email": "Email address",
+  "account_email_missing": "Enter the address your invoices are sent to.",
+  "account_send": "Email me a code",
+  "account_sending": "Sending…",
+  "account_sent_to": [
+    {
+      "declarations": ["input email"],
+      "selectors": [],
+      "match": {
+        "*": "If {#address}{email}{/address} has invoices here, a code is on its way."
+      }
+    }
+  ],
+  "account_send_to": [
+    {
+      "declarations": ["input email"],
+      "selectors": [],
+      "match": {
+        "*": "We will send a code to {#address}{email}{/address}."
+      }
+    }
+  ],
+  "account_sent": [
+    {
+      "declarations": ["input email"],
+      "selectors": [],
+      "match": {
+        "*": "We sent a code to {#address}{email}{/address}."
+      }
+    }
+  ],
+  "account_code": "Code from the email",
+  "account_verifying": "Checking the code…",
+  "account_verified": "Signed in",
+  "account_resend": "Send a new code",
+  "account_resend_in": [
+    {
+      "declarations": [
+        "input seconds",
+        "local s = seconds: number minimumIntegerDigits=2"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "New code in 0:{s}"
+      }
+    }
+  ],
+  "account_resent": "A new code is on its way.",
+  "account_other": "Use another address",
+  "account_wrong": "That code is not right. Check the newest email.",
+  "account_expired": "That code expired. Send a new one.",
+  "account_too_many": "Too many tries. Send a new code.",
+  "account_slow_down": "Too many requests. Wait a minute and try again.",
+  "account_closed": "This address has no invoice with an open payment link.",
+  "account_failed": "Something went wrong. Try again.",
+  "account_sign_out": "Sign out",
+  "account_to_pay": "To pay",
+  "account_overdue_total": "Overdue",
+  "account_settled": "Nothing to pay",
+  "account_all_paid": "Every invoice is settled. Thank you.",
+  "account_empty": [
+    {
+      "declarations": ["input email"],
+      "selectors": [],
+      "match": {
+        "*": "No invoices yet. Invoices billed to {#address}{email}{/address} appear here once they are issued."
+      }
+    }
+  ],
+  "account_paid": "Paid",
+  "account_due": [
+    {
+      "declarations": [
+        "input date",
+        "local d = date: datetime dateStyle=long timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "Due {d}"
+      }
+    }
+  ],
+  "account_overdue": [
+    {
+      "declarations": [
+        "input date",
+        "local d = date: datetime dateStyle=long timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "Was due {d}"
+      }
+    }
+  ],
+  "account_next": [
+    {
+      "declarations": [
+        "input amount",
+        "input date",
+        "local d = date: datetime dateStyle=long timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "{amount} due {d}"
+      }
+    }
+  ],
+  "account_next_late": [
+    {
+      "declarations": [
+        "input amount",
+        "input date",
+        "local d = date: datetime dateStyle=long timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "{amount} was due {d}"
+      }
+    }
+  ],
+  "account_part": [
+    {
+      "declarations": ["input index", "input count"],
+      "selectors": [],
+      "match": {
+        "*": "{index} of {count}"
+      }
+    }
+  ],
+  "account_next_payment": "Next payment",
+  "account_late_payment": "Overdue payment",
+  "account_due_on": [
+    {
+      "declarations": [
+        "input date",
+        "local d = date: datetime dateStyle=long timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "due {d}"
+      }
+    }
+  ],
+  "account_overdue_on": [
+    {
+      "declarations": [
+        "input date",
+        "local d = date: datetime dateStyle=long timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "was due {d}"
+      }
+    }
+  ],
+  "account_pay": "Pay",
+  "account_open": [
+    {
+      "declarations": ["input number"],
+      "selectors": [],
+      "match": {
+        "*": "Open invoice {number}"
+      }
+    }
+  ],
+  "account_pdf": [
+    {
+      "declarations": ["input number"],
+      "selectors": [],
+      "match": {
+        "*": "Download invoice {number} as a PDF"
+      }
+    }
+  ],
+  "account_to_pay_group": "To pay",
+  "account_paid_group": "Paid",
+  "account_missing": "This invoice is not in your account",
+  "account_missing_detail": "It may be billed to another address. Your invoices are all in the list.",
+  "account_all_invoices": "All your invoices",
+  "starter_full": "Pay in full",
+  "starter_deposit": "Deposit",
+  "starter_balance": "Balance",
+  "starter_deposit_first": "Deposit, then the balance",
+  "starter_halves": "Two halves",
+  "starter_monthly": "Monthly",
+  "starter_deposit_monthly": "Deposit, then monthly",
+  "starter_kickoff": "Kick-off",
+  "starter_midpoint": "Midpoint",
+  "starter_delivery": "Delivery",
+  "starter_milestones": "By milestone",
+  "starter_flexible": "Pay as you go",
+  "typography_open_quote": "“",
+  "typography_close_quote": "”",
+  "closed_stamp": "Closed",
+  "language_switch": "Leer en español",
+  "language_switch_label": "Cambiar a español",
+  "mail_code_subject": [
+    {
+      "declarations": ["input code"],
+      "selectors": [],
+      "match": {
+        "*": "{code} is your code for your invoices"
+      }
+    }
+  ],
+  "mail_code_intro": "Enter this code to see your invoices from Hadronomy:",
+  "mail_code_expiry": "It works for 10 minutes.",
+  "mail_code_ignore": "If you did not ask for it, you can ignore this email.",
+  "mail_answer_subject": [
+    {
+      "declarations": ["input outcome", "input number", "input issuer"],
+      "selectors": ["outcome"],
+      "match": {
+        "outcome=accepted": "You accepted quote {number} from {issuer}",
+        "outcome=declined": "You declined quote {number} from {issuer}",
+        "outcome=*": ""
+      }
+    }
+  ],
+  "mail_answer_decided": [
+    {
+      "declarations": [
+        "input outcome",
+        "input name",
+        "input number",
+        "input issuer",
+        "input decidedAt",
+        "local at = decidedAt: datetime dateStyle=long timeStyle=short timeZone=UTC"
+      ],
+      "selectors": ["outcome"],
+      "match": {
+        "outcome=accepted": "{name} accepted quote {number} from {issuer} on {at} (UTC).",
+        "outcome=declined": "{name} declined quote {number} from {issuer} on {at} (UTC).",
+        "outcome=*": ""
+      }
+    }
+  ],
+  "mail_answer_early_start": "You asked for the work to start within the 14-day withdrawal period. If you withdraw, you pay for the part already done, and you lose the right once the work is fully done.",
+  "mail_answer_document": [
+    {
+      "declarations": ["input digest", "input url"],
+      "selectors": [],
+      "match": {
+        "*": "The document you answered has the SHA-256 fingerprint {digest}. You can read and download it at {url}"
+      }
+    }
+  ],
+  "mail_answer_keep": "Keep this email as your copy of the agreement."
+}

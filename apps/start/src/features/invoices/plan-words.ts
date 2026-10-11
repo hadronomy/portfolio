@@ -1,5 +1,7 @@
+import type { Translate } from '@portfolio/i18n';
+import { m } from '@portfolio/i18n/messages';
 import { formatMoney } from '@portfolio/invoices/calculate';
-import type { Currency, Language } from '@portfolio/invoices/model';
+import type { Currency } from '@portfolio/invoices/model';
 import type {
   Due,
   PaymentPlan,
@@ -14,11 +16,9 @@ import { createContext } from 'react';
 // each piece of a sentence on its own; the customer only ever reads a plan
 // whole, as one line, in the invoice's language.
 
-const locale = (language: Language) => (language === 'es' ? 'es-ES' : 'en-GB');
-
-/** "1 Oct", or "1 Oct 2027" outside `year`. */
-export function shortDate(language: Language, date: string, year?: string) {
-  return new Intl.DateTimeFormat(locale(language), {
+/** "1 Oct", or "1 Oct 2027" outside `year`, in the owner's English. */
+export function shortDate(date: string, year?: string) {
+  return new Intl.DateTimeFormat('en-GB', {
     day: 'numeric',
     month: 'short',
     ...(year && date.slice(0, 4) !== year ? { year: 'numeric' } : {}),
@@ -65,7 +65,7 @@ export function dueText(
     case 'InvoiceDue':
       return anchors.onDue;
     case 'OnDate':
-      return `on ${shortDate('en', due.date, year)}`;
+      return `on ${shortDate(due.date, year)}`;
     case 'After': {
       const afterIssue = due.from === 'issue' || where.first;
       if (due.count === 0)
@@ -123,41 +123,6 @@ export const everyText = (every: Span) =>
     ? `every ${units[every.unit][0]}`
     : `every ${spanText(every.count, every.unit)}`;
 
-const customer = {
-  en: {
-    now: 'now',
-    on: (date: string) => `on ${date}`,
-    from: (date: string) => ` from ${date}`,
-    next: ', then ',
-    by: (amount: string, date: string) => `${amount} by ${date}`,
-    any: (floor: string, date: string) =>
-      `Any amount from ${floor}, until ${date}`,
-    every: (span: Span) =>
-      span.count === 1
-        ? { day: 'daily', week: 'weekly', month: 'monthly' }[span.unit]
-        : `every ${spanText(span.count, span.unit)}`,
-    whole: 'Pay in full',
-    flexible: 'Pay as you go',
-    payments: (count: number) => `${count} payments`,
-  },
-  es: {
-    now: 'ahora',
-    on: (date: string) => `el ${date}`,
-    from: (date: string) => ` desde el ${date}`,
-    next: ', luego ',
-    by: (amount: string, date: string) => `${amount} antes del ${date}`,
-    any: (floor: string, date: string) =>
-      `Lo que quieras desde ${floor}, hasta el ${date}`,
-    every: (span: Span) =>
-      span.count === 1
-        ? { day: 'cada día', week: 'cada semana', month: 'al mes' }[span.unit]
-        : `cada ${span.count} ${{ day: 'días', week: 'semanas', month: 'meses' }[span.unit]}`,
-    whole: 'Pago único',
-    flexible: 'A tu ritmo',
-    payments: (count: number) => `${count} pagos`,
-  },
-} satisfies Record<Language, unknown>;
-
 /** A payment of a plan, in the order the plan lays them out. */
 interface Laid {
   readonly amount: string;
@@ -168,12 +133,12 @@ interface Laid {
 export function planName(
   plan: PaymentPlan,
   payments: readonly Laid[],
-  language: Language,
+  t: Translate,
 ) {
   if (plan.name) return plan.name;
-  const t = customer[language];
-  if (payments.length > 1) return t.payments(payments.length);
-  return plan.floor ? t.flexible : t.whole;
+  if (payments.length > 1)
+    return t(m.plan_payments, { count: payments.length });
+  return t(plan.floor ? m.plan_flexible : m.plan_whole);
 }
 
 /**
@@ -185,22 +150,28 @@ export function planLine(
   plan: PaymentPlan,
   payments: readonly Laid[],
   options: {
-    readonly language: Language;
+    readonly t: Translate;
     readonly currency: Currency;
     readonly today: string;
     /** The least part payment, when the plan takes them. */
     readonly floor?: string;
   },
 ) {
-  const { language, currency, today } = options;
-  const t = customer[language];
-  const money = (amount: string) => formatMoney(amount, language, currency);
-  const date = (value: string) => shortDate(language, value, today.slice(0, 4));
+  const { t, currency, today } = options;
+  const money = (amount: string) => formatMoney(amount, t.locale, currency);
+  // This year's dates leave the year out.
+  const date = (value: string) =>
+    t(
+      value.slice(0, 4) === today.slice(0, 4) ? m.date_short : m.date_document,
+      {
+        date: value,
+      },
+    );
   const [only] = payments;
   if (payments.length === 1 && only)
     return plan.floor && options.floor
-      ? t.any(money(options.floor), date(only.date))
-      : t.by(money(only.amount), date(only.date));
+      ? t(m.plan_any, { floor: money(options.floor), date: date(only.date) })
+      : t(m.plan_by, { amount: money(only.amount), date: date(only.date) });
   const pieces: string[] = [];
   let at = 0;
   for (const part of plan.parts) {
@@ -208,15 +179,15 @@ export function planLine(
     if (!first) break;
     if (part._tag === 'Once') {
       pieces.push(
-        `${money(first.amount)} ${first.date <= today ? t.now : t.on(date(first.date))}`,
+        `${money(first.amount)} ${first.date <= today ? t(m.plan_now) : t(m.plan_on, { date: date(first.date) })}`,
       );
       at += 1;
       continue;
     }
     pieces.push(
-      `${part.count} × ${money(first.amount)} ${t.every(part.every)}${first.date <= today ? '' : t.from(date(first.date))}`,
+      `${part.count} × ${money(first.amount)} ${t(m.plan_every, part.every)}${first.date <= today ? '' : t(m.plan_from, { date: date(first.date) })}`,
     );
     at += part.count;
   }
-  return pieces.join(t.next);
+  return new Intl.ListFormat(t.locale).format(pieces);
 }

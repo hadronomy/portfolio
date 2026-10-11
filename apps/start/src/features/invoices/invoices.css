@@ -1,12 +1,14 @@
 @import '@fontsource-variable/geist';
 
 /* Every rule stays scoped under .iv-app, .iv-signin, .iv-pay (the customer's
-   pages: payment link and account), or .iv-layer (portalled menus, dialogs, tooltips, toasts),
+   pages: payment link and account), .iv-closed (a link that leads nowhere),
+   or .iv-layer (portalled menus, dialogs, tooltips, toasts),
    so no portfolio style leaks in either direction. */
 
 .iv-app,
 .iv-signin,
 .iv-pay,
+.iv-closed,
 .iv-layer {
   /* Surfaces: a near-white canvas, white paper on top. */
   --iv-canvas: #f6f6f5;
@@ -61,12 +63,14 @@
 /* Paint the canvas itself, so overscroll never shows the portfolio white. */
 html:has(.iv-app),
 html:has(.iv-signin),
-html:has(.iv-pay) {
+html:has(.iv-pay),
+html:has(.iv-closed) {
   background: #f6f6f5;
 }
 body:has(.iv-app),
 body:has(.iv-signin),
-body:has(.iv-pay) {
+body:has(.iv-pay),
+body:has(.iv-closed) {
   margin: 0;
 }
 
@@ -102,30 +106,31 @@ html:has(.iv-pay),
 .iv-app *,
 .iv-layer *,
 .iv-signin *,
-.iv-pay * {
+.iv-pay *,
+.iv-closed * {
   box-sizing: border-box;
 }
-:where(.iv-app, .iv-layer, .iv-signin, .iv-pay) :where(h1, h2, h3, p) {
+:where(.iv-app, .iv-layer, .iv-signin, .iv-pay, .iv-closed) :where(h1, h2, h3, p) {
   margin: 0;
   color: inherit;
   font: inherit;
 }
-:where(.iv-app, .iv-layer, .iv-signin, .iv-pay) a {
+:where(.iv-app, .iv-layer, .iv-signin, .iv-pay, .iv-closed) a {
   color: inherit;
   text-decoration: none;
 }
-:where(.iv-app, .iv-layer, .iv-signin, .iv-pay) :where(button, input, select, textarea) {
+:where(.iv-app, .iv-layer, .iv-signin, .iv-pay, .iv-closed) :where(button, input, select, textarea) {
   font: inherit;
   color: inherit;
   letter-spacing: inherit;
 }
-:where(.iv-app, .iv-layer, .iv-signin, .iv-pay) button {
+:where(.iv-app, .iv-layer, .iv-signin, .iv-pay, .iv-closed) button {
   cursor: pointer;
   border: 0;
   background: none;
   padding: 0;
 }
-:where(.iv-app, .iv-layer, .iv-signin, .iv-pay) :focus-visible {
+:where(.iv-app, .iv-layer, .iv-signin, .iv-pay, .iv-closed) :focus-visible {
   outline: 2px solid var(--iv-ink);
   outline-offset: 2px;
 }
@@ -136,7 +141,7 @@ html:has(.iv-pay),
 /* Torph sets each letter as an inline block on the baseline, which adds a
    descender's worth of space under the line and lifts the text off centre in
    pills and chips. */
-:where(.iv-app, .iv-layer, .iv-signin, .iv-pay) [torph-item] {
+:where(.iv-app, .iv-layer, .iv-signin, .iv-pay, .iv-closed) [torph-item] {
   vertical-align: top;
 }
 .iv-sr {
@@ -6502,6 +6507,142 @@ body:has(.iv-dock) .iv-toast-region {
 }
 .iv-pay-gone .iv-btn {
   margin-top: 14px;
+}
+
+/* ---------------------------------------------------------------- Closed link */
+
+/* A link that leads nowhere. There is no document, so no cover art: the
+   workspace's plain paper, and on it the ticket the customer came for,
+   stamped closed, its stub torn off along the perforation. The words sit
+   under it in one column; the footer keeps the way home and the other
+   language. */
+.iv-closed {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  min-height: 100dvh;
+  background: var(--iv-canvas);
+}
+.iv-closed-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  align-self: center;
+  justify-self: center;
+  width: min(380px, 100% - 48px);
+  padding: max(56px, env(safe-area-inset-top)) 0 40px;
+  text-align: center;
+}
+.iv-closed-main h1 {
+  font-size: 21px;
+  font-weight: 600;
+  letter-spacing: -0.018em;
+  line-height: 1.25;
+  text-wrap: balance;
+}
+.iv-closed-main p {
+  max-width: 34ch;
+  margin-top: 8px;
+  color: var(--iv-ink-2);
+  font-size: 14px;
+  line-height: 1.5;
+  text-wrap: balance;
+}
+.iv-closed-main .iv-btn {
+  margin-top: 24px;
+}
+
+/* The same paper, notches and shadow as the quote's ticket, smaller. The
+   face keeps its notches; the stub hangs below with the perforation torn
+   into its top edge, turned a few degrees away from where it was. */
+.iv-closed-ticket {
+  --notch: 9px;
+  display: grid;
+  width: 236px;
+  margin-bottom: 44px;
+  filter: drop-shadow(0 0 0.5px rgb(20 20 20 / 0.22))
+    drop-shadow(0 1px 1px rgb(20 20 20 / 0.06))
+    drop-shadow(0 18px 28px rgb(20 20 20 / 0.14));
+}
+.iv-closed-face {
+  position: relative;
+  height: 128px;
+  padding: 18px 20px;
+  border-radius: 18px 18px 0 0;
+  background: var(--iv-surface);
+  color: var(--iv-ink-3);
+  font-size: 12.5px;
+  text-align: left;
+  mask:
+    radial-gradient(
+        circle var(--notch) at 0 100%,
+        #0000 var(--notch),
+        #000 calc(var(--notch) + 0.5px)
+      )
+      left / 51% 100% no-repeat,
+    radial-gradient(
+        circle var(--notch) at 100% 100%,
+        #0000 var(--notch),
+        #000 calc(var(--notch) + 0.5px)
+      )
+      right / 51% 100% no-repeat;
+}
+/* In the workspace's quiet ink rather than the paid green: closing a link
+   is a fact, not a success. */
+.iv-closed-stamp {
+  top: auto;
+  right: 18px;
+  bottom: 26px;
+  color: var(--iv-ink-2);
+  font-size: 16px;
+}
+/* Half-holes every 8px along the top: the perforation, torn through. */
+.iv-closed-stub {
+  height: 58px;
+  margin: 7px 0 0;
+  border-radius: 0 0 18px 18px;
+  background: #fbfbfa;
+  transform: translate(3px, 5px) rotate(-3.5deg);
+  transform-origin: 0 0;
+  mask:
+    radial-gradient(circle 2.5px at 4px 0, #0000 2.5px, #000 3px) 0 0 / 8px
+      100% repeat-x;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .iv-closed-stub {
+    animation: iv-tear 900ms cubic-bezier(0.22, 1, 0.36, 1) 120ms both;
+  }
+}
+/* It starts where it hung on the face and comes away. Only its position
+   moves; the stub is on the page from the first frame. */
+@keyframes iv-tear {
+  from {
+    transform: translate(0, -7px) rotate(0deg);
+  }
+}
+
+.iv-closed-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 24px max(18px, env(safe-area-inset-bottom));
+  color: var(--iv-ink-3);
+  font-size: 13px;
+}
+.iv-closed-foot a,
+.iv-closed-foot button {
+  margin: -6px -8px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  color: inherit;
+}
+.iv-closed-foot a:hover,
+.iv-closed-foot button:hover {
+  color: var(--iv-ink);
+}
+.iv-closed-foot :focus-visible {
+  outline: 2px solid var(--iv-ink);
+  outline-offset: 0;
 }
 
 /* Wide screens lay the ticket on its side: the document on the left, the

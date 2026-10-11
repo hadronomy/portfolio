@@ -1,7 +1,8 @@
+import { translate } from '@portfolio/i18n';
+import { m } from '@portfolio/i18n/messages';
 import Decimal from 'decimal.js';
 import type Stripe from 'stripe';
 import { calculate, formatMoney } from '../calculate';
-import { documentLabels } from '../labels';
 import type { Currency, Invoice, Line, Party } from '../model';
 import type { Minor, StripeInvoice } from './schema';
 
@@ -102,7 +103,7 @@ function taxAmount(
       ...jurisdiction,
       display_name: charged
         ? 'IGIC'
-        : `IGIC · ${documentLabels[invoice.data.language][treatment]}`,
+        : `IGIC · ${translate(invoice.data.language)(m.doc_treatment, { treatment })}`,
       percentage: charged ? Number(rate) : 0,
       inclusive: false,
       ...(reason ? { description: reason.slice(0, 500) } : {}),
@@ -148,7 +149,9 @@ export function project(invoice: Invoice, now = new Date()): Projection {
   const withholding = toMinor(totals.withholding);
   if (withholding > 0)
     lines.push({
-      description: `${documentLabels[data.language].withholding} ${data.withholdingRate}%`,
+      description: translate(data.language)(m.doc_withholding_rate, {
+        rate: data.withholdingRate,
+      }),
       amount: -withholding,
       discountable: false,
       metadata: { kind: 'withholding' },

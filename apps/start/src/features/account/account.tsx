@@ -1,3 +1,6 @@
+import type { Translate } from '@portfolio/i18n';
+import { m } from '@portfolio/i18n/messages';
+import { Message } from '@portfolio/i18n/react';
 import type { CustomerInvoice } from '@portfolio/invoices/customer-access';
 import type { Currency, Language } from '@portfolio/invoices/model';
 import { useRouter } from '@tanstack/react-router';
@@ -9,13 +12,14 @@ import {
   Download,
 } from 'lucide-react';
 import { useId, useState } from 'react';
+import { Speak, useT } from '../../lib/i18n';
 import { authClient } from '../auth/client';
+import { ClosedLink } from '../invoices/closed-link';
 import { coverArt } from '../invoices/covers';
-import { longDate, moneyOf } from '../invoices/pay-words';
+import { moneyOf } from '../invoices/money';
 import { Button, MorphText } from '../invoices/ui';
 import type { AccountPage } from './account.server';
 import { CodeSignIn } from './code-sign-in';
-import { accountWords } from './words';
 import '../invoices/invoices.css';
 
 // The customer's account: a sign-in card until they prove their inbox, then
@@ -23,34 +27,25 @@ import '../invoices/invoices.css';
 // own page, where it is paid as its plan allows. It wears the same paper and backdrop as the
 // payment page, since it is the same customer looking at the same invoices.
 
-function SignIn({
-  language,
-  available,
-}: {
-  language: Language;
-  available: boolean;
-}) {
-  const t = accountWords[language];
+function SignIn({ available }: { available: boolean }) {
+  const t = useT();
   const router = useRouter();
   return (
-    <div className="iv-signin" lang={language}>
+    <div className="iv-signin" lang={t.locale}>
       <div className="iv-backdrop" aria-hidden>
         <img src={coverArt.tide.backdrop} alt="" />
       </div>
       <a href="/" className="iv-signin-back">
-        <ArrowLeft size={15} /> {t.back}
+        <ArrowLeft size={15} /> hadronomy
       </a>
       <main className="iv-signin-card">
         <span className="iv-rail-mark" aria-hidden>
           h<span>/</span>
         </span>
-        <h1>{t.title}</h1>
-        <p>{available ? t.intro : t.unavailable}</p>
+        <h1>{t(m.account_title)}</h1>
+        <p>{t(available ? m.account_intro : m.account_unavailable)}</p>
         {available && (
-          <CodeSignIn
-            language={language}
-            onSignedIn={() => void router.invalidate()}
-          />
+          <CodeSignIn onSignedIn={() => void router.invalidate()} />
         )}
       </main>
     </div>
@@ -77,20 +72,23 @@ function Thumb({ invoice }: { invoice: CustomerInvoice }) {
 }
 
 /** Where an invoice stands, in one line: paid, or its next payment. */
-function standing(invoice: CustomerInvoice) {
-  const t = accountWords[invoice.language];
+function standing(invoice: CustomerInvoice, t: Translate) {
   const money = moneyOf(invoice);
   const { next } = invoice;
-  if (!next) return { text: t.paid, tone: 'paid' as const };
-  const date = longDate(invoice.language, next.date);
+  if (!next) return { text: t(m.account_paid), tone: 'paid' as const };
+  const { date } = next;
   // The total already sits above the status; a payment of all of it only
   // needs its date.
   const text =
     next.amount === invoice.total
-      ? (next.late ? t.overdue : t.due)(date)
-      : (next.late ? t.nextLate : t.next)(money(next.amount), date);
+      ? t(next.late ? m.account_overdue : m.account_due, { date })
+      : t(next.late ? m.account_next_late : m.account_next, {
+          amount: money(next.amount),
+          date,
+        });
+  const part = t(m.account_part, { index: next.index, count: next.of });
   return {
-    text: next.of > 1 ? `${text} · ${t.part(next.index, next.of)}` : text,
+    text: next.of > 1 ? `${text} · ${part}` : text,
     tone: next.late ? ('late' as const) : undefined,
   };
 }
@@ -102,10 +100,9 @@ function Row({
   invoice: CustomerInvoice;
   payments: boolean;
 }) {
-  // Each row speaks its own invoice's language, as its PDF does.
-  const t = accountWords[invoice.language];
+  const t = useT();
   const money = moneyOf(invoice);
-  const status = standing(invoice);
+  const status = standing(invoice, t);
   // The whole row is the target: on a phone it is the one thing to tap.
   return (
     <li lang={invoice.language}>
@@ -113,8 +110,11 @@ function Row({
         className="iv-account-row"
         href={hrefOf(invoice, payments)}
         {...(payments
-          ? { 'aria-label': t.open(invoice.number) }
-          : { download: true, 'aria-label': t.pdf(invoice.number) })}
+          ? { 'aria-label': t(m.account_open, { number: invoice.number }) }
+          : {
+              download: true,
+              'aria-label': t(m.account_pdf, { number: invoice.number }),
+            })}
       >
         <Thumb invoice={invoice} />
         <span className="iv-account-what">
@@ -147,10 +147,23 @@ function NextUp({ invoices }: { invoices: readonly CustomerInvoice[] }) {
     .filter((item) => item.next)
     .sort((a, b) => (a.next?.date ?? '').localeCompare(b.next?.date ?? ''))[0];
   if (!invoice?.next) return null;
-  const t = accountWords[invoice.language];
+  return (
+    <Speak locale={invoice.language}>
+      <Next invoice={invoice} next={invoice.next} />
+    </Speak>
+  );
+}
+
+function Next({
+  invoice,
+  next,
+}: {
+  invoice: CustomerInvoice;
+  next: NonNullable<CustomerInvoice['next']>;
+}) {
+  const t = useT();
   const money = moneyOf(invoice);
-  const { next } = invoice;
-  const date = longDate(invoice.language, next.date);
+  const { date } = next;
   return (
     <a
       className="iv-account-next"
@@ -159,17 +172,18 @@ function NextUp({ invoices }: { invoices: readonly CustomerInvoice[] }) {
       data-tone={next.late ? 'late' : undefined}
     >
       <span className="iv-account-next-label">
-        {next.late ? t.latePayment : t.nextPayment}
+        {t(next.late ? m.account_late_payment : m.account_next_payment)}
       </span>
       <strong className="iv-num">{money(next.amount)}</strong>
       <span className="iv-account-next-what">
         <span className="iv-num">{invoice.number}</span>
         {' · '}
-        {(next.late ? t.overdueOn : t.dueOn)(date)}
-        {next.of > 1 && ` · ${t.part(next.index, next.of)}`}
+        {t(next.late ? m.account_overdue_on : m.account_due_on, { date })}
+        {next.of > 1 &&
+          ` · ${t(m.account_part, { index: next.index, count: next.of })}`}
       </span>
       <span className="iv-btn" data-variant="primary" data-size="sm">
-        <span>{t.pay}</span>
+        <span>{t(m.account_pay)}</span>
         <ArrowRight size={14} aria-hidden />
       </span>
     </a>
@@ -192,7 +206,10 @@ function Group({
       <h2 id={id}>{title}</h2>
       <ul className="iv-account-list">
         {invoices.map((invoice) => (
-          <Row key={invoice.id} invoice={invoice} payments={payments} />
+          // Each row speaks its own invoice's language, as its PDF does.
+          <Speak key={invoice.id} locale={invoice.language}>
+            <Row invoice={invoice} payments={payments} />
+          </Speak>
         ))}
       </ul>
     </section>
@@ -200,14 +217,8 @@ function Group({
 }
 
 /** What is still owed and how much of it is late, one figure per currency. */
-function Totals({
-  invoices,
-  language,
-}: {
-  invoices: readonly CustomerInvoice[];
-  language: Language;
-}) {
-  const t = accountWords[language];
+function Totals({ invoices }: { invoices: readonly CustomerInvoice[] }) {
+  const t = useT();
   const sums = new Map<Currency, { open: number; late: number }>();
   for (const invoice of invoices) {
     const remaining = Number(invoice.remaining);
@@ -222,7 +233,7 @@ function Totals({
     [...sums]
       .filter(([, sum]) => sum[pick] > 0)
       .map(([currency, sum]) =>
-        moneyOf({ language, currency })(sum[pick].toFixed(2)),
+        moneyOf({ language: t.locale, currency })(sum[pick].toFixed(2)),
       );
   const open = figures('open');
   const late = figures('late');
@@ -230,20 +241,20 @@ function Totals({
     return (
       <div className="iv-account-totals">
         <div>
-          <span>{t.settled}</span>
-          <strong>{t.allPaid}</strong>
+          <span>{t(m.account_settled)}</span>
+          <strong>{t(m.account_all_paid)}</strong>
         </div>
       </div>
     );
   return (
     <div className="iv-account-totals">
       <div>
-        <span>{t.toPay}</span>
+        <span>{t(m.account_to_pay)}</span>
         <strong className="iv-num">{open.join(' + ')}</strong>
       </div>
       {late.length > 0 && (
         <div data-tone="late">
-          <span>{t.overdueTotal}</span>
+          <span>{t(m.account_overdue_total)}</span>
           <strong className="iv-num">{late.join(' + ')}</strong>
         </div>
       )}
@@ -252,17 +263,15 @@ function Totals({
 }
 
 function Invoices({
-  language,
   email,
   invoices,
   payments,
 }: {
-  language: Language;
   email: string;
   invoices: readonly CustomerInvoice[];
   payments: boolean;
 }) {
-  const t = accountWords[language];
+  const t = useT();
   const router = useRouter();
   const [leaving, setLeaving] = useState(false);
   const open = invoices
@@ -270,14 +279,14 @@ function Invoices({
     .sort((a, b) => (a.next?.date ?? '').localeCompare(b.next?.date ?? ''));
   const settled = invoices.filter((invoice) => !invoice.next);
   return (
-    <div className="iv-pay iv-account" lang={language}>
+    <div className="iv-pay iv-account" lang={t.locale}>
       <div className="iv-backdrop" aria-hidden>
         <img src={coverArt.tide.backdrop} alt="" data-active="true" />
       </div>
       <main className="iv-account-panel">
         <header className="iv-account-head">
           <div>
-            <h1>{t.title}</h1>
+            <h1>{t(m.account_title)}</h1>
             <p>{email}</p>
           </div>
           <Button
@@ -291,21 +300,34 @@ function Invoices({
               setLeaving(false);
             }}
           >
-            <MorphText>{t.signOut}</MorphText>
+            <MorphText>{t(m.account_sign_out)}</MorphText>
           </Button>
         </header>
         {payments && <NextUp invoices={invoices} />}
-        {invoices.length > 0 && (
-          <Totals invoices={invoices} language={language} />
-        )}
+        {invoices.length > 0 && <Totals invoices={invoices} />}
         {invoices.length > 0 ? (
           <>
-            <Group title={t.toPayGroup} invoices={open} payments={payments} />
-            <Group title={t.paidGroup} invoices={settled} payments={payments} />
+            <Group
+              title={t(m.account_to_pay_group)}
+              invoices={open}
+              payments={payments}
+            />
+            <Group
+              title={t(m.account_paid_group)}
+              invoices={settled}
+              payments={payments}
+            />
           </>
         ) : (
           <p className="iv-account-empty">
-            {t.empty(<strong>{email}</strong>)}
+            <Message
+              message={m.account_empty}
+              inputs={{ email }}
+              options={{ locale: t.locale }}
+              markup={{
+                address: ({ children }) => <strong>{children}</strong>,
+              }}
+            />
           </p>
         )}
       </main>
@@ -321,15 +343,20 @@ function Invoices({
 export function AccountScreen({ page }: { page: AccountPage }) {
   switch (page._tag) {
     case 'SignedOut':
-      return <SignIn language={page.language} available={page.available} />;
+      return (
+        <Speak locale={page.language}>
+          <SignIn available={page.available} />
+        </Speak>
+      );
     case 'SignedIn':
       return (
-        <Invoices
-          language={page.language}
-          email={page.email}
-          invoices={page.invoices}
-          payments={page.payments}
-        />
+        <Speak locale={page.language} remember>
+          <Invoices
+            email={page.email}
+            invoices={page.invoices}
+            payments={page.payments}
+          />
+        </Speak>
       );
     case 'Owner':
       return null;
@@ -337,30 +364,14 @@ export function AccountScreen({ page }: { page: AccountPage }) {
 }
 
 /** An account address that does not open the invoice asked for. */
-export function MissingInvoicePage() {
+export function MissingInvoicePage({ language }: { language: Language }) {
   return (
-    <div className="iv-pay">
-      <div className="iv-backdrop" aria-hidden>
-        <img src={coverArt.tide.backdrop} alt="" data-active="true" />
-      </div>
-      <main className="iv-pay-ticket" data-plain>
-        <article className="iv-pay-doc">
-          {(['en', 'es'] as const).map((language) => (
-            <div key={language} className="iv-pay-gone" lang={language}>
-              <h1>{accountWords[language].missing}</h1>
-              <p>{accountWords[language].missingDetail}</p>
-            </div>
-          ))}
-          <a
-            className="iv-btn"
-            data-variant="secondary"
-            href="/invoices/account"
-          >
-            <ArrowLeft size={14} aria-hidden />
-            <span>{accountWords.en.allInvoices}</span>
-          </a>
-        </article>
-      </main>
-    </div>
+    <ClosedLink
+      language={language}
+      kind="invoice"
+      title={m.account_missing}
+      detail={m.account_missing_detail}
+      action={{ href: '/invoices/account', label: m.account_all_invoices }}
+    />
   );
 }

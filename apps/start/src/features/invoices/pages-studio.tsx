@@ -1,3 +1,5 @@
+import { translate } from '@portfolio/i18n';
+import { m } from '@portfolio/i18n/messages';
 import { clauses, latestVersion } from '@portfolio/invoices/clauses';
 import type { InvoiceData, Language } from '@portfolio/invoices/model';
 import type { Pages } from '@portfolio/invoices/pages';
@@ -203,7 +205,8 @@ export function PagesStudio({
   const [editor, setEditor] = useState<Editor | null>(null);
   const shape = useShape(editor);
   const words = shape?.words ?? 0;
-  const t = data.language === 'es' ? 'Presupuesto' : 'Quote';
+  // The studio heads its page as the document will, in its language.
+  const kind = translate(data.language)(m.doc_kind, { kind: 'quote' });
   return (
     <Dialog.Root open={open} onOpenChange={(next) => !next && onClose()}>
       <Dialog.Portal>
@@ -260,7 +263,7 @@ export function PagesStudio({
                 <p className="iv-sheet-running" aria-hidden>
                   <span>{data.issuer.name}</span>
                   <span>
-                    {t} {number ?? ''}
+                    {kind} {number ?? ''}
                   </span>
                 </p>
                 <PagesEditor

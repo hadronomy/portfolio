@@ -1,3 +1,5 @@
+import { translate } from '@portfolio/i18n';
+import { m } from '@portfolio/i18n/messages';
 import { type Language, RecordId } from '@portfolio/invoices/model';
 import type {
   Due,
@@ -62,37 +64,6 @@ export const plan = (
   ...rules,
 });
 
-const names = {
-  en: {
-    full: 'Pay in full',
-    deposit: 'Deposit',
-    balance: 'Balance',
-    depositFirst: 'Deposit, then the balance',
-    halves: 'Two halves',
-    monthly: 'Monthly',
-    depositMonthly: 'Deposit, then monthly',
-    kickoff: 'Kick-off',
-    midpoint: 'Midpoint',
-    delivery: 'Delivery',
-    milestones: 'By milestone',
-    flexible: 'Pay as you go',
-  },
-  es: {
-    full: 'Pago único',
-    deposit: 'Anticipo',
-    balance: 'Resto',
-    depositFirst: 'Anticipo y resto',
-    halves: 'Dos mitades',
-    monthly: 'Mensual',
-    depositMonthly: 'Anticipo y mensualidades',
-    kickoff: 'Inicio',
-    midpoint: 'Mitad del proyecto',
-    delivery: 'Entrega',
-    milestones: 'Por hitos',
-    flexible: 'A tu ritmo',
-  },
-} satisfies Record<Language, Record<string, string>>;
-
 export interface Starter {
   readonly key: string;
   /** What the owner picks it by. */
@@ -104,42 +75,48 @@ export const starters: readonly Starter[] = [
   {
     key: 'full',
     title: 'One payment',
-    make: (language) =>
-      plan(names[language].full, [once(rest, { _tag: 'InvoiceDue' })]),
+    make: (language) => {
+      const t = translate(language);
+      return plan(t(m.starter_full), [once(rest, { _tag: 'InvoiceDue' })]);
+    },
   },
   {
     key: 'deposit',
     title: 'Deposit and balance',
     make: (language) => {
-      const t = names[language];
-      return plan(t.depositFirst, [
-        once(percent(30), onIssue, t.deposit),
-        once(rest, { _tag: 'InvoiceDue' }, t.balance),
+      const t = translate(language);
+      return plan(t(m.starter_deposit_first), [
+        once(percent(30), onIssue, t(m.starter_deposit)),
+        once(rest, { _tag: 'InvoiceDue' }, t(m.starter_balance)),
       ]);
     },
   },
   {
     key: 'halves',
     title: 'Two halves',
-    make: (language) =>
-      plan(names[language].halves, [
+    make: (language) => {
+      const t = translate(language);
+      return plan(t(m.starter_halves), [
         once(percent(50), onIssue),
         once(rest, { _tag: 'InvoiceDue' }),
-      ]),
+      ]);
+    },
   },
   {
     key: 'monthly',
     title: 'Three monthly payments',
-    make: (language) =>
-      plan(names[language].monthly, [series(rest, 3, onIssue)]),
+    make: (language) => {
+      const t = translate(language);
+      return plan(t(m.starter_monthly), [series(rest, 3, onIssue)]);
+    },
   },
   {
     key: 'deposit-monthly',
     title: 'Deposit, then monthly',
     make: (language) => {
-      const t = names[language];
-      return plan(t.depositMonthly, [
-        once(percent(25), onIssue, t.deposit),
+      const t = translate(language);
+      return plan(t(m.starter_deposit_monthly), [
+        once(percent(25), onIssue, t(m.starter_deposit)),
         series(rest, 6, after(1, 'month')),
       ]);
     },
@@ -148,20 +125,22 @@ export const starters: readonly Starter[] = [
     key: 'milestones',
     title: 'Milestones',
     make: (language) => {
-      const t = names[language];
-      return plan(t.milestones, [
-        once(percent(30), onIssue, t.kickoff),
-        once(percent(40), after(30, 'day', 'issue'), t.midpoint),
-        once(rest, after(60, 'day', 'issue'), t.delivery),
+      const t = translate(language);
+      return plan(t(m.starter_milestones), [
+        once(percent(30), onIssue, t(m.starter_kickoff)),
+        once(percent(40), after(30, 'day', 'issue'), t(m.starter_midpoint)),
+        once(rest, after(60, 'day', 'issue'), t(m.starter_delivery)),
       ]);
     },
   },
   {
     key: 'flexible',
     title: 'Any amount',
-    make: (language) =>
-      plan(names[language].flexible, [once(rest, { _tag: 'InvoiceDue' })], {
+    make: (language) => {
+      const t = translate(language);
+      return plan(t(m.starter_flexible), [once(rest, { _tag: 'InvoiceDue' })], {
         floor: percent(10),
-      }),
+      });
+    },
   },
 ];

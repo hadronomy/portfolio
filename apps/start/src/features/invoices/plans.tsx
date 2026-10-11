@@ -1,3 +1,4 @@
+import { translate } from '@portfolio/i18n';
 import type { InvoiceId, Language } from '@portfolio/invoices/model';
 import {
   defaultsFor,
@@ -51,7 +52,9 @@ export function offerSummary(
 ) {
   const [only] = plans;
   if (plans.length > 1) return `${plans.length} options`;
-  return only && terms ? planName(only, lay(only, terms), language) : '';
+  return only && terms
+    ? planName(only, lay(only, terms), translate(language))
+    : '';
 }
 
 export function OfferPanel({
@@ -94,12 +97,12 @@ export function OfferPanel({
               <li key={plan.id}>
                 <button type="button" onClick={() => show(plan.id)}>
                   <span className="iv-offer-name">
-                    {planName(plan, payments, language)}
+                    {planName(plan, payments, translate(language))}
                     {chosen === plan.id && <small>Their choice</small>}
                   </span>
                   <span className="iv-offer-line">
                     {planLine(plan, payments, {
-                      language: 'en',
+                      t: translate('en'),
                       currency: terms.currency,
                       today: terms.issueDate,
                     })}

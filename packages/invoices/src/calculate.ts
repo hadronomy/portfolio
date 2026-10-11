@@ -199,13 +199,13 @@ export function balance(total: string, payments: readonly Payment[]): string {
     ),
   );
 }
-/** Formats a decimal amount with the invoice language and currency. Stays here so existing `calculate` import paths keep working. */
+/** A decimal amount as the document's language writes money in `currency`. */
 export function formatMoney(
   amount: string,
   language: Language,
   currency: Currency = 'EUR',
 ): string {
-  return new Intl.NumberFormat(language === 'es' ? 'es-ES' : 'en-IE', {
+  return new Intl.NumberFormat(language, {
     style: 'currency',
     currency,
   }).format(Number(amount));

@@ -1,0 +1,32 @@
+{
+  "name": "@portfolio/i18n",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./messages": "./src/paraglide/messages.js",
+    "./runtime": "./src/paraglide/runtime.js",
+    "./server": "./src/paraglide/server.js",
+    "./react": "./src/react.ts"
+  },
+  "scripts": {
+    "build": "paraglide-js compile --project ./project.inlang --outdir ./src/paraglide --emit-ts-declarations",
+    "prepare": "bun run build",
+    "check": "bun run build && tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@inlang/paraglide-js": "2.27.0",
+    "@inlang/paraglide-js-react": "1.0.3"
+  },
+  "devDependencies": {
+    "@inlang/plugin-message-format": "4.5.1",
+    "@types/node": "catalog:types",
+    "@types/react": "catalog:types",
+    "typescript": "catalog:dev",
+    "vitest": "catalog:test"
+  },
+  "peerDependencies": {
+    "react": "^19"
+  }
+}

@@ -1,3 +1,5 @@
+import { translate } from '@portfolio/i18n';
+import { m } from '@portfolio/i18n/messages';
 import type { Language } from '@portfolio/invoices/model';
 import { Context, Effect, Layer, Redacted, Schema } from 'effect';
 import { createTransport } from 'nodemailer';
@@ -47,58 +49,6 @@ export class Mailer extends Context.Service<Mailer, MailerApi>()('Mailer') {}
 /** How long a code works, in seconds. The message states it, so both read from here. */
 export const codeLifetime = 600;
 
-const words = {
-  en: {
-    subject: (code: string) => `${code} is your code for your invoices`,
-    intro: 'Enter this code to see your invoices from Hadronomy:',
-    expiry: 'It works for 10 minutes.',
-    ignore: 'If you did not ask for it, you can ignore this email.',
-  },
-  es: {
-    subject: (code: string) => `${code} es tu código para ver tus facturas`,
-    intro: 'Introduce este código para ver tus facturas de Hadronomy:',
-    expiry: 'Sirve durante 10 minutos.',
-    ignore: 'Si no lo has pedido, puedes ignorar este correo.',
-  },
-} satisfies Record<Language, unknown>;
-
-const answerWords = {
-  en: {
-    subject: (m: QuoteAnswerMessage) =>
-      m.outcome === 'accepted'
-        ? `You accepted quote ${m.number} from ${m.issuer}`
-        : `You declined quote ${m.number} from ${m.issuer}`,
-    body: (m: QuoteAnswerMessage) =>
-      [
-        m.outcome === 'accepted'
-          ? `${m.name} accepted quote ${m.number} from ${m.issuer} on ${m.decidedAt} (UTC).`
-          : `${m.name} declined quote ${m.number} from ${m.issuer} on ${m.decidedAt} (UTC).`,
-        m.earlyStart
-          ? 'You asked for the work to start within the 14-day withdrawal period. If you withdraw, you pay for the part already done, and you lose the right once the work is fully done.'
-          : '',
-        `The document you answered has the SHA-256 fingerprint ${m.digest}. You can read and download it at ${m.url}`,
-        'Keep this email as your copy of the agreement.',
-      ].filter(Boolean),
-  },
-  es: {
-    subject: (m: QuoteAnswerMessage) =>
-      m.outcome === 'accepted'
-        ? `Has aceptado el presupuesto ${m.number} de ${m.issuer}`
-        : `Has rechazado el presupuesto ${m.number} de ${m.issuer}`,
-    body: (m: QuoteAnswerMessage) =>
-      [
-        m.outcome === 'accepted'
-          ? `${m.name} aceptó el presupuesto ${m.number} de ${m.issuer} el ${m.decidedAt} (UTC).`
-          : `${m.name} rechazó el presupuesto ${m.number} de ${m.issuer} el ${m.decidedAt} (UTC).`,
-        m.earlyStart
-          ? 'Pediste que el trabajo empezara dentro del plazo de desistimiento de 14 días. Si desistes, pagas la parte ya hecha, y pierdes el derecho cuando el trabajo esté completamente hecho.'
-          : '',
-        `El documento que respondiste tiene la huella SHA-256 ${m.digest}. Puedes leerlo y descargarlo en ${m.url}`,
-        'Guarda este correo como tu copia del acuerdo.',
-      ].filter(Boolean),
-  },
-} satisfies Record<Language, unknown>;
-
 const escapeHtml = (text: string) =>
   text.replace(/[&<>"]/g, (char) => `&#${char.charCodeAt(0)};`);
 
@@ -129,7 +79,7 @@ export const mailerLayer = Layer.effect(
               )
             : Effect.sync(() =>
                 console.info(
-                  `[invoices] Quote answer for ${message.to}: ${answerWords[message.language].subject(message)}`,
+                  `[invoices] Quote answer for ${message.to}: ${translate(message.language)(m.mail_answer_subject, message)}`,
                 ),
               ),
       });
@@ -140,18 +90,20 @@ export const mailerLayer = Layer.effect(
         code,
         language,
       }) {
-        const t = words[language];
+        const t = translate(language);
+        const intro = t(m.mail_code_intro);
+        const after = `${t(m.mail_code_expiry)} ${t(m.mail_code_ignore)}`;
         yield* Effect.tryPromise({
           try: () =>
             transport.sendMail({
               from: mail.from,
               to,
-              subject: t.subject(code),
-              text: `${t.intro}\n\n${code}\n\n${t.expiry} ${t.ignore}\n`,
+              subject: t(m.mail_code_subject, { code }),
+              text: `${intro}\n\n${code}\n\n${after}\n`,
               html: `<div style="font-family:system-ui,sans-serif;color:#1c1c1a;line-height:1.5;max-width:28rem">
-<p>${t.intro}</p>
+<p>${intro}</p>
 <p style="font-size:28px;font-weight:600;letter-spacing:0.12em;font-variant-numeric:tabular-nums;margin:24px 0">${code}</p>
-<p style="color:#6b6b66">${t.expiry} ${t.ignore}</p>
+<p style="color:#6b6b66">${after}</p>
 </div>`,
             }),
           catch: (error) =>
@@ -161,15 +113,20 @@ export const mailerLayer = Layer.effect(
         });
       }),
       quoteAnswer: Effect.fn('Mailer.quoteAnswer')(function* (message) {
-        const t = answerWords[message.language];
-        const lines = t.body(message);
+        const t = translate(message.language);
+        const lines = [
+          t(m.mail_answer_decided, message),
+          message.earlyStart ? t(m.mail_answer_early_start) : '',
+          t(m.mail_answer_document, message),
+          t(m.mail_answer_keep),
+        ].filter(Boolean);
         yield* Effect.tryPromise({
           try: () =>
             transport.sendMail({
               from: mail.from,
               to: message.to,
               cc: message.copy || undefined,
-              subject: t.subject(message),
+              subject: t(m.mail_answer_subject, message),
               text: `${lines.join('\n\n')}\n`,
               html: `<div style="font-family:system-ui,sans-serif;color:#1c1c1a;line-height:1.5;max-width:32rem">${lines
                 .map((line) => `<p>${escapeHtml(line)}</p>`)

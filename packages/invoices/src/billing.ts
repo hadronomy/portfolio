@@ -1,6 +1,7 @@
+import { translate } from '@portfolio/i18n';
+import { m } from '@portfolio/i18n/messages';
 import Decimal from 'decimal.js';
 import { calculate, formatMoney } from './calculate';
-import { documentLabels } from './labels';
 import {
   type Currency,
   type InvoiceData,
@@ -29,53 +30,6 @@ import {
 //
 // A quote's plan reads from the day it is accepted: "on issue" means on
 // acceptance, and "the due date" is the quote's planned delivery.
-
-const words = {
-  en: {
-    payment: (index: number, of: number) => `Payment ${index} of ${of}`,
-    acceptance: 'on acceptance',
-    delivery: 'on delivery',
-    on: (day: string) => `on ${day}`,
-    after: (span: string) => `${span} after acceptance`,
-    later: (span: string) => `${span} later`,
-    rest: 'the rest',
-    whole: 'The full amount',
-    series: (portion: string, count: number, every: string, first: string) =>
-      `${portion} in ${count} payments ${every}, the first ${first}`,
-    joiner: ', then ',
-    units: {
-      day: ['day', 'days'],
-      week: ['week', 'weeks'],
-      month: ['month', 'months'],
-    },
-    every: (span: Span) =>
-      span.count === 1
-        ? `every ${words.en.units[span.unit][0]}`
-        : `every ${span.count} ${words.en.units[span.unit][1]}`,
-  },
-  es: {
-    payment: (index: number, of: number) => `Pago ${index} de ${of}`,
-    acceptance: 'al aceptar',
-    delivery: 'a la entrega',
-    on: (day: string) => `el ${day}`,
-    after: (span: string) => `${span} después de aceptar`,
-    later: (span: string) => `${span} después`,
-    rest: 'el resto',
-    whole: 'El importe completo',
-    series: (portion: string, count: number, every: string, first: string) =>
-      `${portion} en ${count} pagos ${every}, el primero ${first}`,
-    joiner: ', luego ',
-    units: {
-      day: ['día', 'días'],
-      week: ['semana', 'semanas'],
-      month: ['mes', 'meses'],
-    },
-    every: (span: Span) =>
-      span.count === 1
-        ? `cada ${words.es.units[span.unit][0]}`
-        : `cada ${span.count} ${words.es.units[span.unit][1]}`,
-  },
-} as const;
 
 /** A quote's terms for its plan, once accepted on `acceptedOn`. */
 export function acceptanceTerms(data: InvoiceData, acceptedOn: string): Terms {
@@ -110,10 +64,9 @@ function lineAmount(line: Line): Decimal {
 }
 
 const percent = (value: Decimal, language: Language) =>
-  `${value
-    .toDecimalPlaces(2)
-    .toString()
-    .replace('.', language === 'es' ? ',' : '.')} %`;
+  translate(language)(m.percent, {
+    value: value.toDecimalPlaces(2).toNumber(),
+  });
 
 /**
  * The invoice for payment `index` of the quote's bills. `number` is the
@@ -134,7 +87,7 @@ export function billData(
     total.isZero() ? new Decimal(0) : new Decimal(laid.amount).div(total);
   const last = index === payments.length - 1;
   const share = shareOf(payment);
-  const t = documentLabels[quote.language];
+  const t = translate(quote.language);
   const charged = quote.lines.filter((line) => line.kind !== 'note');
   const lines = charged.map((line): Line => {
     const whole = lineAmount(line);
@@ -174,11 +127,11 @@ export function billData(
     correction: null,
     title: [
       quote.title,
-      words[quote.language].payment(index + 1, payments.length),
+      t(m.bill_payment_of, { index: index + 1, count: payments.length }),
     ]
       .filter(Boolean)
       .join(' · '),
-    reference: `${t.quote} ${number}`,
+    reference: t(m.bill_reference, { number }),
     issueDate: today,
     supplyDate: today,
     dueDate: payment.date < today ? today : payment.date,
@@ -189,35 +142,34 @@ export function billData(
 
 /**
  * A quote's plan as one sentence, before anyone knows when it will be
- * accepted: "30 % on acceptance, then the rest on delivery".
+ * accepted: "30% on acceptance and the rest on delivery".
  */
 export function planTerms(
   plan: PaymentPlan,
   language: Language,
   currency: Currency,
-  format: (day: string) => string,
 ): string {
-  const w = words[language];
+  const t = translate(language);
   const span = (count: number, unit: Span['unit']) =>
-    `${count} ${w.units[unit][count === 1 ? 0 : 1]}`;
+    t(m.span, { count, unit });
   const due = (rule: Due, first: boolean) => {
     switch (rule._tag) {
       case 'OnIssue':
-        return w.acceptance;
+        return t(m.terms_on_acceptance);
       case 'InvoiceDue':
-        return w.delivery;
+        return t(m.terms_on_delivery);
       case 'OnDate':
-        return w.on(format(rule.date));
+        return t(m.terms_on_day, { date: rule.date });
       case 'After':
-        if (rule.count === 0) return w.acceptance;
+        if (rule.count === 0) return t(m.terms_on_acceptance);
         return rule.from === 'issue' || first
-          ? w.after(span(rule.count, rule.unit))
-          : w.later(span(rule.count, rule.unit));
+          ? t(m.terms_after_acceptance, { span: span(rule.count, rule.unit) })
+          : t(m.terms_later, { span: span(rule.count, rule.unit) });
     }
   };
   const portion = (value: Portion) =>
     value._tag === 'Rest'
-      ? w.rest
+      ? t(m.terms_rest)
       : value._tag === 'Percent'
         ? percent(new Decimal(value.value), language)
         : formatMoney(value.value, language, currency);
@@ -227,17 +179,21 @@ export function planTerms(
     only?._tag === 'Once' &&
     only.portion._tag === 'Rest'
   )
-    return `${w.whole} ${due(only.due, true)}.`;
+    return t(m.terms_whole, { due: due(only.due, true) });
   const pieces = plan.parts.map((part, index) =>
     part._tag === 'Once'
-      ? `${portion(part.portion)} ${due(part.due, index === 0)}`
-      : w.series(
-          portion(part.portion),
-          part.count,
-          w.every(part.every),
-          due(part.first, index === 0),
-        ),
+      ? t(m.terms_part, {
+          portion: portion(part.portion),
+          due: due(part.due, index === 0),
+        })
+      : t(m.terms_series, {
+          portion: portion(part.portion),
+          count: part.count,
+          every: t(m.terms_every, part.every),
+          first: due(part.first, index === 0),
+        }),
   );
-  const sentence = pieces.join(w.joiner);
+  // A plan reads as a list, joined the way its language joins one.
+  const sentence = new Intl.ListFormat(language).format(pieces);
   return `${sentence.charAt(0).toUpperCase()}${sentence.slice(1)}.`;
 }

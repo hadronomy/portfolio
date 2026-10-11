@@ -1,3 +1,5 @@
+import { translate } from '@portfolio/i18n';
+import { m } from '@portfolio/i18n/messages';
 import { createFileRoute } from '@tanstack/react-router';
 import { getQuotePage } from '../features/invoices/api';
 import {
@@ -8,14 +10,17 @@ import {
 export const Route = createFileRoute('/invoices_/quote/$token')({
   loader: ({ params }) => getQuotePage({ data: { token: params.token } }),
   head: ({ loaderData }) => {
-    const quote = loaderData?.quote;
+    const title = !loaderData
+      ? ''
+      : loaderData._tag === 'Open'
+        ? translate(loaderData.quote.data.language)(m.quote_title, {
+            number: loaderData.quote.number ?? '',
+            issuer: loaderData.quote.data.issuer.name,
+          })
+        : translate(loaderData.language)(m.quote_invalid);
     return {
       meta: [
-        {
-          title: quote
-            ? `${quote.data.language === 'es' ? 'Presupuesto' : 'Quote'} ${quote.number} · ${quote.data.issuer.name}`
-            : 'Quote',
-        },
+        { title },
         { name: 'robots', content: 'noindex, nofollow' },
         { name: 'theme-color', content: '#f6f6f5' },
       ],
@@ -24,10 +29,10 @@ export const Route = createFileRoute('/invoices_/quote/$token')({
   component: function Quote() {
     const data = Route.useLoaderData();
     const { token } = Route.useParams();
-    return data ? (
+    return data._tag === 'Open' ? (
       <QuotePage token={token} {...data} />
     ) : (
-      <InvalidQuoteLinkPage />
+      <InvalidQuoteLinkPage language={data.language} />
     );
   },
 });

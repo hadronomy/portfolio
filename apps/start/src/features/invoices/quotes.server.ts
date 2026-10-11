@@ -179,7 +179,7 @@ export const answerQuote = Effect.fn('QuotesServer.answer')(function* (
         number: view.quote.number ?? '',
         issuer: view.quote.data.issuer.name,
         name: response.name,
-        decidedAt: response.decidedAt.slice(0, 16).replace('T', ' '),
+        decidedAt: response.decidedAt,
         digest: response.digest,
         earlyStart: response.earlyStart,
         url: `${base}/invoices/quote/${token}`,

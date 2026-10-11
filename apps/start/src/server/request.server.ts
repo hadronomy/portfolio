@@ -1,3 +1,4 @@
+import { extractLocaleFromRequest } from '@portfolio/i18n/runtime';
 import type { Language } from '@portfolio/invoices/model';
 import { Context, Effect, Schema } from 'effect';
 import { AppConfig } from './config.server';
@@ -38,12 +39,10 @@ export const sameOrigin = Effect.gen(function* () {
     });
 });
 
-/** The language a page speaks before it knows the visitor: the browser's, when it is one the invoices speak. */
+/**
+ * The language of a page that shows no document: the one the visitor last
+ * read a document in, or Spanish. See the i18n package's paraglide config.
+ */
 export const requestLanguage = CurrentRequest.useSync(
-  (request): Language =>
-    (request.headers.get('accept-language') ?? '')
-      .toLowerCase()
-      .startsWith('es')
-      ? 'es'
-      : 'en',
+  (request): Language => extractLocaleFromRequest(request),
 );

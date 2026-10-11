@@ -15,7 +15,7 @@ import { ReferenceArea } from '@/components/charts/reference-area';
 import { SeriesBar } from '@/components/charts/series-bar';
 import { ChartTooltip } from '@/components/charts/tooltip';
 import '@/components/charts/charts.css';
-import { fromCents, toCents } from './pay-words';
+import { fromCents, toCents } from './money';
 import { type LaidPart, movable, moveSeam, seamStep } from './plan-edit';
 import { shortDate } from './plan-words';
 import { MorphText } from './ui';
@@ -296,7 +296,7 @@ function PlanChart({
     <div
       className="iv-chart"
       role="img"
-      aria-label={`${payments.length} payments between ${shortDate('en', payments[0]?.date ?? terms.issueDate, year)} and ${shortDate('en', payments.at(-1)?.date ?? terms.issueDate, year)}`}
+      aria-label={`${payments.length} payments between ${shortDate(payments[0]?.date ?? terms.issueDate, year)} and ${shortDate(payments.at(-1)?.date ?? terms.issueDate, year)}`}
     >
       <ComposedChart
         data={rows}
@@ -366,7 +366,7 @@ function PlanChart({
         data-side={due > 0.72 ? 'left' : undefined}
         style={{ ...frame, '--x': due } as CSSProperties}
       >
-        <small>Due {shortDate('en', terms.dueDate, year)}</small>
+        <small>Due {shortDate(terms.dueDate, year)}</small>
       </span>
       <div className="iv-chart-axis iv-num" style={frame} aria-hidden>
         {months.map((month) => (
@@ -414,7 +414,7 @@ function ChartTip({
   return (
     <div className="iv-chart-tip">
       <p className="iv-num">
-        {shortDate('en', group[0]?.date ?? terms.issueDate, year)}
+        {shortDate(group[0]?.date ?? terms.issueDate, year)}
       </p>
       <ul>
         {group.map((payment) => (
@@ -502,7 +502,7 @@ export function PlanTimeline({
                 >
                   <span className="iv-timeline-swatch" aria-hidden />
                   <span className="iv-timeline-date iv-num">
-                    {shortDate('en', payment.date, year)}
+                    {shortDate(payment.date, year)}
                   </span>
                   <span className="iv-timeline-name">
                     {paymentName(payment, index, payments.length)}

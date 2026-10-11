@@ -1,4 +1,6 @@
-import type { Language } from '@portfolio/invoices/model';
+import type { Translate } from '@portfolio/i18n';
+import { m } from '@portfolio/i18n/messages';
+import { Message } from '@portfolio/i18n/react';
 import {
   type FormEvent,
   type RefObject,
@@ -7,11 +9,11 @@ import {
   useRef,
   useState,
 } from 'react';
+import { useT } from '../../lib/i18n';
 import { authClient } from '../auth/client';
 import { SuccessCheck } from '../invoices/toast';
 import { Button, MorphText } from '../invoices/ui';
 import { CodeField, type CodeState, codeLength } from './code-field';
-import { type AccountWords, accountWords } from './words';
 
 // Sign-in by a code sent to an inbox, in two steps on one form: the address,
 // then the code. A fixed address skips the first step, as on a payment link,
@@ -25,21 +27,21 @@ const looksLikeEmail = (value: string) =>
   /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
 function failure(
-  t: AccountWords,
+  t: Translate,
   error: { code?: string | undefined; status: number },
 ) {
-  if (error.status === 429) return t.slowDown;
+  if (error.status === 429) return t(m.account_slow_down);
   switch (error.code) {
     case 'INVALID_OTP':
-      return t.wrong;
+      return t(m.account_wrong);
     case 'OTP_EXPIRED':
-      return t.expired;
+      return t(m.account_expired);
     case 'TOO_MANY_ATTEMPTS':
-      return t.tooMany;
+      return t(m.account_too_many);
     case 'no_invoices':
-      return t.closed;
+      return t(m.account_closed);
     default:
-      return t.failed;
+      return t(m.account_failed);
   }
 }
 
@@ -65,19 +67,17 @@ function useCountdown(until: number) {
 }
 
 export function CodeSignIn({
-  language,
   email: fixed,
   emphasis = 'primary',
   onSignedIn,
 }: {
-  language: Language;
   /** The only address this form signs in, when the page already knows it. */
   email?: string;
   /** Secondary where another action owns the page, such as paying. */
   emphasis?: 'primary' | 'secondary';
   onSignedIn: () => void;
 }) {
-  const t = accountWords[language];
+  const t = useT();
   const emailId = useId();
   const codeId = useId();
   const messageId = useId();
@@ -108,7 +108,7 @@ export function CodeSignIn({
 
   const send = async (again: boolean) => {
     if (!again && !looksLikeEmail(address))
-      return refuse(t.emailMissing, emailRef.current);
+      return refuse(t(m.account_email_missing), emailRef.current);
     setSending(true);
     setError('');
     const { error } = await authClient.emailOtp.sendVerificationOtp({
@@ -149,21 +149,37 @@ export function CodeSignIn({
     }
   };
 
-  const shown = <strong className="iv-code-address">{address}</strong>;
+  const shown = (
+    message:
+      | typeof m.account_sent
+      | typeof m.account_sent_to
+      | typeof m.account_send_to,
+  ) => (
+    <Message
+      message={message}
+      inputs={{ email: address }}
+      options={{ locale: t.locale }}
+      markup={{
+        address: ({ children }) => (
+          <strong className="iv-code-address">{children}</strong>
+        ),
+      }}
+    />
+  );
 
   return (
     <form className="iv-code" onSubmit={submit} noValidate>
       {step === 'address' ? (
         <div className="iv-code-step" data-step="address" key="address">
           {fixed ? (
-            <p className="iv-code-note">{t.sendTo(shown)}</p>
+            <p className="iv-code-note">{shown(m.account_send_to)}</p>
           ) : (
             <div
               className="iv-field"
               ref={shakeRef}
               data-invalid={error ? 'true' : undefined}
             >
-              <label htmlFor={emailId}>{t.email}</label>
+              <label htmlFor={emailId}>{t(m.account_email)}</label>
               <input
                 ref={emailRef}
                 id={emailId}
@@ -192,20 +208,20 @@ export function CodeSignIn({
             {error}
           </p>
           <Button type="submit" variant={emphasis} disabled={sending}>
-            <MorphText>{sending ? t.sending : t.send}</MorphText>
+            <MorphText>
+              {t(sending ? m.account_sending : m.account_send)}
+            </MorphText>
           </Button>
         </div>
       ) : (
         <div className="iv-code-step" data-step="code" key="code">
           <p className="iv-code-note">
             {note === 'resent'
-              ? t.resent
-              : fixed
-                ? t.sent(shown)
-                : t.sentTo(shown)}
+              ? t(m.account_resent)
+              : shown(fixed ? m.account_sent : m.account_sent_to)}
           </p>
           <div className="iv-field" ref={shakeRef}>
-            <label htmlFor={codeId}>{t.code}</label>
+            <label htmlFor={codeId}>{t(m.account_code)}</label>
             <CodeField
               ref={codeRef}
               id={codeId}
@@ -228,11 +244,11 @@ export function CodeSignIn({
             role={error ? 'alert' : 'status'}
           >
             {error ||
-              (state === 'checking' && t.verifying) ||
+              (state === 'checking' && t(m.account_verifying)) ||
               (state === 'accepted' && (
                 <>
                   <SuccessCheck />
-                  {t.verified}
+                  {t(m.account_verified)}
                 </>
               ))}
           </p>
@@ -245,7 +261,9 @@ export function CodeSignIn({
               onClick={() => void send(true)}
             >
               <span className="iv-num">
-                {wait > 0 ? t.resendIn(wait) : t.resend}
+                {wait > 0
+                  ? t(m.account_resend_in, { seconds: wait })
+                  : t(m.account_resend)}
               </span>
             </Button>
             {!fixed && (
@@ -262,7 +280,7 @@ export function CodeSignIn({
                   requestAnimationFrame(() => emailRef.current?.focus());
                 }}
               >
-                {t.other}
+                {t(m.account_other)}
               </Button>
             )}
           </div>

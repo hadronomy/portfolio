@@ -1,3 +1,5 @@
+import { translate } from '@portfolio/i18n';
+import { m } from '@portfolio/i18n/messages';
 import {
   type Clause,
   clauses,
@@ -468,9 +470,12 @@ const ClauseView = ClauseBlock.extend<{ language: Language }>({
 
 /** The page schema's extensions, with the editor's behaviour on top. */
 function editorExtensions(language: Language, consumer: boolean) {
-  // Spanish sets dialogue and quotations in angle quotes; English in curly.
-  const quotes =
-    language === 'es' ? { openDoubleQuote: '«', closeDoubleQuote: '»' } : {};
+  // Each language sets quotations in its own marks: Spanish in angle quotes.
+  const t = translate(language);
+  const quotes = {
+    openDoubleQuote: t(m.typography_open_quote),
+    closeDoubleQuote: t(m.typography_close_quote),
+  };
   return [
     ...pageExtensions.map((extension) =>
       extension === ClauseBlock

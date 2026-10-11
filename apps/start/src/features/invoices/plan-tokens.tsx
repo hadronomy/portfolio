@@ -22,7 +22,7 @@ import {
   useState,
 } from 'react';
 import { currencySymbol } from './choices';
-import { fromCents, toCents } from './pay-words';
+import { fromCents, toCents } from './money';
 import { convertPortion } from './plan-edit';
 import { AnchorContext, shortDate } from './plan-words';
 import { cn, layer, MorphText, Segmented } from './ui';
@@ -538,8 +538,7 @@ export function DueEditor({
 }) {
   const anchors = useContext(AnchorContext);
   const year = terms.issueDate.slice(0, 4);
-  const date = (value: Due) =>
-    shortDate('en', dueDate(value, terms, previous), year);
+  const date = (value: Due) => shortDate(dueDate(value, terms, previous), year);
   const after = (
     count: number,
     unit: Unit,

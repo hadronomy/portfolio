@@ -1,3 +1,5 @@
+import { translate } from '@portfolio/i18n';
+import { m } from '@portfolio/i18n/messages';
 import type { JSONContent } from '@tiptap/core';
 import {
   type JSONMarkType,
@@ -6,7 +8,6 @@ import {
 } from '@tiptap/static-renderer/json/react';
 import type { CSSProperties, ReactNode } from 'react';
 import { clauseVersion } from './clauses';
-import { documentLabels } from './labels';
 import type { InvoiceData, Language, QuoteTerms } from './model';
 import { hasPages, markdownToJSON, readPages, toJSONContent } from './pages';
 import { partyLines } from './party-lines';
@@ -581,12 +582,12 @@ function Notices({
   quote: QuoteTerms;
   language: Language;
 }) {
-  const t = documentLabels[language];
+  const t = translate(language);
   return (
     <section
       style={{ breakBefore: 'page', display: 'flex', flexDirection: 'column' }}
     >
-      <Title title={t.legal} lede={t.legalLede} />
+      <Title title={t(m.doc_legal)} lede={t(m.doc_legal_lede)} />
       {quoteNotices(data, quote, language).map((notice, index) => (
         <div key={notice.id} style={{ breakInside: 'avoid' }}>
           <Row
@@ -612,33 +613,24 @@ function WithdrawalForm({
   reference: string;
   language: Language;
 }) {
-  const t = documentLabels[language];
-  const es = language === 'es';
+  const t = translate(language);
   const trader = [
     data.issuer.name,
     ...partyLines(data.issuer, {
       home: data.issuer.address.country,
       language,
-      taxLabel: t.taxId,
+      taxLabel: t(m.doc_tax_id),
     }),
   ]
     .filter(Boolean)
     .join(', ');
-  const blanks = es
-    ? [
-        'Aceptado el',
-        'Nombre del consumidor',
-        'Domicilio del consumidor',
-        'Firma del consumidor (solo si el formulario se presenta en papel)',
-        'Fecha',
-      ]
-    : [
-        'Accepted on',
-        'Name of consumer',
-        'Address of consumer',
-        'Signature of consumer (only if this form is notified on paper)',
-        'Date',
-      ];
+  const blanks = [
+    t(m.withdrawal_accepted_on),
+    t(m.withdrawal_name),
+    t(m.withdrawal_address),
+    t(m.withdrawal_signature),
+    t(m.withdrawal_date),
+  ];
   // A blank's label sits on the line it names, so the row aligns to its foot.
   const field = (aside: string, content: ReactNode, blank = false) => (
     <div
@@ -668,22 +660,11 @@ function WithdrawalForm({
     <section
       style={{ breakBefore: 'page', display: 'flex', flexDirection: 'column' }}
     >
-      <Title
-        title={t.withdrawalForm}
-        lede={
-          es
-            ? 'Solo debe cumplimentarlo y enviarlo si desea desistir del contrato.'
-            : 'Complete and return it only if you wish to withdraw from the contract.'
-        }
-      />
-      {field(es ? 'A la atención de' : 'To', <p style={body}>{trader}</p>)}
+      <Title title={t(m.doc_withdrawal_form)} lede={t(m.withdrawal_lede)} />
+      {field(t(m.withdrawal_to), <p style={body}>{trader}</p>)}
       {field(
-        es ? 'Comunicación' : 'Notice',
-        <p style={body}>
-          {es
-            ? `Por la presente le comunico que desisto de mi contrato de prestación del siguiente servicio: ${reference}.`
-            : `I hereby give notice that I withdraw from my contract for the provision of the following service: ${reference}.`}
-        </p>,
+        t(m.withdrawal_notice_label),
+        <p style={body}>{t(m.withdrawal_notice, { service: reference })}</p>,
       )}
       <div style={{ height: 14 }} />
       {blanks.map((blank) => (
@@ -713,8 +694,10 @@ export function QuoteAppendix({
   number: string | null;
   language: Language;
 }) {
-  const t = documentLabels[language];
-  const reference = [data.title, number ?? t.draft].filter(Boolean).join(', ');
+  const t = translate(language);
+  const reference = [data.title, number ?? t(m.doc_draft)]
+    .filter(Boolean)
+    .join(', ');
   return (
     <>
       {hasPages(quote.pages) && (

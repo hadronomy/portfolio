@@ -1,3 +1,5 @@
+import { translate } from '@portfolio/i18n';
+import { m } from '@portfolio/i18n/messages';
 import { createFileRoute, redirect } from '@tanstack/react-router';
 import { MissingInvoicePage } from '../features/account/account';
 import { getAccountInvoice } from '../features/account/api';
@@ -11,15 +13,18 @@ export const Route = createFileRoute('/invoices_/account_/$invoiceId')({
     return found;
   },
   head: ({ loaderData }) => {
-    const invoice =
-      loaderData?._tag === 'Found' ? loaderData.page.invoice : null;
+    const title =
+      loaderData?._tag === 'Found'
+        ? translate(loaderData.page.invoice.language)(m.pay_title, {
+            number: loaderData.page.invoice.number,
+            issuer: loaderData.page.invoice.issuer,
+          })
+        : loaderData?._tag === 'Missing'
+          ? translate(loaderData.language)(m.account_missing)
+          : '';
     return {
       meta: [
-        {
-          title: invoice
-            ? `${invoice.language === 'es' ? 'Factura' : 'Invoice'} ${invoice.number} · ${invoice.issuer}`
-            : 'Your invoices · Hadronomy',
-        },
+        { title },
         { name: 'robots', content: 'noindex, nofollow' },
         { name: 'theme-color', content: '#f6f6f5' },
       ],
@@ -27,7 +32,8 @@ export const Route = createFileRoute('/invoices_/account_/$invoiceId')({
   },
   component: function AccountInvoice() {
     const found = Route.useLoaderData();
-    if (found._tag !== 'Found') return <MissingInvoicePage />;
+    if (found._tag !== 'Found')
+      return <MissingInvoicePage language={found.language} />;
     return (
       <PaymentPage
         access={{ _tag: 'Account', id: found.id }}

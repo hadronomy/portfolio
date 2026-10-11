@@ -18,7 +18,7 @@ import { Auth, requireOwner, viewer } from '../../server/auth.server';
 import { AppConfig } from '../../server/config.server';
 import { Geocoder } from '../../server/geocoder.server';
 import { agentOrigin } from '../../server/origin.server';
-import { sameOrigin } from '../../server/request.server';
+import { requestLanguage, sameOrigin } from '../../server/request.server';
 import { serve } from '../../server/runtime.server';
 import { accountOffer } from '../account/account.server';
 import { agentResource } from '../auth/shared';
@@ -239,8 +239,10 @@ export const getCheckout = createServerFn({ method: 'GET' })
     serve(
       Effect.gen(function* () {
         const found = yield* checkout({ _tag: 'Link', token: data.token });
-        if (!found) return null;
+        if (!found)
+          return { _tag: 'Closed' as const, language: yield* requestLanguage };
         return {
+          _tag: 'Open' as const,
           ...found,
           account: yield* accountOffer(found.page.invoice.customerEmail),
         };
@@ -258,7 +260,16 @@ export const getQuoteLinks = createServerFn({ method: 'GET' })
   .handler(({ data }) => serve(quoteLinks(data.id)));
 export const getQuotePage = createServerFn({ method: 'GET' })
   .validator((input: unknown) => decodeLinkRef(input))
-  .handler(({ data }) => serve(quotePage(data.token)));
+  .handler(({ data }) =>
+    serve(
+      Effect.gen(function* () {
+        const page = yield* quotePage(data.token);
+        return page
+          ? { _tag: 'Open' as const, ...page }
+          : { _tag: 'Closed' as const, language: yield* requestLanguage };
+      }),
+    ),
+  );
 export const answerQuoteLink = createServerFn({ method: 'POST' })
   .validator((input: unknown) => decodeQuoteAnswer(input))
   .handler(({ data }) => serve(answerQuote(data.token, data.answer)));

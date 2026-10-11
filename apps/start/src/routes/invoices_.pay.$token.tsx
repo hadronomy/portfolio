@@ -1,27 +1,28 @@
+import { baseLocale, translate } from '@portfolio/i18n';
+import { m } from '@portfolio/i18n/messages';
 import type { ErrorComponentProps } from '@tanstack/react-router';
 import { createFileRoute } from '@tanstack/react-router';
 import { getCheckout } from '../features/invoices/api';
 import { InvalidLinkPage, PaymentPage } from '../features/invoices/pay';
 
-function CheckoutError({ error, reset }: ErrorComponentProps) {
+// The page failed before it knew the invoice, so it cannot know its
+// language either: it says so in Spanish, as every unsure page does.
+function CheckoutError({ reset }: ErrorComponentProps) {
+  const t = translate(baseLocale);
   return (
-    <div className="iv-pay">
+    <div className="iv-pay" lang={baseLocale}>
       <main className="iv-pay-ticket" data-plain>
         <article className="iv-pay-doc">
           <div className="iv-pay-gone" role="alert">
-            <h1>Payment is unavailable right now</h1>
-            <p>
-              {error instanceof Error && error.message
-                ? error.message
-                : 'Try again in a moment.'}
-            </p>
+            <h1>{t(m.pay_unavailable)}</h1>
+            <p>{t(m.pay_unavailable_detail)}</p>
             <button
               type="button"
               className="iv-btn"
               data-variant="secondary"
               onClick={() => reset()}
             >
-              <span>Try again</span>
+              <span>{t(m.pay_try_again)}</span>
             </button>
           </div>
         </article>
@@ -33,14 +34,17 @@ function CheckoutError({ error, reset }: ErrorComponentProps) {
 export const Route = createFileRoute('/invoices_/pay/$token')({
   loader: ({ params }) => getCheckout({ data: { token: params.token } }),
   head: ({ loaderData }) => {
-    const invoice = loaderData?.page.invoice;
+    const title = !loaderData
+      ? ''
+      : loaderData._tag === 'Open'
+        ? translate(loaderData.page.invoice.language)(m.pay_title, {
+            number: loaderData.page.invoice.number,
+            issuer: loaderData.page.invoice.issuer,
+          })
+        : translate(loaderData.language)(m.pay_invalid);
     return {
       meta: [
-        {
-          title: invoice
-            ? `${invoice.language === 'es' ? 'Factura' : 'Invoice'} ${invoice.number} · ${invoice.issuer}`
-            : 'Payment link',
-        },
+        { title },
         { name: 'robots', content: 'noindex, nofollow' },
         { name: 'theme-color', content: '#f6f6f5' },
       ],
@@ -50,7 +54,7 @@ export const Route = createFileRoute('/invoices_/pay/$token')({
   component: function Checkout() {
     const data = Route.useLoaderData();
     const { token } = Route.useParams();
-    return data ? (
+    return data._tag === 'Open' ? (
       <PaymentPage
         access={{ _tag: 'Link', token }}
         page={data.page}
@@ -58,7 +62,7 @@ export const Route = createFileRoute('/invoices_/pay/$token')({
         account={data.account}
       />
     ) : (
-      <InvalidLinkPage />
+      <InvalidLinkPage language={data.language} />
     );
   },
 });

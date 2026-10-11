@@ -1,8 +1,11 @@
+import type { Translate } from '@portfolio/i18n';
+import { m } from '@portfolio/i18n/messages';
 import {
   Checkout,
   type CheckoutInvoice,
   type PlanChoice,
 } from '@portfolio/invoices/collection-model';
+import type { Language } from '@portfolio/invoices/model';
 import { useRouter } from '@tanstack/react-router';
 import {
   ArrowLeft,
@@ -20,18 +23,13 @@ import {
   useRef,
   useState,
 } from 'react';
+import { Speak, useT } from '../../lib/i18n';
 import { CodeSignIn } from '../account/code-sign-in';
 import type { Access } from './api';
+import { ClosedLink } from './closed-link';
 import { coverArt } from './covers';
+import { fromCents, moneyOf, toCents } from './money';
 import { PayStub } from './pay-form';
-import {
-  fromCents,
-  longDate,
-  moneyOf,
-  toCents,
-  type Words,
-  words,
-} from './pay-words';
 import { partName } from './schedule';
 import { Button, MorphText } from './ui';
 import './invoices.css';
@@ -48,7 +46,8 @@ const visibleLines = 3;
 
 const today = () => new Date().toISOString().slice(0, 10);
 
-function Lines({ invoice, t }: { invoice: CheckoutInvoice; t: Words }) {
+function Lines({ invoice }: { invoice: CheckoutInvoice }) {
+  const t = useT();
   const [all, setAll] = useState(false);
   const money = moneyOf(invoice);
   const hidden = invoice.lines.length - visibleLines;
@@ -78,24 +77,27 @@ function Lines({ invoice, t }: { invoice: CheckoutInvoice; t: Words }) {
           aria-expanded={all}
           onClick={() => setAll(!all)}
         >
-          {all ? t.fewer : t.more(hidden)}
+          {all ? t(m.pay_fewer) : t(m.pay_more, { count: hidden })}
         </button>
       )}
     </div>
   );
 }
 
-function Totals({ invoice, t }: { invoice: CheckoutInvoice; t: Words }) {
+function Totals({ invoice }: { invoice: CheckoutInvoice }) {
+  const t = useT();
   const money = moneyOf(invoice);
-  const rows: [string, string][] = [[t.subtotal, money(invoice.subtotal)]];
+  const rows: [string, string][] = [
+    [t(m.pay_subtotal), money(invoice.subtotal)],
+  ];
   if (Number(invoice.discount) > 0)
-    rows.push([t.discount, money(`-${invoice.discount}`)]);
+    rows.push([t(m.pay_discount), money(`-${invoice.discount}`)]);
   for (const tax of invoice.taxes)
-    rows.push([`${t.tax} ${Number(tax.rate)}%`, money(tax.amount)]);
+    rows.push([t(m.pay_tax, { rate: tax.rate }), money(tax.amount)]);
   if (Number(invoice.withholding) > 0)
-    rows.push([t.withholding, money(`-${invoice.withholding}`)]);
+    rows.push([t(m.pay_withholding), money(`-${invoice.withholding}`)]);
   if (Number(invoice.disbursements) > 0)
-    rows.push([t.disbursements, money(invoice.disbursements)]);
+    rows.push([t(m.pay_disbursements), money(invoice.disbursements)]);
   return (
     <dl className="iv-pay-totals">
       {rows.map(([label, value]) => (
@@ -105,12 +107,12 @@ function Totals({ invoice, t }: { invoice: CheckoutInvoice; t: Words }) {
         </div>
       ))}
       <div data-total>
-        <dt>{t.total}</dt>
+        <dt>{t(m.pay_total)}</dt>
         <dd className="iv-num">{money(invoice.total)}</dd>
       </div>
       {invoice.payments.map((payment, index) => (
         <div key={index} data-received>
-          <dt>{t.received(longDate(invoice.language, payment.date))}</dt>
+          <dt>{t(m.pay_received, { date: payment.date })}</dt>
           <dd className="iv-num">{money(`-${payment.amount}`)}</dd>
         </div>
       ))}
@@ -130,12 +132,11 @@ const pdfOf = (access: Access, invoice: CheckoutInvoice) =>
 function Document({
   access,
   invoice,
-  t,
 }: {
   access: Access;
   invoice: CheckoutInvoice;
-  t: Words;
 }) {
+  const t = useT();
   return (
     <article className="iv-pay-doc">
       {invoice.cover !== 'none' && (
@@ -149,36 +150,36 @@ function Document({
         <div>
           <p className="iv-pay-issuer">{invoice.issuer}</p>
           <h1>
-            {t.invoice} <span className="iv-num">{invoice.number}</span>
+            {t(m.pay_invoice)} <span className="iv-num">{invoice.number}</span>
           </h1>
         </div>
         <a
           className="iv-pay-pdf"
           href={pdfOf(access, invoice)}
           download
-          aria-label={t.pdfLabel}
+          aria-label={t(m.pay_pdf_label)}
         >
           <Download size={14} aria-hidden />
-          {t.pdf}
+          {t(m.pay_pdf)}
         </a>
       </header>
       {invoice.title && <p className="iv-pay-title">{invoice.title}</p>}
       <p className="iv-pay-meta">
-        {t.issued(longDate(invoice.language, invoice.issueDate))}
+        {t(m.pay_issued, { date: invoice.issueDate })}
       </p>
-      <Lines invoice={invoice} t={t} />
-      <Totals invoice={invoice} t={t} />
+      <Lines invoice={invoice} />
+      <Totals invoice={invoice} />
       {invoice.notes.trim() && (
         <p className="iv-pay-notes">{invoice.notes.trim()}</p>
       )}
       <footer className="iv-pay-parties">
         <Party
-          label={t.from}
+          label={t(m.pay_from)}
           name={invoice.issuer}
           lines={invoice.issuerLines}
         />
         <Party
-          label={t.billedTo}
+          label={t(m.pay_billed_to)}
           name={invoice.customer}
           lines={invoice.customerLines}
         />
@@ -255,12 +256,11 @@ type Settling = {
 function Keep({
   invoice,
   account,
-  t,
 }: {
   invoice: CheckoutInvoice;
   account: AccountOffer;
-  t: Words;
 }) {
+  const t = useT();
   const router = useRouter();
   const titleId = useId();
   if (account === 'signed-in')
@@ -268,7 +268,7 @@ function Keep({
       <aside className="iv-pay-keep" data-kept>
         <p>
           <Check size={15} strokeWidth={2.2} aria-hidden />
-          {t.kept}
+          {t(m.pay_kept)}
         </p>
         <a
           className="iv-btn"
@@ -276,7 +276,7 @@ function Keep({
           data-size="sm"
           href="/invoices/account"
         >
-          <span>{t.allInvoices}</span>
+          <span>{t(m.pay_all_invoices)}</span>
           <ArrowRight size={14} aria-hidden />
         </a>
       </aside>
@@ -284,11 +284,14 @@ function Keep({
   return (
     <aside className="iv-pay-keep" aria-labelledby={titleId}>
       <div className="iv-pay-keep-intro">
-        <strong id={titleId}>{t.keep}</strong>
-        <p>{t.keepDetail(invoice.issuer)}</p>
+        <strong id={titleId}>{t(m.pay_keep)}</strong>
+        <p>
+          {invoice.issuer
+            ? t(m.pay_keep_detail, { issuer: invoice.issuer })
+            : t(m.pay_keep_detail_anonymous)}
+        </p>
       </div>
       <CodeSignIn
-        language={invoice.language}
         email={invoice.customerEmail}
         emphasis="secondary"
         onSignedIn={() => void router.invalidate()}
@@ -305,7 +308,7 @@ export type AccountOffer = 'signed-in' | 'offer' | 'unavailable';
  * next one, by name and date; otherwise everything still owed, by the due
  * date.
  */
-function headline(page: Checkout, plan: PlanChoice | null, t: Words) {
+function headline(page: Checkout, plan: PlanChoice | null, t: Translate) {
   const { invoice } = page;
   if (plan && plan.schedule.instalments.length > 1) {
     const { instalments } = plan.schedule;
@@ -313,7 +316,9 @@ function headline(page: Checkout, plan: PlanChoice | null, t: Words) {
     const part = instalments[index];
     if (part)
       return {
-        label: part.state === 'upcoming' ? t.nextPayment : t.dueNow,
+        label: t(
+          part.state === 'upcoming' ? m.pay_next_payment : m.pay_due_now,
+        ),
         amount: fromCents(toCents(part.amount) - toCents(part.paid)),
         name: partName(t, instalments, index),
         date: part.date,
@@ -321,7 +326,7 @@ function headline(page: Checkout, plan: PlanChoice | null, t: Words) {
       };
   }
   return {
-    label: t.due,
+    label: t(m.pay_due),
     amount: invoice.remaining,
     name: null,
     date: invoice.dueDate,
@@ -329,19 +334,24 @@ function headline(page: Checkout, plan: PlanChoice | null, t: Words) {
   };
 }
 
-export function PaymentPage({
-  access,
-  page,
-  publishableKey,
-  account,
-}: {
+interface PaymentPageProps {
   access: Access;
   page: Checkout;
   publishableKey: string;
   account: AccountOffer;
-}) {
+}
+
+export function PaymentPage(props: PaymentPageProps) {
+  return (
+    <Speak locale={props.page.invoice.language} remember>
+      <Payment {...props} />
+    </Speak>
+  );
+}
+
+function Payment({ access, page, publishableKey, account }: PaymentPageProps) {
   const { invoice } = page;
-  const t = words[invoice.language];
+  const t = useT();
   const money = moneyOf(invoice);
   const router = useRouter();
   const dueId = useId();
@@ -425,23 +435,23 @@ export function PaymentPage({
       {access._tag === 'Account' && (
         <a href="/invoices/account" className="iv-pay-back">
           <ArrowLeft size={15} aria-hidden />
-          {t.allInvoices}
+          {t(m.pay_all_invoices)}
         </a>
       )}
       <main className="iv-pay-ticket" lang={invoice.language}>
-        <Document access={access} invoice={invoice} t={t} />
+        <Document access={access} invoice={invoice} />
         <section className="iv-pay-stub" aria-labelledby={dueId}>
           <div className="iv-pay-due">
-            <span id={dueId}>{paid ? t.amountPaid : lead.label}</span>
+            <span id={dueId}>{paid ? t(m.pay_amount_paid) : lead.label}</span>
             <strong className="iv-num">
               <MorphText>{money(paid ? invoice.total : lead.amount)}</MorphText>
             </strong>
             {!paid && (
               <span data-tone={lead.late ? 'late' : undefined}>
                 {lead.name && `${lead.name} · `}
-                {(lead.late ? t.overdue : t.dueOn)(
-                  longDate(invoice.language, lead.date),
-                )}
+                {t(lead.late ? m.pay_overdue : m.pay_due_on, {
+                  date: lead.date,
+                })}
               </span>
             )}
             {paid && (
@@ -450,7 +460,7 @@ export function PaymentPage({
                 data-live={stamped || undefined}
                 aria-hidden
               >
-                {t.stamp}
+                {t(m.pay_stamp)}
               </span>
             )}
           </div>
@@ -460,12 +470,15 @@ export function PaymentPage({
                 {thanks && (
                   <Note
                     icon={<Check size={16} />}
-                    title={t.thanks(money(thanks))}
+                    title={t(m.pay_thanks, { amount: money(thanks) })}
                     focus
                   />
                 )}
                 {settling && settling.tries >= 8 && (
-                  <Note icon={<Hourglass size={16} />} title={t.settling} />
+                  <Note
+                    icon={<Hourglass size={16} />}
+                    title={t(m.pay_settling)}
+                  />
                 )}
                 {plan && (
                   <PayStub
@@ -484,33 +497,43 @@ export function PaymentPage({
             Processing: ({ amount }) => (
               <Note
                 icon={<Hourglass size={16} />}
-                title={t.processing(money(amount))}
+                title={t(m.pay_processing, { amount: money(amount) })}
               >
-                <p>{t.processingDetail}</p>
+                <p>{t(m.pay_processing_detail)}</p>
                 <Button size="sm" onClick={() => router.invalidate()}>
-                  {t.check}
+                  {t(m.pay_check)}
                 </Button>
               </Note>
             ),
             Paid: () => (
-              <Note icon={<Check size={16} />} title={t.paid} focus={stamped}>
+              <Note
+                icon={<Check size={16} />}
+                title={t(m.pay_paid)}
+                focus={stamped}
+              >
                 {lastPayment && (
-                  <p>{t.paidOn(longDate(invoice.language, lastPayment))}</p>
+                  <p>{t(m.pay_paid_on, { date: lastPayment })}</p>
                 )}
               </Note>
             ),
             Unavailable: () => (
-              <Note icon={<Hourglass size={16} />} title={t.paused}>
-                <p>{t.pausedDetail(invoice.issuer)}</p>
+              <Note icon={<Hourglass size={16} />} title={t(m.pay_paused)}>
+                <p>
+                  {invoice.issuer
+                    ? t(m.pay_paused_detail, { issuer: invoice.issuer })
+                    : t(m.pay_paused_detail_anonymous)}
+                </p>
                 {invoice.issuerEmail && (
                   <a
                     className="iv-btn"
                     data-variant="secondary"
                     data-size="sm"
-                    href={`mailto:${invoice.issuerEmail}?subject=${encodeURIComponent(`${t.invoice} ${invoice.number}`)}`}
+                    href={`mailto:${invoice.issuerEmail}?subject=${encodeURIComponent(`${t(m.pay_invoice)} ${invoice.number}`)}`}
                   >
                     <Mail size={14} aria-hidden />
-                    <span>{t.write(invoice.issuerEmail)}</span>
+                    <span>
+                      {t(m.pay_write, { email: invoice.issuerEmail })}
+                    </span>
                   </a>
                 )}
               </Note>
@@ -520,10 +543,10 @@ export function PaymentPage({
       </main>
       {/* In the account the invoice is already kept; the way back is above. */}
       {access._tag === 'Link' && account !== 'unavailable' && (
-        <Keep invoice={invoice} account={account} t={t} />
+        <Keep invoice={invoice} account={account} />
       )}
       <footer className="iv-pay-foot">
-        <span>{t.secured}</span>
+        <span>{t(m.pay_secured)}</span>
         {invoice.issuerEmail && (
           <a href={`mailto:${invoice.issuerEmail}`}>{invoice.issuerEmail}</a>
         )}
@@ -532,23 +555,15 @@ export function PaymentPage({
   );
 }
 
-/** A link that does not open. It cannot know the invoice, so it asks in both languages. */
-export function InvalidLinkPage() {
+/** A payment link that does not open. */
+export function InvalidLinkPage({ language }: { language: Language }) {
   return (
-    <div className="iv-pay">
-      <div className="iv-backdrop" aria-hidden>
-        <img src={coverArt.ember.backdrop} alt="" data-active="true" />
-      </div>
-      <main className="iv-pay-ticket" data-plain>
-        <article className="iv-pay-doc">
-          {(['en', 'es'] as const).map((language) => (
-            <div key={language} className="iv-pay-gone" lang={language}>
-              <h1>{words[language].invalid}</h1>
-              <p>{words[language].invalidDetail}</p>
-            </div>
-          ))}
-        </article>
-      </main>
-    </div>
+    <ClosedLink
+      language={language}
+      kind="invoice"
+      title={m.pay_invalid}
+      detail={m.pay_invalid_detail}
+      action={{ href: '/invoices/account', label: m.pay_all_invoices }}
+    />
   );
 }

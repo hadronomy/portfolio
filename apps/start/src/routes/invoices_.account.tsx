@@ -1,3 +1,5 @@
+import { translate } from '@portfolio/i18n';
+import { m } from '@portfolio/i18n/messages';
 import { createFileRoute, redirect } from '@tanstack/react-router';
 import { AccountScreen } from '../features/account/account';
 import { getAccountPage } from '../features/account/api';
@@ -9,9 +11,13 @@ export const Route = createFileRoute('/invoices_/account')({
     if (page._tag === 'Owner') throw redirect({ to: '/invoices' });
     return page;
   },
-  head: () => ({
+  head: ({ loaderData }) => ({
     meta: [
-      { title: 'Your invoices · Hadronomy' },
+      {
+        title: loaderData
+          ? `${translate(loaderData.language)(m.account_page_title)} · Hadronomy`
+          : 'Hadronomy',
+      },
       { name: 'robots', content: 'noindex, nofollow' },
       { name: 'theme-color', content: '#f6f6f5' },
     ],

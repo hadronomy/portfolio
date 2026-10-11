@@ -1,3 +1,4 @@
+import { translate } from '@portfolio/i18n';
 import { formatMoney } from '@portfolio/invoices/calculate';
 import type { InvoiceId, Language } from '@portfolio/invoices/model';
 import {
@@ -45,7 +46,7 @@ import {
   useState,
 } from 'react';
 import { currencySymbol } from './choices';
-import { fromCents, toCents } from './pay-words';
+import { fromCents, toCents } from './money';
 import { PlanStrip, PlanTimeline } from './plan-chart';
 import {
   addPart,
@@ -511,7 +512,7 @@ function Options({
                 onClick={() => onSelect(item.id)}
               >
                 <span className="iv-choice-name">
-                  {planName(item, payments, language)}
+                  {planName(item, payments, translate(language))}
                   {broken && (
                     <CircleAlert
                       size={13}
@@ -521,7 +522,7 @@ function Options({
                 </span>
                 <span className="iv-choice-line">
                   {planLine(item, payments, {
-                    language: 'en',
+                    t: translate('en'),
                     currency: terms.currency,
                     today: terms.issueDate,
                   })}
@@ -592,7 +593,7 @@ function AddOption({
                   <span>{starter.title}</span>
                   <small>
                     {planLine(plan, lay(plan, terms), {
-                      language: 'en',
+                      t: translate('en'),
                       currency: terms.currency,
                       today: terms.issueDate,
                     })}
@@ -613,11 +614,15 @@ function AddOption({
                 >
                   <span className="iv-add-what">
                     <span>
-                      {planName(item.plan, lay(item.plan, terms), language)}
+                      {planName(
+                        item.plan,
+                        lay(item.plan, terms),
+                        translate(language),
+                      )}
                     </span>
                     <small>
                       {planLine(item.plan, lay(item.plan, terms), {
-                        language: 'en',
+                        t: translate('en'),
                         currency: terms.currency,
                         today: terms.issueDate,
                       })}
@@ -691,7 +696,9 @@ function Library({
                       : 'Add to this invoice'
                   }
                 >
-                  <span>{planName(item.plan, payments, language)}</span>
+                  <span>
+                    {planName(item.plan, payments, translate(language))}
+                  </span>
                   <MiniBar payments={payments} />
                 </button>
                 <button
@@ -834,7 +841,11 @@ function Composer({
         className="iv-composer-name"
         value={plan.name}
         maxLength={40}
-        placeholder={planName({ ...plan, name: '' }, payments, language)}
+        placeholder={planName(
+          { ...plan, name: '' },
+          payments,
+          translate(language),
+        )}
         aria-label="Option name, as the customer reads it"
         onChange={(event) => onChange({ ...plan, name: event.target.value })}
       />
@@ -1236,10 +1247,10 @@ function Preview({
             : 'What they see'}
         </h3>
         <p lang={language}>
-          <strong>{planName(plan, payments, language)}</strong>
+          <strong>{planName(plan, payments, translate(language))}</strong>
           <span>
             {planLine(plan, payments, {
-              language,
+              t: translate(language),
               currency: terms.currency,
               today: terms.issueDate,
               ...(floor ? { floor } : {}),

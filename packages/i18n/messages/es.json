@@ -1,0 +1,1219 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "date_long": [
+    {
+      "declarations": [
+        "input date",
+        "local d = date: datetime dateStyle=long timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "{d}"
+      }
+    }
+  ],
+  "date_document": [
+    {
+      "declarations": [
+        "input date",
+        "local d = date: datetime day=numeric month=short year=numeric timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "{d}"
+      }
+    }
+  ],
+  "date_short": [
+    {
+      "declarations": [
+        "input date",
+        "local d = date: datetime day=numeric month=short timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "{d}"
+      }
+    }
+  ],
+  "percent": [
+    {
+      "declarations": [
+        "input value",
+        "local p = value: number maximumFractionDigits=2"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "{p} %"
+      }
+    }
+  ],
+  "span": [
+    {
+      "declarations": [
+        "input count",
+        "input unit",
+        "local countPlural = count: plural"
+      ],
+      "selectors": ["unit", "countPlural"],
+      "match": {
+        "unit=day, countPlural=one": "{count} día",
+        "unit=day, countPlural=*": "{count} días",
+        "unit=week, countPlural=one": "{count} semana",
+        "unit=week, countPlural=*": "{count} semanas",
+        "unit=month, countPlural=one": "{count} mes",
+        "unit=month, countPlural=*": "{count} meses",
+        "unit=*, countPlural=*": "{count}"
+      }
+    }
+  ],
+  "doc_kind": [
+    {
+      "declarations": ["input kind"],
+      "selectors": ["kind"],
+      "match": {
+        "kind=invoice": "Factura",
+        "kind=rectification": "Factura rectificativa",
+        "kind=quote": "Presupuesto",
+        "kind=*": "Factura"
+      }
+    }
+  ],
+  "doc_draft": "Borrador · No emitido",
+  "doc_prepared_for": "Para",
+  "doc_valid_until": "Válido hasta",
+  "doc_planned_start": "Inicio previsto",
+  "doc_taxes_included": "Todos los precios incluyen el IGIC y los demás impuestos aplicables.",
+  "doc_legal": "Información legal",
+  "doc_legal_lede": "Información que el cliente debe conocer antes de aceptar este presupuesto.",
+  "doc_withdrawal_form": "Modelo de formulario de desistimiento",
+  "doc_plan": "Forma de pago",
+  "doc_choose_plan": "Formas de pago · elegir una al aceptar",
+  "doc_from": "Emisor",
+  "doc_bill_to": "Cliente",
+  "doc_issued": "Fecha de expedición",
+  "doc_supplied": "Fecha de la operación",
+  "doc_due": "Vencimiento",
+  "doc_tax_id": "NIF",
+  "doc_description": "Descripción",
+  "doc_quantity": "Cant.",
+  "doc_price": "Precio",
+  "doc_amount": "Importe",
+  "doc_subtotal": "Subtotal",
+  "doc_discount": "Descuento",
+  "doc_tax_on": [
+    {
+      "declarations": [
+        "input treatment",
+        "input rate",
+        "input base",
+        "local r = rate: number maximumFractionDigits=2"
+      ],
+      "selectors": ["treatment"],
+      "match": {
+        "treatment=taxable": "IGIC {r} % sobre {base}",
+        "treatment=exempt": "Exenta sobre {base}",
+        "treatment=outside-scope": "No sujeta sobre {base}",
+        "treatment=reverse-charge": "Inversión del sujeto pasivo sobre {base}",
+        "treatment=*": "{base}"
+      }
+    }
+  ],
+  "doc_line_discount": [
+    {
+      "declarations": ["input value"],
+      "selectors": [],
+      "match": {
+        "*": "Descuento {value}"
+      }
+    }
+  ],
+  "doc_withholding": "Retención",
+  "doc_withholding_rate": [
+    {
+      "declarations": [
+        "input rate",
+        "local r = rate: number maximumFractionDigits=2"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "Retención {r} %"
+      }
+    }
+  ],
+  "doc_disbursements": "Suplidos",
+  "doc_total": "Total",
+  "doc_terms": "Datos de pago",
+  "doc_bank": "Banco",
+  "doc_iban": "IBAN",
+  "doc_bic": "SWIFT / BIC",
+  "doc_notes": "Observaciones",
+  "doc_reference_line": [
+    {
+      "declarations": ["input reference"],
+      "selectors": [],
+      "match": {
+        "*": "Referencia: {reference}"
+      }
+    }
+  ],
+  "doc_page_of": "Página {#current/} de {#total/}",
+  "doc_treatment": [
+    {
+      "declarations": ["input treatment"],
+      "selectors": ["treatment"],
+      "match": {
+        "treatment=exempt": "Operación exenta",
+        "treatment=outside-scope": "Operación no sujeta",
+        "treatment=reverse-charge": "Inversión del sujeto pasivo",
+        "treatment=*": ""
+      }
+    }
+  ],
+  "doc_correction": [
+    {
+      "declarations": ["input number", "input reason"],
+      "selectors": [],
+      "match": {
+        "*": "Rectifica la factura {number}. Motivo: {reason}"
+      }
+    }
+  ],
+  "doc_line_tax": [
+    {
+      "declarations": [
+        "input treatment",
+        "input rate",
+        "local r = rate: number maximumFractionDigits=2"
+      ],
+      "selectors": ["treatment"],
+      "match": {
+        "treatment=taxable": "IGIC {r} %",
+        "treatment=exempt": "Exenta",
+        "treatment=outside-scope": "No sujeta",
+        "treatment=reverse-charge": "Inversión del sujeto pasivo",
+        "treatment=*": ""
+      }
+    }
+  ],
+  "notice_validity_title": "Validez",
+  "notice_validity": [
+    {
+      "declarations": [
+        "input until",
+        "local day = until: datetime day=numeric month=short year=numeric timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "Este presupuesto es válido hasta el {day}. Una vez aceptado, sus condiciones obligan a ambas partes. No es una factura: cada pago se factura en su fecha de vencimiento."
+      }
+    }
+  ],
+  "notice_price_title": "Precio",
+  "notice_price": "El precio total incluye el IGIC y todos los demás impuestos aplicables.",
+  "notice_acceptance_title": "Cómo se acepta",
+  "notice_acceptance": [
+    {
+      "declarations": ["input issuer", "input language"],
+      "selectors": [],
+      "match": {
+        "*": "El cliente abre el enlace del presupuesto, lo lee, introduce su nombre completo, traza su firma y lo acepta. Esta aceptación constituye su firma electrónica. {issuer} conserva el documento aceptado y envía una copia por correo electrónico en las 24 horas siguientes. Antes de aceptar, el cliente puede solicitar un presupuesto revisado para corregir cualquier error. El contrato se formaliza en {language}."
+      }
+    }
+  ],
+  "notice_contract_language": [
+    {
+      "declarations": ["input language"],
+      "selectors": ["language"],
+      "match": {
+        "language=en": "inglés",
+        "language=es": "español",
+        "language=*": ""
+      }
+    }
+  ],
+  "notice_withdrawal_title": "Derecho de desistimiento",
+  "notice_withdrawal": [
+    {
+      "declarations": ["input email"],
+      "selectors": [],
+      "match": {
+        "*": "El cliente puede desistir del contrato en un plazo de 14 días naturales desde el día en que acepta el presupuesto. No necesita justificar su decisión. El desistimiento no tiene coste, salvo el supuesto de inicio anticipado indicado a continuación. Basta con comunicar su decisión de forma inequívoca a {email}, por ejemplo, mediante el formulario al final de este documento. El trabajo no comienza durante el plazo de desistimiento, salvo que el cliente lo solicite expresamente al aceptar. Si solicita el inicio anticipado y después desiste, debe abonar la parte del servicio ya prestada en proporción al precio total. En este supuesto, pierde el derecho de desistimiento cuando el servicio se haya prestado por completo."
+      }
+    }
+  ],
+  "notice_complaints_title": "Atención a la clientela",
+  "notice_complaints": [
+    {
+      "declarations": ["input email"],
+      "selectors": [],
+      "match": {
+        "*": "Las quejas y reclamaciones se atienden en {email}. Se responde en un plazo máximo de un mes. El cliente tiene a su disposición hojas de reclamaciones oficiales."
+      }
+    }
+  ],
+  "notice_privacy_title": "Protección de datos",
+  "notice_privacy": [
+    {
+      "declarations": ["input controller", "input email"],
+      "selectors": [],
+      "match": {
+        "*": "{controller} trata los datos del cliente para preparar este presupuesto y, si se acepta, para cumplir el contrato. Los conserva mientras dure la relación con el cliente y durante los plazos que establece la ley. El cliente puede ejercer los derechos de acceso, rectificación, supresión, limitación del tratamiento, portabilidad y oposición a través de {email}. También puede presentar una reclamación ante la Agencia Española de Protección de Datos (aepd.es)."
+      }
+    }
+  ],
+  "withdrawal_lede": "(sólo debe cumplimentar y enviar el presente formulario si desea desistir del contrato)",
+  "withdrawal_to": "A la atención de",
+  "withdrawal_notice_label": "Comunicación",
+  "withdrawal_notice": [
+    {
+      "declarations": ["input service"],
+      "selectors": [],
+      "match": {
+        "*": "Por la presente le comunico que desisto de mi contrato de prestación del siguiente servicio: {service}."
+      }
+    }
+  ],
+  "withdrawal_accepted_on": "Pedido el",
+  "withdrawal_name": "Nombre del consumidor y usuario",
+  "withdrawal_address": "Domicilio del consumidor y usuario",
+  "withdrawal_signature": "Firma del consumidor y usuario (solo si el presente formulario se presenta en papel)",
+  "withdrawal_date": "Fecha",
+  "bill_payment_of": [
+    {
+      "declarations": ["input index", "input count"],
+      "selectors": [],
+      "match": {
+        "*": "Pago {index} de {count}"
+      }
+    }
+  ],
+  "bill_reference": [
+    {
+      "declarations": ["input number"],
+      "selectors": [],
+      "match": {
+        "*": "Presupuesto {number}"
+      }
+    }
+  ],
+  "terms_on_acceptance": "al aceptar",
+  "terms_on_delivery": "a la entrega",
+  "terms_on_day": [
+    {
+      "declarations": [
+        "input date",
+        "local d = date: datetime day=numeric month=short year=numeric timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "el {d}"
+      }
+    }
+  ],
+  "terms_after_acceptance": [
+    {
+      "declarations": ["input span"],
+      "selectors": [],
+      "match": {
+        "*": "{span} después de la aceptación"
+      }
+    }
+  ],
+  "terms_later": [
+    {
+      "declarations": ["input span"],
+      "selectors": [],
+      "match": {
+        "*": "{span} después"
+      }
+    }
+  ],
+  "terms_rest": "el resto",
+  "terms_part": [
+    {
+      "declarations": ["input portion", "input due"],
+      "selectors": [],
+      "match": {
+        "*": "{portion} {due}"
+      }
+    }
+  ],
+  "terms_whole": [
+    {
+      "declarations": ["input due"],
+      "selectors": [],
+      "match": {
+        "*": "El importe total {due}."
+      }
+    }
+  ],
+  "terms_series": [
+    {
+      "declarations": [
+        "input portion",
+        "input count",
+        "input every",
+        "input first"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "{portion} en {count} pagos {every}, el primero {first}"
+      }
+    }
+  ],
+  "terms_every": [
+    {
+      "declarations": [
+        "input count",
+        "input unit",
+        "local countPlural = count: plural"
+      ],
+      "selectors": ["unit", "countPlural"],
+      "match": {
+        "unit=day, countPlural=one": "cada día",
+        "unit=week, countPlural=one": "cada semana",
+        "unit=month, countPlural=one": "cada mes",
+        "unit=day, countPlural=*": "cada {count} días",
+        "unit=week, countPlural=*": "cada {count} semanas",
+        "unit=month, countPlural=*": "cada {count} meses",
+        "unit=*, countPlural=*": ""
+      }
+    }
+  ],
+  "plan_now": "ahora",
+  "plan_on": [
+    {
+      "declarations": ["input date"],
+      "selectors": [],
+      "match": {
+        "*": "el {date}"
+      }
+    }
+  ],
+  "plan_from": [
+    {
+      "declarations": ["input date"],
+      "selectors": [],
+      "match": {
+        "*": " desde el {date}"
+      }
+    }
+  ],
+  "plan_by": [
+    {
+      "declarations": ["input amount", "input date"],
+      "selectors": [],
+      "match": {
+        "*": "{amount} a más tardar el {date}"
+      }
+    }
+  ],
+  "plan_any": [
+    {
+      "declarations": ["input floor", "input date"],
+      "selectors": [],
+      "match": {
+        "*": "Cualquier importe a partir de {floor}, hasta el {date}"
+      }
+    }
+  ],
+  "plan_every": [
+    {
+      "declarations": [
+        "input count",
+        "input unit",
+        "local countPlural = count: plural"
+      ],
+      "selectors": ["unit", "countPlural"],
+      "match": {
+        "unit=day, countPlural=one": "cada día",
+        "unit=week, countPlural=one": "cada semana",
+        "unit=month, countPlural=one": "cada mes",
+        "unit=day, countPlural=*": "cada {count} días",
+        "unit=week, countPlural=*": "cada {count} semanas",
+        "unit=month, countPlural=*": "cada {count} meses",
+        "unit=*, countPlural=*": ""
+      }
+    }
+  ],
+  "plan_whole": "Pago único",
+  "plan_flexible": "Pago flexible",
+  "plan_payments": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} pago",
+        "countPlural=other": "{count} pagos"
+      }
+    }
+  ],
+  "pay_title": [
+    {
+      "declarations": ["input number", "input issuer"],
+      "selectors": [],
+      "match": {
+        "*": "Factura {number} · {issuer}"
+      }
+    }
+  ],
+  "pay_title_unknown": "Enlace de pago",
+  "pay_invoice": "Factura",
+  "pay_from": "Emisor",
+  "pay_billed_to": "Cliente",
+  "pay_issued": [
+    {
+      "declarations": [
+        "input date",
+        "local d = date: datetime dateStyle=long timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "Emitida el {d}"
+      }
+    }
+  ],
+  "pay_more": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Ver {count} concepto más",
+        "countPlural=other": "Ver {count} conceptos más"
+      }
+    }
+  ],
+  "pay_fewer": "Ver menos conceptos",
+  "pay_subtotal": "Subtotal",
+  "pay_discount": "Descuento",
+  "pay_tax": [
+    {
+      "declarations": [
+        "input rate",
+        "local r = rate: number maximumFractionDigits=2"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "IGIC {r} %"
+      }
+    }
+  ],
+  "pay_withholding": "Retención",
+  "pay_disbursements": "Suplidos",
+  "pay_total": "Total",
+  "pay_received": [
+    {
+      "declarations": [
+        "input date",
+        "local d = date: datetime dateStyle=long timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "Recibido el {d}"
+      }
+    }
+  ],
+  "pay_pdf": "PDF",
+  "pay_pdf_label": "Descargar la factura en PDF",
+  "pay_due": "Importe pendiente",
+  "pay_amount_paid": "Importe pagado",
+  "pay_due_on": [
+    {
+      "declarations": [
+        "input date",
+        "local d = date: datetime dateStyle=long timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "Vence el {d}"
+      }
+    }
+  ],
+  "pay_overdue": [
+    {
+      "declarations": [
+        "input date",
+        "local d = date: datetime dateStyle=long timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "Venció el {d}"
+      }
+    }
+  ],
+  "pay_next_payment": "Próximo pago",
+  "pay_due_now": "A pagar ahora",
+  "pay_payment_of": [
+    {
+      "declarations": ["input index", "input count"],
+      "selectors": [],
+      "match": {
+        "*": "Pago {index} de {count}"
+      }
+    }
+  ],
+  "pay_plan": "Forma de pago",
+  "pay_how_to_pay": "¿Cómo quieres pagar?",
+  "pay_pay_now": "a pagar ahora",
+  "pay_how_much_now": "¿Cuánto quieres pagar ahora?",
+  "pay_your_plan": [
+    {
+      "declarations": ["input name"],
+      "selectors": [],
+      "match": {
+        "*": "Tu forma de pago: {name}"
+      }
+    }
+  ],
+  "pay_left": [
+    {
+      "declarations": ["input amount"],
+      "selectors": [],
+      "match": {
+        "*": "Pendiente: {amount}"
+      }
+    }
+  ],
+  "pay_paid_part": [
+    {
+      "declarations": ["input amount"],
+      "selectors": [],
+      "match": {
+        "*": "Pagado: {amount}"
+      }
+    }
+  ],
+  "pay_state": [
+    {
+      "declarations": ["input state"],
+      "selectors": ["state"],
+      "match": {
+        "state=paid": "Pagado",
+        "state=due": "Vence hoy",
+        "state=late": "Vencido",
+        "state=*": ""
+      }
+    }
+  ],
+  "pay_choice": [
+    {
+      "declarations": ["input choice"],
+      "selectors": ["choice"],
+      "match": {
+        "choice=next": "Próximo pago",
+        "choice=due": "Total a pagar ahora",
+        "choice=all": "Todo lo pendiente",
+        "choice=*": ""
+      }
+    }
+  ],
+  "pay_whole": "Importe total",
+  "pay_other": "Otro importe",
+  "pay_how_much": "Importe del pago",
+  "pay_range": [
+    {
+      "declarations": ["input from", "input to"],
+      "selectors": [],
+      "match": {
+        "*": "De {from} a {to}."
+      }
+    }
+  ],
+  "pay_too_small": [
+    {
+      "declarations": ["input from"],
+      "selectors": [],
+      "match": {
+        "*": "Paga al menos {from}."
+      }
+    }
+  ],
+  "pay_too_large": [
+    {
+      "declarations": ["input to"],
+      "selectors": [],
+      "match": {
+        "*": "Introduce un importe de hasta {to} o elige todo lo pendiente."
+      }
+    }
+  ],
+  "pay_unreadable": "Escribe un importe como 250,00.",
+  "pay_pay": [
+    {
+      "declarations": ["input amount"],
+      "selectors": [],
+      "match": {
+        "*": "Pagar {amount}"
+      }
+    }
+  ],
+  "pay_confirming": "Confirmando…",
+  "pay_failed": "El pago no se ha completado. Revisa los datos e inténtalo de nuevo.",
+  "pay_unreachable": "No se ha podido iniciar el pago. No se te ha cobrado nada. Inténtalo de nuevo en un momento.",
+  "pay_unloaded": "El formulario de pago no se ha cargado. Recarga la página para intentarlo de nuevo.",
+  "pay_thanks": [
+    {
+      "declarations": ["input amount"],
+      "selectors": [],
+      "match": {
+        "*": "Pago recibido: {amount}. Gracias."
+      }
+    }
+  ],
+  "pay_settling": "Pago realizado. Aparecerá aquí en un momento.",
+  "pay_processing": [
+    {
+      "declarations": ["input amount"],
+      "selectors": [],
+      "match": {
+        "*": "Pago de {amount} en curso"
+      }
+    }
+  ],
+  "pay_processing_detail": "Tu banco está confirmando el pago. Esta página se actualizará automáticamente cuando se complete.",
+  "pay_check": "Comprobar ahora",
+  "pay_paid": "Pagada íntegramente",
+  "pay_paid_on": [
+    {
+      "declarations": [
+        "input date",
+        "local d = date: datetime dateStyle=long timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "Pagada el {d}. Gracias."
+      }
+    }
+  ],
+  "pay_stamp": "Pagada",
+  "pay_paused": "El pago en línea está suspendido",
+  "pay_paused_detail": [
+    {
+      "declarations": ["input issuer"],
+      "selectors": [],
+      "match": {
+        "*": "{issuer} está comprobando los pagos de esta factura. Ponte en contacto para pagarla."
+      }
+    }
+  ],
+  "pay_paused_detail_anonymous": "El emisor está comprobando los pagos de esta factura. Ponte en contacto para pagarla.",
+  "pay_write": [
+    {
+      "declarations": ["input email"],
+      "selectors": [],
+      "match": {
+        "*": "Escribir a {email}"
+      }
+    }
+  ],
+  "pay_secured": "Stripe procesa los pagos",
+  "pay_invalid": "Este enlace de pago no funciona",
+  "pay_invalid_detail": "Puede que haya caducado o se haya cerrado. Pide uno nuevo a quien te lo envió.",
+  "pay_keep": "Guarda tus facturas",
+  "pay_keep_detail": [
+    {
+      "declarations": ["input issuer"],
+      "selectors": [],
+      "match": {
+        "*": "Consulta todas las facturas de {issuer} en un solo sitio, cuando quieras."
+      }
+    }
+  ],
+  "pay_keep_detail_anonymous": "Consulta todas las facturas de este emisor en un solo sitio, cuando quieras.",
+  "pay_kept": "Esta factura está en tu cuenta.",
+  "pay_all_invoices": "Todas tus facturas",
+  "pay_unavailable": "El pago no está disponible ahora mismo",
+  "pay_unavailable_detail": "Inténtalo de nuevo en un momento.",
+  "pay_try_again": "Reintentar",
+  "quote_title": [
+    {
+      "declarations": ["input number", "input issuer"],
+      "selectors": [],
+      "match": {
+        "*": "Presupuesto {number} · {issuer}"
+      }
+    }
+  ],
+  "quote_quote": "Presupuesto",
+  "quote_total": "Total, impuestos incluidos",
+  "quote_valid_until": [
+    {
+      "declarations": [
+        "input date",
+        "local d = date: datetime dateStyle=long timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "Válido hasta el {d}"
+      }
+    }
+  ],
+  "quote_days_left": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["count", "countPlural"],
+      "match": {
+        "count=0, countPlural=*": "Último día",
+        "count=*, countPlural=one": "Queda {count} día",
+        "count=*, countPlural=other": "Quedan {count} días"
+      }
+    }
+  ],
+  "quote_pdf": "PDF",
+  "quote_pdf_label": "Descargar el presupuesto en PDF",
+  "quote_pages": "El presupuesto",
+  "quote_legal": "Información legal",
+  "quote_how_you_pay": "Forma de pago",
+  "quote_option": [
+    {
+      "declarations": ["input index"],
+      "selectors": [],
+      "match": {
+        "*": "Opción {index}"
+      }
+    }
+  ],
+  "quote_on_acceptance": "al aceptar",
+  "quote_paying": "Pagas",
+  "quote_name": "Tu nombre completo",
+  "quote_name_placeholder": "Como en tu documento de identidad",
+  "quote_agree": "He leído este presupuesto, sus condiciones y la información legal, y los acepto.",
+  "quote_early_start": "Solicito que el trabajo comience antes de que termine el plazo de desistimiento de 14 días naturales",
+  "quote_early_start_detail": "Si después desistes, tendrás que pagar la parte del servicio ya prestada. Pierdes el derecho de desistimiento cuando el servicio se haya prestado por completo.",
+  "quote_accept": "Aceptar y firmar",
+  "quote_accepting": "Firmando…",
+  "quote_decline": "Rechazar este presupuesto",
+  "quote_decline_confirm": [
+    {
+      "declarations": ["input issuer"],
+      "selectors": [],
+      "match": {
+        "*": "{issuer} verá que no lo aceptas."
+      }
+    }
+  ],
+  "quote_decline_yes": "Rechazar",
+  "quote_decline_no": "No rechazar",
+  "quote_signature": "Tu nombre y la firma que trazas constituyen tu firma electrónica. Guardamos la hora, los datos de este navegador y la huella digital del documento que aceptas.",
+  "quote_sign": "Tu firma",
+  "quote_sign_hint": "Firma aquí",
+  "quote_signed_by": [
+    {
+      "declarations": ["input name"],
+      "selectors": [],
+      "match": {
+        "*": "Firma de {name}"
+      }
+    }
+  ],
+  "quote_page_of": [
+    {
+      "declarations": ["input page", "input pages"],
+      "selectors": [],
+      "match": {
+        "*": "Página {page} de {pages}"
+      }
+    }
+  ],
+  "quote_page_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} página",
+        "countPlural=other": "{count} páginas"
+      }
+    }
+  ],
+  "quote_as_text": "Leerlo como texto",
+  "quote_review": "Revisar y firmar",
+  "quote_answer": "Ver la respuesta",
+  "quote_back": "Volver al presupuesto",
+  "quote_fingerprint": "Huella digital",
+  "quote_stamp_accepted": "Aceptado",
+  "quote_accepted": [
+    {
+      "declarations": [
+        "input name",
+        "input date",
+        "local d = date: datetime dateStyle=long timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "Aceptado por {name} el {d}"
+      }
+    }
+  ],
+  "quote_accepted_on": [
+    {
+      "declarations": [
+        "input date",
+        "local d = date: datetime dateStyle=long timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "Aceptado el {d}"
+      }
+    }
+  ],
+  "quote_declined_on": [
+    {
+      "declarations": [
+        "input date",
+        "local d = date: datetime dateStyle=long timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "Rechazado el {d}"
+      }
+    }
+  ],
+  "quote_declined": [
+    {
+      "declarations": [
+        "input name",
+        "input date",
+        "local d = date: datetime dateStyle=long timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "Rechazado por {name} el {d}"
+      }
+    }
+  ],
+  "quote_emailed": [
+    {
+      "declarations": ["input email"],
+      "selectors": [],
+      "match": {
+        "*": "Hemos enviado una copia a {email}."
+      }
+    }
+  ],
+  "quote_early_started": "Pediste que el trabajo empezara dentro del plazo de desistimiento.",
+  "quote_expired": [
+    {
+      "declarations": [
+        "input date",
+        "local d = date: datetime dateStyle=long timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "Este presupuesto caducó el {d}"
+      }
+    }
+  ],
+  "quote_expired_detail": [
+    {
+      "declarations": ["input issuer"],
+      "selectors": [],
+      "match": {
+        "*": "Escribe a {issuer} para pedir uno nuevo."
+      }
+    }
+  ],
+  "quote_stale": "Este presupuesto ha cambiado mientras la página estaba abierta. Recárgala para leer la versión actual.",
+  "quote_reload": "Recargar",
+  "quote_failed": "No se ha podido guardar tu respuesta. Inténtalo de nuevo en un momento.",
+  "quote_write": [
+    {
+      "declarations": ["input email"],
+      "selectors": [],
+      "match": {
+        "*": "Escribir a {email}"
+      }
+    }
+  ],
+  "quote_invalid": "Este enlace no abre un presupuesto",
+  "quote_invalid_detail": "Puede haber caducado o estar cerrado. Pide un enlace nuevo.",
+  "quote_lines": "Conceptos",
+  "quote_from": "Emisor",
+  "quote_to": "Cliente",
+  "pad_undo": "Deshacer",
+  "pad_redo": "Rehacer",
+  "pad_clear": "Borrar la firma",
+  "pad_state": [
+    {
+      "declarations": [
+        "input strokes",
+        "local strokesPlural = strokes: plural"
+      ],
+      "selectors": ["strokes", "strokesPlural"],
+      "match": {
+        "strokes=0, strokesPlural=*": "Sin firma. Firma con el ratón, un lápiz digital o el dedo.",
+        "strokes=*, strokesPlural=one": "1 trazo. Firma con el ratón, un lápiz digital o el dedo.",
+        "strokes=*, strokesPlural=other": "{strokes} trazos. Firma con el ratón, un lápiz digital o el dedo."
+      }
+    }
+  ],
+  "pad_keys": "Para deshacer, pulsa Control + Z o Comando + Z. Para rehacer, pulsa Control + Mayúsculas + Z o Comando + Mayúsculas + Z. Para borrar la firma, pulsa Suprimir.",
+  "pad_added": [
+    {
+      "declarations": [
+        "input strokes",
+        "local strokesPlural = strokes: plural"
+      ],
+      "selectors": ["strokesPlural"],
+      "match": {
+        "strokesPlural=one": "Trazo añadido.",
+        "strokesPlural=other": "Trazo añadido. {strokes} en total."
+      }
+    }
+  ],
+  "pad_undone": "Deshecho",
+  "pad_redone": "Rehecho",
+  "pad_cleared": "Firma borrada. Puedes recuperarla con Deshacer.",
+  "account_page_title": "Tus facturas",
+  "account_title": "Tus facturas",
+  "account_intro": "Accede con la dirección de correo a la que recibes las facturas.",
+  "account_unavailable": "El acceso a la cuenta aún no está disponible. Puedes seguir consultando la factura desde el enlace de pago.",
+  "account_email": "Correo electrónico",
+  "account_email_missing": "Introduce la dirección de correo a la que recibes las facturas.",
+  "account_send": "Enviar un código",
+  "account_sending": "Enviando…",
+  "account_sent_to": [
+    {
+      "declarations": ["input email"],
+      "selectors": [],
+      "match": {
+        "*": "Si hay facturas asociadas a {#address}{email}{/address}, recibirás un código."
+      }
+    }
+  ],
+  "account_send_to": [
+    {
+      "declarations": ["input email"],
+      "selectors": [],
+      "match": {
+        "*": "Te enviaremos un código a {#address}{email}{/address}."
+      }
+    }
+  ],
+  "account_sent": [
+    {
+      "declarations": ["input email"],
+      "selectors": [],
+      "match": {
+        "*": "Te hemos enviado un código a {#address}{email}{/address}."
+      }
+    }
+  ],
+  "account_code": "Código recibido por correo",
+  "account_verifying": "Comprobando el código…",
+  "account_verified": "Has accedido",
+  "account_resend": "Enviar otro código",
+  "account_resend_in": [
+    {
+      "declarations": [
+        "input seconds",
+        "local s = seconds: number minimumIntegerDigits=2"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "Nuevo código en 0:{s}"
+      }
+    }
+  ],
+  "account_resent": "Te hemos enviado un nuevo código.",
+  "account_other": "Usar otra dirección de correo",
+  "account_wrong": "Ese código no es correcto. Revisa el correo más reciente.",
+  "account_expired": "Ese código ha caducado. Solicita otro.",
+  "account_too_many": "Demasiados intentos. Solicita otro código.",
+  "account_slow_down": "Demasiadas solicitudes. Espera un minuto y vuelve a probar.",
+  "account_closed": "No hay ninguna factura asociada a esta dirección de correo con un enlace de pago activo.",
+  "account_failed": "Algo ha fallado. Vuelve a probar.",
+  "account_sign_out": "Cerrar sesión",
+  "account_to_pay": "Por pagar",
+  "account_overdue_total": "Vencido",
+  "account_settled": "Nada por pagar",
+  "account_all_paid": "Todas las facturas están pagadas. Gracias.",
+  "account_empty": [
+    {
+      "declarations": ["input email"],
+      "selectors": [],
+      "match": {
+        "*": "Aún no hay facturas. Las facturas asociadas a {#address}{email}{/address} aparecerán aquí cuando se emitan."
+      }
+    }
+  ],
+  "account_paid": "Pagada",
+  "account_due": [
+    {
+      "declarations": [
+        "input date",
+        "local d = date: datetime dateStyle=long timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "Vence el {d}"
+      }
+    }
+  ],
+  "account_overdue": [
+    {
+      "declarations": [
+        "input date",
+        "local d = date: datetime dateStyle=long timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "Venció el {d}"
+      }
+    }
+  ],
+  "account_next": [
+    {
+      "declarations": [
+        "input amount",
+        "input date",
+        "local d = date: datetime dateStyle=long timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "{amount}, vence el {d}"
+      }
+    }
+  ],
+  "account_next_late": [
+    {
+      "declarations": [
+        "input amount",
+        "input date",
+        "local d = date: datetime dateStyle=long timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "{amount}, venció el {d}"
+      }
+    }
+  ],
+  "account_part": [
+    {
+      "declarations": ["input index", "input count"],
+      "selectors": [],
+      "match": {
+        "*": "{index} de {count}"
+      }
+    }
+  ],
+  "account_next_payment": "Próximo pago",
+  "account_late_payment": "Pago vencido",
+  "account_due_on": [
+    {
+      "declarations": [
+        "input date",
+        "local d = date: datetime dateStyle=long timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "vence el {d}"
+      }
+    }
+  ],
+  "account_overdue_on": [
+    {
+      "declarations": [
+        "input date",
+        "local d = date: datetime dateStyle=long timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "venció el {d}"
+      }
+    }
+  ],
+  "account_pay": "Pagar",
+  "account_open": [
+    {
+      "declarations": ["input number"],
+      "selectors": [],
+      "match": {
+        "*": "Abrir la factura {number}"
+      }
+    }
+  ],
+  "account_pdf": [
+    {
+      "declarations": ["input number"],
+      "selectors": [],
+      "match": {
+        "*": "Descargar la factura {number} en PDF"
+      }
+    }
+  ],
+  "account_to_pay_group": "Por pagar",
+  "account_paid_group": "Pagadas",
+  "account_missing": "Esta factura no está en tu cuenta",
+  "account_missing_detail": "Puede que esté asociada a otra dirección de correo. Consulta la lista de tus facturas.",
+  "account_all_invoices": "Todas tus facturas",
+  "starter_full": "Pago único",
+  "starter_deposit": "Anticipo",
+  "starter_balance": "Resto",
+  "starter_deposit_first": "Anticipo y resto",
+  "starter_halves": "Dos mitades",
+  "starter_monthly": "Mensual",
+  "starter_deposit_monthly": "Anticipo y mensualidades",
+  "starter_kickoff": "Inicio",
+  "starter_midpoint": "Mitad del proyecto",
+  "starter_delivery": "Entrega",
+  "starter_milestones": "Por hitos",
+  "starter_flexible": "A tu ritmo",
+  "typography_open_quote": "«",
+  "typography_close_quote": "»",
+  "closed_stamp": "Cerrado",
+  "language_switch": "Read in English",
+  "language_switch_label": "Switch to English",
+  "mail_code_subject": [
+    {
+      "declarations": ["input code"],
+      "selectors": [],
+      "match": {
+        "*": "{code}: tu código para acceder a tus facturas"
+      }
+    }
+  ],
+  "mail_code_intro": "Introduce este código para ver tus facturas de Hadronomy:",
+  "mail_code_expiry": "El código es válido durante 10 minutos.",
+  "mail_code_ignore": "Si no lo has pedido, puedes ignorar este correo.",
+  "mail_answer_subject": [
+    {
+      "declarations": ["input outcome", "input number", "input issuer"],
+      "selectors": ["outcome"],
+      "match": {
+        "outcome=accepted": "Has aceptado el presupuesto {number} de {issuer}",
+        "outcome=declined": "Has rechazado el presupuesto {number} de {issuer}",
+        "outcome=*": ""
+      }
+    }
+  ],
+  "mail_answer_decided": [
+    {
+      "declarations": [
+        "input outcome",
+        "input name",
+        "input number",
+        "input issuer",
+        "input decidedAt",
+        "local at = decidedAt: datetime dateStyle=long timeStyle=short timeZone=UTC"
+      ],
+      "selectors": ["outcome"],
+      "match": {
+        "outcome=accepted": "{name} aceptó el presupuesto {number} de {issuer} el {at} (UTC).",
+        "outcome=declined": "{name} rechazó el presupuesto {number} de {issuer} el {at} (UTC).",
+        "outcome=*": ""
+      }
+    }
+  ],
+  "mail_answer_early_start": "Solicitaste que el trabajo comenzara durante el plazo de desistimiento de 14 días naturales. Si desistes, tendrás que pagar la parte del servicio ya prestada. Pierdes el derecho de desistimiento cuando el servicio se haya prestado por completo.",
+  "mail_answer_document": [
+    {
+      "declarations": ["input digest", "input url"],
+      "selectors": [],
+      "match": {
+        "*": "La huella digital SHA-256 del documento al que has respondido es {digest}. Puedes leerlo y descargarlo en {url}"
+      }
+    }
+  ],
+  "mail_answer_keep": "Guarda este correo como copia del acuerdo."
+}
