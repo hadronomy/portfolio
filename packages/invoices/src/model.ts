@@ -173,60 +173,6 @@ export const Invoice = Schema.Struct({
   calculationVersion: Schema.Literal(1),
 });
 export interface Invoice extends Schema.Schema.Type<typeof Invoice> {}
-/** What the customer sends back from the quote page. */
-export const Answer = Schema.Struct({
-  outcome: Schema.Literals(['accepted', 'declined']),
-  name: Schema.String.check(Schema.isMinLength(2), Schema.isMaxLength(200)),
-  earlyStart: Schema.Boolean,
-  language: Language,
-  digest: Schema.String.check(Schema.isPattern(/^[a-f0-9]{64}$/)),
-});
-export interface Answer extends Schema.Schema.Type<typeof Answer> {}
-/** A customer's answer to an issued quote, with the evidence of who gave it. */
-export const QuoteResponse = Schema.Struct({
-  quoteId: InvoiceId,
-  outcome: Schema.Literals(['accepted', 'declined']),
-  /** The full name the customer typed: their simple electronic signature. */
-  name: Schema.String,
-  /** The address the quote was sent to. */
-  email: Schema.String,
-  /** A consumer's express request to start inside the withdrawal period. */
-  earlyStart: Schema.Boolean,
-  language: Language,
-  /** SHA-256 of the PDF the customer read and answered. */
-  digest: Schema.String,
-  address: Schema.String,
-  agent: Schema.String,
-  decidedAt: Schema.String,
-  /** When the confirmation email went out; null until it has. */
-  confirmedAt: Schema.NullOr(Schema.String),
-  /** The invoice drafted from this quote, once there is one. */
-  invoiceId: Schema.NullOr(InvoiceId),
-});
-export interface QuoteResponse
-  extends Schema.Schema.Type<typeof QuoteResponse> {}
-/**
- * Where a quote stands: written, out for an answer, past its validity
- * unanswered, answered, or invoiced after acceptance.
- */
-export type QuoteState =
-  | 'draft'
-  | 'open'
-  | 'expired'
-  | 'accepted'
-  | 'declined'
-  | 'invoiced';
-/** The state of a quote on `today`, an ISO calendar day. */
-export function quoteState(
-  quote: Invoice,
-  response: QuoteResponse | null,
-  today = new Date().toISOString().slice(0, 10),
-): QuoteState {
-  if (quote.status === 'draft') return 'draft';
-  if (response?.invoiceId) return 'invoiced';
-  if (response) return response.outcome;
-  return (quote.data.quote?.validUntil ?? '') < today ? 'expired' : 'open';
-}
 export const Customer = Schema.Struct({
   id: RecordId,
   ...Party.fields,

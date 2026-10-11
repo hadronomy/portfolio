@@ -37,6 +37,13 @@ export const relations = defineRelations(tables, (r) => ({
       optional: false,
     }),
   },
+  billed: {
+    quote: r.one.invoices({
+      from: r.billed.quoteId,
+      to: r.invoices.id,
+      optional: false,
+    }),
+  },
   responses: {
     quote: r.one.invoices({
       from: r.responses.quoteId,

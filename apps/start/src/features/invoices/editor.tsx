@@ -1,3 +1,4 @@
+import { planTerms } from '@portfolio/invoices/billing';
 import {
   calculate,
   formatMoney,
@@ -314,9 +315,14 @@ function Editor({ invoice }: { invoice: Invoice }) {
 
   /** Runs a quote action that drafts a new document, then opens it. */
   const follow = useCallback(
-    async (action: 'convert' | 'revise', failure: string) => {
+    async (
+      action:
+        | { readonly action: 'revise' }
+        | { readonly action: 'bill'; readonly payment: number },
+      failure: string,
+    ) => {
       await run(async () => {
-        const result = await mutate({ action, id: invoice.id });
+        const result = await mutate({ ...action, id: invoice.id });
         if (!result.ok) return failure;
         if (result.created)
           await navigate({
@@ -328,12 +334,20 @@ function Editor({ invoice }: { invoice: Invoice }) {
     },
     [run, mutate, invoice.id, navigate],
   );
-  const convert = useCallback(
-    () => follow('convert', 'The invoice could not be drafted. Try again.'),
+  const bill = useCallback(
+    (payment: number) =>
+      follow(
+        { action: 'bill', payment },
+        'The invoice could not be drafted. Try again.',
+      ),
     [follow],
   );
   const revise = useCallback(
-    () => follow('revise', 'The new version could not be drafted. Try again.'),
+    () =>
+      follow(
+        { action: 'revise' },
+        'The new version could not be drafted. Try again.',
+      ),
     [follow],
   );
 
@@ -483,7 +497,7 @@ function Editor({ invoice }: { invoice: Invoice }) {
         error={dialog ? '' : error}
         pending={pending}
         rectify={rectify}
-        convert={convert}
+        bill={bill}
         revise={revise}
         reversePayment={reversePayment}
         onDelete={() => {
@@ -805,7 +819,7 @@ type InspectorProps = {
   error: string;
   pending: boolean;
   rectify: () => void;
-  convert: () => void;
+  bill: (payment: number) => void;
   revise: () => void;
   reversePayment: (paymentId: Payment['id']) => void;
   onDelete: () => void;
@@ -823,7 +837,7 @@ const Inspector = memo(function Inspector({
   error,
   pending,
   rectify,
-  convert,
+  bill,
   revise,
   reversePayment,
   onDelete,
@@ -923,7 +937,7 @@ const Inspector = memo(function Inspector({
             issued={issued}
             status={status}
             pending={pending}
-            onConvert={convert}
+            onBill={bill}
             onRevise={revise}
           />
         )}
@@ -1479,8 +1493,8 @@ const DetailsSection = memo(function DetailsSection({
             )}
           </form.Field>
           {validUntil ? (
-            // A quote has no due date: it stands until the customer answers
-            // or its validity ends, which the law asks it to state.
+            // A quote stands until the customer answers or its validity
+            // ends, which the law asks it to state.
             <form.Field name="quote">
               {(field) => (
                 <DueDateField
@@ -1539,6 +1553,21 @@ const DetailsSection = memo(function DetailsSection({
               />
             )}
           </form.Field>
+          {validUntil && (
+            // A quote's due date is its planned delivery: the day a plan's
+            // "on delivery" falls on.
+            <form.Field name="dueDate">
+              {(date) => (
+                <Field
+                  label="Planned delivery"
+                  type="date"
+                  value={date.state.value}
+                  disabled={issued}
+                  onChange={(next) => date.handleChange(next)}
+                />
+              )}
+            </form.Field>
+          )}
           <form.Field name="currency">
             {(money) => (
               <Select
@@ -1736,8 +1765,33 @@ const PlanSection = memo(function PlanSection({
       ? { total: totals.total, currency, issueDate, dueDate }
       : null;
   const { plans } = useOffer(invoice.id, terms, issued);
-  // Only an invoice proper asks for money; a proforma is a quote.
-  if (kind !== 'invoice') return null;
+  // A rectifying invoice is settled against its original, not on a plan.
+  if (kind === 'rectification') return null;
+  // An issued quote's plans are part of what its customer reads and
+  // accepts, so they stay as they were sent.
+  if (kind === 'quote' && issued)
+    return (
+      <Section
+        title="Payment plans"
+        summary={plans.length === 1 ? '1 option' : `${plans.length} options`}
+        open={open}
+        onToggle={onToggle}
+      >
+        <div className="iv-section-body">
+          <ul className="iv-plan-terms">
+            {plans.map((plan) => (
+              <li key={plan.id}>
+                {plan.name && <strong>{plan.name}. </strong>}
+                {planTerms(plan, 'en', currency, day)}
+              </li>
+            ))}
+          </ul>
+          <p className="iv-muted">
+            Fixed once issued. Revise the quote to offer others.
+          </p>
+        </div>
+      </Section>
+    );
   return (
     <Section
       title="Payment plan"
@@ -1754,6 +1808,7 @@ const PlanSection = memo(function PlanSection({
           title={[invoice.number ?? 'Draft', customer]
             .filter(Boolean)
             .join(' · ')}
+          kind={kind}
         />
       </div>
     </Section>
@@ -1768,13 +1823,13 @@ const QuoteSection = memo(function QuoteSection({
   issued,
   status,
   pending,
-  onConvert,
+  onBill,
   onRevise,
 }: SectionProps & {
   invoice: Invoice;
   status: DocumentStatus;
   pending: boolean;
-  onConvert: () => void;
+  onBill: (payment: number) => void;
   onRevise: () => void;
 }) {
   const data = useStore(form.store, (state) => state.values);
@@ -1797,7 +1852,7 @@ const QuoteSection = memo(function QuoteSection({
           pending={pending}
           studioOpen={studio}
           onPages={() => show(true)}
-          onConvert={onConvert}
+          onBill={onBill}
           onRevise={onRevise}
         />
       </div>

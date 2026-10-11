@@ -73,7 +73,7 @@ export const mutate = Effect.fn('Operations.mutate')(function* (
       choose: ({ id, plan }) => nothing(store.choose(id, plan, actor)),
       library: ({ library }) => nothing(store.setLibrary(library)),
       revise: ({ id }) => created(quotes.revise(id, actor)),
-      convert: ({ id }) => created(quotes.convert(id, actor)),
+      bill: ({ id, payment }) => created(quotes.bill(id, payment, actor)),
     }),
   );
   return yield* apply.pipe(

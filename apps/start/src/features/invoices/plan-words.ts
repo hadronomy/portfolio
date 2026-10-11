@@ -7,6 +7,7 @@ import type {
   Span,
   Unit,
 } from '@portfolio/invoices/plan';
+import { createContext } from 'react';
 
 // Plans in words. The owner builds a plan as sentences ("Then the rest in
 // 6 payments every month, starting 1 month later"), so the editor needs
@@ -56,24 +57,65 @@ export function dueText(
   due: Due,
   where: { readonly first: boolean; readonly series: boolean },
   year: string,
+  anchors: Anchors = invoiceAnchors,
 ): string {
   switch (due._tag) {
     case 'OnIssue':
-      return where.series ? 'on the issue date' : 'when issued';
+      return where.series ? anchors.onIssueDate : anchors.whenIssued;
     case 'InvoiceDue':
-      return 'on the due date';
+      return anchors.onDue;
     case 'OnDate':
       return `on ${shortDate('en', due.date, year)}`;
     case 'After': {
       const afterIssue = due.from === 'issue' || where.first;
       if (due.count === 0)
         return afterIssue
-          ? dueText({ _tag: 'OnIssue' }, where, year)
+          ? dueText({ _tag: 'OnIssue' }, where, year, anchors)
           : 'the same day';
-      return `${spanText(due.count, due.unit)} ${afterIssue ? 'after issue' : 'later'}`;
+      return `${spanText(due.count, due.unit)} ${afterIssue ? anchors.afterIssue : 'later'}`;
     }
   }
 }
+
+/**
+ * The two days a plan counts from, in the owner's words. An invoice's plan
+ * counts from its issue and its due date; a quote's from the day it is
+ * accepted and its planned delivery.
+ */
+export interface Anchors {
+  readonly whenIssued: string;
+  readonly onIssueDate: string;
+  readonly onDue: string;
+  readonly afterIssue: string;
+  /** A preset's words, capitalised. */
+  readonly presetIssue: string;
+  readonly presetDue: string;
+  /** What one payment of everything means. */
+  readonly inFull: string;
+}
+
+export const invoiceAnchors: Anchors = {
+  whenIssued: 'when issued',
+  onIssueDate: 'on the issue date',
+  onDue: 'on the due date',
+  afterIssue: 'after issue',
+  presetIssue: 'When issued',
+  presetDue: 'On the due date',
+  inFull: 'One payment, by the due date.',
+};
+
+export const quoteAnchors: Anchors = {
+  whenIssued: 'on acceptance',
+  onIssueDate: 'on acceptance',
+  onDue: 'on delivery',
+  afterIssue: 'after acceptance',
+  presetIssue: 'On acceptance',
+  presetDue: 'On delivery',
+  inFull: 'One payment, on delivery.',
+};
+
+/** The anchors the plan editor in view speaks. */
+export const AnchorContext = createContext<Anchors>(invoiceAnchors);
 
 /** "every month", "every 2 weeks". */
 export const everyText = (every: Span) =>

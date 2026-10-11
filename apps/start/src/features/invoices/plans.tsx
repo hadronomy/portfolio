@@ -11,7 +11,7 @@ import {
 import { CircleAlert, SlidersHorizontal } from 'lucide-react';
 import { type CSSProperties, useMemo, useState } from 'react';
 import { MiniBar, PlanStudio, studioMorph } from './plan-studio';
-import { planLine, planName } from './plan-words';
+import { invoiceAnchors, planLine, planName, quoteAnchors } from './plan-words';
 import { Button, morph } from './ui';
 import { useWorkspace } from './workspace';
 
@@ -60,6 +60,7 @@ export function OfferPanel({
   language,
   issued,
   title,
+  kind = 'invoice',
 }: {
   id: InvoiceId;
   /** The invoice's total and dates as they stand in the editor, or null with nothing to pay. */
@@ -67,6 +68,7 @@ export function OfferPanel({
   language: Language;
   issued: boolean;
   title: string;
+  kind?: 'invoice' | 'quote';
 }) {
   const { plans, chosen, own, fallback } = useOffer(id, terms, issued);
   const [open, setOpen] = useState<PaymentPlan['id'] | null | false>(false);
@@ -126,7 +128,7 @@ export function OfferPanel({
                 ? 'The customer picks one when they pay.'
                 : 'The customer pays this way.'
               : issued
-                ? 'One payment, by the due date.'
+                ? (kind === 'quote' ? quoteAnchors : invoiceAnchors).inFull
                 : 'From your defaults.'}
           </span>
           <Button size="sm" onClick={() => show(null)}>
@@ -146,6 +148,7 @@ export function OfferPanel({
           title={title}
           fallback={fallback}
           initial={open}
+          kind={kind}
         />
       )}
     </>

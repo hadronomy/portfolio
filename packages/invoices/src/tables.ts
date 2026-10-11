@@ -6,6 +6,7 @@ import {
   integer,
   jsonb,
   pgSchema,
+  primaryKey,
   text,
   timestamp,
   uuid,
@@ -140,8 +141,7 @@ export const offers = namespace.table('offers', {
  * A customer's answer to an issued quote: one per quote, never changed
  * once given. `digest` is the SHA-256 of the exact PDF the customer read,
  * so the acceptance names the document it covers; the network address and
- * browser are the evidence of who signed. `invoice_id` is the invoice
- * drafted from an accepted quote.
+ * browser are the evidence of who signed.
  */
 export const responses = namespace.table(
   'responses',
@@ -159,9 +159,8 @@ export const responses = namespace.table(
     agent: text().notNull(),
     decidedAt: at('decided_at').notNull(),
     confirmedAt: at('confirmed_at'),
-    invoiceId: uuid('invoice_id')
-      .unique()
-      .references(() => invoices.id),
+    /** The accepted plan as it stood, so later edits never move it. */
+    plan: jsonb(),
   },
   (table) => [
     check(
@@ -173,4 +172,23 @@ export const responses = namespace.table(
       sql`not ${table.earlyStart} or ${table.outcome} = 'accepted'`,
     ),
   ],
+);
+
+/**
+ * The invoice each payment of an accepted quote was billed with. One per
+ * payment, so drafting a payment's invoice twice finds the first.
+ */
+export const billed = namespace.table(
+  'billed',
+  {
+    quoteId: uuid('quote_id')
+      .notNull()
+      .references(() => invoices.id),
+    payment: integer().notNull(),
+    invoiceId: uuid('invoice_id')
+      .notNull()
+      .unique()
+      .references(() => invoices.id),
+  },
+  (table) => [primaryKey({ columns: [table.quoteId, table.payment] })],
 );

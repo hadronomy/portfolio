@@ -3,6 +3,7 @@ import type { CSSProperties, ReactNode } from 'react';
 import { render } from 'takumi-pdf';
 import { PageNumber, TotalPages } from 'takumi-pdf/primitives';
 import type { CountryCode } from './address';
+import { planTerms } from './billing';
 import { calculate, formatMoney, type Totals } from './calculate';
 import ember from './covers/ember.jpg?inline';
 import moss from './covers/moss.jpg?inline';
@@ -18,6 +19,7 @@ import type { Cover, Invoice, Language, Party } from './model';
 import { QuoteAppendix } from './page-render';
 import { partyLines } from './party-lines';
 import { faint, ink, label, rule, ruleStrong, side, soft } from './pdf-style';
+import type { PaymentPlan } from './plan';
 
 const covers: Record<Exclude<Cover, 'none'>, string> = {
   ember,
@@ -114,9 +116,12 @@ function lineNet(lines: Totals['lines'], index: number, id: string): string {
 export function InvoiceDocument({
   invoice,
   language = invoice.data.language,
+  plans = [],
 }: {
   invoice: Invoice;
   language?: Language;
+  /** A quote's payment plans, printed as part of what the customer accepts. */
+  plans?: readonly PaymentPlan[];
 }) {
   const d = invoice.data;
   const t = documentLabels[language];
@@ -396,6 +401,24 @@ export function InvoiceDocument({
           marginTop: 36,
         }}
       >
+        {d.quote && plans.length > 0 && (
+          <div style={{ breakInside: 'avoid' }}>
+            <Labelled title={plans.length > 1 ? t.choosePlan : t.plan}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {plans.map((plan) => (
+                  <p key={plan.id} style={{ ...detail, color: ink }}>
+                    {plan.name && (
+                      <span style={{ fontWeight: 600 }}>{plan.name}. </span>
+                    )}
+                    {planTerms(plan, language, d.currency, (day) =>
+                      formatDay(day, language),
+                    )}
+                  </p>
+                ))}
+              </div>
+            </Labelled>
+          </div>
+        )}
         {(d.paymentTerms || bank.length > 0) && (
           <div style={{ breakInside: 'avoid' }}>
             <Labelled title={t.terms}>
@@ -442,6 +465,7 @@ export function InvoiceDocument({
 export async function renderInvoice(
   invoice: Invoice,
   language: Language = invoice.data.language,
+  plans: readonly PaymentPlan[] = [],
 ): Promise<Uint8Array> {
   const t = documentLabels[language];
   const fonts = [
@@ -456,40 +480,43 @@ export async function renderInvoice(
     weight: font.weight,
     style: font.style,
   }));
-  return render(<InvoiceDocument invoice={invoice} language={language} />, {
-    size: 'a4',
-    margin: { top: 40, right: side, bottom: 52, left: side },
-    fonts,
-    css: 'p, h1, h2, h3 { margin: 0 }',
-    // A quote's pages carry headings worth jumping to; an invoice has one.
-    outline: invoice.data.kind === 'quote',
-    pdfa: '2a',
-    tagged: 'ua1',
-    lang: language,
-    metadata: {
-      title: `${t[invoice.data.kind]} ${invoice.number || t.draft}`,
-      authors: [invoice.data.issuer.name || 'Invoice workspace'],
-      creationDate: invoice.createdAt.slice(0, 19),
+  return render(
+    <InvoiceDocument invoice={invoice} language={language} plans={plans} />,
+    {
+      size: 'a4',
+      margin: { top: 40, right: side, bottom: 52, left: side },
+      fonts,
+      css: 'p, h1, h2, h3 { margin: 0 }',
+      // A quote's pages carry headings worth jumping to; an invoice has one.
+      outline: invoice.data.kind === 'quote',
+      pdfa: '2a',
+      tagged: 'ua1',
+      lang: language,
+      metadata: {
+        title: `${t[invoice.data.kind]} ${invoice.number || t.draft}`,
+        authors: [invoice.data.issuer.name || 'Invoice workspace'],
+        creationDate: invoice.createdAt.slice(0, 19),
+      },
+      footer: (
+        <div
+          style={{
+            display: 'flex',
+            width: '100%',
+            justifyContent: 'space-between',
+            fontFamily: 'Geist',
+            fontSize: 8.5,
+            color: faint,
+            padding: `0 ${side}px`,
+          }}
+        >
+          <span>{invoice.number || t.draft}</span>
+          <span>
+            {t.page} <PageNumber /> {t.of} <TotalPages />
+          </span>
+        </div>
+      ),
     },
-    footer: (
-      <div
-        style={{
-          display: 'flex',
-          width: '100%',
-          justifyContent: 'space-between',
-          fontFamily: 'Geist',
-          fontSize: 8.5,
-          color: faint,
-          padding: `0 ${side}px`,
-        }}
-      >
-        <span>{invoice.number || t.draft}</span>
-        <span>
-          {t.page} <PageNumber /> {t.of} <TotalPages />
-        </span>
-      </div>
-    ),
-  });
+  );
 }
 /** SHA-256 hex of rendered bytes, used to skip duplicate artifact writes. */
 export function pdfDigest(bytes: Uint8Array): string {

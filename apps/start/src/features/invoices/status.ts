@@ -1,10 +1,9 @@
 import { balance, calculate } from '@portfolio/invoices/calculate';
+import type { Invoice, Payment } from '@portfolio/invoices/model';
 import {
-  type Invoice,
-  type Payment,
   type QuoteResponse,
   quoteState,
-} from '@portfolio/invoices/model';
+} from '@portfolio/invoices/quote-model';
 
 /**
  * What the owner needs to know about a document: a draft; an invoice by

@@ -1,0 +1,86 @@
+import { Schema } from 'effect';
+import { bills } from './billing';
+import { type Invoice, InvoiceId, Language, RecordId } from './model';
+import { PaymentPlan } from './plan';
+
+// A quote's life after it is issued, as data: the customer's answer, and
+// the invoices an accepted quote is billed in. Safe in the browser.
+
+/** What the customer sends back from the quote page. */
+export const Answer = Schema.Struct({
+  outcome: Schema.Literals(['accepted', 'declined']),
+  name: Schema.String.check(Schema.isMinLength(2), Schema.isMaxLength(200)),
+  earlyStart: Schema.Boolean,
+  language: Language,
+  digest: Schema.String.check(Schema.isPattern(/^[a-f0-9]{64}$/)),
+  /** The plan they accept under; null when the quote offers only one. */
+  plan: Schema.NullOr(RecordId),
+});
+export interface Answer extends Schema.Schema.Type<typeof Answer> {}
+
+/** One payment of an accepted quote, and the invoice it was billed with. */
+export const Billed = Schema.Struct({
+  payment: Schema.Int.check(Schema.isGreaterThanOrEqualTo(0)),
+  invoiceId: InvoiceId,
+});
+export interface Billed extends Schema.Schema.Type<typeof Billed> {}
+
+/** A customer's answer to an issued quote, with the evidence of who gave it. */
+export const QuoteResponse = Schema.Struct({
+  quoteId: InvoiceId,
+  outcome: Schema.Literals(['accepted', 'declined']),
+  /** The full name the customer typed: their simple electronic signature. */
+  name: Schema.String,
+  /** The address the quote was sent to. */
+  email: Schema.String,
+  /** A consumer's express request to start inside the withdrawal period. */
+  earlyStart: Schema.Boolean,
+  language: Language,
+  /** SHA-256 of the PDF the customer read and answered. */
+  digest: Schema.String,
+  address: Schema.String,
+  agent: Schema.String,
+  decidedAt: Schema.String,
+  /** When the confirmation email went out; null until it has. */
+  confirmedAt: Schema.NullOr(Schema.String),
+  /**
+   * The plan accepted, as it stood then: later edits to the quote's plans
+   * never move what the customer agreed to. Null on a declined quote.
+   */
+  plan: Schema.NullOr(PaymentPlan),
+  /** The payments billed so far, by their place in the plan. */
+  billed: Schema.Array(Billed),
+});
+export interface QuoteResponse
+  extends Schema.Schema.Type<typeof QuoteResponse> {}
+
+/** The day a quote was accepted, which its plan counts from. */
+export const acceptedOn = (response: QuoteResponse) =>
+  response.decidedAt.slice(0, 10);
+
+/**
+ * Where a quote stands: written, out for an answer, past its validity
+ * unanswered, answered, or with every payment invoiced.
+ */
+export type QuoteState =
+  | 'draft'
+  | 'open'
+  | 'expired'
+  | 'accepted'
+  | 'declined'
+  | 'invoiced';
+
+/** The state of a quote on `today`, an ISO calendar day. */
+export function quoteState(
+  quote: Invoice,
+  response: QuoteResponse | null,
+  today = new Date().toISOString().slice(0, 10),
+): QuoteState {
+  if (quote.status === 'draft') return 'draft';
+  if (response?.outcome === 'accepted' && response.plan) {
+    const due = bills(quote.data, response.plan, acceptedOn(response)).length;
+    return response.billed.length >= due ? 'invoiced' : 'accepted';
+  }
+  if (response) return response.outcome;
+  return (quote.data.quote?.validUntil ?? '') < today ? 'expired' : 'open';
+}

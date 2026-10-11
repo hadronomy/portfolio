@@ -4987,6 +4987,117 @@ body:has(.iv-dock) .iv-toast-region {
   white-space: nowrap;
 }
 
+/* The customer's quote page names its plan in one sentence when it offers
+   only one; with more, it uses the payment page's own chooser. */
+.iv-quote-plan {
+  display: grid;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--iv-sunken);
+}
+.iv-quote-plan > span {
+  color: var(--iv-ink-3);
+  font-size: 12px;
+}
+
+/* An issued quote's plans, read-only: one sentence each. */
+.iv-plan-terms {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--iv-ink-2);
+}
+.iv-plan-terms strong {
+  color: var(--iv-ink);
+  font-weight: 600;
+}
+
+/* The accepted quote's billing: one row per payment of the plan, on one
+   grid, so the step, the words, the amount and the action line up down the
+   list whatever each says. A billed row goes quiet; the next one to bill
+   carries the only filled button. */
+.iv-billing {
+  display: grid;
+  gap: 6px;
+}
+.iv-billing-head {
+  display: grid;
+  gap: 1px;
+  margin-bottom: 4px;
+  font-size: 12.5px;
+}
+.iv-billing-head > span:first-child {
+  font-weight: 600;
+}
+.iv-billing-head > span:last-child {
+  color: var(--iv-ink-3);
+}
+.iv-billing ol {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) auto auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.iv-billing li {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  align-items: center;
+  column-gap: 10px;
+  min-height: 48px;
+  border-top: 1px solid var(--iv-line);
+}
+.iv-billing-step {
+  color: var(--iv-ink-3);
+  font-size: 12px;
+}
+.iv-billing-what {
+  display: grid;
+  min-width: 0;
+}
+.iv-billing-what > span:first-child {
+  overflow: hidden;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.iv-billing-what > span:last-child {
+  color: var(--iv-ink-3);
+  font-size: 12px;
+}
+.iv-billing-what > span[data-tone='late'] {
+  color: var(--iv-danger);
+}
+.iv-billing-amount {
+  text-align: right;
+}
+.iv-billing li[data-billed] .iv-billing-amount {
+  color: var(--iv-ink-2);
+}
+.iv-billing-action {
+  justify-self: end;
+}
+.iv-billing-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 28px;
+  padding: 0 6px 0 3px;
+  border-radius: 999px;
+  color: var(--iv-ink-2);
+  font-size: 12px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .iv-billing-link:hover {
+    background: var(--iv-hover);
+    color: var(--iv-ink);
+  }
+}
+
 /* ---- The customer's quote page: the pay ticket, with the proposal in the
    document and the answer on the stub. */
 .iv-quote-pages {

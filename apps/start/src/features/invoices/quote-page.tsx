@@ -1,10 +1,12 @@
+import { bills, planTerms } from '@portfolio/invoices/billing';
 import { calculate, formatMoney } from '@portfolio/invoices/calculate';
+import type { Invoice } from '@portfolio/invoices/model';
+import { hasPages } from '@portfolio/invoices/pages';
+import type { PaymentPlan } from '@portfolio/invoices/plan';
 import type {
-  Invoice,
   QuoteResponse,
   QuoteState,
-} from '@portfolio/invoices/model';
-import { hasPages } from '@portfolio/invoices/pages';
+} from '@portfolio/invoices/quote-model';
 import { quoteNotices } from '@portfolio/invoices/quote-notices';
 import { useRouter } from '@tanstack/react-router';
 import { Check, ChevronDown, Download, Hourglass, Mail, X } from 'lucide-react';
@@ -135,15 +137,87 @@ function Document({
   );
 }
 
+/**
+ * The plans the quote offers, as the customer chooses between them: each
+ * as one sentence, with what the first payment comes to if they accept now.
+ */
+function Plans({
+  quote,
+  plans,
+  chosen,
+  onChoose,
+  t,
+}: {
+  quote: Invoice;
+  plans: readonly PaymentPlan[];
+  chosen: PaymentPlan['id'] | null;
+  onChoose: (plan: PaymentPlan['id']) => void;
+  t: QuoteWords;
+}) {
+  const d = quote.data;
+  const today = new Date().toISOString().slice(0, 10);
+  const words = (plan: PaymentPlan) =>
+    planTerms(plan, d.language, d.currency, (day) => longDate(d.language, day));
+  const first = (plan: PaymentPlan) => {
+    const [payment] = bills(d, plan, today);
+    if (!payment) return null;
+    return {
+      amount: formatMoney(payment.amount, d.language, d.currency),
+      when:
+        payment.date <= today
+          ? t.onAcceptance
+          : longDate(d.language, payment.date),
+    };
+  };
+  const [only] = plans;
+  if (plans.length === 1 && only)
+    return (
+      <div className="iv-quote-plan">
+        <span>{t.paying}</span>
+        <p>{words(only)}</p>
+      </div>
+    );
+  return (
+    <fieldset className="iv-pay-options iv-pay-plans iv-quote-plans">
+      <legend>{t.howYouPay}</legend>
+      {plans.map((plan, index) => {
+        const opening = first(plan);
+        return (
+          <label key={plan.id} data-checked={plan.id === chosen}>
+            <input
+              type="radio"
+              name="plan"
+              checked={plan.id === chosen}
+              onChange={() => onChoose(plan.id)}
+            />
+            <span className="iv-pay-option-what">
+              <strong>{plan.name || t.option(index + 1)}</strong>
+              <span>{words(plan)}</span>
+            </span>
+            {opening && (
+              <span className="iv-pay-plan-now">
+                <span className="iv-num">{opening.amount}</span>
+                <small>{opening.when}</small>
+              </span>
+            )}
+          </label>
+        );
+      })}
+    </fieldset>
+  );
+}
+
 function Answer({
   quote,
   token,
   digest,
+  plans,
   t,
 }: {
   quote: Invoice;
   token: string;
   digest: string;
+  plans: readonly PaymentPlan[];
   t: QuoteWords;
 }) {
   const router = useRouter();
@@ -155,6 +229,9 @@ function Answer({
   const [declining, setDeclining] = useState(false);
   const [pending, setPending] = useState<'accepted' | 'declined' | null>(null);
   const [problem, setProblem] = useState<'stale' | 'failed' | null>(null);
+  const [plan, setPlan] = useState<PaymentPlan['id'] | null>(
+    plans[0]?.id ?? null,
+  );
   const nameId = useId();
   const ready = name.trim().length >= 2;
 
@@ -171,6 +248,7 @@ function Answer({
             earlyStart: outcome === 'accepted' && earlyStart,
             language: d.language,
             digest,
+            plan: plans.length > 1 ? plan : null,
           },
         },
       });
@@ -194,6 +272,13 @@ function Answer({
         if (ready && agreed) void send('accepted');
       }}
     >
+      <Plans
+        quote={quote}
+        plans={plans}
+        chosen={plan}
+        onChoose={setPlan}
+        t={t}
+      />
       <label className="iv-quote-name" htmlFor={nameId}>
         <span>{t.name}</span>
         <input
@@ -286,7 +371,15 @@ function Answer({
   );
 }
 
-function Answered({ response, t }: { response: QuoteResponse; t: QuoteWords }) {
+function Answered({
+  response,
+  currency,
+  t,
+}: {
+  response: QuoteResponse;
+  currency: Invoice['data']['currency'];
+  t: QuoteWords;
+}) {
   const day = longDate(response.language, response.decidedAt.slice(0, 10));
   const accepted = response.outcome === 'accepted';
   return (
@@ -298,6 +391,13 @@ function Answered({ response, t }: { response: QuoteResponse; t: QuoteWords }) {
           : t.declined(response.name, day)
       }
     >
+      {response.plan && (
+        <p>
+          {planTerms(response.plan, response.language, currency, (day) =>
+            longDate(response.language, day),
+          )}
+        </p>
+      )}
       {response.confirmedAt && <p>{t.emailed(response.email)}</p>}
       {response.earlyStart && <p>{t.earlyStarted}</p>}
     </Note>
@@ -310,12 +410,14 @@ export function QuotePage({
   response,
   state,
   digests,
+  plans,
 }: {
   token: string;
   quote: Invoice;
   response: QuoteResponse | null;
   state: QuoteState;
   digests: Readonly<Record<'en' | 'es', string>>;
+  plans: readonly PaymentPlan[];
 }) {
   const d = quote.data;
   const t = quoteWords[d.language];
@@ -351,7 +453,7 @@ export function QuotePage({
             )}
           </div>
           {response ? (
-            <Answered response={response} t={t} />
+            <Answered response={response} currency={d.currency} t={t} />
           ) : state === 'expired' ? (
             <Note
               icon={<Hourglass size={16} />}
@@ -375,6 +477,7 @@ export function QuotePage({
               quote={quote}
               token={token}
               digest={digests[d.language]}
+              plans={plans}
               t={t}
             />
           )}

@@ -1,8 +1,6 @@
-import type {
-  InvoiceData,
-  InvoiceId,
-  QuoteResponse,
-} from '@portfolio/invoices/model';
+import { bills } from '@portfolio/invoices/billing';
+import { formatMoney } from '@portfolio/invoices/calculate';
+import type { InvoiceData, InvoiceId } from '@portfolio/invoices/model';
 import {
   clausesIn,
   hasPages,
@@ -10,25 +8,21 @@ import {
   type PageNode,
   readPages,
 } from '@portfolio/invoices/pages';
+import {
+  acceptedOn,
+  type QuoteResponse,
+} from '@portfolio/invoices/quote-model';
 import { quoteNotices } from '@portfolio/invoices/quote-notices';
 import * as Popover from '@radix-ui/react-popover';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
-import {
-  ArrowRight,
-  Check,
-  ChevronDown,
-  Copy,
-  FilePen,
-  Link2,
-  X,
-} from 'lucide-react';
+import { Check, ChevronDown, Copy, FilePen, Link2, X } from 'lucide-react';
 import { type CSSProperties, useState } from 'react';
 import { getQuoteLinks, revokeQuoteLinks, shareQuoteLink } from './api';
 import { pagesMorph } from './pages-studio';
-import type { DocumentStatus } from './status';
+import { type DocumentStatus, documentStatus } from './status';
 import { useToast } from './toast';
-import { Button, cn, layer, MorphText } from './ui';
+import { Button, cn, layer, MorphText, StatusChip } from './ui';
 import { useWorkspace } from './workspace';
 
 // The owner's end of a quote, in the inspector: how long it stands, the
@@ -318,6 +312,105 @@ function AnswerCard({ response }: { response: QuoteResponse }) {
   );
 }
 
+/**
+ * How an accepted quote is being billed: each payment of the plan the
+ * customer accepted, and the invoice it went out on. The law asks for an
+ * invoice for every payment taken before the work is done, so each row is
+ * one invoice, and the next one due is the obvious step.
+ */
+function Billing({
+  data,
+  response,
+  pending,
+  onBill,
+}: {
+  data: InvoiceData;
+  response: QuoteResponse;
+  pending: boolean;
+  onBill: (payment: number) => void;
+}) {
+  const { workspace } = useWorkspace();
+  if (!response.plan) return null;
+  const payments = bills(data, response.plan, acceptedOn(response));
+  const today = new Date().toISOString().slice(0, 10);
+  const billedAt = new Map(
+    response.billed.map((item) => [item.payment, item.invoiceId]),
+  );
+  const next = payments.findIndex((_, index) => !billedAt.has(index));
+  const money = (value: string) => formatMoney(value, 'en', data.currency);
+  return (
+    <section className="iv-billing" aria-label="Billing">
+      <p className="iv-billing-head">
+        <span>{response.plan.name || 'Billing'}</span>
+        <span>
+          {payments.length === 1
+            ? 'One invoice'
+            : `${payments.length} invoices, one for each payment`}
+        </span>
+      </p>
+      <ol>
+        {payments.map((payment, index) => {
+          const invoiceId = billedAt.get(index);
+          const invoice = invoiceId
+            ? workspace?.invoices.find((item) => item.id === invoiceId)
+            : undefined;
+          const state = invoice
+            ? documentStatus(
+                invoice,
+                workspace?.payments ?? [],
+                workspace?.responses ?? {},
+              )
+            : null;
+          const late = !invoice && payment.date < today;
+          return (
+            <li key={payment.id} data-billed={invoice ? '' : undefined}>
+              <span className="iv-billing-step iv-num">{index + 1}</span>
+              <span className="iv-billing-what">
+                <span>{payment.label || `Payment ${index + 1}`}</span>
+                <span data-tone={late ? 'late' : undefined}>
+                  {invoice
+                    ? `Due ${shortDay(invoice.data.dueDate)}`
+                    : late
+                      ? `Was due ${shortDay(payment.date)}`
+                      : payment.date === today
+                        ? 'Due today'
+                        : `Due ${shortDay(payment.date)}`}
+                </span>
+              </span>
+              <span className="iv-billing-amount iv-num">
+                {money(state ? state.total : payment.amount)}
+              </span>
+              <span className="iv-billing-action">
+                {invoice && state ? (
+                  <Link
+                    to="/invoices/$invoiceId"
+                    params={{ invoiceId: invoice.id }}
+                    className="iv-billing-link"
+                  >
+                    <StatusChip status={state.status} />
+                    {invoice.number && (
+                      <span className="iv-num">{invoice.number}</span>
+                    )}
+                  </Link>
+                ) : (
+                  <Button
+                    size="sm"
+                    variant={index === next ? 'primary' : 'ghost'}
+                    disabled={pending}
+                    onClick={() => onBill(index)}
+                  >
+                    <span>Draft invoice</span>
+                  </Button>
+                )}
+              </span>
+            </li>
+          );
+        })}
+      </ol>
+    </section>
+  );
+}
+
 export function QuotePanel({
   id,
   data,
@@ -327,7 +420,7 @@ export function QuotePanel({
   pending,
   studioOpen,
   onPages,
-  onConvert,
+  onBill,
   onRevise,
 }: {
   id: InvoiceId;
@@ -339,14 +432,12 @@ export function QuotePanel({
   pending: boolean;
   studioOpen: boolean;
   onPages: () => void;
-  onConvert: () => void;
+  /** Drafts the invoice for one payment of the accepted plan. */
+  onBill: (payment: number) => void;
   onRevise: () => void;
 }) {
   const { workspace } = useWorkspace();
   const response = workspace?.responses[id] ?? null;
-  const invoiced = response?.invoiceId
-    ? workspace?.invoices.find((item) => item.id === response.invoiceId)
-    : undefined;
   const until = data.quote?.validUntil ?? data.issueDate;
   const today = new Date().toISOString().slice(0, 10);
   const notices = data.quote
@@ -383,37 +474,19 @@ export function QuotePanel({
         </p>
       )}
       {response && <AnswerCard response={response} />}
+      {response?.outcome === 'accepted' && response.plan && (
+        <Billing
+          data={data}
+          response={response}
+          pending={pending}
+          onBill={onBill}
+        />
+      )}
       {!issued ? (
         <p className="iv-muted">Issue the quote to send it for an answer.</p>
       ) : (
         <div className="iv-inline">
           {status === 'open' && <QuoteLinkMenu id={id} />}
-          {status === 'accepted' && (
-            <Button
-              size="sm"
-              variant="primary"
-              disabled={pending}
-              onClick={onConvert}
-            >
-              <MorphText>Draft the invoice</MorphText>
-            </Button>
-          )}
-          {status === 'invoiced' && invoiced && (
-            <Link
-              className="iv-btn"
-              data-variant="secondary"
-              data-size="sm"
-              to="/invoices/$invoiceId"
-              params={{ invoiceId: invoiced.id }}
-            >
-              <span>
-                {invoiced.number
-                  ? `Invoice ${invoiced.number}`
-                  : 'Invoice draft'}
-              </span>
-              <ArrowRight size={14} aria-hidden />
-            </Link>
-          )}
           {(status === 'open' ||
             status === 'expired' ||
             status === 'declined') && (

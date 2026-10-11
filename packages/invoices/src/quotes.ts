@@ -1,9 +1,9 @@
 import { createHash } from 'node:crypto';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { Context, Effect, Layer, Schema } from 'effect';
+import { billData, bills } from './billing';
 import { InvoiceDatabase } from './database';
 import { Documents } from './documents';
-import { documentLabels } from './labels';
 import {
   type LinkInvalid,
   mintLink,
@@ -12,24 +12,26 @@ import {
   revokeLinks,
 } from './links';
 import {
-  type Answer,
   type Invoice,
-  type InvoiceData,
   InvoiceId,
   Language,
   newInvoice,
   type OwnerDid,
+} from './model';
+import { PaymentPlan } from './plan';
+import {
+  type Answer,
   QuoteResponse,
   type QuoteState,
   quoteState,
-  RecordId,
-} from './model';
+} from './quote-model';
 import { decodeStored, stored } from './storage';
 import { InvoiceStore, type StoreError } from './store';
 import * as tables from './tables';
 
 // A quote after it is issued: the link that sends it, the customer's
-// answer, and the invoice an accepted quote becomes. An issued quote never
+// answer, and the invoices an accepted quote is billed in, one for each
+// payment of the plan the customer accepted. An issued quote never
 // changes; a revision is a new quote, so an acceptance always names the
 // exact document it covers.
 
@@ -44,6 +46,8 @@ export class QuoteClosed extends Schema.TaggedError<QuoteClosed>()(
       'answered',
       'not-accepted',
       'stale-document',
+      'no-such-plan',
+      'no-such-payment',
     ]),
   },
 ) {}
@@ -99,11 +103,13 @@ export interface QuotesApi {
   /** Notes that the confirmation email went out. */
   readonly confirmed: (id: InvoiceId) => Effect.Effect<void, StoreError>;
   /**
-   * Drafts the invoice for an accepted quote, with its lines and a
-   * reference to it. Asking again returns the same draft.
+   * Drafts the invoice for `payment` of an accepted quote's plan: its
+   * share of every quoted line, due on the payment's date. Asking again
+   * returns the same draft.
    */
-  readonly convert: (
+  readonly bill: (
     id: InvoiceId,
+    payment: number,
     actor: OwnerDid,
   ) => Effect.Effect<Invoice, QuoteError>;
   /** Starts a new draft quote from an issued one, valid for another 30 days. */
@@ -121,6 +127,7 @@ type Transaction = Parameters<
 >[0];
 
 const decodeResponse = decodeStored(QuoteResponse);
+const decodePlan = decodeStored(PaymentPlan);
 const today = () => new Date().toISOString().slice(0, 10);
 const digestOf = (bytes: Uint8Array) =>
   createHash('sha256').update(bytes).digest('hex');
@@ -139,7 +146,18 @@ export const makeQuotes = Effect.gen(function* () {
     const row = yield* stored(
       db.query.responses.findFirst({ where: { quoteId: id } }),
     );
-    return row ? yield* decodeResponse(row) : null;
+    if (!row) return null;
+    const billed = yield* stored(
+      db
+        .select({
+          payment: tables.billed.payment,
+          invoiceId: tables.billed.invoiceId,
+        })
+        .from(tables.billed)
+        .where(eq(tables.billed.quoteId, id))
+        .orderBy(tables.billed.payment),
+    );
+    return yield* decodeResponse({ ...row, billed });
   });
 
   const quote = Effect.fnUntraced(function* (id: InvoiceId) {
@@ -231,6 +249,19 @@ export const makeQuotes = Effect.gen(function* () {
       if (current.digests[answer.language] !== answer.digest)
         return yield* new QuoteClosed({ reason: 'stale-document' });
       const consumer = current.quote.data.customerType === 'consumer';
+      // The customer accepts under one of the plans the quote offers; with
+      // one plan, that one. A declined quote keeps none.
+      const { plans } = yield* store.offer(id);
+      const plan =
+        answer.outcome === 'declined'
+          ? null
+          : answer.plan === null
+            ? plans.length === 1
+              ? plans[0]
+              : undefined
+            : plans.find((item) => item.id === answer.plan);
+      if (plan === undefined)
+        return yield* new QuoteClosed({ reason: 'no-such-plan' });
       const saved: QuoteResponse = {
         quoteId: id,
         outcome: answer.outcome,
@@ -244,15 +275,17 @@ export const makeQuotes = Effect.gen(function* () {
         agent: evidence.agent.slice(0, 500),
         decidedAt: new Date().toISOString(),
         confirmedAt: null,
-        invoiceId: null,
+        plan,
+        billed: [],
       };
       yield* stored(
         db.transaction((tx) =>
           Effect.gen(function* () {
             // Two answers racing to one quote: the primary key keeps the first.
+            const { billed: _none, ...row } = saved;
             const inserted = yield* tx
               .insert(tables.responses)
-              .values(saved)
+              .values(row)
               .onConflictDoNothing()
               .returning();
             if (!inserted.length) return;
@@ -265,6 +298,7 @@ export const makeQuotes = Effect.gen(function* () {
                 name: saved.name,
                 digest: saved.digest,
                 earlyStart: saved.earlyStart,
+                plan: saved.plan?.id ?? null,
               },
               createdAt: saved.decidedAt,
             });
@@ -286,42 +320,53 @@ export const makeQuotes = Effect.gen(function* () {
       );
     }),
 
-    convert: Effect.fn('Quotes.convert')(function* (id, actor) {
+    bill: Effect.fn('Quotes.bill')(function* (id, payment, actor) {
       const source = yield* quote(id);
       return yield* stored(
         db.transaction((tx) =>
           Effect.gen(function* () {
+            // The answer row is the lock: two drafts of one payment wait on
+            // each other, and the second finds the first.
             const [row] = yield* tx
               .select()
               .from(tables.responses)
               .where(eq(tables.responses.quoteId, id))
               .for('update');
-            if (!row || row.outcome !== 'accepted')
+            if (!row || row.outcome !== 'accepted' || !row.plan)
               return yield* new QuoteClosed({ reason: 'not-accepted' });
-            if (row.invoiceId)
-              return yield* store.read(InvoiceId.make(row.invoiceId));
+            const [made] = yield* tx
+              .select()
+              .from(tables.billed)
+              .where(
+                and(
+                  eq(tables.billed.quoteId, id),
+                  eq(tables.billed.payment, payment),
+                ),
+              );
+            if (made) return yield* store.read(InvoiceId.make(made.invoiceId));
+            const plan = yield* decodePlan(row.plan);
+            const payments = bills(
+              source.data,
+              plan,
+              row.decidedAt.slice(0, 10),
+            );
+            if (!payments[payment])
+              return yield* new QuoteClosed({ reason: 'no-such-payment' });
             const draft = newInvoice();
-            const t = documentLabels[source.data.language];
-            const data: InvoiceData = {
-              ...source.data,
-              kind: 'invoice',
-              quote: null,
-              correction: null,
-              issueDate: draft.data.issueDate,
-              supplyDate: draft.data.supplyDate,
-              dueDate: draft.data.dueDate,
-              reference: `${t.quote} ${source.number ?? ''}`.trim(),
-              lines: source.data.lines.map((line) => ({
-                ...line,
-                id: RecordId.make(crypto.randomUUID()),
-              })),
+            const next: Invoice = {
+              ...draft,
+              data: billData(
+                source.data,
+                source.number ?? '',
+                payments,
+                payment,
+                draft.data.issueDate,
+              ),
             };
-            const next: Invoice = { ...draft, data };
-            yield* insertDraft(tx, next, actor, 'quote-invoiced', id);
+            yield* insertDraft(tx, next, actor, 'quote-billed', id);
             yield* tx
-              .update(tables.responses)
-              .set({ invoiceId: next.id })
-              .where(eq(tables.responses.quoteId, id));
+              .insert(tables.billed)
+              .values({ quoteId: id, payment, invoiceId: next.id });
             return next;
           }),
         ),

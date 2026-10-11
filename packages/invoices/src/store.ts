@@ -17,7 +17,6 @@ import {
   type OwnerDid,
   Payment,
   Preferences,
-  QuoteResponse,
   RecordId,
   RevisionConflict,
   type StorageFailure,
@@ -29,6 +28,7 @@ import {
   type Offer,
   PlanLibrary,
 } from './plan';
+import { QuoteResponse } from './quote-model';
 import { decodeStored, stored } from './storage';
 import * as tables from './tables';
 import { issueErrors } from './validate';
@@ -130,6 +130,8 @@ export interface StoreApi {
     plan: RecordId | null,
     actor: Actor,
   ) => Effect.Effect<void, StoreError>;
+  /** The plans the owner keeps for reuse. */
+  readonly library: () => Effect.Effect<PlanLibrary, StoreError>;
   /** Replaces the library of plans the owner keeps. Invoices keep the copies they took. */
   readonly setLibrary: (
     library: PlanLibrary,
@@ -166,7 +168,7 @@ export const makeStore = Effect.gen(function* () {
 
   const api: StoreApi = {
     workspace: Effect.fn('InvoiceStore.workspace')(function* () {
-      const [invoices, records, offers, responses] = yield* Effect.all([
+      const [invoices, records, offers, responses, billed] = yield* Effect.all([
         db
           .select()
           .from(tables.invoices)
@@ -174,6 +176,7 @@ export const makeStore = Effect.gen(function* () {
         db.select().from(tables.records),
         db.select().from(tables.offers),
         db.select().from(tables.responses),
+        db.select().from(tables.billed).orderBy(tables.billed.payment),
       ]);
       const of = <A>(
         kind: string,
@@ -203,10 +206,13 @@ export const makeStore = Effect.gen(function* () {
         library: library ? yield* decodeLibrary(library.payload) : [],
         responses: Object.fromEntries(
           yield* Effect.forEach(responses, (row) =>
-            Effect.map(decodeStored(QuoteResponse)(row), (response) => [
-              row.quoteId,
-              response,
-            ]),
+            Effect.map(
+              decodeStored(QuoteResponse)({
+                ...row,
+                billed: billed.filter((item) => item.quoteId === row.quoteId),
+              }),
+              (response) => [row.quoteId, response],
+            ),
           ),
         ),
         preferences: preferences
@@ -233,10 +239,17 @@ export const makeStore = Effect.gen(function* () {
       actor: OwnerDid,
     ) {
       const invoice = yield* read(id);
-      if (plans && invoice.data.kind !== 'invoice')
+      if (plans && invoice.data.kind === 'rectification')
         return yield* invalid(
           'offer',
-          'Only an invoice can offer payment plans.',
+          'A rectifying invoice is settled against its original, not paid on a plan.',
+        );
+      // A quote's plans are part of the offer the customer reads and
+      // accepts, so they are fixed once it is issued.
+      if (invoice.data.kind === 'quote' && invoice.status === 'issued')
+        return yield* invalid(
+          'offer',
+          'An issued quote keeps its plans. Revise it to offer others.',
         );
       const now = new Date().toISOString();
       return yield* db.transaction((tx) =>
@@ -304,6 +317,14 @@ export const makeStore = Effect.gen(function* () {
           });
         }),
       );
+    }, stored),
+
+    library: Effect.fn('InvoiceStore.library')(function* () {
+      const [row] = yield* db
+        .select()
+        .from(tables.records)
+        .where(eq(tables.records.key, 'plan-library'));
+      return row ? yield* decodeLibrary(row.payload) : [];
     }, stored),
 
     setLibrary: Effect.fn('InvoiceStore.setLibrary')(function* (
@@ -468,8 +489,15 @@ export const makeStore = Effect.gen(function* () {
             .select()
             .from(tables.records)
             .where(eq(tables.records.key, 'plan-library'));
+          // A quote takes them as an invoice does: they are part of what its
+          // customer accepts. An invoice billed from a quote is one payment
+          // of a plan already agreed, so it takes none.
+          const [billing] = yield* tx
+            .select({ quoteId: tables.billed.quoteId })
+            .from(tables.billed)
+            .where(eq(tables.billed.invoiceId, issued.id));
           const defaults =
-            !own && kept && d.kind === 'invoice'
+            !own && !billing && kept && d.kind !== 'rectification'
               ? defaultsFor(yield* decodeLibrary(kept.payload), totals.total)
               : [];
           if (defaults.length)

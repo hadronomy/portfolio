@@ -1,10 +1,11 @@
 import {
-  type Answer,
   type InvoiceId,
   type Language,
   MissingInvoice,
 } from '@portfolio/invoices/model';
+import type { Answer } from '@portfolio/invoices/quote-model';
 import { type QuoteError, Quotes } from '@portfolio/invoices/quotes';
+import { InvoiceStore } from '@portfolio/invoices/store';
 import { getRequestIP } from '@tanstack/react-start/server';
 import { Effect, Option } from 'effect';
 import { requireOwner } from '../../server/auth.server';
@@ -94,11 +95,15 @@ export const quotePage = Effect.fn('QuotesServer.page')(function* (
   const id = yield* byLink(token);
   if (Option.isNone(id)) return null;
   const view = yield* viewOf(id.value);
+  const { plans } = yield* unavailable(
+    InvoiceStore.use((store) => store.offer(id.value)),
+  );
   return {
     quote: view.quote,
     response: view.response,
     state: view.state,
     digests: view.digests,
+    plans,
   };
 });
 

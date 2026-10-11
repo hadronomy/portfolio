@@ -1,8 +1,9 @@
 import { Effect } from 'effect';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { quoteSpecimen } from './fixtures';
-import type { Answer } from './model';
-import { type Invoice, OwnerDid } from './model';
+import { type Invoice, OwnerDid, RecordId } from './model';
+import type { PaymentPlan } from './plan';
+import type { Answer } from './quote-model';
 import { Quotes, type QuotesApi } from './quotes';
 import { InvoiceStore, type StoreApi } from './store';
 import { testRuntime } from './testing';
@@ -53,6 +54,7 @@ async function answer(quote: Invoice, change: Partial<Answer> = {}) {
         earlyStart: true,
         language: 'en',
         digest: digests.en,
+        plan: null,
         ...change,
       },
       evidence,
@@ -92,6 +94,7 @@ describe('quotes', () => {
             earlyStart: false,
             language: 'en',
             digest: '0'.repeat(64),
+            plan: null,
           },
           evidence,
         ),
@@ -108,7 +111,11 @@ describe('quotes', () => {
     expect(await answer(quote)).toEqual(first);
     expect(
       await fail(
-        quotes.respond(quote.id, { ...first, outcome: 'declined' }, evidence),
+        quotes.respond(
+          quote.id,
+          { ...first, outcome: 'declined', plan: null },
+          evidence,
+        ),
       ),
     ).toMatchObject({
       reason: 'answered',
@@ -124,28 +131,106 @@ describe('quotes', () => {
     expect((await answer(quote)).earlyStart).toBe(false);
   });
 
-  it('invoice an accepted quote once', async () => {
+  it('bill each payment of the accepted plan with an invoice of its own', async () => {
     const declined = await issuedQuote();
     await answer(declined, { outcome: 'declined', earlyStart: false });
-    expect(await fail(quotes.convert(declined.id, owner))).toMatchObject({
+    expect(await fail(quotes.bill(declined.id, 0, owner))).toMatchObject({
       reason: 'not-accepted',
     });
-    const quote = await issuedQuote();
-    await answer(quote);
-    const invoice = await run(quotes.convert(quote.id, owner));
-    expect(invoice.data).toMatchObject({
+    const id = () => RecordId.make(crypto.randomUUID());
+    const half: PaymentPlan = {
+      id: id(),
+      name: 'Half now',
+      ahead: true,
+      floor: null,
+      parts: [
+        {
+          _tag: 'Once',
+          id: id(),
+          label: '',
+          portion: { _tag: 'Percent', value: '50' },
+          due: { _tag: 'OnIssue' },
+        },
+        {
+          _tag: 'Once',
+          id: id(),
+          label: '',
+          portion: { _tag: 'Rest' },
+          due: { _tag: 'InvoiceDue' },
+        },
+      ],
+    };
+    const specimen = quoteSpecimen();
+    const draft = await run(
+      store.save(
+        {
+          ...specimen,
+          data: {
+            ...specimen.data,
+            quote: specimen.data.quote && {
+              ...specimen.data.quote,
+              validUntil: '2099-12-31',
+            },
+          },
+        },
+        owner,
+      ),
+    );
+    await run(store.setOffer(draft.id, [half], owner));
+    const quote = await run(
+      store.issue(
+        { id: draft.id, revision: draft.revision, key: crypto.randomUUID() },
+        owner,
+      ),
+    );
+    expect(
+      (await run(Effect.flip(store.setOffer(quote.id, [half], owner))))._tag,
+    ).toBe('InvalidInvoice');
+    expect(
+      await fail(
+        quotes.respond(
+          quote.id,
+          {
+            outcome: 'accepted',
+            name: 'Lucy Martin',
+            earlyStart: false,
+            language: 'en',
+            digest: (await run(quotes.view(quote.id))).digests.en,
+            plan: id(),
+          },
+          evidence,
+        ),
+      ),
+    ).toMatchObject({ reason: 'no-such-plan' });
+    const accepted = await answer(quote);
+    expect(accepted.plan?.id).toBe(half.id);
+    const first = await run(quotes.bill(quote.id, 0, owner));
+    expect(first.data).toMatchObject({
       kind: 'invoice',
       quote: null,
       reference: `Quote ${quote.number}`,
     });
-    expect(invoice.data.lines.map((line) => line.description)).toEqual(
-      quote.data.lines.map((line) => line.description),
-    );
-    expect((await run(quotes.convert(quote.id, owner))).id).toBe(invoice.id);
+    expect(first.data.title).toContain('Payment 1 of 2');
+    expect((await run(quotes.bill(quote.id, 0, owner))).id).toBe(first.id);
+    expect((await run(quotes.view(quote.id))).state).toBe('accepted');
+    expect(await fail(quotes.bill(quote.id, 2, owner))).toMatchObject({
+      reason: 'no-such-payment',
+    });
+    const second = await run(quotes.bill(quote.id, 1, owner));
     expect((await run(quotes.view(quote.id))).state).toBe('invoiced');
-    expect((await run(store.workspace())).responses[quote.id]?.invoiceId).toBe(
-      invoice.id,
+    expect((await run(store.workspace())).responses[quote.id]?.billed).toEqual([
+      { payment: 0, invoiceId: first.id },
+      { payment: 1, invoiceId: second.id },
+    ]);
+    // A billed invoice is one payment of an agreed plan: issued, it takes
+    // no plans of its own from the library.
+    const issued = await run(
+      store.issue(
+        { id: first.id, revision: first.revision, key: crypto.randomUUID() },
+        owner,
+      ),
     );
+    expect((await run(store.offer(issued.id))).plans).toHaveLength(1);
   });
 
   it('revise an issued quote into a new draft', async () => {

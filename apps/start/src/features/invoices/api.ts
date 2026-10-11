@@ -1,7 +1,6 @@
 import { CountryCode } from '@portfolio/invoices/address';
 import { AttemptId } from '@portfolio/invoices/collection-model';
 import {
-  Answer,
   CatalogItem,
   Customer,
   DecimalText,
@@ -12,6 +11,7 @@ import {
   RecordId,
 } from '@portfolio/invoices/model';
 import { Offer, PlanLibrary } from '@portfolio/invoices/plan';
+import { Answer } from '@portfolio/invoices/quote-model';
 import { createServerFn } from '@tanstack/react-start';
 import { Effect, Result, Schema } from 'effect';
 import { requireOwner, viewer } from '../../server/auth.server';
@@ -98,10 +98,11 @@ export const ReviseMutation = Schema.Struct({
   action: Schema.Literal('revise'),
   id: InvoiceId,
 });
-/** Drafts the invoice for an accepted quote. */
-export const ConvertMutation = Schema.Struct({
-  action: Schema.Literal('convert'),
+/** Drafts the invoice for one payment of an accepted quote's plan. */
+export const BillMutation = Schema.Struct({
+  action: Schema.Literal('bill'),
   id: InvoiceId,
+  payment: Schema.Int.check(Schema.isGreaterThanOrEqualTo(0)),
 });
 export const Mutation = Schema.Union([
   SaveMutation,
@@ -118,7 +119,7 @@ export const Mutation = Schema.Union([
   ChooseMutation,
   LibraryMutation,
   ReviseMutation,
-  ConvertMutation,
+  BillMutation,
 ]);
 export type Mutation = typeof Mutation.Type;
 

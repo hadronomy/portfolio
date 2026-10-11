@@ -37,7 +37,13 @@ import {
   Reorder,
   useDragControls,
 } from 'motion/react';
-import { type CSSProperties, useEffect, useRef, useState } from 'react';
+import {
+  type CSSProperties,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { currencySymbol } from './choices';
 import { fromCents, toCents } from './pay-words';
 import { PlanStrip, PlanTimeline } from './plan-chart';
@@ -62,11 +68,14 @@ import {
   Token,
 } from './plan-tokens';
 import {
+  AnchorContext,
   dueText,
   everyText,
+  invoiceAnchors,
   planLine,
   planName,
   portionText,
+  quoteAnchors,
 } from './plan-words';
 import { useToast } from './toast';
 import { Button, cn, IconButton, layer, MorphText } from './ui';
@@ -161,6 +170,8 @@ export interface StudioProps {
   fallback: Offer;
   /** The option to open on. */
   initial: PaymentPlan['id'] | null;
+  /** A quote's plans count from acceptance to delivery, an invoice's from issue to its due date. */
+  kind: 'invoice' | 'quote';
 }
 
 export function PlanStudio(props: StudioProps) {
@@ -173,7 +184,11 @@ export function PlanStudio(props: StudioProps) {
           aria-describedby={undefined}
           style={{ viewTransitionName: studioMorph } as CSSProperties}
         >
-          <Studio {...props} />
+          <AnchorContext.Provider
+            value={props.kind === 'quote' ? quoteAnchors : invoiceAnchors}
+          >
+            <Studio {...props} />
+          </AnchorContext.Provider>
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
@@ -991,6 +1006,7 @@ function Sentence({
   onChange: (plan: PaymentPlan) => void;
   money: (cents: number) => string;
 }) {
+  const anchors = useContext(AnchorContext);
   const controls = useDragControls();
   const { part, payments, cents } = item;
   const first = index === 0;
@@ -1097,7 +1113,7 @@ function Sentence({
         {part._tag === 'Once' ? (
           <Token
             tone="time"
-            label={dueText(part.due, { first, series: false }, year)}
+            label={dueText(part.due, { first, series: false }, year, anchors)}
             title={`${name}: when`}
             invalid={invalid.due}
           >
@@ -1143,7 +1159,12 @@ function Sentence({
             , starting{' '}
             <Token
               tone="time"
-              label={dueText(part.first, { first, series: true }, year)}
+              label={dueText(
+                part.first,
+                { first, series: true },
+                year,
+                anchors,
+              )}
               title={`${name}: when the first payment falls due`}
               invalid={invalid.due}
             >

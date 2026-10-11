@@ -181,6 +181,18 @@ Deploy from `apps/payments` with Node 24: run the database migrations (`bun run 
 
 The flow was checked against a local stand-in for the Stripe API, with Stripe's real Payment Element drawn in the browser. A run with the Invoicing sandbox's own keys is still needed: it confirms how Stripe reports `tax_amounts` totals and a real card payment end to end.
 
+## Quotes
+
+A quote (presupuesto) is an offer the customer accepts online. It is no tax document and has no invoice number: quotes run in a plain series of their own, `P-2026-0001`. [Research and sources](../research/quotes-editor-mcp.md).
+
+- **Pages** (`packages/invoices/src/page-schema.ts`, `pages.ts`): the long-form writing after the priced lines, stored as ProseMirror JSON. One Tiptap extension list defines what pages hold; the editor, the server's validation, the Markdown agents write (`::page-break`, `::clause[id@version]`), the PDF renderer (`page-render.tsx`) and the customer's page all read it.
+- **Clauses** (`clauses.ts`): versioned, bilingual conditions, each with its legal source and the customers it may go to. A published version never changes its words; new words are a new version.
+- **Notices** (`quote-notices.ts`): what the quote prints whatever its pages say, by customer type: validity, prices with taxes, how to accept, withdrawal with the annex B form, customer service, and data protection.
+- **The studio** (`features/invoices/pages-studio.tsx`, `pages-editor.tsx`): the pages on a sheet set to the PDF's own measure, with `/` for blocks and clauses, a format bar on a selection, an outline, the clause library, and the notices that will print.
+- **Plans**: a quote offers one to four payment plans, as an invoice does, and prints them as sentences. They count from acceptance ("30 % on acceptance") to the quote's planned delivery ("the rest on delivery"). They are fixed once the quote is issued: they are part of what the customer accepts.
+- **Acceptance** (`quotes.ts`, `features/invoices/quote-page.tsx`): the owner sends a link; the customer reads the quote, chooses a plan, types their full name (a simple electronic signature), and accepts. A consumer can ask for work to start inside the withdrawal period. The answer keeps the network address, the browser and the SHA-256 of the exact PDF read, and is confirmed by email to the customer with a copy to the owner.
+- **Billing** (`billing.ts`): every payment of the accepted plan gets an invoice of its own, as Real Decreto 1619/2012 art. 2.1 requires for payments taken before the work is done (the Canary Islands apply it to IGIC through Decreto 268/2011, art. 47 decies). Each invoice carries its share of every quoted line, so tax treatment, withholding and disbursements stay as quoted; the last one takes what is left of each line, so the invoices add up to the quote. IGIC is rounded on each invoice's own base, so the invoices' totals can differ from the quote's by a cent. The accepted plan is kept with the answer, so later edits never move it, and an invoice billed from a quote takes no plan of its own.
+
 ## Issue operation
 
 The server authenticates the owner, checks the draft revision, decodes the input, calculates totals, and applies the issuer's tax policy.

@@ -15,6 +15,7 @@ import {
   type KeyboardEvent,
   type PointerEvent,
   type ReactNode,
+  useContext,
   useEffect,
   useId,
   useRef,
@@ -23,7 +24,7 @@ import {
 import { currencySymbol } from './choices';
 import { fromCents, toCents } from './pay-words';
 import { convertPortion } from './plan-edit';
-import { shortDate } from './plan-words';
+import { AnchorContext, shortDate } from './plan-words';
 import { cn, layer, MorphText, Segmented } from './ui';
 
 // The words of a plan sentence that can change. Each is a token tinted by
@@ -535,6 +536,7 @@ export function DueEditor({
   first: boolean;
   onChange: (due: Due) => void;
 }) {
+  const anchors = useContext(AnchorContext);
   const year = terms.issueDate.slice(0, 4);
   const date = (value: Due) =>
     shortDate('en', dueDate(value, terms, previous), year);
@@ -544,8 +546,8 @@ export function DueEditor({
     from: 'issue' | 'previous',
   ): Extract<Due, { _tag: 'After' }> => ({ _tag: 'After', count, unit, from });
   const presets: { key: string; value: Due; text: string }[] = [
-    { key: 'issue', value: { _tag: 'OnIssue' }, text: 'When issued' },
-    { key: 'due', value: { _tag: 'InvoiceDue' }, text: 'On the due date' },
+    { key: 'issue', value: { _tag: 'OnIssue' }, text: anchors.presetIssue },
+    { key: 'due', value: { _tag: 'InvoiceDue' }, text: anchors.presetDue },
     ...(first
       ? []
       : [
@@ -563,7 +565,7 @@ export function DueEditor({
     ...[7, 14, 30, 60].map((days) => ({
       key: `${days}`,
       value: after(days, 'day', 'issue'),
-      text: `${days} days after issue`,
+      text: `${days} days ${anchors.afterIssue}`,
     })),
   ];
   const same = (a: Due, b: Due) => JSON.stringify(a) === JSON.stringify(b);

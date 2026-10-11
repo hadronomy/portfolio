@@ -13,6 +13,10 @@ export const quoteWords = {
     pdfLabel: 'Download the quote as a PDF',
     pages: 'The proposal',
     legal: 'Legal information',
+    howYouPay: 'How you pay',
+    option: (index: number) => `Option ${index}`,
+    onAcceptance: 'on acceptance',
+    paying: 'You pay',
     name: 'Your full name',
     namePlaceholder: 'As on your ID',
     agree:
@@ -63,6 +67,10 @@ export const quoteWords = {
     pdfLabel: 'Descargar el presupuesto en PDF',
     pages: 'La propuesta',
     legal: 'Información legal',
+    howYouPay: 'Cómo pagas',
+    option: (index: number) => `Opción ${index}`,
+    onAcceptance: 'al aceptar',
+    paying: 'Pagas',
     name: 'Tu nombre completo',
     namePlaceholder: 'Como en tu documento de identidad',
     agree:
