@@ -92,7 +92,7 @@ export const cvCopy = {
   es: {
     folio: 'Currículum vitae',
     portraitAlt: 'Retrato de Pablo Hernández',
-    role: 'Ingeniero de producto / Ingeniero full-stack',
+    role: engineeringExperience.role,
     engagement: 'Independiente',
     summary:
       'Diseño y desarrollo interfaces, API, sistemas de IA, herramientas de programación e infraestructura para dispositivos.',
