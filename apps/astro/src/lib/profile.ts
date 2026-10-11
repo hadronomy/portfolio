@@ -14,7 +14,7 @@ export const profile = {
   location: 'Canary Islands, Spain',
   /** Santa Cruz de Tenerife, for the footer's current conditions. */
   coordinates: { latitude: 28.4636, longitude: -16.2518 },
-  email: 'hadronomy@gmail.com',
+  email: 'pablo@hadronomy.com',
   /**
    * What the dot on the avatar claims.
    *

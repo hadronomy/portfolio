@@ -153,7 +153,7 @@ function CVDocument() {
           <div className="contact">
             <p className="label">CONTACT</p>
             <p>
-              <a href="mailto:hadronomy@gmail.com">hadronomy@gmail.com</a>
+              <a href="mailto:pablo@hadronomy.com">pablo@hadronomy.com</a>
             </p>
             <p>
               <a href="tel:+34608733118">+34 608 73 31 18</a>
