@@ -92,7 +92,7 @@ export const cvCopy = {
     portraitAlt: 'Retrato de Pablo Hernández',
     engagement: 'Por cuenta propia',
     summary:
-      'Desarrollo aplicaciones web y software para dispositivos. También creo sistemas de IA y herramientas de programación.',
+      'Desarrollo software desde los sistemas de bajo nivel hasta las interfaces de usuario. Me interesa especialmente la inteligencia artificial basada en agentes y publico la mayor parte de mi trabajo como código abierto.',
     highlights: [
       'Implemento en Canary búsquedas sobre documentos del BOE con control de vigencia e indexación vectorial.',
       'Desarrollo Inari para gestionar dispositivos sin conexión, con registro centralizado y un controlador en Rust.',

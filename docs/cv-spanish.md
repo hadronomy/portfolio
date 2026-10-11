@@ -25,7 +25,7 @@ the English CV. Role names, project names, and technology names stay in English.
 | --- | --- | --- |
 | Document label | «Currículum vitae» | Use «Currículum», the Spanish form. |
 | Engagement | «Independiente» | Use «Por cuenta propia» to describe the working arrangement without implying employment at an organisation or a specific tax status. |
-| Profile | A list of technologies and activities | Use two complete sentences with direct verbs. The first describes web applications and device software. The second describes AI systems and programming tools. Each verb has concrete software as its object. |
+| Profile | A list of technologies and activities | Present the engineering range, then connect the interest in agent-based AI with open-source work. See [the profile research](cv-profile-research.md) for the sources and final wording. |
 | Canary experience | «búsqueda jurídica», «fragmentos temporales», «embeddings vectoriales» | Use «búsqueda de legislación española», «control de vigencia», and «indexación vectorial». Preserve the technical meaning while making the text easier to read. |
 | Inari experience | A list after «Desarrollo Inari:» | Explain what the software does before listing registration, offline operation, and the Rust controller. |
 | RAM and routing experience | One sentence joining two projects | Give each project its own sentence. Keep «transbordos», which names the actual routing constraint. |

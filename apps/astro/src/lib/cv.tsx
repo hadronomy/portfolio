@@ -32,9 +32,9 @@ const css = `
   .columns { display: flex; align-items: stretch; }
   .primary { width: 61%; border-right: 1px solid #cfcbc3; }
   .secondary { width: 39%; }
-  section { padding: 14px 22px; border-bottom: 1px solid #cfcbc3; break-inside: avoid; }
+  section { padding: 11px 22px; border-bottom: 1px solid #cfcbc3; break-inside: avoid; }
   section:last-child { border-bottom: 0; }
-  h2 { display: flex; justify-content: space-between; align-items: baseline; font-family: 'Space Grotesk'; font-size: 19px; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 12px; }
+  h2 { display: flex; justify-content: space-between; align-items: baseline; font-family: 'Space Grotesk'; font-size: 19px; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 10px; }
   .number { font-family: 'Geist Mono'; font-weight: 400; font-size: 9px; color: #77736b; letter-spacing: 0; }
   h3 { font-size: 13.5px; font-weight: 700; line-height: 1.4; }
   .body { color: #55524c; }
@@ -42,10 +42,10 @@ const css = `
   .date { font-family: 'Geist Mono'; font-size: 10px; color: #0033df; margin: 5px 0 12px; }
   ul { padding-left: 16px; color: #55524c; }
   li { margin-top: 5px; padding-left: 2px; }
-  .project { margin-top: 8px; break-inside: avoid; }
+  .project { margin-top: 6px; break-inside: avoid; }
   .project:first-of-type { margin-top: 0; }
   .project h3 { font-family: 'Space Grotesk'; font-size: 13px; }
-  .project p { font-size: 12.5px; color: #55524c; margin-top: 4px; }
+  .project p { font-size: 12.5px; color: #55524c; margin-top: 3px; }
   .project a { display: flex; justify-content: space-between; align-items: baseline; }
   .arrow { color: #0033df; font-family: 'DM Sans'; font-size: 14px; font-weight: 400; }
   .category { font-family: 'Geist Mono'; font-size: 9px; letter-spacing: 1px; color: #59564f; margin-bottom: 10px; }
