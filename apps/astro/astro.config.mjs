@@ -23,6 +23,11 @@ import { rehypeMarkCodeBlocks } from './plugins/rehype-mark-code-blocks.mjs';
 
 export default defineConfig({
   site: 'https://hadronomy.com',
+  // Every POST this site serves is the Start app's, and it checks origins
+  // itself: server functions refuse cross-origin calls and sign-in has its
+  // own CSRF checks. Astro's check would also refuse the form-encoded token
+  // requests agents send to sign in, which carry no Origin.
+  security: { checkOrigin: false },
   adapter: process.env.VERCEL ? vercel() : node({ mode: 'standalone' }),
   markdown: {
     syntaxHighlight: false,

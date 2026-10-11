@@ -6965,3 +6965,119 @@ body:has(.iv-dock) .iv-toast-region {
     animation: none;
   }
 }
+
+/* ---------------------------------------------------------------- Connect an agent */
+
+/* The sign-in card, asking a different question: who is the agent, what may
+   it do. The agent's own name and site come first, so the owner checks
+   them before reading anything else. */
+.iv-connect-agent {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.iv-connect-agent img,
+.iv-connect-initial {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  outline: 1px solid rgb(0 0 0 / 0.08);
+  outline-offset: -1px;
+}
+.iv-connect-initial {
+  display: grid;
+  place-items: center;
+  background: var(--iv-sunken);
+  color: var(--iv-ink-2);
+  font-weight: 600;
+}
+.iv-connect-agent div {
+  display: grid;
+}
+.iv-connect-agent strong {
+  font-weight: 600;
+}
+.iv-connect-agent small {
+  margin-top: 1px;
+  color: var(--iv-ink-3);
+  font-size: 12px;
+}
+.iv-connect-scopes {
+  display: grid;
+  gap: 10px;
+  margin: 4px 0 18px;
+  padding: 0;
+  list-style: none;
+}
+.iv-connect-scopes li {
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr);
+  gap: 10px;
+  color: var(--iv-ink-2);
+  line-height: 1.5;
+}
+.iv-connect-scopes svg {
+  margin-top: 3px;
+  color: #256b3c;
+}
+.iv-signin-card > p.iv-connect-note {
+  margin-bottom: 20px;
+  color: var(--iv-ink-3);
+  font-size: 12.5px;
+}
+.iv-connect-actions {
+  display: flex;
+  gap: 6px;
+  align-self: stretch;
+}
+/* The card's buttons run full width; here the choice is one filled
+   button and its quiet alternative beside it, not two equal halves. */
+.iv-connect-actions .iv-btn {
+  width: auto;
+}
+.iv-connect-actions .iv-btn[data-variant='primary'] {
+  flex: 1;
+}
+
+/* Settings › Agents: one row per agent the owner let in, name over its
+   site, with the way out on the same line. */
+.iv-agents {
+  display: grid;
+  gap: 16px;
+}
+.iv-agents ul {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.iv-agents li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 52px;
+}
+.iv-agents li + li {
+  border-top: 1px solid var(--iv-line);
+}
+.iv-agents li > div {
+  display: grid;
+  min-width: 0;
+}
+.iv-agents li strong {
+  font-weight: 500;
+}
+.iv-agents li span {
+  overflow: hidden;
+  color: var(--iv-ink-3);
+  font-size: 12.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.iv-agents-connect {
+  display: grid;
+  gap: 6px;
+}

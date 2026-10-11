@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { dev } from 'astro';
 import { afterAll, beforeAll, expect, test, vi } from 'vitest';
+import { signIn } from './owner.mjs';
 
 const root = new URL('../', import.meta.url);
 let server;
@@ -33,8 +34,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await server?.stop();
-  if (globalThis.invoiceRuntime)
-    await (await globalThis.invoiceRuntime).database.close();
+  await globalThis.invoiceRuntime?.dispose();
   delete globalThis.invoiceRuntime;
   if (invoiceData) await rm(invoiceData, { recursive: true, force: true });
   for (const [key, value] of Object.entries(invoiceEnvironment)) {
@@ -44,28 +44,10 @@ afterAll(async () => {
 });
 
 test('sign in as owner for visual SSR check', async () => {
-  const requireStart = createRequire(
-    new URL('../../start/package.json', import.meta.url),
-  );
-  const { NodeOAuthClient } = await import(
-    pathToFileURL(requireStart.resolve('@atproto/oauth-client-node')).href
-  );
-  vi.spyOn(NodeOAuthClient.prototype, 'callback').mockImplementation(
-    async () => ({
-      session: { did: 'did:plc:tvgjv46t4ebxbrvekr2vrnls' },
-      state: 'visual-nonce',
-    }),
-  );
-  const response = await fetch(`${origin}/invoices/auth/callback?state=test`, {
-    headers: { cookie: 'invoice-login=visual-nonce' },
-    redirect: 'manual',
-  });
-  expect(response.status).toBe(303);
-  const session = response.headers
-    .getSetCookie()
-    .find((cookie) => cookie.startsWith('invoice-session='));
-  expect(session).toBeTruthy();
-  sessionCookie = session.split(';')[0];
+  const signedIn = await signIn(origin);
+  expect(signedIn.response.status).toBe(302);
+  expect(signedIn.cookie).toBeTruthy();
+  sessionCookie = signedIn.cookie;
 });
 
 const routes = [

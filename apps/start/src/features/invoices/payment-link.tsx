@@ -6,6 +6,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Check, CircleAlert, Copy, Link2 } from 'lucide-react';
 import { useState } from 'react';
 import { getCollection, revokePaymentLinks, sharePaymentLink } from './api';
+import { shareFailureMessage as failureMessage } from './share-words';
 import { useToast } from './toast';
 import { Button, cn, layer, MorphText } from './ui';
 
@@ -13,37 +14,6 @@ import { Button, cn, layer, MorphText } from './ui';
 // where payment stands. How the customer pays is the invoice's payment plan,
 // set in its own section; a link only opens the invoice to it. A new link is shown once, then
 // only its hash is kept, so the popover is the one place it can be copied.
-
-type ShareResult = Awaited<ReturnType<typeof sharePaymentLink>>;
-type Failure = Extract<ShareResult, { ok: false }>['failure'];
-
-const refusals: Record<string, string> = {
-  draft: 'Issue the invoice before you share a payment link.',
-  quote: 'A quote is accepted, not paid. Invoice it once it is accepted.',
-  rectification: 'A rectifying invoice is settled against its original.',
-  'nothing-due': 'This invoice has nothing to pay.',
-  'partly-paid':
-    'A payment is already recorded here. Online payment starts from an unpaid invoice.',
-  paid: 'This invoice is already paid.',
-  'in-review': 'Resolve the payment issue first.',
-};
-
-function failureMessage(failure: Failure) {
-  switch (failure._tag) {
-    case 'Unconfigured':
-      return 'Online payments are not set up.';
-    case 'NotCollectible':
-      return refusals[failure.reason] ?? 'This invoice cannot be paid online.';
-    case 'Mismatch':
-      return 'Stripe added this invoice up differently, so it was not opened for payment.';
-    case 'Stripe':
-      return failure.reason === 'authentication'
-        ? 'Stripe refused the secret key. Check STRIPE_SECRET_KEY.'
-        : 'Stripe could not be reached. Try again; nothing was charged.';
-    case 'Storage':
-      return 'The payment link could not be saved. Try again.';
-  }
-}
 
 /** A review as a headline and what it means for the owner. */
 function reviewNote(review: Review, money: (amount: string) => string) {

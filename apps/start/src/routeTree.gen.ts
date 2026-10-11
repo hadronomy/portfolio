@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as InvoicesRouteImport } from './routes/invoices'
+import { Route as DotwellKnownSplatRouteImport } from './routes/[.]well-known.$'
 import { Route as ExperimentsTextRouteImport } from './routes/experiments/text'
 import { Route as InvoicesIndexRouteImport } from './routes/invoices.index'
 import { Route as InvoicesInvoiceIdRouteImport } from './routes/invoices.$invoiceId'
@@ -17,8 +18,11 @@ import { Route as InvoicesCustomersRouteImport } from './routes/invoices.custome
 import { Route as InvoicesItemsRouteImport } from './routes/invoices.items'
 import { Route as InvoicesSettingsRouteImport } from './routes/invoices.settings'
 import { Route as InvoicesAccountRouteImport } from './routes/invoices_.account'
+import { Route as InvoicesConnectRouteImport } from './routes/invoices_.connect'
+import { Route as InvoicesMcpRouteImport } from './routes/invoices_.mcp'
 import { Route as InvoicesAccountInvoiceIdRouteImport } from './routes/invoices_.account_.$invoiceId'
 import { Route as InvoicesAuthSplatRouteImport } from './routes/invoices_.auth.$'
+import { Route as InvoicesConnectConsentRouteImport } from './routes/invoices_.connect_.consent'
 import { Route as InvoicesPayTokenRouteImport } from './routes/invoices_.pay.$token'
 import { Route as InvoicesPdfInvoiceIdRouteImport } from './routes/invoices_.pdf.$invoiceId'
 import { Route as InvoicesQuoteTokenRouteImport } from './routes/invoices_.quote.$token'
@@ -29,6 +33,11 @@ import { Route as InvoicesQuoteTokenPdfRouteImport } from './routes/invoices_.qu
 const InvoicesRoute = InvoicesRouteImport.update({
   id: '/invoices',
   path: '/invoices',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DotwellKnownSplatRoute = DotwellKnownSplatRouteImport.update({
+  id: '/.well-known/$',
+  path: '/.well-known/$',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ExperimentsTextRoute = ExperimentsTextRouteImport.update({
@@ -66,6 +75,16 @@ const InvoicesAccountRoute = InvoicesAccountRouteImport.update({
   path: '/invoices/account',
   getParentRoute: () => rootRouteImport,
 } as any)
+const InvoicesConnectRoute = InvoicesConnectRouteImport.update({
+  id: '/invoices_/connect',
+  path: '/invoices/connect',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InvoicesMcpRoute = InvoicesMcpRouteImport.update({
+  id: '/invoices_/mcp',
+  path: '/invoices/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const InvoicesAccountInvoiceIdRoute =
   InvoicesAccountInvoiceIdRouteImport.update({
     id: '/invoices_/account_/$invoiceId',
@@ -75,6 +94,11 @@ const InvoicesAccountInvoiceIdRoute =
 const InvoicesAuthSplatRoute = InvoicesAuthSplatRouteImport.update({
   id: '/invoices_/auth/$',
   path: '/invoices/auth/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InvoicesConnectConsentRoute = InvoicesConnectConsentRouteImport.update({
+  id: '/invoices_/connect_/consent',
+  path: '/invoices/connect/consent',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InvoicesPayTokenRoute = InvoicesPayTokenRouteImport.update({
@@ -111,15 +135,19 @@ const InvoicesQuoteTokenPdfRoute = InvoicesQuoteTokenPdfRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/invoices': typeof InvoicesRouteWithChildren
+  '/.well-known/$': typeof DotwellKnownSplatRoute
   '/experiments/text': typeof ExperimentsTextRoute
   '/invoices/$invoiceId': typeof InvoicesInvoiceIdRoute
   '/invoices/customers': typeof InvoicesCustomersRoute
   '/invoices/items': typeof InvoicesItemsRoute
   '/invoices/settings': typeof InvoicesSettingsRoute
   '/invoices/account': typeof InvoicesAccountRoute
+  '/invoices/connect': typeof InvoicesConnectRoute
+  '/invoices/mcp': typeof InvoicesMcpRoute
   '/invoices/': typeof InvoicesIndexRoute
   '/invoices/account/$invoiceId': typeof InvoicesAccountInvoiceIdRoute
   '/invoices/auth/$': typeof InvoicesAuthSplatRoute
+  '/invoices/connect/consent': typeof InvoicesConnectConsentRoute
   '/invoices/pay/$token': typeof InvoicesPayTokenRoute
   '/invoices/pdf/$invoiceId': typeof InvoicesPdfInvoiceIdRoute
   '/invoices/quote/$token': typeof InvoicesQuoteTokenRoute
@@ -128,15 +156,19 @@ export interface FileRoutesByFullPath {
   '/invoices/quote/$token/pdf': typeof InvoicesQuoteTokenPdfRoute
 }
 export interface FileRoutesByTo {
+  '/.well-known/$': typeof DotwellKnownSplatRoute
   '/experiments/text': typeof ExperimentsTextRoute
   '/invoices/$invoiceId': typeof InvoicesInvoiceIdRoute
   '/invoices/customers': typeof InvoicesCustomersRoute
   '/invoices/items': typeof InvoicesItemsRoute
   '/invoices/settings': typeof InvoicesSettingsRoute
   '/invoices/account': typeof InvoicesAccountRoute
+  '/invoices/connect': typeof InvoicesConnectRoute
+  '/invoices/mcp': typeof InvoicesMcpRoute
   '/invoices': typeof InvoicesIndexRoute
   '/invoices/account/$invoiceId': typeof InvoicesAccountInvoiceIdRoute
   '/invoices/auth/$': typeof InvoicesAuthSplatRoute
+  '/invoices/connect/consent': typeof InvoicesConnectConsentRoute
   '/invoices/pay/$token': typeof InvoicesPayTokenRoute
   '/invoices/pdf/$invoiceId': typeof InvoicesPdfInvoiceIdRoute
   '/invoices/quote/$token': typeof InvoicesQuoteTokenRoute
@@ -147,15 +179,19 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/invoices': typeof InvoicesRouteWithChildren
+  '/.well-known/$': typeof DotwellKnownSplatRoute
   '/experiments/text': typeof ExperimentsTextRoute
   '/invoices/$invoiceId': typeof InvoicesInvoiceIdRoute
   '/invoices/customers': typeof InvoicesCustomersRoute
   '/invoices/items': typeof InvoicesItemsRoute
   '/invoices/settings': typeof InvoicesSettingsRoute
   '/invoices_/account': typeof InvoicesAccountRoute
+  '/invoices_/connect': typeof InvoicesConnectRoute
+  '/invoices_/mcp': typeof InvoicesMcpRoute
   '/invoices/': typeof InvoicesIndexRoute
   '/invoices_/account_/$invoiceId': typeof InvoicesAccountInvoiceIdRoute
   '/invoices_/auth/$': typeof InvoicesAuthSplatRoute
+  '/invoices_/connect_/consent': typeof InvoicesConnectConsentRoute
   '/invoices_/pay/$token': typeof InvoicesPayTokenRoute
   '/invoices_/pdf/$invoiceId': typeof InvoicesPdfInvoiceIdRoute
   '/invoices_/quote/$token': typeof InvoicesQuoteTokenRoute
@@ -167,15 +203,19 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/invoices'
+    | '/.well-known/$'
     | '/experiments/text'
     | '/invoices/$invoiceId'
     | '/invoices/customers'
     | '/invoices/items'
     | '/invoices/settings'
     | '/invoices/account'
+    | '/invoices/connect'
+    | '/invoices/mcp'
     | '/invoices/'
     | '/invoices/account/$invoiceId'
     | '/invoices/auth/$'
+    | '/invoices/connect/consent'
     | '/invoices/pay/$token'
     | '/invoices/pdf/$invoiceId'
     | '/invoices/quote/$token'
@@ -184,15 +224,19 @@ export interface FileRouteTypes {
     | '/invoices/quote/$token/pdf'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/.well-known/$'
     | '/experiments/text'
     | '/invoices/$invoiceId'
     | '/invoices/customers'
     | '/invoices/items'
     | '/invoices/settings'
     | '/invoices/account'
+    | '/invoices/connect'
+    | '/invoices/mcp'
     | '/invoices'
     | '/invoices/account/$invoiceId'
     | '/invoices/auth/$'
+    | '/invoices/connect/consent'
     | '/invoices/pay/$token'
     | '/invoices/pdf/$invoiceId'
     | '/invoices/quote/$token'
@@ -202,15 +246,19 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/invoices'
+    | '/.well-known/$'
     | '/experiments/text'
     | '/invoices/$invoiceId'
     | '/invoices/customers'
     | '/invoices/items'
     | '/invoices/settings'
     | '/invoices_/account'
+    | '/invoices_/connect'
+    | '/invoices_/mcp'
     | '/invoices/'
     | '/invoices_/account_/$invoiceId'
     | '/invoices_/auth/$'
+    | '/invoices_/connect_/consent'
     | '/invoices_/pay/$token'
     | '/invoices_/pdf/$invoiceId'
     | '/invoices_/quote/$token'
@@ -221,10 +269,14 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   InvoicesRoute: typeof InvoicesRouteWithChildren
+  DotwellKnownSplatRoute: typeof DotwellKnownSplatRoute
   ExperimentsTextRoute: typeof ExperimentsTextRoute
   InvoicesAccountRoute: typeof InvoicesAccountRoute
+  InvoicesConnectRoute: typeof InvoicesConnectRoute
+  InvoicesMcpRoute: typeof InvoicesMcpRoute
   InvoicesAccountInvoiceIdRoute: typeof InvoicesAccountInvoiceIdRoute
   InvoicesAuthSplatRoute: typeof InvoicesAuthSplatRoute
+  InvoicesConnectConsentRoute: typeof InvoicesConnectConsentRoute
   InvoicesPayTokenRoute: typeof InvoicesPayTokenRoute
   InvoicesPdfInvoiceIdRoute: typeof InvoicesPdfInvoiceIdRoute
   InvoicesQuoteTokenRoute: typeof InvoicesQuoteTokenRoute
@@ -240,6 +292,13 @@ declare module '@tanstack/react-router' {
       path: '/invoices'
       fullPath: '/invoices'
       preLoaderRoute: typeof InvoicesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.well-known/$': {
+      id: '/.well-known/$'
+      path: '/.well-known/$'
+      fullPath: '/.well-known/$'
+      preLoaderRoute: typeof DotwellKnownSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/experiments/text': {
@@ -291,6 +350,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InvoicesAccountRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/invoices_/connect': {
+      id: '/invoices_/connect'
+      path: '/invoices/connect'
+      fullPath: '/invoices/connect'
+      preLoaderRoute: typeof InvoicesConnectRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/invoices_/mcp': {
+      id: '/invoices_/mcp'
+      path: '/invoices/mcp'
+      fullPath: '/invoices/mcp'
+      preLoaderRoute: typeof InvoicesMcpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/invoices_/account_/$invoiceId': {
       id: '/invoices_/account_/$invoiceId'
       path: '/invoices/account/$invoiceId'
@@ -303,6 +376,13 @@ declare module '@tanstack/react-router' {
       path: '/invoices/auth/$'
       fullPath: '/invoices/auth/$'
       preLoaderRoute: typeof InvoicesAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/invoices_/connect_/consent': {
+      id: '/invoices_/connect_/consent'
+      path: '/invoices/connect/consent'
+      fullPath: '/invoices/connect/consent'
+      preLoaderRoute: typeof InvoicesConnectConsentRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/invoices_/pay/$token': {
@@ -372,10 +452,14 @@ const InvoicesRouteWithChildren = InvoicesRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   InvoicesRoute: InvoicesRouteWithChildren,
+  DotwellKnownSplatRoute: DotwellKnownSplatRoute,
   ExperimentsTextRoute: ExperimentsTextRoute,
   InvoicesAccountRoute: InvoicesAccountRoute,
+  InvoicesConnectRoute: InvoicesConnectRoute,
+  InvoicesMcpRoute: InvoicesMcpRoute,
   InvoicesAccountInvoiceIdRoute: InvoicesAccountInvoiceIdRoute,
   InvoicesAuthSplatRoute: InvoicesAuthSplatRoute,
+  InvoicesConnectConsentRoute: InvoicesConnectConsentRoute,
   InvoicesPayTokenRoute: InvoicesPayTokenRoute,
   InvoicesPdfInvoiceIdRoute: InvoicesPdfInvoiceIdRoute,
   InvoicesQuoteTokenRoute: InvoicesQuoteTokenRoute,

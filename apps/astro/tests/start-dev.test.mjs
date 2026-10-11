@@ -16,6 +16,7 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { dev } from 'astro';
 import { afterAll, beforeAll, expect, test, vi } from 'vitest';
+import { signIn } from './owner.mjs';
 
 const root = new URL('../', import.meta.url);
 const parentRoute = new URL('../start/src/routes/experiments.tsx', root);
@@ -84,8 +85,7 @@ afterAll(async () => {
   if (fixtureCreated) await unlink(parentRoute).catch(() => {});
   for (const file of fixtures) await unlink(file).catch(() => {});
   await server?.stop();
-  if (globalThis.invoiceRuntime)
-    await (await globalThis.invoiceRuntime).database.close();
+  await globalThis.invoiceRuntime?.dispose();
   delete globalThis.invoiceRuntime;
   if (invoiceData) await rm(invoiceData, { recursive: true, force: true });
   for (const [key, value] of Object.entries(invoiceEnvironment)) {
@@ -98,93 +98,54 @@ afterAll(async () => {
 });
 
 test('invoice OAuth metadata uses the public origin through the development proxy', async () => {
-  const response = await fetch(`${origin}/invoices/auth/client-metadata.json`, {
-    headers: { 'x-forwarded-host': 'attacker.example' },
-  });
+  const response = await fetch(
+    `${origin}/invoices/auth/atproto/client-metadata.json`,
+    { headers: { 'x-forwarded-host': 'attacker.example' } },
+  );
   expect(response.status).toBe(200);
   const metadata = await response.json();
-  expect(metadata.redirect_uris).toEqual([`${origin}/invoices/auth/callback`]);
+  expect(metadata.redirect_uris).toEqual([
+    `${origin}/invoices/auth/atproto/callback`,
+  ]);
 });
 
-test('invoice OAuth rejects an invalid callback with a readable response', async () => {
+test('invoice OAuth sends an invalid callback back to sign-in with a reason', async () => {
   const response = await fetch(
-    `${origin}/invoices/auth/callback?state=invalid&iss=https%3A%2F%2Fbsky.social&code=invalid`,
-    {
-      headers: { cookie: 'invoice-login=invalid' },
-    },
+    `${origin}/invoices/auth/atproto/callback?state=invalid&code=invalid`,
+    { redirect: 'manual' },
   );
-  expect(response.status).toBe(400);
-  expect(await response.text()).toMatch(/Start again/);
+  expect(response.status).toBe(302);
+  const target = new URL(response.headers.get('location'), origin);
+  expect(target.pathname).toBe('/invoices');
+  expect(target.searchParams.get('error')).toBeTruthy();
 });
 
 test('invoice OAuth sets the session cookie and redirects after owner authentication', async () => {
-  const requireStart = createRequire(
-    new URL('../../start/package.json', import.meta.url),
+  const { response, session, cookie, signOut } = await signIn(origin);
+  expect(response.status).toBe(302);
+  expect(new URL(response.headers.get('location'), origin).pathname).toBe(
+    '/invoices',
   );
-  const { NodeOAuthClient } = await import(
-    pathToFileURL(requireStart.resolve('@atproto/oauth-client-node')).href
-  );
-  vi.spyOn(NodeOAuthClient.prototype, 'callback').mockImplementation(
-    async () => ({
-      session: { did: 'did:plc:tvgjv46t4ebxbrvekr2vrnls' },
-      state: 'test-browser-nonce',
-    }),
-  );
-  const response = await fetch(`${origin}/invoices/auth/callback?state=test`, {
-    headers: { cookie: 'invoice-login=test-browser-nonce' },
-    redirect: 'manual',
-  });
-  expect(response.status).toBe(303);
-  expect(response.headers.get('location')).toBe(`${origin}/invoices`);
-  const cookies = response.headers.getSetCookie();
-  expect(
-    cookies.some(
-      (cookie) =>
-        cookie.startsWith('invoice-login=') && /Max-Age=0/i.test(cookie),
-    ),
-  ).toBeTruthy();
-  const session = cookies.find((cookie) =>
-    cookie.startsWith('invoice-session='),
-  );
-  expect(session).toBeTruthy();
   expect(session).toMatch(/HttpOnly/i);
   expect(session).toMatch(/SameSite=Lax/i);
-  const workspace = await fetch(`${origin}/invoices`, {
-    headers: { cookie: session.split(';')[0] },
-  });
+  // The grant only proves who signed in; it is revoked at once.
+  expect(signOut).toHaveBeenCalled();
+  const workspace = await fetch(`${origin}/invoices`, { headers: { cookie } });
   expect(workspace.status).toBe(200);
   expect(await workspace.text()).toMatch(/Invoice workspace/);
 });
 
 test('invoice OAuth refuses a different account without a browser session', async () => {
-  const requireStart = createRequire(
-    new URL('../../start/package.json', import.meta.url),
+  const { response, session, signOut } = await signIn(
+    origin,
+    'did:plc:other-account',
   );
-  const { NodeOAuthClient } = await import(
-    pathToFileURL(requireStart.resolve('@atproto/oauth-client-node')).href
-  );
-  const otherDid = 'did:plc:other-account';
-  vi.spyOn(NodeOAuthClient.prototype, 'callback').mockImplementation(
-    async () => ({
-      session: { did: otherDid },
-      state: 'test-browser-nonce',
-    }),
-  );
-  const revoke = vi
-    .spyOn(NodeOAuthClient.prototype, 'revoke')
-    .mockImplementation(async () => {});
-  const response = await fetch(`${origin}/invoices/auth/callback?state=test`, {
-    headers: { cookie: 'invoice-login=test-browser-nonce' },
-    redirect: 'manual',
-  });
-  expect(response.status).toBe(403);
-  expect(await response.text()).toMatch(/belongs to hadronomy.com/);
+  expect(response.status).toBe(302);
   expect(
-    response.headers
-      .getSetCookie()
-      .some((cookie) => cookie.startsWith('invoice-session=')),
-  ).toBe(false);
-  expect(revoke.mock.calls[0][0]).toBe(otherDid);
+    new URL(response.headers.get('location'), origin).searchParams.get('error'),
+  ).toBe('not_owner');
+  expect(session).toBeUndefined();
+  expect(signOut).toHaveBeenCalled();
 });
 
 test('removing a Start parent keeps its child route working without a restart', async () => {

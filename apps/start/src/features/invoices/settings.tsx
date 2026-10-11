@@ -3,6 +3,7 @@ import { useForm, useStore } from '@tanstack/react-form';
 import { Schema } from 'effect';
 import type { ReactNode } from 'react';
 import { useState } from 'react';
+import { AgentsSettings } from './agents-settings';
 import { languages } from './choices';
 import { CoverPicker } from './cover-picker';
 import { BankFields, PartyFields, TaxProfileFields } from './party-fields';
@@ -157,6 +158,12 @@ function SettingsForm({ initial }: { initial: Preferences }) {
             </div>
           )}
         </form.Field>
+      </Group>
+      <Group
+        title="Agents"
+        description="Apps you let into your invoices over MCP. Each one acts as you, and disconnecting one shuts it out at once."
+      >
+        <AgentsSettings />
       </Group>
       <div className="iv-savebar" data-open={dirty} inert={!dirty}>
         <span>Unsaved changes</span>

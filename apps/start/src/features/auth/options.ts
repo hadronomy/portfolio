@@ -1,11 +1,21 @@
+import { cimd } from '@better-auth/cimd';
+import { fetchClientMetadataResource } from '@better-auth/cimd/node';
+import { mcp } from '@better-auth/mcp';
 import { type AtprotoProfile, atproto } from '@portfolio/auth-atproto';
 import type { Language } from '@portfolio/invoices/model';
 import { OwnerDid } from '@portfolio/invoices/model';
-import type { BetterAuthOptions } from 'better-auth';
+import type { BetterAuthOptions, BetterAuthPlugin } from 'better-auth';
+import { jwt } from 'better-auth/plugins';
 import { emailOTP } from 'better-auth/plugins/email-otp';
 import { tanstackStartCookies } from 'better-auth/tanstack-start';
 import { codeLifetime } from '../../server/mail.server';
-import { authBasePath, ownerHandle } from './shared';
+import {
+  agentIssuer,
+  agentResource,
+  agentScope,
+  authBasePath,
+  ownerHandle,
+} from './shared';
 
 // Who may use the invoices app, and how they prove it. Two kinds of people
 // sign in. The owner uses their AT Protocol account and is recognised by DID
@@ -32,6 +42,8 @@ export interface AuthDependencies {
   }) => Promise<void>;
   /** Private JWKs for AT Protocol sign-in over HTTPS. */
   readonly atprotoKeys: readonly string[];
+  /** The public origin agents reach the workspace at; see `agentResource`. */
+  readonly origin: string;
 }
 
 /**
@@ -69,6 +81,26 @@ export const authOptions = (deps: AuthDependencies) =>
     },
     plugins: [
       atproto({ clientName: 'Hadronomy Invoices', keys: deps.atprotoKeys }),
+      // Agents reach the workspace over MCP as OAuth clients of this same
+      // sign-in: the owner signs in as always, approves the agent once, and
+      // the agent holds a token bound to the MCP endpoint alone.
+      jwt({ jwt: { issuer: agentIssuer(deps.origin) } }),
+      // The provider's endpoint metadata types an optional OpenAPI field as
+      // `undefined`, which this app's exactOptionalPropertyTypes rejects;
+      // the plugin itself is what better-auth expects.
+      mcp({
+        loginPage: '/invoices/connect',
+        consentPage: '/invoices/connect/consent',
+        resource: agentResource(deps.origin),
+        scopes: ['openid', 'offline_access', agentScope],
+        // The sign-in page names the agent before the owner is signed in;
+        // the signed request it carries still decides what it may see.
+        allowPublicClientPrelogin: true,
+      }) as BetterAuthPlugin,
+      cimd({
+        fetchClientMetadataResource,
+        metadataProfile: 'mcp-2026-07-28',
+      }),
       emailOTP({
         expiresIn: codeLifetime,
         storeOTP: 'hashed',

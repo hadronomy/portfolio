@@ -74,6 +74,10 @@ export default function startIntegration() {
                 const target = new URL(url.pathname + url.search, ${JSON.stringify(origin)});
                 const headers = new Headers(request.headers);
                 headers.set('x-forwarded-host', url.host);
+                // fetch sets its own Sec-Fetch-Mode; the browser's travels
+                // here, and the Start server puts it back.
+                const mode = request.headers.get('sec-fetch-mode');
+                if (mode) headers.set('x-forwarded-fetch-mode', mode);
                 return fetch(target, { method: request.method, headers,
                   body: request.method === 'GET' || request.method === 'HEAD' ? undefined : request.body,
                   duplex: 'half', redirect: 'manual', signal: request.signal });

@@ -15,6 +15,15 @@ export function fixedOrigin(settings: OriginSettings): string | undefined {
   return undefined;
 }
 
+/**
+ * Where agents reach the workspace. A token is bound to one MCP URL, so the
+ * origin must not follow the request: development uses Astro's default
+ * address unless INVOICE_ORIGIN names another.
+ */
+export function agentOrigin(settings: OriginSettings): string {
+  return fixedOrigin(settings) ?? 'http://127.0.0.1:4321';
+}
+
 /** Resolves the public origin callers see, preferring explicit config over loopback request headers, and stays pure so tests pass requests directly. */
 export function applicationOrigin(
   request: Request,

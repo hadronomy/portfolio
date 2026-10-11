@@ -78,7 +78,7 @@ declare global {
 }
 
 /** The runtime, kept across development reloads so the local database opens once. */
-const runtime = () => {
+export const runtime = () => {
   globalThis.invoiceRuntime ??= ManagedRuntime.make(appLayer);
   return globalThis.invoiceRuntime;
 };

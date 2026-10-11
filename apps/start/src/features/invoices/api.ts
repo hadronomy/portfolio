@@ -14,10 +14,14 @@ import { Offer, PlanLibrary } from '@portfolio/invoices/plan';
 import { Answer } from '@portfolio/invoices/quote-model';
 import { createServerFn } from '@tanstack/react-start';
 import { Effect, Result, Schema } from 'effect';
-import { requireOwner, viewer } from '../../server/auth.server';
+import { Auth, requireOwner, viewer } from '../../server/auth.server';
+import { AppConfig } from '../../server/config.server';
 import { Geocoder } from '../../server/geocoder.server';
+import { agentOrigin } from '../../server/origin.server';
+import { sameOrigin } from '../../server/request.server';
 import { serve } from '../../server/runtime.server';
 import { accountOffer } from '../account/account.server';
+import { agentResource } from '../auth/shared';
 import {
   checkout,
   collectionStatus,
@@ -258,3 +262,37 @@ export const getQuotePage = createServerFn({ method: 'GET' })
 export const answerQuoteLink = createServerFn({ method: 'POST' })
   .validator((input: unknown) => decodeQuoteAnswer(input))
   .handler(({ data }) => serve(answerQuote(data.token, data.answer)));
+
+const decodeClientRef = decodeWith(
+  Schema.Struct({ clientId: Schema.String.check(Schema.isMaxLength(200)) }),
+  'Invalid agent.',
+);
+/** The agents the owner let in, and the address agents connect to. */
+export const getAgents = createServerFn({ method: 'GET' }).handler(() =>
+  serve(
+    Effect.gen(function* () {
+      yield* requireOwner;
+      const settings = yield* AppConfig;
+      return {
+        endpoint: agentResource(
+          agentOrigin({
+            configured: settings.origin,
+            production: settings.production,
+          }),
+        ),
+        agents: yield* Auth.use((auth) => auth.agents()),
+      };
+    }),
+  ),
+);
+export const disconnectAgent = createServerFn({ method: 'POST' })
+  .validator((input: unknown) => decodeClientRef(input))
+  .handler(({ data }) =>
+    serve(
+      Effect.gen(function* () {
+        yield* sameOrigin;
+        yield* requireOwner;
+        yield* Auth.use((auth) => auth.disconnect(data.clientId));
+      }),
+    ),
+  );

@@ -193,6 +193,16 @@ A quote (presupuesto) is an offer the customer accepts online. It is no tax docu
 - **Acceptance** (`quotes.ts`, `features/invoices/quote-page.tsx`): the owner sends a link; the customer reads the quote, chooses a plan, types their full name (a simple electronic signature), and accepts. A consumer can ask for work to start inside the withdrawal period. The answer keeps the network address, the browser and the SHA-256 of the exact PDF read, and is confirmed by email to the customer with a copy to the owner.
 - **Billing** (`billing.ts`): every payment of the accepted plan gets an invoice of its own, as Real Decreto 1619/2012 art. 2.1 requires for payments taken before the work is done (the Canary Islands apply it to IGIC through Decreto 268/2011, art. 47 decies). Each invoice carries its share of every quoted line, so tax treatment, withholding and disbursements stay as quoted; the last one takes what is left of each line, so the invoices add up to the quote. IGIC is rounded on each invoice's own base, so the invoices' totals can differ from the quote's by a cent. The accepted plan is kept with the answer, so later edits never move it, and an invoice billed from a quote takes no plan of its own.
 
+## Agents over MCP
+
+An agent can do everything the owner can in the invoice pages, through an MCP server at `/invoices/mcp` (`apps/start/src/features/agent`). [Research and sources](../research/quotes-editor-mcp.md#the-agent-surface).
+
+- **Transport**: Effect's `McpServer` over Streamable HTTP, on the app's own runtime, so an agent and the owner share the services and the database. It speaks MCP 2026-07-28, 2025-11-25 and 2025-06-18.
+- **Sign-in**: better-auth is the OAuth 2.1 server for agents (`@better-auth/mcp`), with Client ID Metadata Documents (`@better-auth/cimd`). An agent sends the owner to `/invoices/connect`, where they sign in as always and approve it once; its token is bound to the MCP endpoint and the `invoices` scope. The discovery documents answer at their root `/.well-known/...` paths.
+- **Access**: every call checks that the token is the owner's and that the owner still approves the agent. Settings › Agents lists the agents and disconnects one at once; a disconnected agent is told to sign in again.
+- **Tools** (`tools.ts`, `handlers.server.ts`): 27 tools that call the same operations as the pages, plus each document's PDF as a resource. `coverage.ts` maps every page action and server function to its tools, and the type checker and `coverage.test.ts` keep that map complete; see [`AGENTS.md`](../../AGENTS.md).
+- **Origin**: tokens name a fixed origin. Production uses the site; development uses `INVOICE_ORIGIN`, or the Astro dev server's own address.
+
 ## Issue operation
 
 The server authenticates the owner, checks the draft revision, decodes the input, calculates totals, and applies the issuer's tax policy.

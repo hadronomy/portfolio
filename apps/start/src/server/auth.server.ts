@@ -1,4 +1,9 @@
 import { drizzleAdapter } from '@better-auth/drizzle-adapter/relations-v2';
+import { createMcpProtectedRequestHandler } from '@better-auth/mcp';
+import {
+  oauthProviderAuthServerMetadata,
+  oauthProviderOpenIdConfigMetadata,
+} from '@better-auth/oauth-provider';
 import { Postgres } from '@portfolio/database';
 import {
   CustomerAccess,
@@ -7,13 +12,19 @@ import {
 } from '@portfolio/invoices/customer-access';
 import type { OwnerDid } from '@portfolio/invoices/model';
 import { betterAuth } from 'better-auth';
+import { and, desc, eq } from 'drizzle-orm';
 import { Context, Effect, Layer, Redacted } from 'effect';
 import { authOptions, ownerDid } from '../features/auth/options';
-import { authNamespace } from '../features/auth/shared';
+import {
+  agentIssuer,
+  agentResource,
+  agentScope,
+  authNamespace,
+} from '../features/auth/shared';
 import * as tables from '../features/auth/tables';
 import { AppConfig } from './config.server';
 import { Mailer } from './mail.server';
-import { fixedOrigin } from './origin.server';
+import { agentOrigin, fixedOrigin } from './origin.server';
 import { CurrentRequest, Refused } from './request.server';
 import { AppSecret } from './secret.server';
 
@@ -33,6 +44,37 @@ export interface AuthApi {
   readonly handle: (request: Request) => Effect.Effect<Response>;
   /** Who the session in these headers belongs to, or null for nobody the app knows. */
   readonly viewer: (headers: Headers) => Effect.Effect<Viewer | null>;
+  /**
+   * Answers an agent's request to the MCP endpoint with `serve`, once its
+   * bearer token checks out: signed here, bound to this endpoint, granted
+   * the invoices scope, and approved by the owner. Anything else gets the
+   * challenge that starts the client's sign-in.
+   */
+  readonly agent: (
+    request: Request,
+    serve: (request: Request) => Promise<Response>,
+  ) => Effect.Effect<Response>;
+  /**
+   * Answers the discovery documents agents read before they sign in, at
+   * their well-known paths outside /invoices/auth; null for any other path.
+   */
+  readonly discovery: (request: Request) => Effect.Effect<Response | null>;
+  /** The agents the owner has let in, newest first. */
+  readonly agents: () => Effect.Effect<readonly ConnectedAgent[]>;
+  /**
+   * Shuts an agent out at once: its approval and refresh tokens go, and
+   * the access token it holds stops working on its next request.
+   */
+  readonly disconnect: (clientId: string) => Effect.Effect<void>;
+}
+
+/** An agent the owner approved, as Settings lists it. */
+export interface ConnectedAgent {
+  readonly clientId: string;
+  readonly name: string | null;
+  readonly site: string | null;
+  readonly icon: string | null;
+  readonly connectedAt: string | null;
 }
 
 /** Sessions for the owner and for customers. */
@@ -53,8 +95,15 @@ export const authLayer = Layer.effect(
         production: settings.production,
       }),
     ).pipe(Effect.orDie);
+    const agents = agentOrigin({
+      configured: settings.origin,
+      production: settings.production,
+    });
+    // The promise flavour of the database the invoice services use.
+    const authDb = postgres.promise(tables.authRelations);
     const auth = betterAuth({
       ...authOptions({
+        origin: agents,
         admits: (email) =>
           run(
             CustomerAccess.use((access) => access.admits(customerEmail(email))),
@@ -70,8 +119,7 @@ export const authLayer = Layer.effect(
         protocol: 'http',
       },
       secret: Redacted.value(secret),
-      // The promise flavour of the database the invoice services use.
-      database: drizzleAdapter(postgres.promise(tables.authRelations), {
+      database: drizzleAdapter(authDb, {
         provider: 'pg',
         schema: tables,
         schemaName: authNamespace,
@@ -80,8 +128,146 @@ export const authLayer = Layer.effect(
       }),
       advanced: { trustedProxyHeaders: !origin },
     });
+    const ownerId = async () => {
+      const [owner] = await authDb
+        .select({ id: tables.user.id })
+        .from(tables.user)
+        .where(eq(tables.user.did, ownerDid));
+      return owner?.id ?? null;
+    };
+    // A token is the owner's while the owner still approves the client that
+    // holds it. Checking the approval on every request is what makes a
+    // disconnect immediate, though the token itself would live on.
+    const admitted = async (
+      subject: unknown,
+      client: unknown,
+    ): Promise<'owner' | 'disconnected' | 'stranger'> => {
+      if (typeof subject !== 'string' || typeof client !== 'string')
+        return 'stranger';
+      if (subject !== (await ownerId())) return 'stranger';
+      const [consent] = await authDb
+        .select({ id: tables.oauthConsent.id })
+        .from(tables.oauthConsent)
+        .where(
+          and(
+            eq(tables.oauthConsent.userId, subject),
+            eq(tables.oauthConsent.clientId, client),
+          ),
+        );
+      return consent ? 'owner' : 'disconnected';
+    };
+    const issuer = agentIssuer(agents);
+    const resource = agentResource(agents);
+    const guard = (serve: (request: Request) => Promise<Response>) =>
+      createMcpProtectedRequestHandler(
+        {
+          issuer,
+          audience: resource,
+          jwksUrl: `${issuer}/jwks`,
+          requiredScopes: [agentScope],
+        },
+        async (request, claims) => {
+          switch (await admitted(claims.sub, claims.azp ?? claims.client_id)) {
+            case 'owner':
+              return serve(request);
+            // A token the owner withdrew: the challenge tells the client
+            // to sign in again rather than give up.
+            case 'disconnected':
+              return new Response(null, {
+                status: 401,
+                headers: {
+                  'WWW-Authenticate': `Bearer error="invalid_token", error_description="The owner disconnected this agent.", resource_metadata="${new URL(resource).origin}/.well-known/oauth-protected-resource${new URL(resource).pathname}"`,
+                },
+              });
+            // Customers can sign in too; only the owner's grant reaches data.
+            case 'stranger':
+              return new Response(
+                'Only the workspace owner can connect an agent.',
+                { status: 403 },
+              );
+          }
+        },
+      );
+    // The provider's endpoints are missing from auth.api's type, because its
+    // plugin is widened in authOptions; these two are there at run time.
+    const provider = { api: auth.api } as unknown as Parameters<
+      typeof oauthProviderAuthServerMetadata
+    >[0] &
+      Parameters<typeof oauthProviderOpenIdConfigMetadata>[0];
+    const authorizationServer = oauthProviderAuthServerMetadata(provider);
+    const openIdConfiguration = oauthProviderOpenIdConfigMetadata(provider);
+    const resourcePath = new URL(resource).pathname;
+    const issuerPath = new URL(issuer).pathname;
     return Auth.of({
       handle: (request) => Effect.promise(() => auth.handler(request)),
+      agent: (request, serve) => Effect.promise(() => guard(serve)(request)),
+      discovery: (request) =>
+        Effect.promise(async () => {
+          const path = new URL(request.url).pathname;
+          // RFC 8414 and RFC 9728 put an issuer's or resource's own path
+          // after the well-known name; plain names serve clients that skip it.
+          if (
+            path === `/.well-known/oauth-authorization-server${issuerPath}` ||
+            path === '/.well-known/oauth-authorization-server'
+          )
+            return authorizationServer(request);
+          if (
+            path === `/.well-known/openid-configuration${issuerPath}` ||
+            path === `${issuerPath}/.well-known/openid-configuration` ||
+            path === '/.well-known/openid-configuration'
+          )
+            return openIdConfiguration(request);
+          if (
+            path === `/.well-known/oauth-protected-resource${resourcePath}` ||
+            path === '/.well-known/oauth-protected-resource'
+          )
+            return auth.handler(request);
+          return null;
+        }),
+      agents: () =>
+        Effect.promise(async () => {
+          const owner = await ownerId();
+          if (!owner) return [];
+          const rows = await authDb
+            .select({
+              clientId: tables.oauthConsent.clientId,
+              name: tables.oauthClient.name,
+              uri: tables.oauthClient.uri,
+              icon: tables.oauthClient.icon,
+              connectedAt: tables.oauthConsent.createdAt,
+            })
+            .from(tables.oauthConsent)
+            .innerJoin(
+              tables.oauthClient,
+              eq(tables.oauthClient.clientId, tables.oauthConsent.clientId),
+            )
+            .where(eq(tables.oauthConsent.userId, owner))
+            .orderBy(desc(tables.oauthConsent.createdAt));
+          return rows.map((row) => ({
+            clientId: row.clientId,
+            name: row.name,
+            site: siteOf(row.uri ?? row.clientId),
+            icon: row.icon,
+            connectedAt: row.connectedAt?.toISOString() ?? null,
+          }));
+        }),
+      disconnect: (clientId) =>
+        Effect.promise(async () => {
+          const owner = await ownerId();
+          if (!owner) return;
+          await authDb.transaction(async (tx) => {
+            for (const table of [
+              tables.oauthConsent,
+              tables.oauthRefreshToken,
+              tables.oauthAccessToken,
+            ])
+              await tx
+                .delete(table)
+                .where(
+                  and(eq(table.userId, owner), eq(table.clientId, clientId)),
+                );
+          });
+        }),
       viewer: Effect.fn('Auth.viewer')(function* (headers) {
         const session = yield* Effect.promise(() =>
           auth.api.getSession({ headers }),
@@ -100,6 +286,15 @@ export const authLayer = Layer.effect(
     });
   }),
 );
+
+/** The host an agent's address names, for the owner to recognise it by. */
+const siteOf = (address: string) => {
+  try {
+    return new URL(address).host;
+  } catch {
+    return null;
+  }
+};
 
 /** Who signed this request in, or null. */
 export const viewer = Effect.gen(function* () {

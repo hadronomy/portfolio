@@ -5,7 +5,12 @@ import {
   PayFailure,
 } from '@portfolio/invoices/collection-model';
 import { CustomerAccess } from '@portfolio/invoices/customer-access';
-import type { InvoiceId, Language, RecordId } from '@portfolio/invoices/model';
+import type {
+  InvoiceId,
+  Language,
+  OwnerDid,
+  RecordId,
+} from '@portfolio/invoices/model';
 import { Effect, Match, Option } from 'effect';
 import { requireOwner, viewer } from '../../server/auth.server';
 import { Payments, type PaymentsApi } from '../../server/payments.server';
@@ -69,13 +74,17 @@ const authorize = (access: Access) =>
   ).pipe(Effect.withSpan('Payments.authorize'));
 
 /** Where an invoice's collection stands, or that online payments are off. */
+export const linkStatus = (id: InvoiceId) =>
+  withPayments(unconfigured, ({ collection }) =>
+    unavailable<CollectionStatus, never>(collection.status(id)),
+  );
+
+/** The owner's view of where an invoice's collection stands. */
 export const collectionStatus = Effect.fn('Payments.status')(function* (
   id: InvoiceId,
 ) {
   yield* requireOwner;
-  return yield* withPayments(unconfigured, ({ collection }) =>
-    unavailable<CollectionStatus, never>(collection.status(id)),
-  );
+  return yield* linkStatus(id);
 });
 
 /** Why sharing failed, in terms the owner's interface can phrase. */
@@ -99,10 +108,11 @@ const shareFailure = Match.typeTags<CollectionError, ShareFailure>()({
 });
 
 /** Puts the invoice up for payment and returns a new link to send. */
-export const share = Effect.fn('Payments.share')(function* (id: InvoiceId) {
-  yield* sameOrigin;
-  const actor = yield* requireOwner;
-  const base = yield* origin;
+export const shareLink = Effect.fn('Payments.shareLink')(function* (
+  id: InvoiceId,
+  actor: OwnerDid,
+  base: string,
+) {
   return yield* withPayments(
     { ok: false as const, failure: unconfigured },
     ({ collection }) =>
@@ -124,12 +134,22 @@ export const share = Effect.fn('Payments.share')(function* (id: InvoiceId) {
 });
 
 /** Closes every open link to the invoice; the customer's page stops opening. */
-export const revoke = Effect.fn('Payments.revoke')(function* (id: InvoiceId) {
+/** The owner's request to share: from the invoice pages only. */
+export const share = Effect.fn('Payments.share')(function* (id: InvoiceId) {
   yield* sameOrigin;
   const actor = yield* requireOwner;
-  return yield* withPayments(0, ({ collection }) =>
+  return yield* shareLink(id, actor, yield* origin);
+});
+
+/** Closes every open payment link to the invoice; how many it closed. */
+export const revokeLinks = (id: InvoiceId, actor: OwnerDid) =>
+  withPayments(0, ({ collection }) =>
     unavailable(collection.revoke(id, actor)),
   );
+
+export const revoke = Effect.fn('Payments.revoke')(function* (id: InvoiceId) {
+  yield* sameOrigin;
+  return yield* revokeLinks(id, yield* requireOwner);
 });
 
 const paymentDown = () =>

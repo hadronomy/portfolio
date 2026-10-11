@@ -1,26 +1,33 @@
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdtemp, rm } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { dev } from 'astro';
 import { afterAll, beforeAll, expect, test, vi } from 'vitest';
+import { signIn } from './owner.mjs';
 
 const root = new URL('../', import.meta.url);
-const requireInvoices = createRequire(
-  new URL('../../../packages/invoices/package.json', import.meta.url),
+const { Effect, Layer, Schema } = await import(
+  pathToFileURL(
+    createRequire(
+      new URL('../../../packages/invoices/package.json', import.meta.url),
+    ).resolve('effect'),
+  ).href
 );
-const { PGlite } = await import(
-  pathToFileURL(requireInvoices.resolve('@electric-sql/pglite')).href
+const { PostgresLocal } = await import(
+  '../../../packages/database/src/local.ts'
 );
-const { drizzle } = await import(
-  pathToFileURL(requireInvoices.resolve('drizzle-orm/pglite')).href
+const { databaseLayer } = await import(
+  '../../../packages/invoices/src/database.ts'
 );
-const tables = await import('../../../packages/invoices/src/tables.ts');
+const { migrations } = await import(
+  '../../../packages/invoices/src/migrations.ts'
+);
+const { InvoiceStore, storeLayer } = await import(
+  '../../../packages/invoices/src/store.ts'
+);
 const model = await import('../../../packages/invoices/src/model.ts');
-const { Schema } = await import(
-  pathToFileURL(requireInvoices.resolve('effect')).href
-);
 
 let server;
 let invoiceData;
@@ -30,13 +37,6 @@ let invoiceId = '';
 
 beforeAll(async () => {
   invoiceData = await mkdtemp(join(tmpdir(), 'portfolio-pdf-test-'));
-  const migration = await readFile(
-    new URL(
-      '../../../packages/invoices/src/migrations/0001.sql',
-      import.meta.url,
-    ),
-    'utf8',
-  );
   const draft = model.newInvoice();
   const invoice = {
     ...draft,
@@ -54,19 +54,28 @@ beforeAll(async () => {
     },
   };
   Schema.decodeUnknownSync(model.Invoice)(invoice);
-  const seed = new PGlite(join(invoiceData, 'postgres'));
-  await seed.exec(migration);
-  const db = drizzle(seed, { schema: tables });
-  await db.insert(tables.invoices).values({
-    id: invoice.id,
-    status: 'draft',
-    revision: 1,
-    payload: invoice,
-    updatedAt: new Date().toISOString(),
-  });
-  const check = await db.select().from(tables.invoices);
-  expect(check.length).toBe(1);
-  await seed.close();
+  // Seeded through the store, on the migrations a running server applies,
+  // so the database is exactly the one the dev server opens next.
+  await Effect.runPromise(
+    InvoiceStore.use((store) =>
+      store.save(
+        invoice,
+        model.OwnerDid.make('did:plc:tvgjv46t4ebxbrvekr2vrnls'),
+      ),
+    ).pipe(
+      Effect.provide(
+        storeLayer.pipe(
+          Layer.provideMerge(databaseLayer),
+          Layer.provideMerge(
+            PostgresLocal.layer({
+              directory: join(invoiceData, 'pglite'),
+              migrations: [migrations],
+            }),
+          ),
+        ),
+      ),
+    ),
+  );
   invoiceId = invoice.id;
   process.env.INVOICE_DATA_DIRECTORY = invoiceData;
   delete process.env.DATABASE_URL;
@@ -81,35 +90,17 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await server?.stop();
-  if (globalThis.invoiceRuntime)
-    await (await globalThis.invoiceRuntime).database.close();
+  await globalThis.invoiceRuntime?.dispose();
   delete globalThis.invoiceRuntime;
   if (invoiceData) await rm(invoiceData, { recursive: true, force: true });
   delete process.env.INVOICE_DATA_DIRECTORY;
 });
 
 test('sign in as owner for PDF download check', async () => {
-  const requireStart = createRequire(
-    new URL('../../start/package.json', import.meta.url),
-  );
-  const { NodeOAuthClient } = await import(
-    pathToFileURL(requireStart.resolve('@atproto/oauth-client-node')).href
-  );
-  vi.spyOn(NodeOAuthClient.prototype, 'callback').mockImplementation(
-    async () => ({
-      session: { did: 'did:plc:tvgjv46t4ebxbrvekr2vrnls' },
-      state: 'pdf-nonce',
-    }),
-  );
-  const response = await fetch(`${origin}/invoices/auth/callback?state=test`, {
-    headers: { cookie: 'invoice-login=pdf-nonce' },
-    redirect: 'manual',
-  });
-  expect(response.status).toBe(303);
-  sessionCookie = response.headers
-    .getSetCookie()
-    .find((cookie) => cookie.startsWith('invoice-session='))
-    .split(';')[0];
+  const signedIn = await signIn(origin);
+  expect(signedIn.response.status).toBe(302);
+  expect(signedIn.cookie).toBeTruthy();
+  sessionCookie = signedIn.cookie;
 });
 
 test('draft PDF downloads with PDF bytes', async () => {

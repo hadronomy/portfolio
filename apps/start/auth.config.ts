@@ -10,9 +10,15 @@ export const auth = betterAuth({
     admits: async () => false,
     sendCode: async () => {},
     atprotoKeys: [],
+    origin: 'http://127.0.0.1:4321',
   }),
   database: drizzleAdapter(
     {},
     { provider: 'pg', schemaName: authNamespace, transaction: true },
   ),
 });
+
+// The CLI reads only the options. The context betterAuth() starts at once
+// seeds the MCP resource into a database the CLI does not have, so that
+// start fails here by design and must not take the CLI down with it.
+auth.$context.catch(() => {});

@@ -1,5 +1,10 @@
 import { Documents } from '@portfolio/invoices/documents';
-import type { Invoice, InvoiceId, Language } from '@portfolio/invoices/model';
+import type {
+  Invoice,
+  InvoiceId,
+  Language,
+  OwnerDid,
+} from '@portfolio/invoices/model';
 import { type QuoteError, Quotes } from '@portfolio/invoices/quotes';
 import { InvoiceStore, type StoreError } from '@portfolio/invoices/store';
 import { Effect, Match } from 'effect';
@@ -45,19 +50,17 @@ const nothing = <A, E>(effect: Effect.Effect<A, E>) =>
   Effect.as(effect, null as InvoiceId | null);
 
 /**
- * Applies one workspace edit, then returns the refreshed workspace, with
- * the ID of any draft the edit created, or a recoverable tagged failure.
+ * Applies one workspace edit as `actor`: the one place every edit runs,
+ * whether the invoice pages or an agent asked for it. Answers with the ID
+ * of the draft the edit created, if it created one.
  */
-export const mutate = Effect.fn('Operations.mutate')(function* (
+export const perform = Effect.fn('Operations.perform')(function* (
+  actor: OwnerDid,
   input: Mutation,
 ) {
-  yield* sameOrigin;
-  const actor = yield* requireOwner;
   const store = yield* InvoiceStore;
   const quotes = yield* Quotes;
-  const apply: Effect.Effect<InvoiceId | null, QuoteError> = Match.value(
-    input,
-  ).pipe(
+  return yield* Match.value(input).pipe(
     Match.discriminatorsExhaustive('action')({
       save: ({ invoice }) => nothing(store.save(invoice, actor)),
       issue: (issue) => nothing(store.issue(issue, actor)),
@@ -75,8 +78,21 @@ export const mutate = Effect.fn('Operations.mutate')(function* (
       revise: ({ id }) => created(quotes.revise(id, actor)),
       bill: ({ id, payment }) => created(quotes.bill(id, payment, actor)),
     }),
-  );
-  return yield* apply.pipe(
+  ) satisfies Effect.Effect<InvoiceId | null, QuoteError>;
+});
+
+/**
+ * Applies one workspace edit from the invoice pages, then returns the
+ * refreshed workspace, with the ID of any draft the edit created, or a
+ * recoverable tagged failure.
+ */
+export const mutate = Effect.fn('Operations.mutate')(function* (
+  input: Mutation,
+) {
+  yield* sameOrigin;
+  const actor = yield* requireOwner;
+  const store = yield* InvoiceStore;
+  return yield* perform(actor, input).pipe(
     Effect.flatMap((made) =>
       Effect.map(store.workspace(), (result) => ({ made, result })),
     ),

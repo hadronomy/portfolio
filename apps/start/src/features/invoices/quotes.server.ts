@@ -2,6 +2,7 @@ import {
   type InvoiceId,
   type Language,
   MissingInvoice,
+  type OwnerDid,
 } from '@portfolio/invoices/model';
 import type { Answer } from '@portfolio/invoices/quote-model';
 import { type QuoteError, Quotes } from '@portfolio/invoices/quotes';
@@ -33,12 +34,11 @@ const answered = <A, R>(effect: Effect.Effect<A, QuoteError, R>) =>
   );
 
 /** Mints a link to an open quote, as a URL the owner can send. */
-export const shareQuote = Effect.fn('QuotesServer.share')(function* (
+export const sendQuote = Effect.fn('QuotesServer.send')(function* (
   id: InvoiceId,
+  actor: OwnerDid,
+  base: string,
 ) {
-  yield* sameOrigin;
-  const actor = yield* requireOwner;
-  const base = yield* origin;
   const result = yield* answered(
     Quotes.use((quotes) => quotes.share(id, actor)),
   );
@@ -49,6 +49,15 @@ export const shareQuote = Effect.fn('QuotesServer.share')(function* (
         expiresAt: result.value.expiresAt,
       }
     : result;
+});
+
+/** The owner's request to send a quote: from the invoice pages only. */
+export const shareQuote = Effect.fn('QuotesServer.share')(function* (
+  id: InvoiceId,
+) {
+  yield* sameOrigin;
+  const actor = yield* requireOwner;
+  return yield* sendQuote(id, actor, yield* origin);
 });
 
 /** Closes every link to the quote. */
