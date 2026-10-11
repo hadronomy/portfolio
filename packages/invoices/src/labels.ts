@@ -4,8 +4,14 @@ export const documentLabels = {
   en: {
     invoice: 'Invoice',
     rectification: 'Rectifying invoice',
-    proforma: 'Proforma',
+    quote: 'Quote',
     draft: 'Draft · Not issued',
+    preparedFor: 'Prepared for',
+    validUntil: 'Valid until',
+    plannedStart: 'Planned start',
+    taxesIncluded: 'All prices include IGIC and every other applicable tax.',
+    legal: 'Legal information',
+    withdrawalForm: 'Model withdrawal form',
     from: 'From',
     billTo: 'Bill to',
     issued: 'Issue date',
@@ -39,8 +45,15 @@ export const documentLabels = {
   es: {
     invoice: 'Factura',
     rectification: 'Factura rectificativa',
-    proforma: 'Proforma',
+    quote: 'Presupuesto',
     draft: 'Borrador · Sin emitir',
+    preparedFor: 'Para',
+    validUntil: 'Válido hasta',
+    plannedStart: 'Inicio previsto',
+    taxesIncluded:
+      'Todos los precios incluyen el IGIC y los demás impuestos aplicables.',
+    legal: 'Información legal',
+    withdrawalForm: 'Modelo de formulario de desistimiento',
     from: 'Emisor',
     billTo: 'Cliente',
     issued: 'Expedición',
@@ -72,3 +85,12 @@ export const documentLabels = {
     reason: 'Motivo',
   },
 } satisfies Record<Language, Record<string, string>>;
+
+/** A calendar day as a document prints it: 9 Nov 2026, 9 nov 2026. */
+export const formatDay = (day: string, language: Language) =>
+  new Intl.DateTimeFormat(language === 'es' ? 'es-ES' : 'en-US', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(new Date(`${day}T12:00:00Z`));

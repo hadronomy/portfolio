@@ -1,5 +1,6 @@
 import { Schema } from 'effect';
 import { Address, blankAddress } from './address';
+import { blankPages, Pages } from './pages';
 
 /** A decimal amount as text: money, quantities, and rates cross the wire this way. */
 export const DecimalText = Schema.String.check(
@@ -96,8 +97,19 @@ export const Line = Schema.Struct({
   withholding: Schema.Boolean,
 });
 export interface Line extends Schema.Schema.Type<typeof Line> {}
-export const InvoiceData = Schema.Struct({
-  kind: Schema.Literals(['invoice', 'rectification', 'proforma']),
+/** What a quote adds to a document: how long the offer stands, and its pages. */
+export const QuoteTerms = Schema.Struct({
+  validUntil: DateText,
+  pages: Pages,
+});
+export interface QuoteTerms extends Schema.Schema.Type<typeof QuoteTerms> {}
+const InvoiceFields = Schema.Struct({
+  /**
+   * An invoice and a rectifying invoice are tax documents. A quote
+   * (presupuesto) is an offer: it binds once the customer accepts it, and
+   * never has tax effect or an invoice number.
+   */
+  kind: Schema.Literals(['invoice', 'rectification', 'quote']),
   language: Language,
   currency: Currency,
   cover: Cover,
@@ -135,8 +147,17 @@ export const InvoiceData = Schema.Struct({
       reason: Schema.String,
     }),
   ),
+  /** Set on a quote, and only on a quote. */
+  quote: Schema.NullOr(QuoteTerms),
 });
-export interface InvoiceData extends Schema.Schema.Type<typeof InvoiceData> {}
+export const InvoiceData = InvoiceFields.check(
+  Schema.makeFilter((data) =>
+    (data.kind === 'quote') === (data.quote !== null)
+      ? undefined
+      : { path: ['quote'], issue: 'Only a quote has quote terms.' },
+  ),
+);
+export interface InvoiceData extends Schema.Schema.Type<typeof InvoiceFields> {}
 export const Invoice = Schema.Struct({
   id: InvoiceId,
   data: InvoiceData,
@@ -152,6 +173,51 @@ export const Invoice = Schema.Struct({
   calculationVersion: Schema.Literal(1),
 });
 export interface Invoice extends Schema.Schema.Type<typeof Invoice> {}
+/** A customer's answer to an issued quote, with the evidence of who gave it. */
+export const QuoteResponse = Schema.Struct({
+  quoteId: InvoiceId,
+  outcome: Schema.Literals(['accepted', 'declined']),
+  /** The full name the customer typed: their simple electronic signature. */
+  name: Schema.String,
+  /** The address the quote was sent to. */
+  email: Schema.String,
+  /** A consumer's express request to start inside the withdrawal period. */
+  earlyStart: Schema.Boolean,
+  language: Language,
+  /** SHA-256 of the PDF the customer read and answered. */
+  digest: Schema.String,
+  address: Schema.String,
+  agent: Schema.String,
+  decidedAt: Schema.String,
+  /** When the confirmation email went out; null until it has. */
+  confirmedAt: Schema.NullOr(Schema.String),
+  /** The invoice drafted from this quote, once there is one. */
+  invoiceId: Schema.NullOr(InvoiceId),
+});
+export interface QuoteResponse
+  extends Schema.Schema.Type<typeof QuoteResponse> {}
+/**
+ * Where a quote stands: written, out for an answer, past its validity
+ * unanswered, answered, or invoiced after acceptance.
+ */
+export type QuoteState =
+  | 'draft'
+  | 'open'
+  | 'expired'
+  | 'accepted'
+  | 'declined'
+  | 'invoiced';
+/** The state of a quote on `today`, an ISO calendar day. */
+export function quoteState(
+  quote: Invoice,
+  response: QuoteResponse | null,
+  today = new Date().toISOString().slice(0, 10),
+): QuoteState {
+  if (quote.status === 'draft') return 'draft';
+  if (response?.invoiceId) return 'invoiced';
+  if (response) return response.outcome;
+  return (quote.data.quote?.validUntil ?? '') < today ? 'expired' : 'open';
+}
 export const Customer = Schema.Struct({
   id: RecordId,
   ...Party.fields,
@@ -283,7 +349,25 @@ export function newInvoice(
       paymentTerms: preferences.defaultTerms,
       reference: '',
       correction: null,
+      quote: null,
     },
+  };
+}
+
+/** Fresh quote terms: valid for 30 days from `issueDate`, nothing written yet. */
+export function quoteTerms(issueDate: string): QuoteTerms {
+  const until = new Date(`${issueDate}T12:00:00Z`);
+  until.setUTCDate(until.getUTCDate() + 30);
+  return { validUntil: until.toISOString().slice(0, 10), pages: blankPages };
+}
+
+/** A document turned into a quote, keeping any terms it already has. */
+export function asQuote(data: InvoiceData): InvoiceData {
+  return {
+    ...data,
+    kind: 'quote',
+    correction: null,
+    quote: data.quote ?? quoteTerms(data.issueDate),
   };
 }
 export function newLine(): Line {

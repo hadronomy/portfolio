@@ -1,4 +1,6 @@
+import { Result } from 'effect';
 import { type Invoice, type Language, newInvoice, newLine } from './model';
+import { pagesFromMarkdown } from './pages';
 /** Synthetic records for renderer and calculation tests; they never enter the owner's database. */
 export function specimen(language: Language = 'en', count = 3): Invoice {
   const draft = newInvoice(undefined, new Date('2026-09-09T12:00:00Z'));
@@ -63,6 +65,89 @@ export function specimen(language: Language = 'en', count = 3): Invoice {
         unitPrice: String([850, 425, 175][index % 3]),
         unit: language === 'es' ? 'jornada' : 'day',
       })),
+    },
+  };
+}
+
+const proposal: Record<Language, string> = {
+  en: `# The proposal
+
+We redesign the booking flow so a first-time guest books in under a minute. The work runs in **two phases**, each ending in something you can *use*, not a slide deck.
+
+## What we deliver
+
+1. A research summary with the five problems that cost the most bookings.
+2. A tested prototype of the new flow.
+3. Production screens, a component library, and a handover session.
+
+## Timeline
+
+| Phase | Weeks | Ends with |
+| --- | --- | --- |
+| Research | 2 | Findings and priorities |
+| Design and build | 6 | Live booking flow |
+
+> Dates move with feedback: each review takes the team about two working days.
+
+## Conditions
+
+::clause[scope@1]
+
+::clause[revisions@1]
+
+::clause[payment-terms@1]
+
+::clause[copyright@1]
+`,
+  es: `# La propuesta
+
+Rediseñamos el proceso de reserva para que un cliente nuevo reserve en menos de un minuto. El trabajo tiene **dos fases**, y cada una termina en algo que se puede *usar*, no en una presentación.
+
+## Qué entregamos
+
+1. Un resumen de la investigación con los cinco problemas que más reservas cuestan.
+2. Un prototipo probado del nuevo proceso.
+3. Las pantallas de producción, una librería de componentes y una sesión de traspaso.
+
+## Calendario
+
+| Fase | Semanas | Termina con |
+| --- | --- | --- |
+| Investigación | 2 | Conclusiones y prioridades |
+| Diseño y desarrollo | 6 | Reserva en producción |
+
+> Las fechas dependen de las revisiones: cada una lleva al equipo unos dos días laborables.
+
+## Condiciones
+
+::clause[scope@1]
+
+::clause[revisions@1]
+
+::clause[payment-terms@1]
+
+::clause[copyright@1]
+`,
+};
+
+/** A consumer quote with written pages, for renderer and notice tests. */
+export function quoteSpecimen(language: Language = 'en'): Invoice {
+  const draft = specimen(language);
+  return {
+    ...draft,
+    data: {
+      ...draft.data,
+      kind: 'quote',
+      customerType: 'consumer',
+      customer: {
+        ...draft.data.customer,
+        name: language === 'es' ? 'Lucía Martín' : 'Lucy Martin',
+        taxId: '00000000T',
+      },
+      quote: {
+        validUntil: '2026-10-09',
+        pages: Result.getOrThrow(pagesFromMarkdown(proposal[language])),
+      },
     },
   };
 }

@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm';
 import {
+  boolean,
   check,
   index,
   integer,
@@ -134,3 +135,42 @@ export const offers = namespace.table('offers', {
   chosen: uuid(),
   updatedAt: at('updated_at').notNull(),
 });
+
+/**
+ * A customer's answer to an issued quote: one per quote, never changed
+ * once given. `digest` is the SHA-256 of the exact PDF the customer read,
+ * so the acceptance names the document it covers; the network address and
+ * browser are the evidence of who signed. `invoice_id` is the invoice
+ * drafted from an accepted quote.
+ */
+export const responses = namespace.table(
+  'responses',
+  {
+    quoteId: uuid('quote_id')
+      .primaryKey()
+      .references(() => invoices.id),
+    outcome: text({ enum: ['accepted', 'declined'] }).notNull(),
+    name: text().notNull(),
+    email: text().notNull(),
+    earlyStart: boolean('early_start').notNull(),
+    language: text().notNull(),
+    digest: text().notNull(),
+    address: text().notNull(),
+    agent: text().notNull(),
+    decidedAt: at('decided_at').notNull(),
+    confirmedAt: at('confirmed_at'),
+    invoiceId: uuid('invoice_id')
+      .unique()
+      .references(() => invoices.id),
+  },
+  (table) => [
+    check(
+      'responses_outcome_known',
+      sql`${table.outcome} in ('accepted', 'declined')`,
+    ),
+    check(
+      'responses_early_start_accepted',
+      sql`not ${table.earlyStart} or ${table.outcome} = 'accepted'`,
+    ),
+  ],
+);

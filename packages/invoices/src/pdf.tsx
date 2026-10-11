@@ -8,12 +8,16 @@ import ember from './covers/ember.jpg?inline';
 import moss from './covers/moss.jpg?inline';
 import rose from './covers/rose.jpg?inline';
 import tide from './covers/tide.jpg?inline';
+import italic from './fonts/Geist-Italic.ttf?inline';
 import medium from './fonts/Geist-Medium.ttf?inline';
 import regular from './fonts/Geist-Regular.ttf?inline';
 import semibold from './fonts/Geist-SemiBold.ttf?inline';
-import { documentLabels } from './labels';
+import semiboldItalic from './fonts/Geist-SemiBoldItalic.ttf?inline';
+import { documentLabels, formatDay } from './labels';
 import type { Cover, Invoice, Language, Party } from './model';
+import { QuoteAppendix } from './page-render';
 import { partyLines } from './party-lines';
+import { faint, ink, label, rule, ruleStrong, side, soft } from './pdf-style';
 
 const covers: Record<Exclude<Cover, 'none'>, string> = {
   ember,
@@ -22,22 +26,6 @@ const covers: Record<Exclude<Cover, 'none'>, string> = {
   rose,
 };
 
-// A4 is 794 × 1123 CSS px. The side margin leaves a 706px column, which is
-// the width the cover art is cut for.
-const side = 44;
-const ink = '#141414';
-const soft = '#67676a';
-const faint = '#8e8e91';
-const rule = '#ebebec';
-const ruleStrong = '#d6d6d8';
-
-const label: CSSProperties = {
-  fontSize: 8.5,
-  fontWeight: 500,
-  letterSpacing: '0.08em',
-  textTransform: 'uppercase',
-  color: faint,
-};
 const detail: CSSProperties = { fontSize: 11, lineHeight: 1.65, color: soft };
 const cell: CSSProperties = {
   padding: '11px 0',
@@ -54,14 +42,6 @@ const heading: CSSProperties = {
   padding: '0 0 9px',
   borderBottom: `1px solid ${ruleStrong}`,
 };
-
-const date = (day: string, language: Language) =>
-  new Intl.DateTimeFormat(language === 'es' ? 'es-ES' : 'en-US', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-    timeZone: 'UTC',
-  }).format(new Date(`${day}T12:00:00Z`));
 
 function Labelled({
   title,
@@ -149,8 +129,12 @@ export function InvoiceDocument({
     { title: t.issued, value: d.issueDate },
     ...(d.supplyDate === d.issueDate
       ? []
-      : [{ title: t.supplied, value: d.supplyDate }]),
-    { title: t.due, value: d.dueDate },
+      : [
+          { title: d.quote ? t.plannedStart : t.supplied, value: d.supplyDate },
+        ]),
+    d.quote
+      ? { title: t.validUntil, value: d.quote.validUntil }
+      : { title: t.due, value: d.dueDate },
   ];
   const summary = [
     { title: t.subtotal, value: totals.subtotal },
@@ -254,7 +238,7 @@ export function InvoiceDocument({
           party={d.customer}
           home={d.issuer.address.country}
           language={d.language}
-          title={t.billTo}
+          title={d.quote ? t.preparedFor : t.billTo}
           taxLabel={t.taxId}
         />
         <div
@@ -269,7 +253,7 @@ export function InvoiceDocument({
           {dates.map((item) => (
             <Labelled key={item.title} title={item.title} align="right">
               <p style={{ fontSize: 12, color: ink }}>
-                {date(item.value, language)}
+                {formatDay(item.value, language)}
               </p>
             </Labelled>
           ))}
@@ -442,6 +426,14 @@ export function InvoiceDocument({
           </p>
         )}
       </div>
+      {d.quote && (
+        <QuoteAppendix
+          data={d}
+          quote={d.quote}
+          number={invoice.status === 'draft' ? null : invoice.number}
+          language={language}
+        />
+      )}
     </main>
   );
 }
@@ -453,19 +445,24 @@ export async function renderInvoice(
 ): Promise<Uint8Array> {
   const t = documentLabels[language];
   const fonts = [
-    { url: regular, weight: 400 },
-    { url: medium, weight: 500 },
-    { url: semibold, weight: 600 },
+    { url: regular, weight: 400, style: 'normal' },
+    { url: italic, weight: 400, style: 'italic' },
+    { url: medium, weight: 500, style: 'normal' },
+    { url: semibold, weight: 600, style: 'normal' },
+    { url: semiboldItalic, weight: 600, style: 'italic' },
   ].map((font) => ({
     name: 'Geist',
     data: Buffer.from(font.url.slice(font.url.indexOf(',') + 1), 'base64'),
     weight: font.weight,
+    style: font.style,
   }));
   return render(<InvoiceDocument invoice={invoice} language={language} />, {
     size: 'a4',
     margin: { top: 40, right: side, bottom: 52, left: side },
     fonts,
-    css: 'p, h1 { margin: 0 }',
+    css: 'p, h1, h2, h3 { margin: 0 }',
+    // A quote's pages carry headings worth jumping to; an invoice has one.
+    outline: invoice.data.kind === 'quote',
     pdfa: '2a',
     tagged: 'ua1',
     lang: language,

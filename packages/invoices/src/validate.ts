@@ -1,7 +1,9 @@
 import Decimal from 'decimal.js';
 import { addressLabels, postalCodeValid, requiredFields } from './address';
 import { calculate } from './calculate';
-import type { InvoiceData } from './model';
+import { clauseVersion } from './clauses';
+import type { InvoiceData, QuoteTerms } from './model';
+import { clausesIn } from './pages';
 import { igicRates, repepLegend } from './tax-policy';
 /** One field-addressed issuance blocker. */
 export interface Issue {
@@ -43,7 +45,7 @@ export function issueErrors(data: InvoiceData): readonly Issue[] {
   (['issueDate', 'supplyDate', 'dueDate'] as const).forEach((field) => {
     if (!realDate(data[field])) add(field, 'Enter a valid calendar date.');
   });
-  if (data.dueDate < data.issueDate)
+  if (data.kind !== 'quote' && data.dueDate < data.issueDate)
     add('dueDate', 'The due date must be on or after the issue date.');
   if (data.issuer.effectiveFrom > data.supplyDate)
     add(
@@ -64,6 +66,7 @@ export function issueErrors(data: InvoiceData): readonly Issue[] {
     );
   if (data.kind !== 'rectification' && data.correction)
     add('correction', 'Only a rectifying invoice can reference a correction.');
+  if (data.quote) errors.push(...quoteErrors(data, data.quote));
   if (!data.lines.some((line) => line.kind !== 'note'))
     add('lines', 'Add at least one invoice item.');
   if (new Set(data.lines.map((line) => line.id)).size !== data.lines.length)
@@ -237,5 +240,40 @@ export function issueErrors(data: InvoiceData): readonly Issue[] {
         );
     });
   }
+  return errors;
+}
+
+/**
+ * What a quote needs before it goes to the customer. The customer accepts
+ * it online and may withdraw by email, so both parties need an address;
+ * and a consumer cannot be offered terms the law voids against them.
+ */
+function quoteErrors(data: InvoiceData, quote: QuoteTerms): readonly Issue[] {
+  const errors: Issue[] = [];
+  const add = (path: string, message: string) => errors.push({ path, message });
+  if (!realDate(quote.validUntil))
+    add('quote.validUntil', 'Enter a valid calendar date.');
+  else if (quote.validUntil < data.issueDate)
+    add(
+      'quote.validUntil',
+      'The quote must stay valid until at least its issue date.',
+    );
+  if (!data.customer.email.trim())
+    add(
+      'customer.email',
+      'Enter the customer email: the quote is accepted online.',
+    );
+  if (!data.issuer.email.trim())
+    add(
+      'issuer.email',
+      'Enter your email: customers write to it to withdraw or complain.',
+    );
+  if (data.customerType === 'consumer')
+    for (const placed of clausesIn(quote.pages))
+      if (clauseVersion(placed.id, placed.version)?.audience === 'business')
+        add(
+          'quote.pages',
+          `The ${placed.id} clause applies to business customers only. Remove it for a consumer.`,
+        );
   return errors;
 }

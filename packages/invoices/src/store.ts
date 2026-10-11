@@ -17,6 +17,7 @@ import {
   type OwnerDid,
   Payment,
   Preferences,
+  QuoteResponse,
   RecordId,
   RevisionConflict,
   type StorageFailure,
@@ -51,6 +52,8 @@ export interface Workspace {
   readonly offers: Readonly<Record<string, InvoiceOffer>>;
   /** The plans the owner keeps for reuse, and which are defaults. */
   readonly library: PlanLibrary;
+  /** Customers' answers to issued quotes, by quote ID. */
+  readonly responses: Readonly<Record<string, QuoteResponse>>;
   readonly preferences: Preferences;
 }
 /** Persistent invoice workspace: documents, directory, payments, payment plans, and preferences. */
@@ -163,13 +166,14 @@ export const makeStore = Effect.gen(function* () {
 
   const api: StoreApi = {
     workspace: Effect.fn('InvoiceStore.workspace')(function* () {
-      const [invoices, records, offers] = yield* Effect.all([
+      const [invoices, records, offers, responses] = yield* Effect.all([
         db
           .select()
           .from(tables.invoices)
           .orderBy(desc(tables.invoices.updatedAt)),
         db.select().from(tables.records),
         db.select().from(tables.offers),
+        db.select().from(tables.responses),
       ]);
       const of = <A>(
         kind: string,
@@ -197,6 +201,14 @@ export const makeStore = Effect.gen(function* () {
           ),
         ),
         library: library ? yield* decodeLibrary(library.payload) : [],
+        responses: Object.fromEntries(
+          yield* Effect.forEach(responses, (row) =>
+            Effect.map(decodeStored(QuoteResponse)(row), (response) => [
+              row.quoteId,
+              response,
+            ]),
+          ),
+        ),
         preferences: preferences
           ? yield* decodeStored(Preferences)(preferences.payload)
           : defaultPreferences,
@@ -551,7 +563,7 @@ export const makeStore = Effect.gen(function* () {
             .for('update');
           if (!row) return yield* new MissingInvoice({ id: value.invoiceId });
           const invoice = yield* decodeInvoice(row.payload);
-          if (invoice.status !== 'issued' || invoice.data.kind === 'proforma')
+          if (invoice.status !== 'issued' || invoice.data.kind === 'quote')
             return yield* invalid(
               'payment',
               'Payments require an issued invoice.',
@@ -657,7 +669,7 @@ export const makeStore = Effect.gen(function* () {
       actor: OwnerDid,
     ) {
       const original = yield* read(id);
-      if (original.status !== 'issued' || original.data.kind === 'proforma')
+      if (original.status !== 'issued' || original.data.kind === 'quote')
         return yield* invalid(
           'correction',
           'Select an issued invoice to rectify.',

@@ -32,7 +32,7 @@ const emptyFilter: Record<Exclude<Filter, 'all'>, string> = {
 const kindLabel = {
   invoice: 'Invoice',
   rectification: 'Rectifying invoice',
-  proforma: 'Proforma',
+  quote: 'Quote',
 } as const;
 
 const shortDate = new Intl.DateTimeFormat('en-GB', {
@@ -85,9 +85,10 @@ export function InvoiceList() {
   const on = useMemo(() => today(), []);
   const documents = useMemo(() => {
     const payments = workspace?.payments ?? [];
+    const responses = workspace?.responses ?? {};
     return data.map((invoice) => ({
       invoice,
-      ...documentStatus(invoice, payments, on),
+      ...documentStatus(invoice, payments, responses, on),
     }));
   }, [data, workspace, on]);
 

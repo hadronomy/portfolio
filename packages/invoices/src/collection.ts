@@ -1,6 +1,6 @@
-import { createHash, randomBytes } from 'node:crypto';
+import { createHash } from 'node:crypto';
 import Decimal from 'decimal.js';
-import { and, asc, eq, gt, isNotNull, isNull, ne, or, sql } from 'drizzle-orm';
+import { and, asc, eq, gt, isNotNull, ne, or } from 'drizzle-orm';
 import { Context, Effect, Layer, Schema } from 'effect';
 import { balance, calculate } from './calculate';
 import {
@@ -13,6 +13,14 @@ import {
 } from './collection-model';
 import { InvoiceDatabase } from './database';
 import { documentLabels } from './labels';
+import {
+  type LinkInvalid,
+  type LinkToken,
+  mintLink,
+  openLinks,
+  resolveLink,
+  revokeLinks,
+} from './links';
 import {
   type Actor,
   type Invoice,
@@ -69,7 +77,7 @@ export class NotCollectible extends Schema.TaggedError<NotCollectible>()(
   {
     reason: Schema.Literals([
       'draft',
-      'proforma',
+      'quote',
       'rectification',
       'nothing-due',
       'partly-paid',
@@ -85,15 +93,6 @@ export class ProjectionMismatch extends Schema.TaggedError<ProjectionMismatch>()
   { review: Review },
 ) {}
 
-/**
- * A payment link that does not open: unknown, expired, or revoked. The three
- * are one error on purpose, so a guessed token learns nothing.
- */
-export class LinkInvalid extends Schema.TaggedError<LinkInvalid>()(
-  'LinkInvalid',
-  {},
-) {}
-
 /** A payment the page asked for and collection would not start. */
 export class PaymentRefused extends Schema.TaggedError<PaymentRefused>()(
   'PaymentRefused',
@@ -105,12 +104,6 @@ export type CollectionError =
   | StripeFailure
   | NotCollectible
   | ProjectionMismatch;
-
-/** A link's opaque token, as the customer's URL carries it. */
-export const LinkToken = Schema.String.check(
-  Schema.isPattern(/^[\w-]{43}$/),
-).pipe(Schema.brand('LinkToken'));
-export type LinkToken = typeof LinkToken.Type;
 
 export interface CollectionApi {
   /**
@@ -191,9 +184,6 @@ export class Collection extends Context.Service<Collection, CollectionApi>()(
   'Collection',
 ) {}
 
-/** How long a payment link opens. */
-export const linkLifetime = 30 * 86_400_000;
-
 /** How long a paid collection is still reconciled: Stripe takes refunds for months, but almost all come within weeks. */
 const refundWindow = 60 * 86_400_000;
 
@@ -201,8 +191,6 @@ const refundWindow = 60 * 86_400_000;
 const reconcileLimit = 200;
 
 const stripeActor: Actor = 'system:stripe';
-const hash = (token: string) =>
-  createHash('sha256').update(token).digest('hex');
 
 /**
  * The ledger ID for a Stripe invoice payment, net of `refunded`. Deriving
@@ -417,20 +405,6 @@ const makeCollection = Effect.gen(function* () {
       ),
     );
 
-  const openLinks = (id: InvoiceId) =>
-    stored(
-      db
-        .select({ count: sql<number>`count(*)::int` })
-        .from(tables.links)
-        .where(
-          and(
-            eq(tables.links.invoiceId, id),
-            isNull(tables.links.revokedAt),
-            gt(tables.links.expiresAt, new Date().toISOString()),
-          ),
-        ),
-    ).pipe(Effect.map(([found]) => found?.count ?? 0));
-
   const statusOf = Effect.fnUntraced(function* (current: Row | null) {
     if (!current) return CollectionStatus.cases.Idle.make({});
     switch (current.state) {
@@ -438,7 +412,7 @@ const makeCollection = Effect.gen(function* () {
         return CollectionStatus.cases.Preparing.make({});
       case 'open':
         return CollectionStatus.cases.Open.make({
-          links: yield* openLinks(current.invoiceId),
+          links: yield* openLinks(db, current.invoiceId),
         });
       case 'paid':
         return CollectionStatus.cases.Paid.make({});
@@ -607,83 +581,18 @@ const makeCollection = Effect.gen(function* () {
     actor: OwnerDid,
   ) {
     const current = yield* open(yield* store.read(id));
-    const token = LinkToken.make(randomBytes(32).toString('base64url'));
-    const now = new Date();
-    const expiresAt = new Date(now.getTime() + linkLifetime).toISOString();
-    yield* stored(
-      db.transaction((tx) =>
-        Effect.gen(function* () {
-          yield* tx.insert(tables.links).values({
-            tokenHash: hash(token),
-            invoiceId: id,
-            expiresAt,
-            createdAt: now.toISOString(),
-          });
-          yield* tx.insert(tables.audit).values({
-            id: crypto.randomUUID(),
-            invoiceId: id,
-            operation: 'payment-link-created',
-            actor,
-            payload: { expiresAt },
-            createdAt: now.toISOString(),
-          });
-        }),
-      ),
-    );
+    const { token } = yield* mintLink(db, id, actor, 'payment-link-created');
     return { token, status: yield* statusOf(current) };
   });
 
-  const revoke = Effect.fn('Collection.revoke')(function* (
-    id: InvoiceId,
-    actor: OwnerDid,
-  ) {
-    const now = new Date().toISOString();
-    return yield* stored(
-      db.transaction((tx) =>
-        Effect.gen(function* () {
-          const closed = yield* tx
-            .update(tables.links)
-            .set({ revokedAt: now })
-            .where(
-              and(
-                eq(tables.links.invoiceId, id),
-                isNull(tables.links.revokedAt),
-                gt(tables.links.expiresAt, now),
-              ),
-            )
-            .returning();
-          if (closed.length)
-            yield* tx.insert(tables.audit).values({
-              id: crypto.randomUUID(),
-              invoiceId: id,
-              operation: 'payment-links-revoked',
-              actor,
-              payload: { count: closed.length },
-              createdAt: now,
-            });
-          return closed.length;
-        }),
-      ),
-    );
-  });
+  const revoke = Effect.fn('Collection.revoke')(
+    (id: InvoiceId, actor: OwnerDid) =>
+      revokeLinks(db, id, actor, 'payment-links-revoked'),
+  );
 
-  const resolve = Effect.fn('Collection.resolve')(function* (token: string) {
-    if (!Schema.is(LinkToken)(token)) return yield* new LinkInvalid();
-    const [link] = yield* stored(
-      db
-        .select({ invoiceId: tables.links.invoiceId })
-        .from(tables.links)
-        .where(
-          and(
-            eq(tables.links.tokenHash, hash(token)),
-            isNull(tables.links.revokedAt),
-            gt(tables.links.expiresAt, new Date().toISOString()),
-          ),
-        ),
-    );
-    if (!link) return yield* new LinkInvalid();
-    return InvoiceId.make(link.invoiceId);
-  });
+  const resolve = Effect.fn('Collection.resolve')((token: string) =>
+    resolveLink(db, token),
+  );
 
   /** The invoice, its collection, and Stripe's copy, with the ledger caught up. */
   const current = Effect.fnUntraced(function* (id: InvoiceId) {

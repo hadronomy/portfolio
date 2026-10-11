@@ -6,7 +6,7 @@ import { Collection, collectionLayer, paymentRecordId } from './collection';
 import { AttemptId } from './collection-model';
 import { InvoiceDatabase } from './database';
 import { specimen } from './fixtures';
-import { type Invoice, OwnerDid, RecordId } from './model';
+import { asQuote, type Invoice, OwnerDid, RecordId } from './model';
 import { inFull, type Offer, type PaymentPlan } from './plan';
 import { settlementOf } from './settlement';
 import { InvoiceStore, type StoreApi } from './store';
@@ -437,8 +437,8 @@ describe('sharing an invoice', () => {
       _tag: 'NotCollectible',
       reason: 'draft',
     });
-    const proforma = await issued({ kind: 'proforma' });
-    expect(await fail(share(proforma))).toMatchObject({ reason: 'proforma' });
+    const quote = await issued(asQuote(specimen().data));
+    expect(await fail(share(quote))).toMatchObject({ reason: 'quote' });
   });
 });
 

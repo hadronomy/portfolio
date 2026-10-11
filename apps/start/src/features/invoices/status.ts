@@ -1,13 +1,25 @@
 import { balance, calculate } from '@portfolio/invoices/calculate';
-import type { Invoice, Payment } from '@portfolio/invoices/model';
+import {
+  type Invoice,
+  type Payment,
+  type QuoteResponse,
+  quoteState,
+} from '@portfolio/invoices/model';
 
-/** What the owner needs to know about a document: its lifecycle and, once issued, whether it is paid. */
+/**
+ * What the owner needs to know about a document: a draft; an invoice by
+ * whether it is paid; a quote by where its customer's answer stands.
+ */
 export type DocumentStatus =
   | 'draft'
-  | 'proforma'
   | 'unpaid'
   | 'overdue'
-  | 'paid';
+  | 'paid'
+  | 'open'
+  | 'accepted'
+  | 'declined'
+  | 'expired'
+  | 'invoiced';
 
 /** Today as an ISO date, the form due dates are stored in. */
 export function today() {
@@ -15,12 +27,13 @@ export function today() {
 }
 
 /**
- * Derives the status from payments and the due date. Nothing stores it:
- * recording or reversing a payment changes the answer on the next render.
+ * Derives the status from payments, answers and dates. Nothing stores it:
+ * recording a payment or an answer changes it on the next render.
  */
 export function documentStatus(
   invoice: Invoice,
   payments: readonly Payment[],
+  responses: Readonly<Record<string, QuoteResponse>>,
   on = today(),
 ) {
   const total = calculate(invoice.data).total;
@@ -31,8 +44,8 @@ export function documentStatus(
   const status: DocumentStatus =
     invoice.status === 'draft'
       ? 'draft'
-      : invoice.data.kind === 'proforma'
-        ? 'proforma'
+      : invoice.data.kind === 'quote'
+        ? quoteState(invoice, responses[invoice.id] ?? null, on)
         : Number(remaining) <= 0
           ? 'paid'
           : invoice.data.dueDate < on

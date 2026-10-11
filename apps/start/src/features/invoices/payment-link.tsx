@@ -19,7 +19,7 @@ type Failure = Extract<ShareResult, { ok: false }>['failure'];
 
 const refusals: Record<string, string> = {
   draft: 'Issue the invoice before you share a payment link.',
-  proforma: 'A proforma is not a request for payment.',
+  quote: 'A quote is accepted, not paid. Invoice it once it is accepted.',
   rectification: 'A rectifying invoice is settled against its original.',
   'nothing-due': 'This invoice has nothing to pay.',
   'partly-paid':

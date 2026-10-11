@@ -11,6 +11,10 @@ export const relations = defineRelations(tables, (r) => ({
     }),
     links: r.many.links(),
     offer: r.one.offers({ from: r.invoices.id, to: r.offers.invoiceId }),
+    response: r.one.responses({
+      from: r.invoices.id,
+      to: r.responses.quoteId,
+    }),
   },
   artifacts: {
     invoice: r.one.invoices({
@@ -29,6 +33,13 @@ export const relations = defineRelations(tables, (r) => ({
   offers: {
     invoice: r.one.invoices({
       from: r.offers.invoiceId,
+      to: r.invoices.id,
+      optional: false,
+    }),
+  },
+  responses: {
+    quote: r.one.invoices({
+      from: r.responses.quoteId,
       to: r.invoices.id,
       optional: false,
     }),

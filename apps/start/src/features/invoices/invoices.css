@@ -1302,10 +1302,16 @@ textarea.iv-input {
   --chip-ink: #875a07;
   --chip-bg: #f9efd9;
 }
-.iv-chip[data-status='proforma'] {
+.iv-chip[data-status='open'] {
   --chip-ink: #2f5781;
   --chip-bg: #e8eff7;
 }
+.iv-chip[data-status='accepted'] {
+  --chip-ink: #256b3c;
+  --chip-bg: #e6f2ea;
+}
+/* Declined, expired and invoiced quotes need nothing more from the owner,
+   so they keep the quiet default. */
 
 /* ---------------------------------------------------------------- Dialog */
 

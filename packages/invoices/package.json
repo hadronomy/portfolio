@@ -16,6 +16,12 @@
   },
   "dependencies": {
     "@portfolio/database": "workspace:*",
+    "@tiptap/core": "3.31.4",
+    "@tiptap/extension-table": "3.31.4",
+    "@tiptap/markdown": "3.31.4",
+    "@tiptap/pm": "3.31.4",
+    "@tiptap/starter-kit": "3.31.4",
+    "@tiptap/static-renderer": "3.31.4",
     "decimal.js": "10.6.0",
     "drizzle-orm": "1.0.0-rc.5-5935859",
     "effect": "4.0.0",

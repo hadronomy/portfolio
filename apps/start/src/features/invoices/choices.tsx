@@ -114,16 +114,18 @@ export const languages: readonly Option<'en' | 'es'>[] = [
   ['es', 'Español'],
 ];
 
-export const documentKinds: readonly Option<'invoice' | 'proforma'>[] = [
+export const documentKinds: readonly Option<'invoice' | 'quote'>[] = [
   [
     'invoice',
     'Invoice',
     { hint: 'Takes the next number in the series when issued.' },
   ],
   [
-    'proforma',
-    'Proforma',
-    { hint: 'A quote in invoice form. Numbered in its own P- series.' },
+    'quote',
+    'Quote',
+    {
+      hint: 'An offer the customer accepts online. Numbered in its own P- series, with pages and conditions.',
+    },
   ],
 ];
 

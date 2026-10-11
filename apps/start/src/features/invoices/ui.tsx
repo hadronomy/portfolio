@@ -802,10 +802,14 @@ export function Section({
 
 const statusLabels: Record<DocumentStatus, string> = {
   draft: 'Draft',
-  proforma: 'Proforma',
   unpaid: 'Unpaid',
   overdue: 'Overdue',
   paid: 'Paid',
+  open: 'Awaiting answer',
+  accepted: 'Accepted',
+  declined: 'Declined',
+  expired: 'Expired',
+  invoiced: 'Invoiced',
 };
 
 export function StatusChip({ status }: { status: DocumentStatus }) {

@@ -1,7 +1,7 @@
 import { Effect } from 'effect';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { specimen } from './fixtures';
-import { OwnerDid, RecordId } from './model';
+import { asQuote, OwnerDid, RecordId } from './model';
 import { inFull, noOffer } from './plan';
 import { InvoiceStore, type StoreApi } from './store';
 import { testRuntime } from './testing';
@@ -67,19 +67,16 @@ describe('persistent invoices', () => {
     ).toBe('Failure');
     expect(await run(store.read(issued.id))).toEqual(issued);
   });
-  it('separates proforma numbers from invoice numbers', async () => {
+  it('separates quote numbers from invoice numbers', async () => {
     const draft = specimen();
-    const proforma = await run(
-      store.save(
-        { ...draft, data: { ...draft.data, kind: 'proforma' } },
-        owner,
-      ),
+    const quote = await run(
+      store.save({ ...draft, data: asQuote(draft.data) }, owner),
     );
     expect(
       (
         await run(
           store.issue(
-            { id: proforma.id, revision: 1, key: crypto.randomUUID() },
+            { id: quote.id, revision: 1, key: crypto.randomUUID() },
             owner,
           ),
         )

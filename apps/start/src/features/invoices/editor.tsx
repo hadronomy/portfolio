@@ -10,7 +10,7 @@ import type {
   Line,
   Payment,
 } from '@portfolio/invoices/model';
-import { newLine, RecordId } from '@portfolio/invoices/model';
+import { newLine, quoteTerms, RecordId } from '@portfolio/invoices/model';
 import { issueErrors } from '@portfolio/invoices/validate';
 import { useForm, useStore } from '@tanstack/react-form';
 import { Link, useNavigate } from '@tanstack/react-router';
@@ -229,7 +229,12 @@ function Editor({ invoice }: { invoice: Invoice }) {
     [],
   );
   const { status, remaining } = useMemo(
-    () => documentStatus(invoice, workspace?.payments ?? []),
+    () =>
+      documentStatus(
+        invoice,
+        workspace?.payments ?? [],
+        workspace?.responses ?? {},
+      ),
     [invoice, workspace],
   );
 
@@ -411,7 +416,7 @@ function Editor({ invoice }: { invoice: Invoice }) {
               Issue
             </Button>
           ) : (
-            invoice.data.kind !== 'proforma' &&
+            invoice.data.kind === 'invoice' &&
             Number(remaining) > 0 && (
               <Button
                 variant="primary"
@@ -865,7 +870,7 @@ const Inspector = memo(function Inspector({
             </Button>
           </div>
         )}
-        {issued && invoice.data.kind !== 'proforma' && (
+        {issued && invoice.data.kind !== 'quote' && (
           <PaymentsSection
             {...section('payments')}
             form={form}
@@ -1371,7 +1376,17 @@ const DetailsSection = memo(function DetailsSection({
                 label="Document"
                 value={kind.state.value}
                 disabled={issued || kind.state.value === 'rectification'}
-                onChange={(next) => kind.handleChange(next)}
+                onChange={(next) => {
+                  // A quote carries terms of its own; switching adds or drops
+                  // them, so the document is always wholly one kind.
+                  form.setFieldValue(
+                    'quote',
+                    next === 'quote'
+                      ? quoteTerms(form.state.values.issueDate)
+                      : null,
+                  );
+                  kind.handleChange(next);
+                }}
                 options={
                   kind.state.value === 'rectification'
                     ? [['rectification', 'Rectifying invoice']]
