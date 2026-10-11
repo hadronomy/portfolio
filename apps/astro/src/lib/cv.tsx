@@ -250,7 +250,7 @@ function CVDocument() {
               </p>
               <p className="language">
                 <strong>English</strong>
-                <span className="level">C1</span>
+                <span className="level">C2</span>
               </p>
             </section>
           </div>
