@@ -4,15 +4,12 @@ import Company from '~/components/core/Company.astro';
 import Ull from '~/components/svg/Ull.astro';
 import Overline from '~/components/core/Overline.astro';
 import Section from '~/components/core/Section.astro';
-import { experience } from '~/lib/profile';
+import { engineeringSkills, experience } from '~/lib/profile';
 ---
 
 <Section id="experience" gap={32}>
   <div class="flex flex-col gap-4">
     <Overline>Experience</Overline>
-    <p class="type-body text-muted-foreground">
-      Ten years of building, most of it in the open. A brief overview.
-    </p>
   </div>
 
   {
@@ -23,7 +20,7 @@ import { experience } from '~/lib/profile';
           <p class="type-overline pt-1 text-muted-foreground opacity-70">{entry.period}</p>
         )}
 
-        <div class="flex flex-col gap-0.5 tablet:col-start-2 tablet:row-start-1">
+        <div class="flex flex-col gap-2 tablet:col-start-2 tablet:row-start-1">
           <h3 class="type-body flex flex-wrap items-center gap-1 font-medium text-foreground">
             <span>{entry.role}</span>
             {entry.organisation && (
@@ -43,9 +40,27 @@ import { experience } from '~/lib/profile';
               </>
             )}
           </h3>
+          {entry.engagement && <p class="type-body text-muted-foreground">{entry.engagement}</p>}
           <p class="type-body text-muted-foreground">{entry.description}</p>
+          {entry.highlights && (
+            <ul class="type-body list-disc space-y-2 pl-4 text-muted-foreground marker:text-muted-foreground/60">
+              {entry.highlights.map((highlight) => (
+                <li class="pl-1">{highlight}</li>
+              ))}
+            </ul>
+          )}
         </div>
       </article>
     ))
   }
+  <dl class="grid gap-4 tablet:grid-cols-[8rem_minmax(0,1fr)] tablet:gap-x-4">
+    {
+      engineeringSkills.map((group) => (
+        <>
+          <dt class="type-body font-medium text-foreground">{group.label}</dt>
+          <dd class="type-body text-muted-foreground">{group.items.join(', ')}</dd>
+        </>
+      ))
+    }
+  </dl>
 </Section>

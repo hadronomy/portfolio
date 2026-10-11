@@ -1,5 +1,7 @@
 import type { Status } from '~/lib/status';
 
+const engineeringRole = 'Product Engineer / Full-Stack Engineer';
+
 /**
  * Every fact the homepage states about Pablo, in one place. Sections read from
  * here rather than inlining copy, so correcting a date or a handle is one edit
@@ -8,7 +10,7 @@ import type { Status } from '~/lib/status';
 
 export const profile = {
   name: 'Pablo Hernández',
-  role: 'Full-Stack Engineer',
+  role: engineeringRole,
   /** Year the "10+ years" of building started, shown as EST. in the header. */
   established: 2003,
   location: 'Canary Islands, Spain',
@@ -32,7 +34,9 @@ export const profile = {
 export type ExperienceEntry = {
   period?: string;
   role: string;
+  engagement?: string;
   description: string;
+  highlights?: readonly string[];
   organisation?: {
     name: string;
     /** Icon set name for astro-icon, or `ull` for the university mark. */
@@ -43,12 +47,63 @@ export type ExperienceEntry = {
   };
 };
 
-export const experience: ExperienceEntry[] = [
+export const engineeringExperience = {
+  role: engineeringRole,
+  engagement: 'Independent',
+  description:
+    'Design and build software across product interfaces, APIs, AI retrieval, language tooling, and device infrastructure.',
+  highlights: [
+    "Build Canary's Spanish-law retrieval pipeline with BOE document parsing, temporal fragments, and vector embeddings.",
+    "Develop Inari's local-first device platform with managed enrollment, offline operation, and a Rust controller.",
+    'Create RAM language tooling and emulation, and implement vehicle-routing algorithms with transshipment in VRPT-SWTS.',
+    'Build signature and movie recommendation tools. Mentor peer developers in software architecture.',
+  ],
+} satisfies ExperienceEntry;
+
+export const engineeringSkills = [
   {
-    role: 'Independent developer',
-    description:
-      'Building production tooling and libraries across systems programming, compilers and the web. Ten years of shipping without a manager.',
+    label: 'Development',
+    items: [
+      'TypeScript',
+      'JavaScript',
+      'React',
+      'Rust',
+      'Python',
+      'C++',
+      'Node.js',
+      'Next.js',
+      'Go',
+      'Zig',
+      'WebAssembly',
+      'HTML',
+      'CSS',
+      'Astro',
+      'Tailwind CSS',
+      'Three.js',
+      'Axum',
+      'Leptos',
+    ],
   },
+  {
+    label: 'Tools & infrastructure',
+    items: [
+      'Docker',
+      'PostgreSQL',
+      'Git',
+      'Linux',
+      'Kubernetes',
+      'Prisma',
+      'Vite',
+      'Tauri',
+      'SurrealDB',
+      'Temporal',
+      'Zenoh',
+    ],
+  },
+] as const satisfies readonly { label: string; items: readonly string[] }[];
+
+export const experience: ExperienceEntry[] = [
+  engineeringExperience,
   {
     period: '2021 — NOW',
     role: 'B.S. Computer Engineering',
