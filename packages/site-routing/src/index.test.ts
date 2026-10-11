@@ -1,6 +1,5 @@
-import assert from 'node:assert/strict';
-import { test } from 'node:test';
-import { astroMatcher, routeOwner } from './index.ts';
+import { expect, test } from 'vitest';
+import { astroMatcher, routeOwner } from './index';
 
 const matches = {
   astro: astroMatcher([
@@ -12,7 +11,7 @@ const matches = {
   start: (path: string) =>
     ['/store', '/store/cart', '/lab', '/blog/app'].includes(path),
 };
-for (const [path, owner] of [
+test.each([
   ['/store', 'astro'],
   ['/store/', 'astro'],
   ['/store/cart', 'start'],
@@ -27,13 +26,10 @@ for (const [path, owner] of [
   ['/blog/app', 'astro'],
   ['/blog/unknown', 'astro'],
   ['/store//cart/', 'start'],
-] as const) {
-  test(`${path} belongs to ${owner}`, () =>
-    assert.equal(routeOwner(path, matches), owner));
-}
+] as const)('%s belongs to %s', (path, owner) =>
+  expect(routeOwner(path, matches)).toBe(owner));
 test('an empty Start tree does not claim the site through its root layout', () => {
-  assert.equal(
+  expect(
     routeOwner('/missing', { astro: () => false, start: () => false }),
-    'astro',
-  );
+  ).toBe('astro');
 });

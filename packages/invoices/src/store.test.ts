@@ -1,18 +1,18 @@
 import { Effect } from 'effect';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { type Database, openDatabase } from './database';
 import { specimen } from './fixtures';
 import { OwnerDid, RecordId } from './model';
-import { makeStore, type StoreApi } from './store';
+import { inFull, noOffer } from './plan';
+import { InvoiceStore, type StoreApi } from './store';
+import { testRuntime } from './testing';
 
-let database: Database;
+const runtime = testRuntime();
 let store: StoreApi;
 const owner = OwnerDid.make('owner');
 beforeAll(async () => {
-  database = await openDatabase();
-  store = makeStore(database);
+  store = await runtime.runPromise(Effect.service(InvoiceStore));
 }, 20000);
-afterAll(async () => database?.close());
+afterAll(() => runtime.dispose());
 const run = Effect.runPromise;
 describe('persistent invoices', () => {
   it('saves drafts and rejects a stale revision', async () => {
@@ -129,5 +129,61 @@ describe('persistent invoices', () => {
     expect((await run(store.read(original.id))).data.issuer.name).toBe(
       'Estudio Ejemplo',
     );
+  });
+});
+
+describe('payment plans', () => {
+  const id = () => RecordId.make(crypto.randomUUID());
+  const plan = (name: string) => ({
+    ...inFull,
+    id: id(),
+    name,
+    parts: inFull.parts.map((part) => ({ ...part, id: id() })),
+  });
+  const issue = async () => {
+    const draft = await run(store.save(specimen(), owner));
+    return run(
+      store.issue(
+        { id: draft.id, revision: draft.revision, key: crypto.randomUUID() },
+        owner,
+      ),
+    );
+  };
+
+  it('issues an invoice with a copy of the defaults its total qualifies for', async () => {
+    const small = plan('Any total');
+    const large = plan('Large totals');
+    await run(
+      store.setLibrary([
+        { plan: small, default: true, from: null },
+        { plan: large, default: true, from: '10000' },
+        { plan: plan('Kept, not default'), default: false, from: null },
+      ]),
+    );
+    const invoice = await issue();
+    const { plans, chosen } = await run(store.offer(invoice.id));
+    expect(plans.map((item) => item.name)).toEqual(['Any total']);
+    expect(plans[0]?.id).not.toBe(small.id);
+    expect(chosen).toBeNull();
+    // The library changing later leaves the invoice's copy alone.
+    await run(store.setLibrary([]));
+    expect((await run(store.offer(invoice.id))).plans).toEqual(plans);
+  });
+
+  it('keeps the customer’s choice while the plan is still offered', async () => {
+    const invoice = await issue();
+    const first = plan('First');
+    const second = plan('Second');
+    await run(store.setOffer(invoice.id, [first, second], owner));
+    await run(store.choose(invoice.id, second.id, 'customer'));
+    expect((await run(store.offer(invoice.id))).chosen).toBe(second.id);
+    const unknown = await run(
+      Effect.result(store.choose(invoice.id, id(), 'customer')),
+    );
+    expect(unknown._tag).toBe('Failure');
+    await run(store.setOffer(invoice.id, [first], owner));
+    expect((await run(store.offer(invoice.id))).chosen).toBeNull();
+    await run(store.setOffer(invoice.id, null, owner));
+    expect(await run(store.offer(invoice.id))).toEqual(noOffer);
   });
 });

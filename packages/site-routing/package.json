@@ -4,6 +4,9 @@
   "type": "module",
   "exports": "./src/index.ts",
   "scripts": {
-    "test": "node --experimental-strip-types --test src/*.test.ts"
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "vitest": "catalog:test"
   }
 }

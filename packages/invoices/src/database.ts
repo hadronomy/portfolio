@@ -1,29 +1,18 @@
-import { PGlite } from '@electric-sql/pglite';
-import { drizzle as postgres } from 'drizzle-orm/node-postgres';
-import { drizzle as pglite } from 'drizzle-orm/pglite';
-import { Pool } from 'pg';
-import migration from './migrations/0001.sql?raw';
-import * as tables from './tables';
-/** Connection settings. Omit both fields for an in-memory database. */
-export interface DatabaseOptions {
-  readonly url?: string;
-  readonly directory?: string;
-}
-/** Local and hosted databases execute the same PostgreSQL schema. Pass a directory only for persistent local development. */
-export async function openDatabase(options: DatabaseOptions = {}) {
-  const client = options.url
-    ? new Pool({ connectionString: options.url, max: 3 })
-    : new PGlite(options.directory);
-  const db =
-    client instanceof Pool
-      ? postgres(client, { schema: tables })
-      : pglite(client, { schema: tables });
-  if (client instanceof Pool) await client.query(migration);
-  else await client.exec(migration);
-  return {
-    db,
-    close: () => (client instanceof Pool ? client.end() : client.close()),
-  };
-}
-/** Open handle and its matching close. */
-export type Database = Awaited<ReturnType<typeof openDatabase>>;
+import { Postgres } from '@portfolio/database';
+import { Context, Effect, Layer } from 'effect';
+import { relations } from './relations';
+
+/** The invoice tables as a Drizzle database whose queries are Effects. */
+export class InvoiceDatabase extends Context.Service<
+  InvoiceDatabase,
+  Postgres.Database<typeof relations>
+>()('InvoiceDatabase') {}
+
+/** Builds the invoice database over whatever connection the app provides. */
+export const databaseLayer = Layer.effect(
+  InvoiceDatabase,
+  Effect.gen(function* () {
+    const postgres = yield* Postgres.Postgres;
+    return yield* postgres.drizzle(relations);
+  }),
+);

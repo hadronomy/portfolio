@@ -4,26 +4,30 @@
   "type": "module",
   "exports": {
     "./*": "./src/*.ts",
-    "./pdf": "./src/pdf.tsx"
+    "./pdf": "./src/pdf.tsx",
+    "./covers/*": "./src/covers/*"
   },
   "scripts": {
     "check": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:check": "drizzle-kit check"
   },
   "dependencies": {
-    "effect": "4.0.0-rc.112",
+    "@portfolio/database": "workspace:*",
     "decimal.js": "10.6.0",
-    "drizzle-orm": "0.45.1",
-    "@electric-sql/pglite": "0.3.14",
-    "pg": "8.16.3",
+    "drizzle-orm": "1.0.0-rc.5-5935859",
+    "effect": "4.0.0",
+    "stripe": "23.0.0",
     "takumi-pdf": "0.14.3"
   },
   "devDependencies": {
-    "typescript": "catalog:dev",
     "@types/node": "catalog:types",
-    "@types/pg": "8.15.6",
-    "vitest": "3.2.4",
-    "@types/react": "catalog:types"
+    "@types/react": "catalog:types",
+    "drizzle-kit": "1.0.0-rc.5-5935859",
+    "typescript": "catalog:dev",
+    "vitest": "catalog:test"
   },
   "peerDependencies": {
     "react": "^19"

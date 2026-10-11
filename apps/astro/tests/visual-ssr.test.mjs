@@ -1,11 +1,10 @@
-import assert from 'node:assert/strict';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { after, before, test } from 'node:test';
 import { pathToFileURL } from 'node:url';
 import { dev } from 'astro';
+import { afterAll, beforeAll, expect, test, vi } from 'vitest';
 
 const root = new URL('../', import.meta.url);
 let server;
@@ -19,7 +18,7 @@ const invoiceEnvironment = Object.fromEntries(
 );
 let sessionCookie = '';
 
-before(async () => {
+beforeAll(async () => {
   invoiceData = await mkdtemp(join(tmpdir(), 'portfolio-visual-test-'));
   process.env.INVOICE_DATA_DIRECTORY = invoiceData;
   delete process.env.DATABASE_URL;
@@ -32,7 +31,7 @@ before(async () => {
   origin = `http://127.0.0.1:${server.address.port}`;
 });
 
-after(async () => {
+afterAll(async () => {
   await server?.stop();
   if (globalThis.invoiceRuntime)
     await (await globalThis.invoiceRuntime).database.close();
@@ -44,37 +43,39 @@ after(async () => {
   }
 });
 
-test('sign in as owner for visual SSR check', async (t) => {
+test('sign in as owner for visual SSR check', async () => {
   const requireStart = createRequire(
     new URL('../../start/package.json', import.meta.url),
   );
   const { NodeOAuthClient } = await import(
     pathToFileURL(requireStart.resolve('@atproto/oauth-client-node')).href
   );
-  t.mock.method(NodeOAuthClient.prototype, 'callback', async () => ({
-    session: { did: 'did:plc:tvgjv46t4ebxbrvekr2vrnls' },
-    state: 'visual-nonce',
-  }));
+  vi.spyOn(NodeOAuthClient.prototype, 'callback').mockImplementation(
+    async () => ({
+      session: { did: 'did:plc:tvgjv46t4ebxbrvekr2vrnls' },
+      state: 'visual-nonce',
+    }),
+  );
   const response = await fetch(`${origin}/invoices/auth/callback?state=test`, {
     headers: { cookie: 'invoice-login=visual-nonce' },
     redirect: 'manual',
   });
-  assert.equal(response.status, 303);
+  expect(response.status).toBe(303);
   const session = response.headers
     .getSetCookie()
     .find((cookie) => cookie.startsWith('invoice-session='));
-  assert.ok(session);
+  expect(session).toBeTruthy();
   sessionCookie = session.split(';')[0];
 });
 
 const routes = [
   ['/invoices', 'Invoice workspace'],
-  ['/invoices/customers', 'iv-directory'],
-  ['/invoices/items', 'iv-directory'],
+  ['/invoices/customers', 'iv-rows'],
+  ['/invoices/items', 'iv-rows'],
   // Settings and the invoice detail gate on the client workspace query, so SSR
   // shows their loading states; the form itself renders after hydration.
-  ['/invoices/settings', 'iv-preview-message'],
-  ['/invoices/00000000-0000-4000-8000-000000000000', 'iv-preview-message'],
+  ['/invoices/settings', 'iv-message'],
+  ['/invoices/00000000-0000-4000-8000-000000000000', 'iv-message'],
 ];
 
 for (const [path, marker] of routes) {
@@ -90,7 +91,9 @@ for (const [path, marker] of routes) {
       if (status === 200 && new RegExp(marker).test(html)) break;
       await new Promise((resolve) => setTimeout(resolve, 500));
     }
-    assert.equal(status, 200);
-    assert.match(html, new RegExp(marker), `${path} missing marker ${marker}`);
+    expect(status).toBe(200);
+    expect(html, `${path} missing marker ${marker}`).toMatch(
+      new RegExp(marker),
+    );
   });
 }

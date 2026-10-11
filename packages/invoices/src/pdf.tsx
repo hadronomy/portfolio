@@ -1,51 +1,121 @@
 import { createHash } from 'node:crypto';
-import type { CSSProperties } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { render } from 'takumi-pdf';
 import { PageNumber, TotalPages } from 'takumi-pdf/primitives';
+import type { CountryCode } from './address';
 import { calculate, formatMoney, type Totals } from './calculate';
-import bold from './fonts/DMSans-Bold.ttf?inline';
-import regular from './fonts/DMSans-Regular.ttf?inline';
+import ember from './covers/ember.jpg?inline';
+import moss from './covers/moss.jpg?inline';
+import rose from './covers/rose.jpg?inline';
+import tide from './covers/tide.jpg?inline';
+import medium from './fonts/Geist-Medium.ttf?inline';
+import regular from './fonts/Geist-Regular.ttf?inline';
+import semibold from './fonts/Geist-SemiBold.ttf?inline';
 import { documentLabels } from './labels';
-import type { Invoice, Language, Party } from './model';
+import type { Cover, Invoice, Language, Party } from './model';
+import { partyLines } from './party-lines';
 
-const ink = '#232221';
-const muted = '#77716b';
-const small: CSSProperties = { fontSize: 10, color: muted, lineHeight: 1.6 };
-const cell: CSSProperties = {
-  padding: '13px 0',
-  verticalAlign: 'top',
-  borderBottom: '1px solid #eeeae5',
+const covers: Record<Exclude<Cover, 'none'>, string> = {
+  ember,
+  tide,
+  moss,
+  rose,
 };
-const amount: CSSProperties = {
+
+// A4 is 794 × 1123 CSS px. The side margin leaves a 706px column, which is
+// the width the cover art is cut for.
+const side = 44;
+const ink = '#141414';
+const soft = '#67676a';
+const faint = '#8e8e91';
+const rule = '#ebebec';
+const ruleStrong = '#d6d6d8';
+
+const label: CSSProperties = {
+  fontSize: 8.5,
+  fontWeight: 500,
+  letterSpacing: '0.08em',
+  textTransform: 'uppercase',
+  color: faint,
+};
+const detail: CSSProperties = { fontSize: 11, lineHeight: 1.65, color: soft };
+const cell: CSSProperties = {
+  padding: '11px 0',
+  verticalAlign: 'top',
+  borderBottom: `1px solid ${rule}`,
+};
+const figure: CSSProperties = {
   ...cell,
   textAlign: 'right',
   whiteSpace: 'nowrap',
 };
+const heading: CSSProperties = {
+  ...label,
+  padding: '0 0 9px',
+  borderBottom: `1px solid ${ruleStrong}`,
+};
+
 const date = (day: string, language: Language) =>
-  new Intl.DateTimeFormat(language === 'es' ? 'es-ES' : 'en-GB', {
+  new Intl.DateTimeFormat(language === 'es' ? 'es-ES' : 'en-US', {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
     timeZone: 'UTC',
   }).format(new Date(`${day}T12:00:00Z`));
 
-function Address({ party, label }: { party: Party; label: string }) {
+function Labelled({
+  title,
+  align = 'left',
+  children,
+}: {
+  title: string;
+  align?: 'left' | 'right';
+  children: ReactNode;
+}) {
   return (
-    <div style={{ width: '46%' }}>
-      <p style={small}>{label}</p>
-      <p style={{ fontSize: 13, fontWeight: 700, margin: '5px 0' }}>
-        {party.name || '—'}
-      </p>
-      <p style={{ fontSize: 11, lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>
-        {[
-          party.taxId,
-          party.address,
-          `${party.postalCode} ${party.city}`.trim(),
-          party.country,
-        ]
-          .filter(Boolean)
-          .join('\n')}
-      </p>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: align === 'right' ? 'flex-end' : 'flex-start',
+        gap: 7,
+      }}
+    >
+      <p style={label}>{title}</p>
+      {children}
+    </div>
+  );
+}
+
+/**
+ * A party's block: the address as its own country's post prints it, and the
+ * country only when it differs from `home`, the issuer's country. A letter
+ * within Spain does not say "Spain".
+ */
+function PartyBlock({
+  party,
+  home,
+  language,
+  title,
+  taxLabel,
+  extra = [],
+}: {
+  party: Party;
+  home: CountryCode;
+  language: Language;
+  title: string;
+  taxLabel: string;
+  extra?: string[];
+}) {
+  const lines = partyLines(party, { home, language, taxLabel, extra });
+  return (
+    <div style={{ width: '36%', paddingRight: 20 }}>
+      <Labelled title={title}>
+        <p style={{ fontSize: 12.5, fontWeight: 600, color: ink }}>
+          {party.name || '—'}
+        </p>
+        <p style={{ ...detail, whiteSpace: 'pre-wrap' }}>{lines.join('\n')}</p>
+      </Labelled>
     </div>
   );
 }
@@ -72,93 +142,163 @@ export function InvoiceDocument({
   const t = documentLabels[language];
   const totals = calculate(d);
   const money = (value: string) => formatMoney(value, language, d.currency);
+  const quantity = new Intl.NumberFormat(language, {
+    maximumFractionDigits: 6,
+  });
+  const dates = [
+    { title: t.issued, value: d.issueDate },
+    ...(d.supplyDate === d.issueDate
+      ? []
+      : [{ title: t.supplied, value: d.supplyDate }]),
+    { title: t.due, value: d.dueDate },
+  ];
+  const summary = [
+    { title: t.subtotal, value: totals.subtotal },
+    ...(totals.discount === '0.00'
+      ? []
+      : [{ title: t.discount, value: `-${totals.discount}` }]),
+    ...totals.groups.map((group) => ({
+      title:
+        group.treatment === 'taxable'
+          ? `IGIC ${group.rate}% ${t.on} ${money(group.base)}`
+          : `${t[group.treatment]} ${t.on} ${money(group.base)}`,
+      value: group.tax,
+    })),
+    ...(totals.withholding === '0.00'
+      ? []
+      : [
+          {
+            title: `${t.withholding} ${d.withholdingRate}%`,
+            value: `-${totals.withholding}`,
+          },
+        ]),
+    ...(totals.disbursements === '0.00'
+      ? []
+      : [{ title: t.disbursements, value: totals.disbursements }]),
+  ];
+  const bank = [
+    d.issuer.bankName && `${t.bank}: ${d.issuer.bankName}`,
+    d.issuer.iban && `${t.iban}: ${d.issuer.iban}`,
+    d.issuer.bic && `${t.bic}: ${d.issuer.bic}`,
+  ].filter(Boolean);
+  const legends = [
+    ...new Set(d.lines.map((line) => line.tax.reason).filter(Boolean)),
+  ];
   return (
     <main
       style={{
-        fontFamily: 'DM Sans',
+        fontFamily: 'Geist',
         color: ink,
         fontSize: 11,
         lineHeight: 1.5,
       }}
     >
+      {d.cover !== 'none' && (
+        // The renderer ignores border-radius on <img>, so a clipping box
+        // rounds the corners instead.
+        <div
+          style={{
+            display: 'flex',
+            height: 170,
+            borderRadius: 10,
+            overflow: 'hidden',
+            marginBottom: 30,
+          }}
+        >
+          <img
+            src={covers[d.cover]}
+            alt=""
+            style={{ width: '100%', height: 170 }}
+          />
+        </div>
+      )}
       <div
         style={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'flex-start',
-          marginBottom: 36,
+          marginBottom: 30,
         }}
       >
-        <div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           <h1
             style={{
-              fontSize: 42,
-              fontWeight: 400,
-              letterSpacing: -1.8,
+              fontSize: 22,
+              fontWeight: 600,
+              letterSpacing: '0.01em',
+              textTransform: 'uppercase',
+              lineHeight: 1.1,
               margin: 0,
             }}
           >
             {t[d.kind]}
           </h1>
-          <p style={{ ...small, marginTop: 8 }}>
+          <p style={{ fontSize: 12.5, fontWeight: 500, color: soft }}>
             {invoice.status === 'draft' ? t.draft : invoice.number}
           </p>
         </div>
-        <div style={{ textAlign: 'right' }}>
-          <p style={{ fontWeight: 700, fontSize: 13 }}>
-            {d.issuer.name || t.from}
-          </p>
-          <p style={small}>{d.issuer.website}</p>
+        <p style={{ fontSize: 12.5, fontWeight: 600, textAlign: 'right' }}>
+          {d.issuer.name}
+        </p>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+        <PartyBlock
+          party={d.issuer}
+          home={d.issuer.address.country}
+          language={d.language}
+          title={t.from}
+          taxLabel={t.taxId}
+          extra={[d.issuer.website]}
+        />
+        <PartyBlock
+          party={d.customer}
+          home={d.issuer.address.country}
+          language={d.language}
+          title={t.billTo}
+          taxLabel={t.taxId}
+        />
+        <div
+          style={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-end',
+            gap: 14,
+          }}
+        >
+          {dates.map((item) => (
+            <Labelled key={item.title} title={item.title} align="right">
+              <p style={{ fontSize: 12, color: ink }}>
+                {date(item.value, language)}
+              </p>
+            </Labelled>
+          ))}
         </div>
       </div>
       <div
         style={{
+          borderTop: `1px solid ${rule}`,
+          marginTop: 26,
+          paddingTop: d.title || d.reference || d.correction ? 18 : 0,
+          marginBottom: 22,
           display: 'flex',
-          justifyContent: 'space-between',
-          padding: '20px 0',
-          borderTop: '1px solid #ded8d1',
-          borderBottom: '1px solid #ded8d1',
-          marginBottom: 26,
+          flexDirection: 'column',
+          gap: 4,
         }}
       >
-        {[
-          { label: t.number, value: invoice.number || '—' },
-          { label: t.issued, value: date(d.issueDate, language) },
-          { label: t.supplied, value: date(d.supplyDate, language) },
-          { label: t.due, value: date(d.dueDate, language) },
-        ].map((item) => (
-          <div key={item.label}>
-            <p style={small}>{item.label}</p>
-            <p style={{ marginTop: 4 }}>{item.value}</p>
-          </div>
-        ))}
+        {d.title && <p style={{ fontSize: 13, fontWeight: 500 }}>{d.title}</p>}
+        {d.reference && (
+          <p style={detail}>
+            {t.reference}: {d.reference}
+          </p>
+        )}
+        {d.correction && (
+          <p style={detail}>
+            {t.correction} {d.correction.number}. {t.reason}:{' '}
+            {d.correction.reason}
+          </p>
+        )}
       </div>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          marginBottom: 28,
-        }}
-      >
-        <Address party={d.issuer} label={t.from} />
-        <Address party={d.customer} label={t.billTo} />
-      </div>
-      {d.title && (
-        <h2 style={{ fontSize: 17, fontWeight: 500, marginBottom: 8 }}>
-          {d.title}
-        </h2>
-      )}
-      {d.reference && (
-        <p style={small}>
-          {t.reference}: {d.reference}
-        </p>
-      )}
-      {d.correction && (
-        <p style={{ fontSize: 11, marginBottom: 16 }}>
-          {t.correction}: {d.correction.number}. {t.reason}:{' '}
-          {d.correction.reason}
-        </p>
-      )}
       <table
         style={{
           width: '100%',
@@ -166,14 +306,17 @@ export function InvoiceDocument({
           tableLayout: 'fixed',
         }}
       >
+        {/* Only the description column takes a width: the renderer drops
+            text-align on any cell with an explicit width, so the three
+            figure columns split the remaining space evenly instead. */}
         <thead>
-          <tr style={{ color: muted, fontSize: 10 }}>
-            <th style={{ ...cell, textAlign: 'left', width: '49%' }}>
+          <tr>
+            <th style={{ ...heading, textAlign: 'left', width: '52%' }}>
               {t.description}
             </th>
-            <th style={{ ...amount, width: '11%' }}>{t.quantity}</th>
-            <th style={{ ...amount, width: '20%' }}>{t.price}</th>
-            <th style={{ ...amount, width: '20%' }}>{t.amount}</th>
+            <th style={{ ...heading, textAlign: 'right' }}>{t.quantity}</th>
+            <th style={{ ...heading, textAlign: 'right' }}>{t.price}</th>
+            <th style={{ ...heading, textAlign: 'right' }}>{t.amount}</th>
           </tr>
         </thead>
         <tbody>
@@ -182,34 +325,38 @@ export function InvoiceDocument({
               <tr key={line.id}>
                 <td
                   colSpan={4}
-                  style={{ ...cell, color: muted, whiteSpace: 'pre-wrap' }}
+                  style={{ ...cell, color: soft, whiteSpace: 'pre-wrap' }}
                 >
                   {line.description}
                 </td>
               </tr>
             ) : (
               <tr key={line.id} style={{ breakInside: 'avoid' }}>
-                <td style={{ ...cell, paddingRight: 18 }}>
-                  <p style={{ whiteSpace: 'pre-wrap' }}>
+                <td style={{ ...cell, paddingRight: 24 }}>
+                  <p style={{ fontSize: 11.5, whiteSpace: 'pre-wrap' }}>
                     {line.description || '—'}
                   </p>
-                  <p style={{ ...small, marginTop: 4 }}>
-                    {line.unit}
-                    {line.tax.treatment === 'taxable'
-                      ? ` · IGIC ${line.tax.rate}%`
-                      : ` · ${t[line.tax.treatment]}`}
-                    {line.discount.value !== '0'
-                      ? ` · ${t.discount} ${line.discount.kind === 'percent' ? `${line.discount.value}%` : money(line.discount.value)}`
-                      : ''}
+                  <p style={{ fontSize: 9.5, color: faint, marginTop: 3 }}>
+                    {[
+                      line.unit === 'unit' ? '' : line.unit,
+                      line.tax.treatment === 'taxable'
+                        ? `IGIC ${line.tax.rate}%`
+                        : t[line.tax.treatment],
+                      line.discount.value === '0'
+                        ? ''
+                        : `${t.discount} ${line.discount.kind === 'percent' ? `${line.discount.value}%` : money(line.discount.value)}`,
+                    ]
+                      .filter(Boolean)
+                      .join(' · ')}
                   </p>
                 </td>
-                <td style={amount}>
-                  {new Intl.NumberFormat(language, {
-                    maximumFractionDigits: 6,
-                  }).format(Number(line.quantity))}
+                <td style={{ ...figure, fontSize: 11.5, color: soft }}>
+                  {quantity.format(Number(line.quantity))}
                 </td>
-                <td style={amount}>{money(line.unitPrice)}</td>
-                <td style={amount}>
+                <td style={{ ...figure, fontSize: 11.5, color: soft }}>
+                  {money(line.unitPrice)}
+                </td>
+                <td style={{ ...figure, fontSize: 11.5, fontWeight: 500 }}>
                   {money(lineNet(totals.lines, index, line.id))}
                 </td>
               </tr>
@@ -221,45 +368,23 @@ export function InvoiceDocument({
         style={{
           display: 'flex',
           justifyContent: 'flex-end',
-          marginTop: 24,
+          marginTop: 18,
           breakInside: 'avoid',
         }}
       >
-        <div style={{ width: '47%' }}>
-          {[
-            { label: t.subtotal, value: totals.subtotal },
-            ...(totals.discount !== '0.00'
-              ? [{ label: t.discount, value: `-${totals.discount}` }]
-              : []),
-            ...totals.groups.map((group) => ({
-              label:
-                group.treatment === 'taxable'
-                  ? `IGIC ${group.rate}% · ${money(group.base)}`
-                  : `${t[group.treatment]} · ${money(group.base)}`,
-              value: group.tax,
-            })),
-            ...(totals.withholding !== '0.00'
-              ? [
-                  {
-                    label: `${t.withholding} ${d.withholdingRate}%`,
-                    value: `-${totals.withholding}`,
-                  },
-                ]
-              : []),
-            ...(totals.disbursements !== '0.00'
-              ? [{ label: t.disbursements, value: totals.disbursements }]
-              : []),
-          ].map((row, index) => (
+        <div style={{ width: '42%', display: 'flex', flexDirection: 'column' }}>
+          {summary.map((row, index) => (
             <div
-              key={`${index}-${row.label}`}
+              key={`${index}-${row.title}`}
               style={{
                 display: 'flex',
                 justifyContent: 'space-between',
-                marginBottom: 9,
-                gap: 12,
+                gap: 16,
+                padding: '4px 0',
+                fontSize: 11.5,
               }}
             >
-              <span style={small}>{row.label}</span>
+              <span style={{ color: soft }}>{row.title}</span>
               <span>{money(row.value)}</span>
             </div>
           ))}
@@ -267,73 +392,80 @@ export function InvoiceDocument({
             style={{
               display: 'flex',
               justifyContent: 'space-between',
-              alignItems: 'baseline',
-              borderTop: '1px solid #c8beb3',
-              paddingTop: 14,
-              marginTop: 12,
+              borderTop: `1px solid ${ruleStrong}`,
+              marginTop: 10,
+              paddingTop: 12,
+              fontSize: 13,
+              fontWeight: 600,
             }}
           >
-            <strong>{t.total}</strong>
-            <strong style={{ fontSize: 26, letterSpacing: -0.7 }}>
-              {money(totals.total)}
-            </strong>
+            <span>{t.total}</span>
+            <span>{money(totals.total)}</span>
           </div>
         </div>
       </div>
-      <div style={{ marginTop: 38, breakInside: 'avoid' }}>
-        <h2 style={{ fontSize: 11, fontWeight: 700 }}>{t.terms}</h2>
-        <p style={{ ...small, marginTop: 5, whiteSpace: 'pre-wrap' }}>
-          {d.paymentTerms}
-        </p>
-        {d.issuer.iban && (
-          <p style={{ fontSize: 11, marginTop: 8 }}>
-            {d.issuer.bankName} · {d.issuer.iban}
-            {d.issuer.bic ? ` · BIC ${d.issuer.bic}` : ''}
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 22,
+          marginTop: 36,
+        }}
+      >
+        {(d.paymentTerms || bank.length > 0) && (
+          <div style={{ breakInside: 'avoid' }}>
+            <Labelled title={t.terms}>
+              <p style={{ ...detail, whiteSpace: 'pre-wrap' }}>
+                {[d.paymentTerms, ...bank].filter(Boolean).join('\n')}
+              </p>
+            </Labelled>
+          </div>
+        )}
+        {d.notes && (
+          <div style={{ breakInside: 'avoid' }}>
+            <Labelled title={t.notes}>
+              <p style={{ ...detail, whiteSpace: 'pre-wrap' }}>{d.notes}</p>
+            </Labelled>
+          </div>
+        )}
+        {legends.length > 0 && (
+          <p
+            style={{
+              fontSize: 9.5,
+              lineHeight: 1.6,
+              color: faint,
+              whiteSpace: 'pre-wrap',
+              breakInside: 'avoid',
+            }}
+          >
+            {legends.join('\n')}
           </p>
         )}
       </div>
-      {[...new Set(d.lines.map((line) => line.tax.reason).filter(Boolean))].map(
-        (reason) => (
-          <p
-            key={reason}
-            style={{ ...small, marginTop: 14, breakInside: 'avoid' }}
-          >
-            {reason}
-          </p>
-        ),
-      )}
-      {d.notes && (
-        <div style={{ marginTop: 20, breakInside: 'avoid' }}>
-          <h2 style={{ fontSize: 11, fontWeight: 700 }}>{t.notes}</h2>
-          <p style={{ ...small, marginTop: 6, whiteSpace: 'pre-wrap' }}>
-            {d.notes}
-          </p>
-        </div>
-      )}
     </main>
   );
 }
 
-/** Returns the exact document bytes used by preview, download, and print. Fonts never require a network request. */
+/** Returns the exact document bytes used by preview, download, and print. Fonts and cover art never require a network request. */
 export async function renderInvoice(
   invoice: Invoice,
   language: Language = invoice.data.language,
 ): Promise<Uint8Array> {
   const t = documentLabels[language];
-  const fonts = await Promise.all(
-    [
-      { url: regular, weight: 400 },
-      { url: bold, weight: 700 },
-    ].map(async (font) => ({
-      name: 'DM Sans',
-      data: Buffer.from(font.url.slice(font.url.indexOf(',') + 1), 'base64'),
-      weight: font.weight,
-    })),
-  );
+  const fonts = [
+    { url: regular, weight: 400 },
+    { url: medium, weight: 500 },
+    { url: semibold, weight: 600 },
+  ].map((font) => ({
+    name: 'Geist',
+    data: Buffer.from(font.url.slice(font.url.indexOf(',') + 1), 'base64'),
+    weight: font.weight,
+  }));
   return render(<InvoiceDocument invoice={invoice} language={language} />, {
     size: 'a4',
-    margin: { top: 48, right: 48, bottom: 62, left: 48 },
+    margin: { top: 40, right: side, bottom: 52, left: side },
     fonts,
+    css: 'p, h1 { margin: 0 }',
     pdfa: '2a',
     tagged: 'ua1',
     lang: language,
@@ -348,10 +480,10 @@ export async function renderInvoice(
           display: 'flex',
           width: '100%',
           justifyContent: 'space-between',
-          fontFamily: 'DM Sans',
-          fontSize: 9,
-          color: muted,
-          padding: '0 48px',
+          fontFamily: 'Geist',
+          fontSize: 8.5,
+          color: faint,
+          padding: `0 ${side}px`,
         }}
       >
         <span>{invoice.number || t.draft}</span>

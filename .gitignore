@@ -47,3 +47,6 @@ apps/start/.tanstack
 
 # Private local invoice database
 .invoice-data
+
+# alchemy: local state, builds, and logs
+.alchemy

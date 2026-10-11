@@ -1,0 +1,43 @@
+/* bklit charts are styled with Tailwind utilities. Only the utilities their
+   own source uses are generated, scanned from this folder alone and with no
+   preflight, so nothing here reaches the rest of the app. Both imports are
+   layered, so the app's unlayered styles always win over them. */
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities) source(none);
+@source './';
+@source '../shimmering-text.tsx';
+
+/* The chart tokens bklit reads. The invoice screens set the series colours
+   themselves, from the cover; these are the neutral rest. */
+:where(.iv-app, .iv-layer, .iv-pay) {
+  --chart-background: #fff;
+  --chart-foreground: #141414;
+  --chart-foreground-muted: #737378;
+  --chart-label: #737378;
+  --chart-line-primary: var(--part-0, #141414);
+  --chart-line-secondary: var(--part-1, #5d5d61);
+  --chart-crosshair: #737378;
+  --chart-grid: rgb(20 20 20 / 0.07);
+  --chart-indicator-color: #141414;
+  --chart-tooltip-background: rgb(20 20 20 / 0.86);
+  --chart-tooltip-foreground: #fff;
+  --chart-tooltip-muted: rgb(255 255 255 / 0.66);
+  --chart-marker-background: #f6f6f5;
+  --chart-marker-border: rgb(20 20 20 / 0.12);
+  --chart-marker-foreground: #141414;
+}
+
+@theme inline {
+  --color-chart-background: var(--chart-background);
+  --color-chart-foreground: var(--chart-foreground);
+  --color-chart-foreground-muted: var(--chart-foreground-muted);
+  --color-chart-label: var(--chart-label);
+  --color-chart-grid: var(--chart-grid);
+  --color-chart-crosshair: var(--chart-crosshair);
+  --color-chart-tooltip-background: var(--chart-tooltip-background);
+  --color-chart-tooltip-foreground: var(--chart-tooltip-foreground);
+  --color-chart-tooltip-muted: var(--chart-tooltip-muted);
+  --color-chart-marker-background: var(--chart-marker-background);
+  --color-chart-marker-border: var(--chart-marker-border);
+  --color-chart-marker-foreground: var(--chart-marker-foreground);
+}

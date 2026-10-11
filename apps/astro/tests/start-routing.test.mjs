@@ -1,13 +1,12 @@
-import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { once } from 'node:events';
 import { createServer } from 'node:net';
-import { after, before, test } from 'node:test';
+import { afterAll, beforeAll, expect, test } from 'vitest';
 
 let server;
 let origin;
 let output = '';
-before(async () => {
+beforeAll(async () => {
   const socket = createServer();
   socket.listen(0, '127.0.0.1');
   await once(socket, 'listening');
@@ -35,7 +34,7 @@ before(async () => {
   }
   throw new Error(`Server did not start: ${output}`);
 });
-after(async () => {
+afterAll(async () => {
   if (server?.exitCode === null) {
     server.kill('SIGTERM');
     await once(server, 'exit');
@@ -56,9 +55,9 @@ for (const [path, status, text] of [
 ]) {
   test(`${path} returns ${status} from the correct framework`, async () => {
     const response = await fetch(origin + path);
-    assert.equal(response.status, status);
-    assert.equal(response.headers.has('x-portfolio-route-owner'), false);
-    assert.ok((await response.text()).includes(text));
+    expect(response.status).toBe(status);
+    expect(response.headers.has('x-portfolio-route-owner')).toBe(false);
+    expect((await response.text()).includes(text)).toBeTruthy();
   });
 }
 
@@ -67,15 +66,15 @@ test('Start scripts and styles load through the Astro server', async () => {
   const assets = [...html.matchAll(/(?:src|href)="(\/_apps\/[^" ]+)"/g)].map(
     (match) => match[1],
   );
-  assert.ok(assets.some((asset) => asset.endsWith('.js')));
-  assert.ok(assets.some((asset) => asset.endsWith('.css')));
+  expect(assets.some((asset) => asset.endsWith('.js'))).toBeTruthy();
+  expect(assets.some((asset) => asset.endsWith('.css'))).toBeTruthy();
   for (const asset of assets) {
     const response = await fetch(origin + asset);
-    assert.equal(response.status, 200, asset);
-    assert.ok(
+    expect(response.status, asset).toBe(200);
+    expect(
       !(response.headers.get('content-type') ?? '').includes('text/html'),
       asset,
-    );
+    ).toBeTruthy();
   }
 });
 
@@ -83,6 +82,6 @@ test('HEAD keeps Start status and omits the response body', async () => {
   const response = await fetch(`${origin}/experiments/text`, {
     method: 'HEAD',
   });
-  assert.equal(response.status, 200);
-  assert.equal(await response.text(), '');
+  expect(response.status).toBe(200);
+  expect(await response.text()).toBe('');
 });

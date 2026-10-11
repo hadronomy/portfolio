@@ -1,279 +1,6004 @@
-/* All rules stay invoice-scoped under .iv-app / .iv-dialog so no portfolio
-   styles leak in either direction. */
-body:has(.iv-app) {
-  background: #111110;
-}
+@import '@fontsource-variable/geist';
+
+/* Every rule stays scoped under .iv-app, .iv-signin, .iv-pay (the customer's
+   pages: payment link and account), or .iv-layer (portalled menus, dialogs, tooltips, toasts),
+   so no portfolio style leaks in either direction. */
+
 .iv-app,
-.iv-dialog {
-  --iv-bg: #191918;
-  --iv-panel: #21211f;
-  --iv-field: #2b2b28;
-  --iv-text: #eeeae4;
-  /* --iv-muted (#aaa79f) measures ~6.7:1 on the panel/background, above 4.5:1. */
-  --iv-muted: #aaa79f;
-  --iv-line: #ffffff0c;
-  --iv-copper: #d6ac8c;
-  --panel-open-dur: 400ms;
-  --panel-close-dur: 350ms;
-  --panel-translate-y: 0px;
-  --panel-blur: 2px;
-  --panel-ease: cubic-bezier(0.22, 1, 0.36, 1);
-  color-scheme: dark;
-  color: var(--iv-text);
-  font-family: 'Inter Variable', system-ui, sans-serif;
+.iv-signin,
+.iv-pay,
+.iv-layer {
+  /* Surfaces: a near-white canvas, white paper on top. */
+  --iv-canvas: #f6f6f5;
+  --iv-surface: #ffffff;
+  --iv-sunken: #f3f3f2;
+  --iv-hover: rgb(20 20 20 / 0.045);
+  --iv-press: rgb(20 20 20 / 0.08);
+
+  /* Ink. --iv-ink-3 still clears 4.5:1 on white, so it can carry small text. */
+  --iv-ink: #141414;
+  --iv-ink-2: #5d5d61;
+  --iv-ink-3: #737378;
+  --iv-line: rgb(20 20 20 / 0.07);
+  --iv-line-strong: rgb(20 20 20 / 0.12);
+
+  --iv-rail: #121212;
+  /* The rail column: 12px gutter + 64px rail. Offsets that centre things on
+     the content read this, so they move with the rail. */
+  --iv-rail-column: 76px;
+  --iv-dark: #1b1b1b;
+  --iv-danger: #b4312a;
+
+  /* Edges are self-coloured rings plus a tight, directional cast. */
+  --iv-ring: 0 0 0 1px var(--iv-line);
+  --iv-raise: 0 0 0 1px rgb(20 20 20 / 0.06), 0 1px 2px rgb(20 20 20 / 0.05),
+    0 2px 8px -4px rgb(20 20 20 / 0.08);
+  --iv-float: 0 0 0 1px rgb(20 20 20 / 0.06), 0 2px 4px -1px rgb(20 20 20 / 0.06),
+    0 12px 32px -12px rgb(20 20 20 / 0.24);
+
+  /* Radii nest: outer = inner + inset. */
+  --iv-r-panel: 20px;
+  --iv-r-card: 14px;
+  --iv-r-control: 10px;
+
+  /* Motion tokens from transitions.dev. */
+  --iv-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --iv-quick: 150ms;
+  --iv-fast: 250ms;
+  --iv-medium: 350ms;
+
+  color-scheme: light;
+  color: var(--iv-ink);
+  font-family: 'Geist Variable', system-ui, sans-serif;
   font-size: 13px;
-  line-height: 1.5;
+  line-height: 1.45;
   font-weight: 400;
+  font-optical-sizing: auto;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
+
+/* Paint the canvas itself, so overscroll never shows the portfolio white. */
+html:has(.iv-app),
+html:has(.iv-signin),
+html:has(.iv-pay) {
+  background: #f6f6f5;
+}
+body:has(.iv-app),
+body:has(.iv-signin),
+body:has(.iv-pay) {
+  margin: 0;
+}
+
+/* No rubber-band bounce where a mouse or trackpad drives the page: at the
+   end of the page or of a panel, scrolling simply stops, as it does in an
+   app. Panels also keep the page behind them still. Any touch pointer gets
+   the bounce back, and with it pull to refresh; any-pointer rather than
+   pointer, so a foldable or a touch laptop counts. After Jhey Tompkins:
+   https://x.com/jh3yy/status/2105309643597824415 */
+html:has(.iv-app),
+html:has(.iv-signin),
+html:has(.iv-pay),
+.iv-inspector-scroll,
+.iv-combo,
+.iv-menu,
+.iv-dialog {
+  overscroll-behavior-y: none;
+}
+@media (any-pointer: coarse) {
+  html:has(.iv-app),
+  html:has(.iv-signin),
+  html:has(.iv-pay) {
+    overscroll-behavior-y: auto;
+  }
+  .iv-inspector-scroll,
+  .iv-combo,
+  .iv-menu,
+  .iv-dialog {
+    overscroll-behavior-y: contain;
+  }
+}
+
+.iv-app *,
+.iv-layer *,
+.iv-signin *,
+.iv-pay * {
+  box-sizing: border-box;
+}
+:where(.iv-app, .iv-layer, .iv-signin, .iv-pay) :where(h1, h2, h3, p) {
+  margin: 0;
+  color: inherit;
+  font: inherit;
+}
+:where(.iv-app, .iv-layer, .iv-signin, .iv-pay) a {
+  color: inherit;
+  text-decoration: none;
+}
+:where(.iv-app, .iv-layer, .iv-signin, .iv-pay) :where(button, input, select, textarea) {
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+}
+:where(.iv-app, .iv-layer, .iv-signin, .iv-pay) button {
+  cursor: pointer;
+  border: 0;
+  background: none;
+  padding: 0;
+}
+:where(.iv-app, .iv-layer, .iv-signin, .iv-pay) :focus-visible {
+  outline: 2px solid var(--iv-ink);
+  outline-offset: 2px;
+}
+:is(.iv-app, .iv-layer, .iv-pay) .iv-num,
+:is(.iv-app, .iv-layer, .iv-pay) [data-numeric] {
+  font-variant-numeric: tabular-nums;
+}
+/* Torph sets each letter as an inline block on the baseline, which adds a
+   descender's worth of space under the line and lifts the text off centre in
+   pills and chips. */
+:where(.iv-app, .iv-layer, .iv-signin, .iv-pay) [torph-item] {
+  vertical-align: top;
+}
+.iv-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------- Shell */
+
 .iv-app {
+  display: grid;
+  grid-template-columns: var(--iv-rail-column) minmax(0, 1fr);
+  min-height: 100dvh;
+  background: var(--iv-canvas);
+}
+.iv-main {
+  min-width: 0;
+}
+
+/* The rail floats inside its column, the way a tool palette sits on a desk. */
+.iv-rail {
+  position: sticky;
+  top: 12px;
+  /* Above the editor, whose backdrop runs under the rail column. */
+  z-index: 10;
   display: flex;
-  min-height: calc(100dvh - 24px);
-  margin: 12px;
-  border-radius: 19px;
-  overflow: clip;
-  background: var(--iv-bg);
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  height: calc(100dvh - 24px);
+  margin: 12px 0 12px 12px;
+  padding: 12px;
+  /* 22 = the 10px item radius + the 12px inset, so the corners nest. */
+  border-radius: 22px;
+  background: var(--iv-rail);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.06),
+    inset 0 1px 0 rgb(255 255 255 / 0.06), 0 1px 2px rgb(0 0 0 / 0.2),
+    0 12px 32px -12px rgb(0 0 0 / 0.45);
 }
-/* .iv-dialog renders in a portal at body level, so it shares the scoped
-   reset selectors below; the iv- prefix keeps it invoice-only. */
-.iv-app :is(h1,h2,h3,p), .iv-dialog :is(h1,h2,h3,p) { margin: 0; color: inherit; }
-.iv-app h1 { font-size: 42px; line-height: 1.12; font-weight: 450; letter-spacing: -.045em; }
-.iv-app h2, .iv-dialog h2 { font-size: 19px; font-weight: 500; letter-spacing: -.025em; line-height: 1.3; }
-.iv-app h3, .iv-dialog h3 { font-size: 13px; font-weight: 550; margin: 26px 0 16px; }
-.iv-app a { text-decoration: none; }
-.iv-app :is(button,input,select,textarea), .iv-dialog :is(button,input,select,textarea) { font: inherit; color: inherit; }
-.iv-app button, .iv-dialog button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 34px; padding: 8px 12px; border: 0; border-radius: 7px; background: #ffffff06; line-height: 1.25; cursor: pointer; transition: background-color .15s, color .15s; white-space: nowrap; }
-.iv-app button:hover:not(:disabled), .iv-dialog button:hover:not(:disabled) { background: #ffffff10; }
-.iv-app button:disabled, .iv-dialog button:disabled { opacity: .42; cursor: default; }
-.iv-app .iv-primary, .iv-dialog .iv-primary { background: var(--iv-copper); color: #2b2018; font-weight: 550; box-shadow: inset 0 1px #ffe0c550, 0 2px 4px #00000016; }
-.iv-app .iv-primary:hover:not(:disabled), .iv-dialog .iv-primary:hover:not(:disabled) { background: #e8bd9c; }
-.iv-app :focus-visible, .iv-dialog :focus-visible { outline: 2px solid #e8bd9c; outline-offset: 3px; }
-.iv-rail { width: 68px; flex: 0 0 68px; display: flex; flex-direction: column; align-items: center; padding: 20px 0 14px; gap: 14px; background: #151514; }
-.iv-rail a, .iv-rail button { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; padding: 0; color: #8a8981; border-radius: 8px; background: none; }
-.iv-rail a:hover, .iv-rail a[data-status='active'] { color: #e1b594; background: #d6ac8c0a; }
-.iv-rail .iv-mark { font-size: 30px; color: #ebe5db; letter-spacing: -.1em; margin-bottom: 29px; font-weight: 600; }
-.iv-mark span { color: #b28768; font-weight: 350; }
-.iv-rail-spacer { flex: 1; }
-.iv-workspace { flex: 1; min-width: 0; }
-.iv-topbar { display: flex; min-height: 67px; margin: 0; padding: 0 27px; gap: 20px; border-bottom: 1px solid var(--iv-line); background: var(--iv-bg); }
-.iv-breadcrumb { display: flex; align-items: center; min-width: 0; gap: 14px; font-size: 12px; }
-.iv-breadcrumb > span { color: #89867e; }
-.iv-breadcrumb a { display: inline-flex; align-items: center; }
-.iv-account { color: var(--iv-muted); font-size: 12px; }
-.iv-header-actions { display: flex; align-items: center; gap: 9px; }
-.iv-header-actions .iv-save-status { background: none; color: var(--iv-muted); font-size: 11px; }
-.iv-index { min-height: calc(100dvh - 24px); display: flex; flex-direction: column; }
-.iv-list-heading { display: flex; align-items: center; justify-content: space-between; padding: 46px 42px 34px; gap: 20px; }
-.iv-list-heading p { margin-top: 10px; color: var(--iv-muted); }
-.iv-list-heading .iv-primary { padding: 11px 15px; }
-.iv-overview { display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 24px; margin: 0 42px 42px; padding: 27px 30px; border-radius: 12px; background: linear-gradient(110deg, #35302a, #272622 60%, #252520); box-shadow: inset 0 1px #fce7cd08; }
-.iv-overview > div { display: flex; flex-direction: column; gap: 13px; }
-.iv-overview span { font-size: 12px; color: #bbb4a8; }
-.iv-overview strong { font-size: 30px; font-weight: 420; letter-spacing: -.04em; font-variant-numeric: tabular-nums; }
-.iv-overview strong span { font: inherit; color: inherit; }
-.iv-list-tools { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin: 0 42px 20px; }
-.iv-tabs { display: flex; align-items: center; gap: 3px; }
-.iv-tabs button { background: none; color: var(--iv-muted); font-size: 12px; }
-.iv-tabs button[aria-pressed='true'], .iv-tabs button[data-state='active'], .iv-tabs button[aria-selected='true'] { background: #ffffff0a; color: var(--iv-text); }
-.iv-search { display: flex; align-items: center; gap: 9px; color: #a5a299; }
-.iv-search input { width: 170px; background: none; border: 0; outline-offset: 5px; }
-.iv-search input::placeholder { color: #89867f; }
-.iv-table-wrap { margin: 0 42px; overflow-x: auto; }
-.iv-table { border-collapse: collapse; width: 100%; text-align: left; white-space: nowrap; }
-.iv-table th { color: #a4a096; font-size: 11px; font-weight: 450; padding: 13px 15px; background: #ffffff03; }
-.iv-table th:first-child { border-radius: 7px 0 0 7px; }
-.iv-table th:last-child { border-radius: 0 7px 7px 0; }
-.iv-table td { padding: 18px 15px; border-bottom: 1px solid #ffffff05; font-size: 12px; }
-.iv-table td:first-child { min-width: 170px; }
-.iv-table tr:hover td { background: #ffffff02; }
-.iv-table td a { font-weight: 500; }
-.iv-table small { display: block; color: #8e8c83; font-size: 11px; margin-top: 3px; }
-.iv-number { text-align: right; font-variant-numeric: tabular-nums; }
-.iv-status { color: #c4baab; }
-.iv-status-paid { color: #b1c3a6; }
-.iv-status-overdue { color: #e3a68c; }
-.iv-status-draft { color: #a8a59c; }
-.iv-empty { display: flex; align-items: center; flex-direction: column; justify-content: center; flex: 1; min-height: 280px; padding: 50px 24px; text-align: center; }
-.iv-empty > svg { color: #9f8066; margin-bottom: 20px; }
-.iv-empty h2 { font-size: 21px; }
-.iv-empty p { max-width: 320px; color: var(--iv-muted); margin: 12px 0 20px; }
-.iv-list-footer { display: flex; justify-content: space-between; margin: auto 42px 0; padding: 25px 0; font-size: 11px; color: #8e8a80; }
-.iv-editor { height: calc(100dvh - 24px); display: flex; flex-direction: column; }
-.iv-editor-body { display: flex; flex: 1; min-height: 0; }
-.iv-canvas { flex: 1; min-width: 0; display: flex; flex-direction: column; padding: 0 23px; background: linear-gradient(145deg, #987050 0%, #997251 20%, #856146 56%, #6c513f 100%); color: #f5e6d8; position: relative; }
-.iv-canvas-heading { height: 59px; flex: 0 0 59px; display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: #f3dfcc; }
-.iv-language { display: flex; align-items: center; gap: 1px; }
-.iv-language span { opacity: .6; }
-.iv-language button { background: none; color: #dbc5b1; min-height: 28px; font-size: 10px; padding: 4px 6px; }
-.iv-language button[aria-pressed='true'] { color: white; font-weight: 600; }
-.iv-viewer-frame { display: flex; flex-direction: column; flex: 1; min-height: 0; }
-.iv-canvas-footer { display: flex; justify-content: space-between; align-items: center; gap: 20px; min-height: 42px; font-size: 10px; color: #edd5bf; }
-.iv-pdf-viewer { display: flex; flex-direction: column; flex: 1; min-height: 0; }
-.iv-pdf-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 8px; background: #382b228c; border-radius: 8px; padding: 4px 6px; font-size: 10px; margin-bottom: 17px; color: #f2e6d9; box-shadow: inset 0 1px #eed8c516; }
-.iv-pdf-toolbar > div { display: flex; align-items: center; gap: 2px; }
-.iv-pdf-toolbar span { min-width: 43px; text-align: center; font-variant-numeric: tabular-nums; }
-.iv-pdf-toolbar span span { min-width: 0; }
-.iv-pdf-toolbar button { padding: 6px; min-height: 28px; background: none; }
-.iv-pdf-search { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-.iv-pdf-search input { min-width: 0; flex: 1; background: #382b2270; border: none; border-radius: 6px; padding: 8px 10px; }
-.iv-pdf-viewport { scrollbar-width: thin; scrollbar-color: #382b2260 transparent; }
-.iv-preview-message { display: flex; align-items: center; justify-content: center; min-height: 220px; flex: 1; font-size: 12px; text-align: center; padding: 24px; }
-/* Panel reveal (transitions.dev #07), pasted verbatim: incoming pages fade
-   in with a 2px cross-blur on the same duration/ease. Travel is zeroed in
-   --panel-translate-y above: sliding pages would read as navigation, the blur
-   alone reads as a refresh. Driven by data-open, no JS orchestration. */
-.t-panel-slide {
-  transform: translateY(var(--panel-translate-y));
-  opacity: 0;
-  filter: blur(var(--panel-blur));
+.iv-rail-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin-bottom: 8px;
+  color: #fff;
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.06em;
+}
+.iv-rail-mark span {
+  color: #7c7c80;
+  font-weight: 400;
+}
+/* Inner radius 10 = rail radius 18 − 8 padding. */
+.iv-rail-item {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  color: #8f8f93;
+}
+.iv-rail-item:hover {
+  color: #fff;
+  background: rgb(255 255 255 / 0.06);
+}
+.iv-rail-item[data-status='active'],
+.iv-rail-item[data-current='true'] {
+  color: #fff;
+  background: rgb(255 255 255 / 0.11);
+}
+.iv-rail-create {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin-bottom: 12px;
+  border-radius: 999px;
+  /* A raised dark disc, not a white one: the page's own primary action
+     (Issue, New invoice) is the loudest thing on screen, not this. */
+  background: #262626;
+  color: #fff;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.1),
+    inset 0 0 0 1px rgb(255 255 255 / 0.06);
+  transition: transform 160ms var(--iv-ease);
+}
+.iv-rail-create:hover:not(:disabled) {
+  background: #313131;
+}
+.iv-rail-create:active {
+  transform: scale(0.94);
+}
+.iv-rail-spacer {
+  flex: 1;
+}
+.iv-rail :focus-visible {
+  outline-color: #fff;
+}
+
+/* ---------------------------------------------------------------- Buttons */
+
+.iv-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-weight: 500;
+  white-space: nowrap;
+  user-select: none;
+  transition: transform 160ms var(--iv-ease);
+}
+.iv-btn[data-size='sm'] {
+  height: 28px;
+  padding: 0 11px;
+  font-size: 12px;
+}
+/* An icon carries its own air, so the icon side takes less padding. */
+.iv-btn:has(> svg:first-child) {
+  padding-left: 11px;
+}
+.iv-btn:has(> svg:last-child):not(:has(> svg:first-child)) {
+  padding-right: 11px;
+}
+.iv-btn[data-size='sm']:has(> svg:first-child) {
+  padding-left: 9px;
+}
+.iv-btn[data-size='sm']:has(> svg:last-child):not(:has(> svg:first-child)) {
+  padding-right: 9px;
+}
+/* Centre a label on its capitals, not on its line box. Centred by line
+   box, Geist sits about a pixel high and above the icon next to it.
+   Trimmed to cap height and baseline, the box is the letters, and flex
+   centring puts them on the icon's centre line. A label needs its own
+   element for this; labelled() in ui.tsx makes one from bare text. */
+.iv-btn > span,
+.iv-segmented-label > span,
+.iv-studio-back > span,
+.iv-add-option > span,
+.iv-studio-reset > span,
+.iv-composer-add > button > span,
+.iv-line-more > span,
+.iv-address-more > span,
+.iv-check > span {
+  text-box: trim-both cap alphabetic;
+}
+.iv-btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+.iv-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.iv-btn[data-variant='primary'] {
+  color: #fff;
+  background: linear-gradient(180deg, #2c2c2c, #151515);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.14), 0 0 0 1px #0f0f0f,
+    0 2px 4px -1px rgb(0 0 0 / 0.25);
+}
+.iv-btn[data-variant='primary']:hover:not(:disabled) {
+  background: linear-gradient(180deg, #383838, #1d1d1d);
+}
+.iv-btn[data-variant='secondary'] {
+  background: var(--iv-surface);
+  box-shadow: var(--iv-raise);
+}
+.iv-btn[data-variant='secondary']:hover:not(:disabled) {
+  background: #f7f7f6;
+}
+.iv-btn[data-variant='ghost'] {
+  color: var(--iv-ink-2);
+}
+.iv-btn[data-variant='ghost']:hover:not(:disabled) {
+  color: var(--iv-ink);
+  background: var(--iv-hover);
+}
+.iv-btn[data-variant='danger'] {
+  color: #fff;
+  background: var(--iv-danger);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.16), 0 0 0 1px #8f2520;
+}
+.iv-btn[data-variant='danger']:hover:not(:disabled) {
+  background: #c23a32;
+}
+
+.iv-icon-btn {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  color: var(--iv-ink-2);
+  transition: transform 160ms var(--iv-ease);
+}
+.iv-icon-btn:hover:not(:disabled) {
+  color: var(--iv-ink);
+  background: var(--iv-hover);
+}
+.iv-icon-btn:active:not(:disabled) {
+  transform: scale(0.94);
+}
+.iv-icon-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.iv-icon-btn[data-variant='secondary'] {
+  color: var(--iv-ink);
+  background: var(--iv-surface);
+  box-shadow: var(--iv-raise);
+}
+.iv-icon-btn[data-variant='secondary']:hover:not(:disabled) {
+  background: #f7f7f6;
+}
+
+.iv-kbd {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 5px;
+  font: 500 11px/1 'Geist Variable', system-ui, sans-serif;
+  color: var(--iv-ink-3);
+  box-shadow: 0 0 0 1px var(--iv-line-strong);
+}
+
+/* ---------------------------------------------------------------- Fields */
+
+.iv-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.iv-field > label,
+.iv-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--iv-ink-2);
+}
+.iv-input {
+  display: block;
+  width: 100%;
+  min-height: 34px;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: var(--iv-r-control);
+  background: var(--iv-surface);
+  box-shadow: 0 0 0 1px var(--iv-line-strong), 0 1px 2px rgb(20 20 20 / 0.04);
+  line-height: 20px;
+  outline: none;
+}
+.iv-input:hover:not(:disabled):not(:focus):not(:focus-within):not([data-disabled]) {
+  box-shadow: 0 0 0 1px rgb(20 20 20 / 0.2), 0 1px 2px rgb(20 20 20 / 0.04);
+}
+.iv-input:focus,
+.iv-affix:focus-within,
+.iv-input[data-state='open'] {
+  box-shadow: 0 0 0 1px rgb(20 20 20 / 0.55), 0 0 0 4px rgb(20 20 20 / 0.07);
+}
+.iv-input:focus-visible {
+  outline: none;
+}
+.iv-input::placeholder {
+  color: #9a9a9f;
+}
+.iv-input:disabled {
+  color: var(--iv-ink-2);
+  background: var(--iv-sunken);
+  box-shadow: none;
+  cursor: default;
+}
+.iv-input[data-numeric] {
+  text-align: right;
+}
+textarea.iv-input {
+  resize: none;
+  field-sizing: content;
+  min-height: 56px;
+}
+.iv-field[data-invalid='true'] .iv-input {
+  box-shadow: 0 0 0 1px var(--iv-danger), 0 0 0 4px rgb(180 49 42 / 0.1);
+}
+/* A field with content inside it: the wrapper is the box, the input inside
+   is bare. Adornments are quiet, secondary information. */
+.iv-affix {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  cursor: text;
+}
+.iv-affix[data-disabled] {
+  color: var(--iv-ink-2);
+  background: var(--iv-sunken);
+  box-shadow: none;
+  cursor: default;
+}
+.iv-affix-input {
+  flex: 1;
+  min-width: 0;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: none;
+  line-height: 20px;
+}
+.iv-affix-input::placeholder {
+  color: #9a9a9f;
+}
+.iv-affix-input[data-numeric] {
+  text-align: right;
+}
+.iv-affix-start,
+.iv-affix-end {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--iv-ink-3);
+  white-space: nowrap;
   pointer-events: none;
-  transition:
-    transform var(--panel-close-dur) var(--panel-ease),
-    opacity   var(--panel-close-dur) var(--panel-ease),
-    filter    var(--panel-close-dur) var(--panel-ease);
-  will-change: transform, opacity, filter;
 }
-.t-panel-slide[data-open="true"] {
-  transform: translateY(0);
-  opacity: 1;
-  filter: blur(0);
+.iv-affix-end button,
+.iv-affix-end [data-tip] {
   pointer-events: auto;
-  transition:
-    transform var(--panel-open-dur) var(--panel-ease),
-    opacity   var(--panel-open-dur) var(--panel-ease),
-    filter    var(--panel-open-dur) var(--panel-ease);
+}
+/* The check mark answers a hover with what it checked. */
+.iv-affix-end .iv-check-mark {
+  pointer-events: auto;
+  cursor: default;
+}
+
+/* Ghosts. The input and its ghost share one grid cell, and the ghost repeats
+   the typed text invisibly, so its own text starts exactly at the caret in
+   the same font. It uses the placeholder's grey: both mean "not yet yours". */
+.iv-ghost-host {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+.iv-ghost-host > * {
+  grid-area: 1 / 1;
+}
+.iv-ghost {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  white-space: pre;
+  line-height: 20px;
+  color: #9a9a9f;
+  pointer-events: none;
+}
+.iv-ghost-typed {
+  visibility: hidden;
+}
+/* A suggestion is only offered to the field being worked in; at rest an
+   empty field must look empty. */
+.iv-ghost[data-kind='suggest'] {
+  visibility: hidden;
+}
+.iv-affix:focus-within .iv-ghost[data-kind='suggest'] {
+  visibility: visible;
+  animation: iv-fade-in var(--iv-quick) var(--iv-ease);
+}
+.iv-affix:focus-within .iv-affix-input[data-ghost]::placeholder {
+  color: transparent;
+}
+.iv-ghost-key {
+  display: none;
+  flex: none;
+  place-items: center;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--iv-ink-3);
+  box-shadow: inset 0 0 0 1px var(--iv-line-strong);
+}
+.iv-affix:focus-within .iv-ghost-key {
+  display: inline-grid;
+  animation: iv-fade-in var(--iv-quick) var(--iv-ease);
+}
+.iv-ghost-key:hover {
+  color: var(--iv-ink);
+  box-shadow: inset 0 0 0 1px rgb(20 20 20 / 0.25);
+}
+/* Taken text settles from the ghost's grey into ink instead of snapping. */
+.iv-field[data-accepted] :is(.iv-affix-input, input.iv-input) {
+  animation: iv-settle var(--iv-fast) var(--iv-ease);
+}
+@keyframes iv-settle {
+  from {
+    color: #9a9a9f;
+  }
+}
+
+/* An address in six columns, so each country's lines divide the way its
+   post writes them: postal code and locality share a row in Spain, state
+   and ZIP code in the US. */
+.iv-address {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 14px 12px;
+}
+.iv-address-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.iv-address-more {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--iv-ink-2);
+}
+.iv-address-more:hover {
+  color: var(--iv-ink);
+}
+.iv-combo-place {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.iv-combo-place > * {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.iv-combo-place small {
+  font-size: 12px;
+  color: var(--iv-ink-3);
+  font-variant-numeric: tabular-nums;
+}
+/* The data's credit rides at the foot of the list, as quiet as a caption. */
+.iv-combo-foot {
+  position: sticky;
+  bottom: -5px;
+  margin: 5px -5px -5px;
+  padding: 7px 15px 8px;
+  box-shadow: inset 0 1px 0 var(--iv-line);
+  background: var(--iv-surface);
+  font-size: 11px;
+  color: var(--iv-ink-3);
+}
+
+/* ------------------------------------------------------------- Picker */
+
+/* A wheel around a lens. The panel box is sized for the most rows it may
+   show; the surface inside it is cut to the rows that exist, so a short
+   list never hangs empty card above or below the lens. Everything that
+   moves (the surface edges, the clip, the list) moves together, on one
+   short ease. */
+.iv-picker {
+  --picker-move: 120ms var(--iv-ease);
+  position: relative;
+  z-index: 60;
+  outline: none;
+}
+.iv-picker[data-state='open'] {
+  animation: iv-picker-unfold var(--iv-fast) var(--iv-ease);
+}
+/* Picking folds the panel back into the lens, which already shows the new
+   value; the field underneath takes over without a flicker. */
+.iv-picker[data-state='closed'] {
+  animation: iv-picker-fold var(--iv-quick) var(--iv-ease) forwards;
+}
+@keyframes iv-picker-unfold {
+  from {
+    clip-path: inset(
+      var(--picker-lens-top) 5px var(--picker-lens-bottom) 5px round 10px
+    );
+  }
+  to {
+    clip-path: inset(-12px -24px -36px round 0);
+  }
+}
+@keyframes iv-picker-fold {
+  from {
+    clip-path: inset(-12px -24px -36px round 0);
+  }
+  to {
+    clip-path: inset(
+      var(--picker-lens-top) 5px var(--picker-lens-bottom) 5px round 10px
+    );
+  }
+}
+.iv-picker-surface {
+  position: absolute;
+  top: var(--picker-surface-top);
+  right: 0;
+  left: 0;
+  height: var(--picker-surface-height);
+  border-radius: 14px;
+  background: var(--iv-surface);
+  box-shadow: var(--iv-float);
+  transition: top var(--picker-move), height var(--picker-move);
+}
+.iv-picker-rows {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  bottom: 5px;
+  left: 5px;
+  overflow: hidden;
+  clip-path: inset(
+    var(--picker-clip-top) 0 var(--picker-clip-bottom) 0 round 9px
+  );
+  transition: clip-path var(--picker-move);
+}
+/* More rows past an edge: that edge softens, as a wheel's would. */
+.iv-picker-rows[data-more-above] {
+  mask-image: linear-gradient(to bottom, transparent, #000 18px);
+}
+.iv-picker-rows[data-more-below] {
+  mask-image: linear-gradient(to top, transparent, #000 18px);
+}
+.iv-picker-rows[data-more-above][data-more-below] {
+  mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    #000 18px,
+    #000 calc(100% - 18px),
+    transparent
+  );
+}
+.iv-picker-list {
+  position: relative;
+  transform: translateY(var(--picker-shift));
+}
+.iv-picker-list[data-glide] {
+  transition: transform var(--picker-move);
+}
+.iv-picker-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: var(--picker-row);
+  padding: 0 10px;
+  border-radius: 9px;
+  cursor: default;
+  user-select: none;
+}
+.iv-picker-row:hover {
+  background: var(--iv-hover);
+}
+/* The lens draws this row; it stays in the list for assistive tech. */
+.iv-picker-row[data-lens] {
+  visibility: hidden;
+}
+.iv-picker-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.iv-picker-meant {
+  flex: none;
+  max-width: 45%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--iv-ink-2);
+}
+.iv-picker-aside {
+  flex: none;
+  font-size: 12px;
+  color: var(--iv-ink-3);
+  font-variant-numeric: tabular-nums;
+}
+.iv-picker-check {
+  display: grid;
+  flex: none;
+  width: 14px;
+}
+.iv-picker-empty {
+  position: absolute;
+  right: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  height: var(--picker-row);
+  padding: 0 10px;
+  font-size: 12px;
+  color: var(--iv-ink-3);
+}
+/* The lens is the field, raised: same box, same text position, with the
+   focus ring the field would have. */
+.iv-picker-lens {
+  position: absolute;
+  top: var(--picker-lens-top);
+  right: 5px;
+  left: 5px;
+  height: var(--picker-row);
+  overflow: hidden;
+  border-radius: var(--iv-r-control);
+  background: var(--iv-surface);
+  box-shadow: 0 0 0 1px rgb(20 20 20 / 0.55), 0 0 0 4px rgb(20 20 20 / 0.07);
+}
+.iv-picker-lens-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 100%;
+  padding: 0 10px;
+}
+.iv-picker-type {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+.iv-picker-type > * {
+  grid-area: 1 / 1;
+}
+.iv-picker-input {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: none;
+  line-height: 20px;
+}
+.iv-picker-input::placeholder {
+  color: #9a9a9f;
+}
+.iv-picker-input::selection {
+  background: rgb(20 20 20 / 0.12);
+}
+.iv-picker-ghost {
+  overflow: hidden;
+  white-space: pre;
+  line-height: 20px;
+  color: #9a9a9f;
+  pointer-events: none;
+}
+.iv-picker-ghost > span {
+  visibility: hidden;
+}
+
+/* The country list: the menu surface, anchored under its field and as wide
+   as it. */
+.iv-combo {
+  z-index: 60;
+  position: relative;
+  width: var(--radix-popover-trigger-width);
+  min-width: 220px;
+  /* The fallback bounds the list from its first frame, before Radix has
+     measured the room, so it can already scroll to the current country. */
+  max-height: min(296px, var(--radix-popover-content-available-height, 296px));
+  padding: 5px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  border-radius: 14px;
+  background: var(--iv-surface);
+  box-shadow: var(--iv-float);
+  transform-origin: var(--radix-popover-content-transform-origin);
+  animation: iv-menu-in var(--iv-fast) var(--iv-ease);
+}
+.iv-combo .iv-menu-item {
+  gap: 8px;
+  cursor: default;
+}
+.iv-combo-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.iv-combo-code {
+  font-size: 12px;
+  color: var(--iv-ink-3);
+  font-variant-numeric: tabular-nums;
+}
+.iv-combo-check {
+  display: grid;
+  flex: none;
+  width: 14px;
+}
+.iv-combo-toggle {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  margin-right: -5px;
+  border-radius: 6px;
+  color: var(--iv-ink-3);
+}
+.iv-combo-toggle:hover {
+  color: var(--iv-ink);
+}
+.iv-field[data-tone='valid'] .iv-affix-end svg {
+  color: #2f8a4c;
+}
+.iv-field[data-invalid='true'] .iv-affix-end svg {
+  color: var(--iv-danger);
+}
+.iv-hint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+}
+/* A number split across lines stops reading as one value. */
+.iv-hint .iv-num {
+  white-space: nowrap;
+}
+.iv-hint [data-tone='good'] {
+  color: #2f7a46;
+}
+.iv-hint-action {
+  font-weight: 500;
+  color: var(--iv-ink);
+  text-decoration: underline;
+  text-decoration-color: var(--iv-line-strong);
+  text-underline-offset: 3px;
+}
+.iv-hint-action:hover {
+  text-decoration-color: currentColor;
+}
+/* Quick picks under a field: small actions, pressed when they match. */
+.iv-quick {
+  display: inline-flex;
+  gap: 2px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.iv-quick button,
+.iv-quick-custom {
+  display: inline-grid;
+  place-items: center;
+  min-width: 26px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--iv-ink-2);
+  font-variant-numeric: tabular-nums;
+}
+.iv-quick button:hover {
+  color: var(--iv-ink);
+  background: var(--iv-hover);
+}
+.iv-quick-unit {
+  align-self: center;
+  padding-left: 3px;
+  font-size: 12px;
+  color: var(--iv-ink-3);
+}
+.iv-quick-custom,
+.iv-quick button[aria-pressed='true'] {
+  color: var(--iv-ink);
+  background: rgb(20 20 20 / 0.07);
+}
+.iv-field-error {
+  font-size: 12px;
+  color: var(--iv-danger);
+}
+.iv-hint {
+  font-size: 12px;
+  color: var(--iv-ink-3);
+}
+.iv-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 12px;
+}
+.iv-grid > .iv-span {
+  grid-column: 1 / -1;
+}
+.iv-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.iv-check {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13px;
+  color: var(--iv-ink);
+  cursor: pointer;
+}
+.iv-check input {
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  accent-color: var(--iv-ink);
+}
+
+/* Select trigger reuses the input box; the chevron hangs off the right. */
+.iv-select {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  text-align: left;
+  cursor: pointer;
+}
+/* A flex row, not inline text: an icon inside an inline value adds strut
+   space and makes the trigger taller than the inputs beside it. */
+.iv-select > span:first-child {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.iv-select-icon {
+  display: grid;
+  color: var(--iv-ink-3);
+}
+
+/* ---------------------------------------------------------------- Menus */
+
+/* Dropdown from transitions.dev (#05), as keyframes: Radix keeps a closing
+   layer mounted until its animation ends, not its transition. */
+.iv-menu {
+  z-index: 60;
+  min-width: 200px;
+  max-height: min(340px, var(--radix-popover-content-available-height, 340px));
+  overflow-y: auto;
+  padding: 5px;
+  border-radius: 14px;
+  background: var(--iv-surface);
+  box-shadow: var(--iv-float);
+  transform-origin: var(--radix-popover-content-transform-origin);
+  animation: iv-menu-in var(--iv-fast) var(--iv-ease);
+}
+.iv-menu[data-state='closed'] {
+  animation: iv-menu-out var(--iv-quick) var(--iv-ease) forwards;
+}
+@keyframes iv-menu-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+}
+@keyframes iv-menu-out {
+  to {
+    opacity: 0;
+    transform: scale(0.99);
+  }
+}
+/* Inner radius 9 = menu radius 14 − 5 padding. */
+.iv-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 32px;
+  padding: 6px 10px;
+  border-radius: 9px;
+  text-align: left;
+  cursor: pointer;
+  outline: none;
+  user-select: none;
+}
+/* One lit row at a time. Radix options carry their own highlight, which
+   already follows the pointer; plain rows use hover, and a row reached with
+   the keyboard outranks one the pointer happens to rest on. */
+.iv-menu-item[data-highlighted],
+.iv-menu-item:not([role='option']):hover,
+.iv-menu-item:focus-visible {
+  background: var(--iv-hover);
+}
+:has(> .iv-menu-item:focus-visible) > .iv-menu-item:hover:not(:focus-visible) {
+  background: transparent;
+}
+.iv-menu-item[data-disabled] {
+  opacity: 0.4;
+}
+.iv-menu-item > small {
+  margin-left: auto;
+  color: var(--iv-ink-3);
+  font-size: 12px;
+}
+.iv-menu-check {
+  display: grid;
+  margin-left: auto;
+}
+.iv-menu-empty {
+  padding: 10px;
+  color: var(--iv-ink-3);
+}
+.iv-menu-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px 8px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--iv-line);
+  color: var(--iv-ink-3);
+}
+.iv-menu-search input {
+  flex: 1;
+  min-width: 0;
+  height: 28px;
+  border: 0;
+  outline: none;
+  background: none;
+  color: var(--iv-ink);
+}
+
+/* Select menu. Radix places it so the chosen row sits over the field and
+   scrolls the viewport itself, so this menu sets no height or overflow of its
+   own. It grows from the chosen row (origin set in growFromSelected). */
+/* Radix sizes the menu's wrapper from the trigger when it aligns the menu to
+   the selected item, so filling the wrapper is what matches the field. */
+.iv-select-menu {
+  --iv-select-inset: 5px;
+  z-index: 60;
+  min-width: max(100%, 180px);
+  border-radius: 14px;
+  background: var(--iv-surface);
+  box-shadow: var(--iv-float);
+  animation: iv-select-unfold var(--iv-fast) var(--iv-ease);
+}
+/* The menu opens without a transform: Radix measures it the moment it mounts
+   to put the chosen row over the field, and a scale would hand it shrunken
+   sizes. Instead it is uncovered outward from that row, so the field itself
+   seems to unfold. The final inset reaches just past --iv-float (8px above,
+   20px aside, 32px below): any less clips the shadow until the animation
+   ends, any more spends the eased travel where nothing is visible. */
+@keyframes iv-select-unfold {
+  from {
+    opacity: 0.5;
+    clip-path: inset(
+      var(--iv-unfold-top, 0) 0 var(--iv-unfold-bottom, 0) round 9px
+    );
+  }
+  to {
+    clip-path: inset(-12px -24px -36px round 0);
+  }
+}
+/* Hints take no part in sizing: a zero width lets the wrapper settle on the
+   field's width, and the menu fills that. Radix already moves the left edge
+   out by the inset so option text lines up with the value; the right edge
+   gets the same overhang. Narrow fields still get room to read. */
+.iv-select-menu[data-explained] {
+  width: 0;
+  min-width: max(calc(100% + var(--iv-select-inset)), 240px);
+}
+.iv-select-viewport {
+  scrollbar-width: none;
+}
+.iv-select-group {
+  padding: var(--iv-select-inset);
+}
+.iv-select-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 10px 6px;
+  font-weight: 600;
+}
+.iv-select-head small {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--iv-ink-3);
+}
+.iv-select-foot {
+  display: grid;
+  padding: 9px 15px 11px;
+  box-shadow: inset 0 1px 0 var(--iv-line);
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--iv-ink-2);
+  white-space: normal;
+}
+.iv-select-foot > p {
+  grid-area: 1 / 1;
+  visibility: hidden;
+}
+.iv-select-foot > p[data-shown] {
+  visibility: visible;
+}
+.iv-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+.iv-option > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* The check sits in a fixed slot so labels never shift when it moves. */
+.iv-select-menu .iv-menu-item {
+  padding-right: 32px;
+  position: relative;
+}
+.iv-select-menu .iv-menu-check {
+  position: absolute;
+  right: 10px;
+}
+.iv-bars rect {
+  fill: currentColor;
+  opacity: 0.25;
+}
+.iv-bars rect[data-on] {
+  opacity: 1;
+}
+.iv-select .iv-bars {
+  color: var(--iv-ink-2);
+}
+
+/* ---------------------------------------------------------------- Tooltip */
+
+/* Tooltip from transitions.dev (#17): the first one waits, later ones open
+   at once and without motion. */
+.iv-tip {
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 9px;
+  border-radius: 8px;
+  background: var(--iv-dark);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  transform-origin: var(--radix-tooltip-content-transform-origin);
+  box-shadow: 0 4px 12px -4px rgb(0 0 0 / 0.3);
+}
+.iv-tip[data-state='delayed-open'] {
+  animation: iv-tip-in var(--iv-quick) ease-out;
+}
+.iv-tip .iv-kbd {
+  color: #b0b0b4;
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.18);
+}
+@keyframes iv-tip-in {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+}
+
+/* ---------------------------------------------------------------- Segmented */
+
+/* Sliding tabs from transitions.dev (#16); Motion owns the pill's travel. */
+.iv-segmented {
+  position: relative;
+  display: inline-flex;
+  gap: 2px;
+  min-width: 0;
+  margin: 0;
+  border: 0;
+  padding: 3px;
+  border-radius: 999px;
+  background: rgb(20 20 20 / 0.055);
+}
+.iv-segmented > label {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  height: 28px;
+  padding: 0 12px;
+  border-radius: 999px;
+  color: var(--iv-ink-2);
+  font-size: 12.5px;
+  font-weight: 500;
+}
+.iv-segmented > label:hover,
+.iv-segmented > label[data-checked='true'] {
+  color: var(--iv-ink);
+}
+.iv-segmented-pill {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: var(--iv-surface);
+  box-shadow: 0 0 0 1px rgb(20 20 20 / 0.05), 0 1px 3px rgb(20 20 20 / 0.1);
+}
+.iv-segmented-label {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+/* The radios are hidden, so their keyboard focus shows on the label. */
+.iv-segmented > label:has(:focus-visible),
+.iv-cover:has(:focus-visible) .iv-cover-swatch {
+  outline: 2px solid var(--iv-ink);
+  outline-offset: 2px;
+}
+.iv-covers:disabled .iv-cover {
+  cursor: default;
+}
+.iv-field > .iv-segmented {
+  align-self: flex-start;
+}
+.iv-segmented[data-tone='dark'] {
+  background: rgb(255 255 255 / 0.08);
+}
+.iv-segmented[data-tone='dark'] > label {
+  color: #a3a3a7;
+}
+.iv-segmented[data-tone='dark'] > label:hover,
+.iv-segmented[data-tone='dark'] > label[data-checked='true'] {
+  color: #fff;
+}
+.iv-segmented[data-tone='dark'] .iv-segmented-pill {
+  background: rgb(255 255 255 / 0.14);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08);
+}
+
+/* ---------------------------------------------------------------- Chips */
+
+/* Status is the one place a tinted chip earns its colour. */
+.iv-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  color: var(--chip-ink);
+  background: var(--chip-bg);
+  --chip-ink: #55555a;
+  --chip-bg: rgb(20 20 20 / 0.06);
+}
+.iv-chip[data-status='paid'] {
+  --chip-ink: #256b3c;
+  --chip-bg: #e6f2ea;
+}
+.iv-chip[data-status='overdue'] {
+  --chip-ink: #a9322a;
+  --chip-bg: #fbe9e7;
+}
+.iv-chip[data-status='unpaid'] {
+  --chip-ink: #875a07;
+  --chip-bg: #f9efd9;
+}
+.iv-chip[data-status='proforma'] {
+  --chip-ink: #2f5781;
+  --chip-bg: #e8eff7;
+}
+
+/* ---------------------------------------------------------------- Dialog */
+
+.iv-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgb(20 20 20 / 0.28);
+  animation: iv-fade-in var(--iv-fast) var(--iv-ease);
+}
+.iv-overlay[data-state='closed'] {
+  animation: iv-fade-out var(--iv-quick) var(--iv-ease) forwards;
+}
+/* Modal from transitions.dev (#06): centred, so it scales from its middle. */
+.iv-dialog {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  z-index: 51;
+  width: min(480px, calc(100vw - 32px));
+  max-height: calc(100dvh - 48px);
+  overflow-y: auto;
+  padding: 22px 24px 24px;
+  border-radius: var(--iv-r-panel);
+  background: var(--iv-surface);
+  box-shadow: var(--iv-float);
+  translate: -50% -50%;
+  animation: iv-modal-in var(--iv-fast) var(--iv-ease);
+}
+.iv-dialog[data-state='closed'] {
+  animation: iv-modal-out var(--iv-quick) var(--iv-ease) forwards;
+}
+.iv-dialog.iv-dialog-wide {
+  width: min(560px, calc(100vw - 32px));
+}
+@keyframes iv-modal-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+@keyframes iv-modal-out {
+  to {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+@keyframes iv-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes iv-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+.iv-dialog-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0 -8px 6px 0;
+}
+.iv-dialog-heading h2 {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.iv-dialog-description {
+  margin-bottom: 20px !important;
+  color: var(--iv-ink-2);
+  line-height: 1.55;
+}
+.iv-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 22px;
+}
+
+/* Error shake from transitions.dev (#12): four legs, each with its own ease. */
+.iv-shake {
+  animation: iv-shake 280ms linear;
+}
+@keyframes iv-shake {
+  0% {
+    transform: translateX(0);
+    animation-timing-function: var(--iv-ease);
+  }
+  28.57% {
+    transform: translateX(6px);
+    animation-timing-function: var(--iv-ease);
+  }
+  57.14% {
+    transform: translateX(-6px);
+    animation-timing-function: var(--iv-ease);
+  }
+  78.57% {
+    transform: translateX(4px);
+    animation-timing-function: var(--iv-ease);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+/* ---------------------------------------------------------------- Toast */
+
+.iv-toast-region {
+  position: fixed;
+  /* Centred on the content, not the window. */
+  left: calc(50% + var(--iv-rail-column) / 2);
+  bottom: 24px;
+  z-index: 90;
+  translate: -50% 0;
+  pointer-events: none;
+}
+/* In the editor the toast rises above the dock, centred on the stage: the
+   stage is what is left between the rail column and the inspector. */
+body:has(.iv-dock) .iv-toast-region {
+  left: calc(50% + (var(--iv-rail-column) - 392px) / 2);
+  bottom: 76px;
+}
+@media (max-width: 1100px) {
+  body:has(.iv-dock) .iv-toast-region {
+    left: calc(50% + (var(--iv-rail-column) - 356px) / 2);
+  }
+}
+/* Toast from transitions.dev (#22). */
+.iv-toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 40px;
+  padding: 0 16px 0 12px;
+  border-radius: 999px;
+  background: var(--iv-dark);
+  color: #fff;
+  font-weight: 500;
+  white-space: nowrap;
+  box-shadow: 0 10px 30px -10px rgb(0 0 0 / 0.45);
+  opacity: 0;
+  transform: translateY(16px) scale(0.97);
+  filter: blur(2px);
+  transition: opacity var(--iv-fast) var(--iv-ease),
+    transform var(--iv-fast) var(--iv-ease), filter var(--iv-fast) var(--iv-ease);
+}
+.iv-toast[data-open='true'] {
+  opacity: 1;
+  transform: none;
+  filter: none;
+  transition-duration: var(--iv-medium);
+}
+.iv-toast[data-tone='success'] {
+  color: #fff;
+}
+.iv-toast[data-tone='success'] .iv-check-mark {
+  color: #8fd6a4;
+}
+.iv-toast[data-tone='error'] svg {
+  color: #ff9a8f;
+}
+/* Success check from transitions.dev (#10). */
+.iv-check-mark {
+  display: inline-grid;
+  opacity: 0;
+}
+.iv-check-mark svg {
+  display: block;
+  overflow: visible;
+}
+.iv-check-mark[data-state='in'] {
+  animation: iv-check-fade 500ms var(--iv-ease) 120ms forwards,
+    iv-check-blur 500ms var(--iv-ease) 120ms forwards;
+}
+.iv-check-mark[data-state='in'] path {
+  animation: iv-check-draw 500ms var(--iv-ease) 200ms forwards;
+}
+@keyframes iv-check-fade {
+  to {
+    opacity: 1;
+  }
+}
+@keyframes iv-check-blur {
+  from {
+    filter: blur(6px);
+  }
+  to {
+    filter: blur(0);
+  }
+}
+@keyframes iv-check-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* ---------------------------------------------------------------- Pages */
+
+.iv-page {
+  width: min(1120px, 100%);
+  margin: 0 auto;
+  padding: 36px 40px 64px;
+}
+.iv-page-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 40px;
+  margin-bottom: 24px;
+}
+.iv-page-head h1 {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.iv-page-head h1 small {
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--iv-ink-3);
+}
+.iv-page-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.iv-card {
+  border-radius: var(--iv-r-card);
+  background: var(--iv-surface);
+  box-shadow: var(--iv-raise);
+}
+
+.iv-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 240px;
+  height: 34px;
+  padding: 0 8px 0 11px;
+  border-radius: 999px;
+  background: var(--iv-surface);
+  box-shadow: var(--iv-raise);
+  color: var(--iv-ink-3);
+}
+.iv-search:focus-within {
+  box-shadow: 0 0 0 1px rgb(20 20 20 / 0.5), 0 0 0 4px rgb(20 20 20 / 0.07);
+}
+.iv-search input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  outline: none;
+  background: none;
+  color: var(--iv-ink);
+}
+.iv-search input::placeholder {
+  color: #9a9a9f;
+}
+.iv-search:focus-within .iv-kbd {
+  opacity: 0;
+}
+
+/* Summary figures read as one strip, split by hairlines. */
+.iv-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-bottom: 28px;
+}
+.iv-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 18px 22px 20px;
+}
+.iv-stat + .iv-stat {
+  box-shadow: -1px 0 0 var(--iv-line);
+}
+.iv-stat > span {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--iv-ink-2);
+}
+.iv-stat strong {
+  font-size: 24px;
+  font-weight: 550;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+.iv-stat small {
+  font-size: 12px;
+  color: var(--iv-ink-3);
+}
+
+.iv-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.iv-rows[data-list='invoices'] {
+  --cols: minmax(0, 1.4fr) minmax(0, 1.3fr) 104px 104px 92px 120px;
+}
+.iv-rows[data-list='customers'] {
+  --cols: minmax(0, 1.2fr) minmax(0, 1.6fr) 120px 72px;
+}
+.iv-rows[data-list='items'] {
+  --cols: minmax(0, 1fr) minmax(0, 1.6fr) 140px 72px;
+}
+
+/* Rows are one link each: the whole row is the target, the cells are text. */
+.iv-rows {
+  overflow: clip;
+}
+.iv-row-head,
+.iv-row {
+  display: grid;
+  grid-template-columns: var(--cols);
+  align-items: center;
+  gap: 16px;
+  padding: 0 20px;
+}
+.iv-row-head {
+  height: 38px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--iv-ink-3);
+  box-shadow: inset 0 -1px 0 var(--iv-line);
+}
+.iv-row {
+  position: relative;
+  min-height: 56px;
+  padding-block: 9px;
+}
+.iv-row + .iv-row {
+  box-shadow: inset 0 1px 0 var(--iv-line);
+}
+.iv-row:hover {
+  background: #fafaf9;
+}
+.iv-row-link {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+}
+.iv-row-link:focus-visible {
+  outline-offset: -2px;
+  border-radius: 4px;
+}
+.iv-row > * {
+  min-width: 0;
+}
+.iv-row strong {
+  display: block;
+  overflow: hidden;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.iv-row small {
+  display: block;
+  overflow: hidden;
+  margin-top: 1px;
+  font-size: 12px;
+  color: var(--iv-ink-3);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.iv-row .iv-muted {
+  color: var(--iv-ink-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.iv-end {
+  justify-self: end;
+  text-align: right;
+}
+.iv-row-actions {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: flex-end;
+  gap: 2px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .iv-row-actions {
+    opacity: 0;
+  }
+  .iv-row:hover .iv-row-actions,
+  .iv-row:focus-within .iv-row-actions {
+    opacity: 1;
+  }
+}
+
+.iv-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 64px 24px;
+  text-align: center;
+}
+.iv-empty h2 {
+  font-size: 15px;
+  font-weight: 600;
+}
+.iv-empty p {
+  max-width: 320px;
+  margin-bottom: 14px;
+  color: var(--iv-ink-2);
+  line-height: 1.55;
+}
+
+.iv-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 10px 10px 10px 14px;
+  border-radius: 12px;
+  background: #fbe9e7;
+  color: #8c2a23;
+}
+.iv-banner[data-tone='notice'] {
+  background: #f9efd9;
+  color: #6e4a06;
+}
+.iv-banner > div {
+  display: flex;
+  gap: 6px;
+}
+
+.iv-message {
+  display: grid;
+  place-items: center;
+  gap: 12px;
+  min-height: 60dvh;
+  padding: 24px;
+  color: var(--iv-ink-2);
+  text-align: center;
+}
+
+/* ---------------------------------------------------------------- Editor */
+
+/* The document is the subject: the cover art, blurred into a backdrop, is
+   the room it sits in. Controls float over it and stay quiet. */
+.iv-editor {
+  --inspector: 392px;
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--inspector);
+  height: 100dvh;
+  /* clip, never hidden: a hidden box can still be scrolled by focus or
+     scrollIntoView, and then nothing lets the user scroll it back. */
+  overflow: clip;
+  isolation: isolate;
+}
+.iv-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: clip;
+  background: #e9e9e6;
+}
+.iv-backdrop img {
+  position: absolute;
+  inset: -6%;
+  width: 112%;
+  height: 112%;
+  object-fit: cover;
+  opacity: 0;
+  /* The skeleton-reveal timing from transitions.dev: a cover change is rare
+     and spatial, so it can take a slower, symmetrical cross-fade. */
+  transition: opacity 400ms ease-in-out;
+}
+.iv-backdrop img[data-active='true'] {
+  opacity: 1;
+}
+/* In the editor the art also fills the rail column, so the rail floats in the
+   same room as the page instead of on a strip of canvas. */
+.iv-editor > .iv-backdrop {
+  position: fixed;
+}
+/* Grain sits on the backdrop, below every surface, and hides the banding a
+   scaled-up blur produces. */
+.iv-backdrop::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='g' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+  opacity: 0.1;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+.iv-stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+.iv-topbar {
+  position: absolute;
+  top: 12px;
+  /* 12px everywhere: the same gap the rail and inspector keep. */
+  left: 12px;
+  right: calc(var(--inspector) + 12px);
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  pointer-events: none;
+}
+.iv-topbar > * {
+  pointer-events: auto;
+}
+.iv-topbar-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.iv-crumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  height: 34px;
+  padding: 0 14px 0 12px;
+  border-radius: 999px;
+  background: var(--iv-surface);
+  box-shadow: var(--iv-raise);
+  font-weight: 500;
+}
+.iv-crumb span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.iv-crumb .iv-chip {
+  margin-right: -6px;
+}
+.iv-save {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.72);
+  backdrop-filter: blur(12px) saturate(1.4);
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.5) inset, var(--iv-ring);
+  color: var(--iv-ink-2);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.iv-save[data-state='failed'],
+.iv-save[data-state='conflict'] {
+  color: var(--iv-danger);
+}
+.iv-save button {
+  color: var(--iv-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.iv-topbar .iv-segmented {
+  background: rgb(255 255 255 / 0.72);
+  backdrop-filter: blur(12px) saturate(1.4);
+  box-shadow: var(--iv-ring);
+}
+
+.iv-document {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+.iv-pdf-viewer {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+.iv-pdf-surface {
+  /* Positioned so a pinch still can sit exactly over the viewport. */
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+/* The page is a thing you hold: an open hand over it, a closed one while
+   dragging. Selecting would fight the drag, so text is not selectable here. */
+.iv-pdf-viewport {
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: pan-x pan-y;
+}
+.iv-pdf-viewport[data-panning='true'] {
+  cursor: grabbing;
+}
+.iv-pdf-viewport {
+  flex: 1;
+  min-height: 0;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(255 255 255 / 0.4) transparent;
+}
+/* The still sits over the viewport while the next render draws beneath it.
+   A preview refresh happens every pause in typing, so the fade is short and
+   carries no blur or movement: unchanged text stays put and only what
+   changed appears to settle. */
+.iv-pdf-viewer {
+  position: relative;
+}
+.iv-pdf-still {
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+  transition: opacity 200ms ease-out;
+}
+.iv-pdf-still[data-leaving='true'] {
+  opacity: 0;
+}
+[data-covered] .iv-pdf-viewport > * {
+  visibility: hidden;
+}
+/* A page that scrolls into view fades in as its image lands, instead of
+   popping onto a white sheet. */
+.iv-page-sheet img {
+  animation: iv-fade-in 180ms ease-out;
+}
+/* A page is a sheet of paper: a hairline ring, a tight contact shadow, and a
+   soft cast shadow from above. No spread values, so the canvas still in
+   still.ts can paint the identical shadow (keep the two in sync). Every
+   length divides by --iv-pinch, the scale a pinch is applying as a
+   transform, so mid-gesture the edge stays its normal size and nothing
+   about it changes when the real zoom lands. */
+.iv-page-sheet {
+  --iv-unit: calc(1px / var(--iv-pinch, 1));
+  border-radius: calc(6 * var(--iv-unit));
+  overflow: clip;
+  box-shadow: 0 0 0 var(--iv-unit) rgb(0 0 0 / 0.06),
+    0 var(--iv-unit) calc(3 * var(--iv-unit)) rgb(0 0 0 / 0.1),
+    0 calc(12 * var(--iv-unit)) calc(32 * var(--iv-unit)) rgb(0 0 0 / 0.22);
+}
+
+/* The dock: one dark pill holding every way of looking at the document. A
+   full-width slot centres it, so Motion can animate the dock's own box
+   without a translate in the way. */
+.iv-dock-slot {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 18px;
+  z-index: 5;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+.iv-dock {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 46px;
+  padding: 0 6px;
+  overflow: clip;
+  background: rgb(22 22 22 / 0.92);
+  backdrop-filter: blur(16px) saturate(1.3);
+  color: #fff;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 0 0 1px rgb(0 0 0 / 0.5),
+    0 12px 32px -8px rgb(0 0 0 / 0.45);
+  white-space: nowrap;
+  pointer-events: auto;
+}
+.iv-dock-tools,
+.iv-dock-search {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.iv-dock-tools {
+  padding-left: 8px;
+}
+.iv-dock-status {
+  min-width: 92px;
+  padding-right: 10px;
+  font-size: 12px;
+  color: #a3a3a7;
+}
+.iv-dock-divider {
+  width: 1px;
+  height: 18px;
+  margin: 0 6px;
+  background: rgb(255 255 255 / 0.12);
+}
+.iv-dock-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.iv-dock-readout {
+  min-width: 48px;
+  font-size: 12px;
+  font-weight: 500;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  color: #e7e7e9;
+}
+.iv-dock .iv-icon-btn {
+  color: #b9b9bd;
+}
+.iv-dock .iv-icon-btn:hover:not(:disabled),
+.iv-dock .iv-icon-btn[aria-pressed='true'] {
+  color: #fff;
+  background: rgb(255 255 255 / 0.1);
+}
+.iv-dock :focus-visible {
+  outline-color: #fff;
+}
+/* Search mode: the field is the dock, not a box inside it. The icon sits in
+   the space the status text had, so the eye lands in the same place. */
+.iv-dock-search-icon {
+  flex: none;
+  margin: 0 2px 0 10px;
+  color: #8f8f93;
+}
+.iv-dock-search input {
+  width: 190px;
+  height: 32px;
+  padding: 0 4px;
+  border: 0;
+  outline: none;
+  background: none;
+  color: #fff;
+  caret-color: #f59e0b;
+}
+.iv-dock-search input::placeholder {
+  color: #8f8f93;
+}
+.iv-dock-search input::-webkit-search-cancel-button {
+  display: none;
+}
+.iv-dock-count {
+  min-width: 72px;
+  font-size: 12px;
+  font-weight: 500;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: #a3a3a7;
+}
+.iv-dock-count[data-empty] {
+  color: #ff9a8f;
+}
+/* Shimmer text from transitions.dev (#15) marks a render in flight. */
+.iv-shimmer {
+  background: linear-gradient(
+      90deg,
+      #8f8f93 0%,
+      #8f8f93 40%,
+      #f2f2f3 50%,
+      #8f8f93 60%,
+      #8f8f93 100%
+    )
+    0 0 / 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: iv-shimmer 1.6s linear infinite;
+}
+@keyframes iv-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: 0 0;
+  }
+}
+
+.iv-stage-message {
+  display: grid;
+  flex: 1;
+  place-items: center;
+  padding: 24px;
+  color: #fff;
+  text-shadow: 0 1px 12px rgb(0 0 0 / 0.4);
+  font-weight: 500;
+  text-align: center;
+}
+.iv-stage-message[data-tone='error'] {
+  color: #fff;
+}
+
+/* ---------------------------------------------------------------- Inspector */
+
+.iv-inspector {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  margin: 12px 12px 12px 0;
+  border-radius: var(--iv-r-panel);
+  background: var(--iv-surface);
+  box-shadow: var(--iv-float);
+  overflow: clip;
+}
+.iv-inspector-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 16px 10px 20px;
+}
+.iv-inspector-head h2 {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.iv-inspector-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  /* Whatever is scrolled to, or focused, lands below an open section's
+     sticky header rather than under it. */
+  scroll-padding-top: 52px;
+  padding: 0 8px 16px;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(20 20 20 / 0.14) transparent;
+}
+.iv-inspector-scroll > .iv-banner {
+  margin: 4px 12px 12px;
+}
+.iv-inspector-foot {
+  padding: 14px 20px 18px;
+  box-shadow: inset 0 1px 0 var(--iv-line);
+  background: #fcfcfb;
+}
+.iv-sum {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 2px 0;
+  color: var(--iv-ink-2);
+  font-variant-numeric: tabular-nums;
+}
+.iv-sum-total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+  font-weight: 600;
+}
+.iv-sum-total strong {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Accordion from transitions.dev (#21): the grid track animates height, the
+   inner box clips and cross-blurs. Padding lives on the inner box so a closed
+   panel collapses to nothing. */
+.iv-section {
+  position: relative;
+}
+/* Rules between sections line up with the text, not the panel edge. */
+.iv-section + .iv-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 12px;
+  left: 12px;
+  height: 1px;
+  background: var(--iv-line);
+  pointer-events: none;
+}
+/* A lit header owns its row: the rules either side step back, so they never
+   cut into its rounded ends. Instant, like the highlight itself. */
+.iv-section:has(> h3 > .iv-section-head:hover)::before,
+.iv-section:has(> h3 > .iv-section-head:hover) + .iv-section::before {
+  opacity: 0;
+}
+.iv-section h3 {
+  position: relative;
+  margin: 0;
+}
+/* An open section keeps its header in reach: a long list of items scrolls
+   under it instead of carrying it away. */
+.iv-section[data-open='true'] > h3 {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: var(--iv-surface);
+  container-type: scroll-state;
+}
+/* Only once content is actually passing under it does the header draw a
+   rule; at rest it sits in the list like any other. Browsers without
+   scroll-state queries simply show no rule. */
+.iv-section-rule {
+  position: absolute;
+  right: 12px;
+  bottom: 0;
+  left: 12px;
+  height: 1px;
+  background: var(--iv-line);
+  opacity: 0;
+  pointer-events: none;
+}
+@container scroll-state(stuck: top) {
+  .iv-section-rule {
+    opacity: 1;
+  }
+}
+.iv-section-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 48px;
+  padding: 0 12px;
+  border-radius: 12px;
+  text-align: left;
+}
+.iv-section-head:hover {
+  background: var(--iv-hover);
+}
+.iv-section-head:active {
+  background: rgb(20 20 20 / 0.07);
+}
+.iv-section-head:focus-visible {
+  outline-offset: -2px;
+}
+.iv-section-title {
+  flex: none;
+  font-weight: 600;
+}
+.iv-section-summary {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--iv-ink-3);
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: opacity var(--iv-fast) var(--iv-ease);
+}
+.iv-section[data-open='true'] .iv-section-summary {
+  opacity: 0;
+}
+.iv-section-chevron {
+  flex: none;
+  color: var(--iv-ink-3);
+  transition: transform var(--iv-fast) var(--iv-ease);
+}
+.iv-section[data-open='true'] .iv-section-chevron {
+  transform: scaleY(-1);
+}
+.iv-section-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--iv-fast) var(--iv-ease);
+}
+.iv-section[data-open='true'] .iv-section-panel {
+  grid-template-rows: 1fr;
+}
+/* The clip only exists for the collapse. It reaches into the inspector's
+   8px gutter so what sits flush with the section edge (an open line's ring
+   and shadow) still draws its edge; the content itself does not move. */
+.iv-section-inner {
+  min-height: 0;
+  margin: 0 -8px;
+  padding: 0 8px;
+  overflow: clip;
+  opacity: 0;
+  filter: blur(2px);
+  transition: opacity var(--iv-fast) var(--iv-ease),
+    filter var(--iv-fast) var(--iv-ease);
+}
+.iv-section[data-open='true'] .iv-section-inner {
+  opacity: 1;
+  filter: none;
+}
+.iv-section-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 4px 12px 20px;
+}
+
+.iv-from {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--iv-sunken);
+}
+.iv-from strong {
+  font-weight: 600;
+}
+.iv-from span {
+  color: var(--iv-ink-2);
+}
+.iv-inline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.iv-inline > .iv-muted {
+  flex: 1;
+  font-size: 12px;
+  color: var(--iv-ink-3);
+}
+
+/* ---------------------------------------------------------------- Lines */
+
+/* The list reaches out to the section header's edges, so a lit row and a lit
+   header are the same width and their text shares one left edge. */
+.iv-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0 -12px;
+}
+.iv-line {
+  position: relative;
+  border-radius: 12px;
+}
+/* The open line lifts off the list as a card; the others stay flat rows. */
+.iv-line[data-open='true'] {
+  margin: 6px 0;
+  background: var(--iv-surface);
+  box-shadow: var(--iv-raise);
+}
+/* Lifted: a tight shadow cast downward. The negative spread keeps it inside
+   the row's own width, so the inspector's edge never cuts it off. */
+.iv-line[data-dragging] {
+  z-index: 2;
+  background: var(--iv-surface);
+  box-shadow: 0 0 0 1px rgb(20 20 20 / 0.06),
+    0 10px 20px -10px rgb(20 20 20 / 0.3);
+}
+.iv-line-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 52px;
+  padding: 7px 12px;
+  border-radius: 12px;
+  text-align: left;
+  user-select: none;
+}
+.iv-line:not([data-open='true'], [data-dragging]) .iv-line-head:hover {
+  background: var(--iv-hover);
+}
+.iv-line:not([data-open='true'], [data-dragging]) .iv-line-head:active {
+  background: rgb(20 20 20 / 0.07);
+}
+.iv-line[data-dragging] .iv-line-head {
+  cursor: grabbing;
+}
+.iv-line-head:focus-visible {
+  outline-offset: -2px;
+}
+.iv-line-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.iv-line-title,
+.iv-line-meta {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.iv-line-title {
+  font-weight: 500;
+}
+.iv-line-untitled {
+  font-weight: 400;
+  color: var(--iv-ink-3);
+}
+.iv-line-meta {
+  font-size: 12px;
+  color: var(--iv-ink-3);
+  font-variant-numeric: tabular-nums;
+}
+.iv-line-index {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--iv-ink-3);
+}
+.iv-line-net {
+  flex: none;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.iv-line-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--iv-fast) var(--iv-ease);
+}
+.iv-line-panel[data-open='true'] {
+  grid-template-rows: 1fr;
+}
+.iv-line-clip {
+  min-height: 0;
+  overflow: clip;
+  opacity: 0;
+  transition: opacity var(--iv-fast) var(--iv-ease);
+}
+.iv-line-panel[data-open='true'] > .iv-line-clip {
+  opacity: 1;
+}
+.iv-line-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 12px 10px;
+}
+.iv-line-figures {
+  display: grid;
+  grid-template-columns: 88px 12px minmax(0, 1fr) 104px;
+  align-items: end;
+  gap: 6px;
+}
+.iv-line-times {
+  padding-bottom: 8px;
+  color: var(--iv-ink-3);
+  text-align: center;
+}
+.iv-line-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 8px;
+  box-shadow: inset 0 1px 0 var(--iv-line);
+}
+.iv-line-tools {
+  display: flex;
+  gap: 2px;
+  margin-right: -6px;
+}
+.iv-line-delete:hover {
+  color: var(--iv-danger);
+}
+.iv-line-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--iv-ink-2);
+}
+.iv-line-more:hover {
+  color: var(--iv-ink);
+}
+.iv-line-more svg {
+  transition: transform var(--iv-fast) var(--iv-ease);
+}
+.iv-line-more[aria-expanded='true'] svg {
+  transform: scaleY(-1);
+}
+.iv-line-options {
+  display: grid;
+  grid-template-rows: 0fr;
+  margin-top: -12px;
+  transition: grid-template-rows var(--iv-fast) var(--iv-ease),
+    margin-top var(--iv-fast) var(--iv-ease);
+}
+.iv-line-options[data-open='true'] {
+  grid-template-rows: 1fr;
+  margin-top: 0;
+}
+/* The clip reaches 4px past the fields on each side, as far as a focus ring
+   does, so collapsing never shaves the rings off the outer fields. */
+.iv-line-options > div {
+  min-height: 0;
+  margin: 0 -4px;
+  padding: 0 4px;
+  overflow: clip;
+}
+.iv-line-options .iv-grid {
+  padding: 2px 0;
+}
+
+/* A unit that is also a choice: quiet like the unit, but framed as a thing
+   to press. */
+.iv-unit-switch {
+  display: inline-grid;
+  place-items: center;
+  min-width: 24px;
+  height: 22px;
+  margin-right: -5px;
+  padding: 0 6px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--iv-ink-2);
+  box-shadow: inset 0 0 0 1px var(--iv-line-strong);
+}
+.iv-unit-switch:hover {
+  color: var(--iv-ink);
+  background: var(--iv-hover);
+}
+.iv-add {
+  display: flex;
+  gap: 8px;
+}
+.iv-add .iv-btn {
+  flex: 1;
+}
+
+/* ---------------------------------------------------------------- Covers */
+
+.iv-covers {
+  min-width: 0;
+  margin: 0;
+  border: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+.iv-cover {
+  /* Holds its hidden radio, so focusing it never scrolls anything but the
+     inspector it sits in. */
+  position: relative;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--iv-ink-2);
+  text-align: center;
+}
+.iv-cover-swatch {
+  position: relative;
+  display: block;
+  aspect-ratio: 1;
+  overflow: clip;
+  border-radius: 10px;
+  background: var(--iv-sunken);
+  transition: transform 160ms var(--iv-ease);
+}
+.iv-cover-swatch img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+/* A faint inner edge frames the art without taking space. */
+.iv-cover-swatch::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.1);
+}
+.iv-cover:active .iv-cover-swatch {
+  transform: scale(0.96);
+}
+.iv-cover[data-checked='true'] {
+  color: var(--iv-ink);
+  font-weight: 500;
+}
+.iv-cover[data-checked='true'] .iv-cover-swatch::after {
+  box-shadow: inset 0 0 0 2px var(--iv-surface), 0 0 0 2px var(--iv-ink);
+}
+.iv-cover[data-checked='true'] .iv-cover-swatch {
+  overflow: visible;
+}
+.iv-cover[data-checked='true'] .iv-cover-swatch img {
+  border-radius: inherit;
+}
+.iv-cover-swatch svg {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  color: var(--iv-ink-3);
+}
+
+/* ---------------------------------------------------------------- Payments */
+
+.iv-outstanding {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.iv-outstanding strong {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.iv-payments {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+/* Date and how on the left, the amount in its own right-aligned column, and
+   a fixed slot for the row's action, so amounts align on every row. */
+.iv-payment {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 0;
+}
+.iv-payments[data-actions] .iv-payment {
+  grid-template-columns: minmax(0, 1fr) auto 28px;
+}
+.iv-payment + .iv-payment {
+  box-shadow: inset 0 1px 0 var(--iv-line);
+}
+.iv-payment > div {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+.iv-payment small {
+  overflow: hidden;
+  color: var(--iv-ink-3);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.iv-payment strong {
+  font-weight: 500;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.iv-payment .iv-icon-btn {
+  width: 28px;
+  height: 28px;
+}
+.iv-payment[data-reversed='true'] > div > span,
+.iv-payment[data-reversed='true'] strong {
+  color: var(--iv-ink-3);
+}
+.iv-payment[data-reversed='true'] strong {
+  text-decoration: line-through;
+  text-decoration-color: rgb(20 20 20 / 0.35);
+}
+/* The links already out, kept apart from making a new one. */
+.iv-share-open {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: -4px 0 4px;
+  padding-bottom: 10px;
+  box-shadow: inset 0 -1px 0 var(--iv-line);
+  color: var(--iv-ink-2);
+}
+/* The ghost's text, not its hover pad, meets the content edge. */
+.iv-share-open .iv-btn {
+  margin-right: -11px;
+}
+/* A ghost button whose text lines up with the content edge: the padding
+   that gives it a hover area hangs into the gutter instead. */
+.iv-btn.iv-flush {
+  margin-left: -11px;
+}
+/* A notice, not an alarm: a warm tonal surface with its own faint edge, the
+   headline in ink and the consequence beneath it. */
+.iv-callout {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-self: stretch;
+  padding: 11px 12px 12px;
+  border-radius: 12px;
+  background: #faf4e6;
+  box-shadow: inset 0 0 0 1px rgb(135 90 7 / 0.12);
+}
+.iv-callout > svg {
+  margin-top: 2px;
+  color: #875a07;
+}
+.iv-callout strong {
+  color: var(--iv-ink);
+  font-weight: 600;
+}
+.iv-callout p {
+  margin-top: 2px;
+  color: var(--iv-ink-2);
+}
+
+.iv-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px;
+  border-radius: 14px;
+  background: var(--iv-sunken);
+}
+.iv-checklist p {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 10px;
+  line-height: 1.5;
+}
+.iv-checklist svg {
+  flex: none;
+  margin-top: 2px;
+  color: #b0632a;
+}
+.iv-ready {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 14px;
+  background: #e6f2ea;
+  color: #1f5c33;
+}
+.iv-review {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 14px;
+}
+.iv-review div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+}
+.iv-review div + div {
+  box-shadow: inset 0 1px 0 var(--iv-line);
+}
+.iv-review div > span {
+  color: var(--iv-ink-2);
+}
+.iv-review strong {
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------------------------------------------------------------- Payment plans */
+
+/* Each part of a plan keeps one ink wherever it shows: its segment on the
+   strip, its swatch by its sentence, its bars on the calendar. The inks get
+   lighter down the plan, so order reads at a glance without a legend, and
+   each carries the text colour that reads on it. */
+:where(.iv-studio, .iv-offer) {
+  --part-0: #1f1e1c;
+  --part-1: #55534f;
+  --part-2: #77746e;
+  --part-3: #a29f98;
+  --part-4: #bfbcb5;
+  --part-5: #d6d3cc;
+}
+:where(.iv-studio, .iv-offer) [data-index] {
+  --tone: var(--part-5);
+  --tone-ink: var(--iv-ink);
+}
+:where(.iv-studio, .iv-offer) [data-index='0'] {
+  --tone: var(--part-0);
+  --tone-ink: #fff;
+}
+:where(.iv-studio, .iv-offer) [data-index='1'] {
+  --tone: var(--part-1);
+  --tone-ink: #fff;
+}
+:where(.iv-studio, .iv-offer) [data-index='2'] {
+  --tone: var(--part-2);
+  --tone-ink: #fff;
+}
+:where(.iv-studio, .iv-offer) [data-index='3'] {
+  --tone: var(--part-3);
+}
+:where(.iv-studio, .iv-offer) [data-index='4'] {
+  --tone: var(--part-4);
+}
+
+/* The inspector's card: the options the customer will choose from. */
+.iv-offer {
+  display: grid;
+  gap: 8px;
+}
+.iv-offer-list {
+  display: grid;
+  gap: 2px;
+  margin: 0 -10px;
+  padding: 0;
+  list-style: none;
+}
+.iv-offer-list button {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  padding: 10px 10px 12px;
+  border-radius: 12px;
+  text-align: left;
+}
+@media (hover: hover) and (pointer: fine) {
+  .iv-offer-list button:hover {
+    background: var(--iv-hover);
+  }
+}
+.iv-offer-name {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-weight: 600;
+}
+.iv-offer-name small,
+.iv-choice-tags small {
+  color: #256b3c;
+  font-size: 11.5px;
+  font-weight: 500;
+}
+.iv-offer-line {
+  color: var(--iv-ink-2);
+  font-size: 12.5px;
+}
+.iv-offer-warn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #875a07;
+  font-size: 12.5px;
+}
+.iv-offer-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--iv-ink-3);
+  font-size: 12px;
+}
+
+/* A plan to scale in one thin line, a segment per payment in its part's
+   ink. */
+.iv-minibar {
+  display: flex;
+  gap: 2px;
+  height: 6px;
+  margin-top: 4px;
+  view-transition-class: plan-bar;
+}
+.iv-minibar > i {
+  min-width: 3px;
+  border-radius: 3px;
+  background: var(--tone);
+}
+
+/* ---- The studio: the whole viewport, over the workspace it came out of.
+   One quiet canvas; the only white is what the owner works on. Every
+   column shares one inset, 12px inside its surface, so text in the rail,
+   the sentences and the preview lines up on its own edge. */
+.iv-studio {
+  --studio-columns: 276px minmax(0, 1fr) 384px;
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  background: var(--iv-canvas);
+  outline: none;
+}
+/* The head sits on the body's own columns: the way back starts on the
+   rail's text edge, the title on the composer's, and the save state ends
+   on the preview's. */
+.iv-studio-head {
+  display: grid;
+  grid-template-columns: var(--studio-columns);
+  align-items: center;
+  min-height: 64px;
+}
+.iv-studio-back {
+  justify-self: start;
+  margin-left: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px 0 10px;
+  border-radius: 999px;
+  color: var(--iv-ink-2);
+  font-weight: 500;
+}
+.iv-studio-back:hover {
+  background: var(--iv-hover);
+  color: var(--iv-ink);
+}
+.iv-studio-title {
+  justify-self: center;
+  width: min(680px, 100% - 80px);
+}
+.iv-studio-title h2 {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.iv-studio-title p {
+  color: var(--iv-ink-3);
+  font-size: 12.5px;
+}
+.iv-studio-saved {
+  justify-self: end;
+  margin-right: 38px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--iv-ink-3);
+  font-size: 12px;
+}
+.iv-studio-saved > i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #3a9a5c;
+}
+.iv-studio-saved[data-saving] > i {
+  background: #c99a2e;
+}
+.iv-studio-body {
+  display: grid;
+  grid-template-columns: var(--studio-columns);
+  min-height: 0;
+}
+.iv-studio-rail,
+.iv-studio-composer,
+.iv-studio-preview {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scrollbar-width: thin;
+}
+
+/* The rail: the options on this invoice, then the library. */
+.iv-studio-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 22px 12px 120px 16px;
+}
+.iv-rail-group {
+  display: grid;
+  gap: 4px;
+}
+.iv-rail-group + .iv-rail-group,
+.iv-studio-reset + .iv-rail-group {
+  margin-top: 24px;
+}
+.iv-rail-group h3 {
+  padding: 0 12px 2px;
+  color: var(--iv-ink-3);
+  font-size: 12px;
+  font-weight: 500;
+}
+.iv-rail-empty {
+  padding: 0 12px;
+  color: var(--iv-ink-3);
+  font-size: 12.5px;
+}
+.iv-choices,
+.iv-library {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.iv-choice {
+  position: relative;
+  border-radius: var(--iv-r-card);
+}
+.iv-choice > button {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  padding: 10px 12px 12px;
+  border-radius: var(--iv-r-card);
+  text-align: left;
+}
+@media (hover: hover) and (pointer: fine) {
+  .iv-choice:not([data-selected]) > button:hover {
+    background: var(--iv-hover);
+  }
+}
+.iv-choice[data-selected] > button {
+  background: var(--iv-surface);
+  box-shadow: var(--iv-raise);
+}
+.iv-choice-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+.iv-choice-name svg {
+  color: #875a07;
+}
+.iv-choice-line {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--iv-ink-2);
+  font-size: 12px;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.iv-choice-tags {
+  display: flex;
+  gap: 8px;
+}
+.iv-choice-tags:empty {
+  display: none;
+}
+.iv-choice-tags small:not([data-tone]) {
+  color: var(--iv-ink-3);
+}
+.iv-add-option,
+.iv-studio-reset {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  color: var(--iv-ink-2);
+  font-weight: 500;
+}
+.iv-studio-reset {
+  color: var(--iv-ink-3);
+  font-size: 12.5px;
+}
+/* Lucide draws a plus inside a 2px margin; pulled back by it, the glyph
+   starts on the text edge above it. */
+.iv-add-option > svg {
+  margin-left: -2px;
+}
+.iv-add-option:not(:disabled):hover,
+.iv-studio-reset:hover {
+  background: var(--iv-hover);
+  color: var(--iv-ink);
+}
+.iv-add-option:disabled {
+  color: var(--iv-ink-3);
+}
+.iv-add-menu {
+  width: 300px;
+  max-height: min(480px, var(--radix-popover-content-available-height, 480px));
+}
+.iv-menu-heading {
+  padding: 8px 10px 4px;
+  color: var(--iv-ink-3);
+  font-size: 12px;
+  font-weight: 500;
+}
+.iv-add-what {
+  display: grid;
+  min-width: 0;
+}
+.iv-add-what small {
+  color: var(--iv-ink-3);
+  font-size: 12px;
+}
+
+.iv-template {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  border-radius: var(--iv-r-card);
+}
+@media (hover: hover) and (pointer: fine) {
+  .iv-template:hover {
+    background: var(--iv-hover);
+  }
+}
+.iv-template-use {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  padding: 9px 12px 10px;
+  border-radius: var(--iv-r-card);
+  text-align: left;
+  font-weight: 500;
+}
+.iv-template-use > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.iv-template-star {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  color: var(--iv-ink-3);
+}
+.iv-template-star:hover {
+  background: var(--iv-hover);
+  color: var(--iv-ink);
+}
+.iv-template-star[aria-pressed='true'] {
+  color: #b07a12;
+}
+.iv-template-star[aria-pressed='true'] svg {
+  fill: currentColor;
+}
+.iv-template-star:active {
+  transform: scale(0.92);
+}
+/* Its text starts on the row's 12px edge: 6px of margin, 6px of padding. */
+.iv-template-from {
+  grid-row: 2;
+  grid-column: 1;
+  justify-self: start;
+  height: 22px;
+  margin: -6px 0 6px 6px;
+  padding: 0 6px;
+  border-radius: 999px;
+  color: var(--iv-ink-3);
+  font-size: 11.5px;
+  white-space: nowrap;
+}
+.iv-template-from:hover {
+  background: var(--iv-hover);
+  color: var(--iv-ink);
+}
+.iv-template-remove {
+  opacity: 0;
+}
+.iv-template:hover .iv-template-remove,
+.iv-template-remove:focus-visible {
+  opacity: 1;
+}
+@media (hover: none) {
+  .iv-template-remove {
+    opacity: 1;
+  }
+}
+
+/* ---- The composer: the plan in front of the owner, as sentences. */
+.iv-studio-composer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 14px 40px 0;
+}
+.iv-composer {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  max-width: 680px;
+  padding-bottom: 32px;
+}
+.iv-composer-name {
+  width: 100%;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: none;
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -0.024em;
+  line-height: 1.2;
+}
+.iv-composer-name::placeholder {
+  color: rgb(20 20 20 / 0.28);
+}
+
+/* The strip: the money to scale. Segments sit at exact fractions of the
+   track with a 3px cut between neighbours, centred on each boundary; a
+   seam's grip sits in that cut, so what the owner drags is exactly where
+   the money divides. */
+.iv-strip {
+  --cut: 1.5px;
+  user-select: none;
+  touch-action: none;
+}
+.iv-strip-track {
+  position: relative;
+  height: 56px;
+}
+.iv-strip-part {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--start) + var(--cut));
+  display: grid;
+  align-items: center;
+  width: max(3px, calc(var(--size) - 2 * var(--cut)));
+  overflow: hidden;
+  border-radius: 5px;
+  background: var(--tone);
+  color: var(--tone-ink);
+  container-type: inline-size;
+  transition: left var(--iv-fast) var(--iv-ease),
+    width var(--iv-fast) var(--iv-ease);
+}
+.iv-strip-part[data-first] {
+  left: var(--start);
+  width: max(3px, calc(var(--size) - var(--cut)));
+  border-radius: 14px 5px 5px 14px;
+}
+.iv-strip-part[data-last] {
+  border-radius: 5px 14px 14px 5px;
+}
+.iv-strip-part[data-first][data-last] {
+  width: var(--size);
+  border-radius: 14px;
+}
+.iv-strip[data-dragging] .iv-strip-part {
+  transition: none;
+}
+.iv-strip-part[data-hot] {
+  box-shadow: inset 0 0 0 1.5px rgb(255 255 255 / 0.4);
+}
+/* Fine diagonal lines say "not a number of its own": over the part that
+   takes the rest, in its own ink so they read on any shade, and over a
+   part that does not add up. The calendar's days past the due date and a
+   slider's shut end use the same lines. */
+.iv-strip-part[data-rest]::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    -45deg,
+    color-mix(in srgb, currentColor 14%, transparent) 0 1px,
+    transparent 1px 7px
+  );
+  pointer-events: none;
+}
+.iv-strip-part[data-invalid] {
+  background: repeating-linear-gradient(-45deg, #f4b9ad 0 1px, #fbd3cb 1px 7px);
+  color: #8f241c;
+}
+.iv-strip-tick {
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  width: 1px;
+  background: currentColor;
+  opacity: 0.24;
+}
+.iv-strip-label {
+  position: relative;
+  display: grid;
+  padding-left: 12px;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+.iv-strip-label b {
+  font-size: 13px;
+  font-weight: 600;
+}
+.iv-strip-label small {
+  font-size: 11.5px;
+  opacity: 0.72;
+}
+@container (max-width: 88px) {
+  .iv-strip-label {
+    padding-left: 8px;
+  }
+  .iv-strip-label small {
+    display: none;
+  }
+}
+@container (max-width: 34px) {
+  .iv-strip-label {
+    display: none;
+  }
+}
+/* The seam: a 24px target and a white grip to see. The grip lengthens at
+   once under the pointer and further in hand. */
+.iv-strip-seam {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  margin-left: -12px;
+  cursor: col-resize;
+  outline: none;
+  touch-action: none;
+}
+.iv-strip-grip {
+  width: 4px;
+  height: 22px;
+  border-radius: 2px;
+  background: #fff;
+  box-shadow: 0 0 0 0.5px rgb(20 20 20 / 0.2), 0 1px 3px rgb(20 20 20 / 0.24);
+}
+.iv-strip-seam:hover .iv-strip-grip {
+  height: 34px;
+}
+.iv-strip-seam[data-active] .iv-strip-grip {
+  height: 56px;
+}
+.iv-strip-seam:focus-visible .iv-strip-grip {
+  box-shadow: 0 0 0 2px var(--iv-canvas), 0 0 0 3.5px var(--iv-ink);
+}
+/* While held, what lands on each side of the seam, with the divider right
+   over it: two equal columns, so the middle never drifts. */
+.iv-strip-readout {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 50%;
+  display: grid;
+  grid-template-columns: 1fr 1px 1fr;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--iv-ink);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.iv-strip-seam[data-edge='start'] .iv-strip-readout {
+  transform: translateX(-28px);
+}
+.iv-strip-seam[data-edge='end'] .iv-strip-readout {
+  transform: translateX(calc(-100% + 28px));
+}
+.iv-strip-readout > span:first-child {
+  text-align: right;
+}
+.iv-strip-readout > i {
+  align-self: stretch;
+  background: rgb(255 255 255 / 0.28);
+}
+/* A fine ruler under the strip: a tick every 5%, a longer one and a label
+   every quarter. While a seam is held, its readout takes the ruler's
+   place. */
+.iv-strip-ruler {
+  position: relative;
+  height: 18px;
+  margin-top: 6px;
+  background: repeating-linear-gradient(
+      to right,
+      rgb(20 20 20 / 0.12) 0 1px,
+      transparent 1px 5%
+    )
+    0 0 / 100% 3px no-repeat;
+}
+.iv-strip[data-dragging] .iv-strip-ruler {
+  visibility: hidden;
+}
+.iv-strip-ruler span {
+  position: absolute;
+  top: 8px;
+  color: var(--iv-ink-3);
+  font-size: 10.5px;
+  line-height: 1;
+  transform: translateX(-50%);
+}
+.iv-strip-ruler span::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  width: 1px;
+  height: 5px;
+  background: rgb(20 20 20 / 0.24);
+}
+.iv-strip-ruler span:first-child {
+  transform: none;
+}
+.iv-strip-ruler span:first-child::before {
+  left: 0;
+}
+.iv-strip-ruler span:last-child {
+  transform: translateX(-100%);
+}
+.iv-strip-ruler span:last-child::before {
+  right: 0;
+  left: auto;
+}
+
+/* One card per part. A 28px column holds the part's swatch, which turns
+   into its drag handle under the pointer; everything else, name, sentence
+   and dates, starts on one edge beside it. */
+.iv-parts {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.iv-part {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  column-gap: 10px;
+  padding: 12px 18px 16px 10px;
+  border-radius: 18px;
+  background: var(--iv-surface);
+  box-shadow: var(--iv-raise);
+}
+.iv-part[data-hot] {
+  box-shadow: 0 0 0 1px rgb(20 20 20 / 0.12), 0 1px 2px rgb(20 20 20 / 0.06),
+    0 6px 16px -8px rgb(20 20 20 / 0.16);
+}
+.iv-part > * {
+  grid-column: 2;
+}
+.iv-part > .iv-part-grip {
+  grid-row: 1;
+  grid-column: 1;
+}
+.iv-part-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
+  align-items: center;
+  gap: 2px;
+  min-height: 32px;
+}
+.iv-part-grip {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 32px;
+  border-radius: 9px;
+  color: var(--iv-ink-3);
+  cursor: grab;
+  touch-action: none;
+}
+.iv-part-grip > svg {
+  display: none;
+}
+.iv-part-grip:active {
+  cursor: grabbing;
+}
+.iv-part-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--tone);
+}
+@media (hover: hover) and (pointer: fine) {
+  .iv-part-grip:hover,
+  .iv-part-grip:focus-visible {
+    background: var(--iv-hover);
+  }
+  .iv-part-grip:hover > svg,
+  .iv-part-grip:focus-visible > svg {
+    display: block;
+  }
+  .iv-part-grip:hover > .iv-part-swatch,
+  .iv-part-grip:focus-visible > .iv-part-swatch {
+    display: none;
+  }
+}
+.iv-part-label {
+  min-width: 0;
+  padding: 4px 0;
+  border: 0;
+  outline: none;
+  background: none;
+  font-weight: 600;
+}
+.iv-part-label::placeholder {
+  color: var(--iv-ink-3);
+  font-weight: 500;
+}
+.iv-part-sum {
+  margin-right: 8px;
+  color: var(--iv-ink-2);
+}
+.iv-part .iv-icon-btn {
+  color: var(--iv-ink-3);
+}
+@media (hover: hover) and (pointer: fine) {
+  .iv-part .iv-icon-btn {
+    opacity: 0;
+  }
+  .iv-part:hover .iv-icon-btn,
+  .iv-part:focus-within .iv-icon-btn {
+    opacity: 1;
+  }
+}
+.iv-sentence {
+  margin: 2px 0 0;
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  line-height: 1.75;
+  text-wrap: pretty;
+}
+.iv-part-when {
+  color: var(--iv-ink-3);
+  font-size: 12.5px;
+}
+/* The icons line up with the swatches above them: card inset 10px plus
+   half the 28px column, less half the 14px icon and the 10px padding. */
+.iv-composer-add {
+  display: flex;
+  gap: 4px;
+  margin: -8px 0 0 7px;
+}
+.iv-composer-add button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 12px 0 10px;
+  border-radius: 999px;
+  color: var(--iv-ink-2);
+  font-weight: 500;
+}
+.iv-composer-add button:not(:disabled):hover {
+  background: var(--iv-hover);
+  color: var(--iv-ink);
+}
+.iv-composer-add button:disabled {
+  color: var(--iv-ink-3);
+}
+.iv-sentence-rules {
+  margin: 4px 0 0;
+  color: var(--iv-ink-2);
+  font-size: 18px;
+}
+
+/* Tokens: the words that change, as soft round pills. Each kind of value
+   has its own pastel, and the words stay in ink, so a sentence reads as
+   money, time and counts without losing its type. Hover deepens the pill
+   at once; open, it takes an ink ring; a press gives a little. */
+.iv-token {
+  --token: #ebe8e3;
+  --token-deep: #e0ddd6;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.12em;
+  height: 1.4em;
+  padding: 0 0.34em 0 0.44em;
+  border-radius: 999px;
+  background: var(--token);
+  color: var(--iv-ink);
+  font: inherit;
+  letter-spacing: inherit;
+  line-height: 1;
+  vertical-align: baseline;
+  cursor: pointer;
+  transition: transform 160ms ease-out;
+}
+.iv-token[aria-pressed] {
+  padding-right: 0.44em;
+}
+.iv-token[data-tone='money'] {
+  --token: #f5e3ad;
+  --token-deep: #efd68a;
+}
+.iv-token[data-tone='time'] {
+  --token: #e2defb;
+  --token-deep: #d4cff7;
+}
+.iv-token[data-tone='count'] {
+  --token: #cdf1d8;
+  --token-deep: #b7e9c6;
+}
+.iv-token[data-tone='invalid'] {
+  --token: #fbd3cb;
+  --token-deep: #f7c0b5;
+  color: #8f241c;
+}
+.iv-token > svg {
+  width: 0.6em;
+  height: 0.6em;
+  opacity: 0.55;
+}
+@media (hover: hover) and (pointer: fine) {
+  .iv-token:hover {
+    background: var(--token-deep);
+  }
+}
+.iv-token:active {
+  transform: scale(0.97);
+}
+.iv-token[data-state='open'] {
+  box-shadow: 0 0 0 2px var(--iv-ink);
+}
+.iv-token[data-state='open'] > svg {
+  transform: rotate(180deg);
+}
+.iv-token:focus-visible {
+  outline: 2px solid var(--iv-ink);
+  outline-offset: 2px;
+}
+
+/* A token's editor opens from the token itself, and says what it edits. */
+.iv-token-pop {
+  --token: #ebe8e3;
+  width: 312px;
+  max-height: none;
+  padding: 12px;
+  border-radius: 20px;
+  overflow: visible;
+}
+.iv-token-pop[data-tone='money'] {
+  --token: #f5e3ad;
+}
+.iv-token-pop[data-tone='time'] {
+  --token: #e2defb;
+}
+.iv-token-pop[data-tone='count'] {
+  --token: #cdf1d8;
+}
+.iv-token-pop:has([data-wide]) {
+  width: 340px;
+}
+.iv-token-title {
+  margin: 2px 4px 10px;
+  color: var(--iv-ink-2);
+  font-size: 12.5px;
+}
+.iv-token-editor {
+  display: grid;
+  gap: 10px;
+}
+.iv-token-editor > .iv-segmented {
+  width: 100%;
+}
+.iv-token-editor > .iv-segmented > label {
+  flex: 1;
+}
+.iv-segmented > label[data-disabled] {
+  opacity: 0.4;
+  cursor: default;
+}
+.iv-token-note {
+  padding: 0 4px;
+  color: var(--iv-ink-2);
+  font-size: 12.5px;
+}
+.iv-token-note strong {
+  color: var(--iv-ink);
+  font-weight: 600;
+}
+.iv-token-note[data-invalid],
+.iv-token-note[data-invalid] strong {
+  color: var(--iv-danger);
+}
+.iv-big-number {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 14px;
+  background: var(--iv-sunken);
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.iv-big-number > span[aria-hidden] {
+  color: var(--iv-ink-3);
+  font-weight: 500;
+}
+.iv-big-number[data-after] > span[aria-hidden] {
+  order: 2;
+}
+.iv-big-number input {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: none;
+}
+.iv-big-number:focus-within {
+  box-shadow: inset 0 0 0 1.5px var(--iv-ink);
+}
+.iv-big-number[data-invalid] {
+  color: var(--iv-danger);
+}
+
+/* The slider: a pastel fill in the token's colour, to the strip's scale,
+   with a white thumb riding inside its end. What the plan cannot take is
+   shaded. A click glides there; a drag follows the pointer exactly;
+   letting go past an end springs back. */
+.iv-range {
+  display: grid;
+  gap: 6px;
+}
+.iv-range-track {
+  position: relative;
+  height: 36px;
+  overflow: clip;
+  border-radius: 12px;
+  background: var(--iv-sunken);
+  cursor: pointer;
+  touch-action: none;
+}
+.iv-range-track:has(:focus-visible) {
+  outline: 2px solid var(--iv-ink);
+  outline-offset: 2px;
+}
+.iv-range-shut {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: var(--high);
+  background: repeating-linear-gradient(
+    -45deg,
+    rgb(20 20 20 / 0.1) 0 1px,
+    transparent 1px 7px
+  );
+  box-shadow: inset 1px 0 0 rgb(20 20 20 / 0.12);
+}
+.iv-range-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: max(36px, calc(var(--at) + var(--give)));
+  border-radius: 12px;
+  background: var(--token);
+  transition: width 200ms var(--iv-ease);
+}
+.iv-range-thumb {
+  position: absolute;
+  top: 7px;
+  left: calc(max(36px, calc(var(--at) + var(--give))) - 29px);
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 0.5px rgb(20 20 20 / 0.12), 0 1px 3px rgb(20 20 20 / 0.2);
+  outline: none;
+  transition: left 200ms var(--iv-ease);
+}
+.iv-range[data-dragging] .iv-range-fill,
+.iv-range[data-dragging] .iv-range-thumb {
+  transition: none;
+}
+.iv-range-ends {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 4px;
+  color: var(--iv-ink-3);
+  font-size: 11.5px;
+}
+
+.iv-token-list {
+  display: grid;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  gap: 1px;
+}
+/* The chosen row is the dark one, as in a picker; its date stays legible. */
+.iv-token-list .iv-menu-item[aria-pressed='true'] {
+  background: var(--iv-ink);
+  color: #fff;
+}
+.iv-token-list .iv-menu-item[aria-pressed='true'] > small {
+  color: rgb(255 255 255 / 0.7);
+}
+.iv-token-check {
+  flex: none;
+}
+.iv-token-list .iv-menu-item > small + .iv-token-check {
+  margin-left: 0;
+}
+.iv-token-custom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 14px;
+  background: var(--iv-sunken);
+}
+.iv-token-custom[data-active] {
+  box-shadow: inset 0 0 0 1.5px var(--iv-ink);
+}
+.iv-token-custom-label {
+  padding-left: 4px;
+  font-weight: 500;
+}
+.iv-token-custom .iv-segmented {
+  flex: 1;
+}
+.iv-token-date {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 8px 6px 12px;
+  border-radius: 14px;
+  background: var(--iv-sunken);
+  font-weight: 500;
+}
+.iv-token-date[data-active] {
+  box-shadow: inset 0 0 0 1.5px var(--iv-ink);
+}
+.iv-token-date input {
+  border: 0;
+  outline: none;
+  background: none;
+  font-variant-numeric: tabular-nums;
+}
+.iv-stepper {
+  display: inline-flex;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  align-items: center;
+  gap: 4px;
+}
+.iv-stepper > button {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: var(--iv-surface);
+  box-shadow: var(--iv-ring);
+  transition: transform 160ms ease-out;
+}
+.iv-stepper > button:not(:disabled):hover {
+  background: #fafafa;
+}
+.iv-stepper > button:active {
+  transform: scale(0.94);
+}
+.iv-stepper > button:disabled {
+  opacity: 0.4;
+}
+.iv-stepper > output {
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 6px;
+  min-width: 3ch;
+  font-size: 15px;
+  font-weight: 600;
+}
+.iv-token-editor > .iv-stepper {
+  justify-content: space-between;
+  padding: 8px;
+  border-radius: 14px;
+  background: var(--iv-sunken);
+}
+.iv-token-editor > .iv-stepper > output {
+  font-size: 28px;
+  letter-spacing: -0.02em;
+}
+.iv-stepper-unit {
+  color: var(--iv-ink-3);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+/* ---- The preview: an island of paper with the calendar the customer
+   gets. Its rows reach 10px into the margin for their hover, so their
+   text still starts on the island's edge. */
+.iv-studio-preview {
+  margin: 0 16px 16px 0;
+  padding: 22px 22px 32px;
+  border-radius: var(--iv-r-panel);
+  background: var(--iv-surface);
+  box-shadow: var(--iv-raise);
+}
+.iv-preview-head {
+  display: grid;
+  gap: 8px;
+}
+.iv-preview-head h3 {
+  color: var(--iv-ink-3);
+  font-size: 12.5px;
+  font-weight: 500;
+}
+.iv-preview-head p {
+  display: grid;
+  gap: 2px;
+}
+.iv-preview-head strong {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.012em;
+}
+.iv-preview-head span {
+  color: var(--iv-ink-2);
+}
+.iv-preview-note {
+  margin-top: 14px;
+  color: var(--iv-ink-3);
+  font-size: 12px;
+}
+
+/* The calendar, drawn by bklit. Its baseline, due date and months are
+   placed on the plot's own scale, measured from the chart's margins. */
+.iv-timeline {
+  display: grid;
+  gap: 4px;
+  margin-top: 12px;
+}
+.iv-chart {
+  position: relative;
+  margin: 0 -14px;
+}
+.iv-chart path,
+.iv-chart rect {
+  transition: fill var(--iv-quick) ease;
+}
+.iv-chart-base,
+.iv-chart-due,
+.iv-chart-axis {
+  --plot: calc(100% - var(--left) - var(--right));
+  pointer-events: none;
+}
+.iv-chart-base {
+  position: absolute;
+  right: var(--right);
+  bottom: var(--bottom);
+  left: var(--left);
+  height: 1.5px;
+  border-radius: 1px;
+  background: rgb(20 20 20 / 0.3);
+}
+.iv-chart-due {
+  position: absolute;
+  top: calc(var(--top) - 18px);
+  bottom: var(--bottom);
+  left: calc(var(--left) + var(--plot) * var(--x));
+  border-left: 1px dashed rgb(20 20 20 / 0.24);
+}
+.iv-chart-due small {
+  position: absolute;
+  top: -2px;
+  left: 6px;
+  color: var(--iv-ink-3);
+  font-size: 11px;
+  white-space: nowrap;
+}
+.iv-chart-due[data-side='left'] small {
+  right: 6px;
+  left: auto;
+}
+.iv-chart-axis {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: var(--bottom);
+}
+.iv-chart-axis span {
+  position: absolute;
+  top: 9px;
+  left: calc(var(--left) + var(--plot) * var(--x));
+  color: var(--iv-ink-3);
+  font-size: 11px;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+.iv-chart-tip {
+  display: grid;
+  gap: 6px;
+  min-width: 190px;
+  padding: 10px 12px;
+  font-size: 12px;
+}
+.iv-chart-tip > p:first-child {
+  color: var(--chart-tooltip-muted);
+}
+.iv-chart-tip ul {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.iv-chart-tip li {
+  display: grid;
+  grid-template-columns: 8px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+}
+.iv-chart-tip li::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--swatch);
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.24);
+}
+.iv-chart-tip li b {
+  font-weight: 600;
+}
+.iv-chart-tip-paid {
+  padding-top: 6px;
+  border-top: 1px solid rgb(255 255 255 / 0.12);
+  color: var(--chart-tooltip-muted);
+}
+
+.iv-timeline-list section + section {
+  margin-top: 6px;
+}
+.iv-timeline-list h4 {
+  margin: 10px 0 2px;
+  color: var(--iv-ink-3);
+  font-size: 12px;
+  font-weight: 500;
+}
+.iv-timeline-list ol {
+  display: grid;
+  margin: 0 -10px;
+  padding: 0;
+  list-style: none;
+}
+.iv-timeline-list li {
+  display: grid;
+  grid-template-columns: 8px max-content minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 32px;
+  padding: 0 10px;
+  border-radius: 10px;
+}
+.iv-timeline-list li[data-hot] {
+  background: var(--iv-hover);
+}
+.iv-timeline-list li[data-invalid] .iv-num:last-child {
+  color: var(--iv-danger);
+}
+.iv-timeline-swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--tone);
+}
+.iv-timeline-date {
+  color: var(--iv-ink-2);
+}
+.iv-timeline-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.iv-timeline-list li > .iv-num:last-child {
+  font-weight: 500;
+}
+.iv-timeline-foot {
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--iv-line);
+  color: var(--iv-ink-2);
+  font-size: 12.5px;
+}
+
+/* The bar floats over the bottom of the composer, holding what applies to
+   the option in front of the owner. */
+.iv-studio-bar {
+  position: sticky;
+  bottom: 20px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin: auto 0 20px;
+  padding: 6px;
+  border-radius: 999px;
+  background: var(--iv-surface);
+  box-shadow: var(--iv-float);
+  white-space: nowrap;
+}
+.iv-studio-bar .iv-btn {
+  border-radius: 999px;
+}
+.iv-studio-bar-rule {
+  width: 1px;
+  height: 20px;
+  margin: 0 6px;
+  border-radius: 1px;
+  background: var(--iv-line-strong);
+}
+
+/* The card grows into the studio. Neither snapshot is scaled: the box
+   between them grows, and the clip reveals the studio rather than
+   stretching the card to fill it. */
+::view-transition-group(plan-studio) {
+  overflow: clip;
+  border-radius: 20px;
+  animation-duration: 420ms;
+  animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+}
+::view-transition-old(plan-studio),
+::view-transition-new(plan-studio) {
+  width: 100%;
+  height: 100%;
+  object-fit: none;
+  object-position: left top;
+}
+::view-transition-old(plan-studio) {
+  animation-duration: 160ms;
+}
+::view-transition-group(*.plan-bar) {
+  animation-duration: 420ms;
+  animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .t-panel-slide { transition: none !important; }
+  .iv-strip-part,
+  .iv-range-fill,
+  .iv-range-thumb {
+    transition: none;
+  }
 }
-/* Wiring (ours, not the snippet): DocumentContent renders a fragment, so the
-   panel is a direct flex item of the viewer and must fill it, or the page
-   viewport below collapses. */
-.iv-pdf-viewer .t-panel-slide { display: flex; flex-direction: column; flex: 1; min-height: 0; }
-.iv-inspector { flex: 0 0 385px; width: 385px; display: flex; flex-direction: column; background: var(--iv-panel); min-height: 0; }
-.iv-inspector-title { display: flex; align-items: center; justify-content: space-between; padding: 24px 22px 19px; gap: 12px; }
-.iv-inspector-title h2 { font-size: 16px; }
-.iv-inspector-title > span { color: #a7a297; font-size: 10px; }
-.iv-editor-tabs { margin: 0 18px 20px; }
-.iv-editor-tabs button { flex: 1; padding: 8px 10px; }
-.iv-inspector-scroll { flex: 1; overflow: auto; padding: 0 22px 25px; scrollbar-width: thin; scrollbar-color: #ffffff12 transparent; }
-.iv-field { min-width: 0; margin-bottom: 17px; }
-.iv-field label { display: block; font-size: 11px; color: #b6b1a7; margin: 0 0 7px; line-height: 1.45; }
-.iv-field :is(input,select,textarea) { display: block; width: 100%; min-height: 37px; background: var(--iv-field); border: 1px solid #fffdf404; border-radius: 6px; padding: 9px 10px; font-size: 12px; line-height: 1.4; box-shadow: inset 0 1px 2px #0000000a; }
-.iv-field :is(input,select,textarea):focus { border-color: #d6ac8c60; }
-.iv-field :is(input,textarea)::placeholder { color: #88857d; }
-.iv-field :is(input,select,textarea):disabled { opacity: .75; background: #ffffff03; cursor: default; }
-.iv-field textarea { resize: vertical; min-height: 72px; }
-.iv-field-error { color: #f0b6a4; font-size: 11px; line-height: 1.5; margin: 7px 0 0; }
-.iv-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
-.iv-check { display: flex; align-items: flex-start; gap: 9px; font-size: 11px; color: #c0bab0; margin: 9px 0 22px; }
-.iv-check input { margin: 2px 0 0; accent-color: #d6ac8c; width: 14px; height: 14px; flex: 0 0 14px; }
-.iv-issuer-summary { display: flex; flex-direction: column; gap: 4px; padding: 15px; border-radius: 8px; background: #ffffff04; font-size: 11px; }
-.iv-issuer-summary strong { font-size: 12px; font-weight: 500; }
-.iv-issuer-summary > span { color: #a9a296; }
-.iv-inline-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; margin-top: 15px; }
-.iv-inline-actions a { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #d6ac8c; }
-.iv-inline-actions button { min-height: 28px; padding: 5px 8px; font-size: 10px; }
-.iv-inspector-bottom { padding: 20px 22px; background: #1d1d1b; }
-.iv-inspector-bottom > div { display: flex; align-items: center; justify-content: space-between; }
-.iv-inspector-bottom > div > span { font-size: 12px; color: #ada79d; }
-.iv-inspector-bottom strong { font-size: 24px; letter-spacing: -.025em; font-weight: 450; font-variant-numeric: tabular-nums; }
-.iv-inspector-bottom .iv-delete { font-size: 10px; background: none; color: #9a9388; padding: 9px 0 0; min-height: 24px; }
-.iv-line { padding: 14px 0 18px; border-bottom: 1px solid var(--iv-line); }
-.iv-line:first-child { padding-top: 0; }
-.iv-line-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; font-size: 11px; color: #bfb4a5; }
-.iv-line-heading > span { display: flex; gap: 4px; }
-.iv-line-heading button { min-height: 25px; padding: 5px; background: none; }
-.iv-line-amounts { display: grid; grid-template-columns: .8fr 1.2fr .8fr; gap: 10px; }
-.iv-line .iv-disclosure { min-height: 25px; padding: 0; background: none; font-size: 10px; color: #b1a596; }
-.iv-line-options { margin-top: 17px; }
-.iv-add-line { width: 100%; margin: 18px 0; }
-.iv-hint { color: #a69e91 !important; font-size: 11px; line-height: 1.7; }
-.iv-error, .iv-notice { background: #6d413825; color: #f0b6a4; border-radius: 8px; padding: 14px; margin-bottom: 18px; font-size: 12px; }
-.iv-notice { background: #65543925; color: #dac7a8; }
-.iv-notice button { margin: 10px 5px 0 0; font-size: 11px; }
-.iv-toast { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); background: #322b26; color: #f5ddc7; border-radius: 8px; padding: 14px 20px; z-index: 100; }
-.iv-dialog-overlay { position: fixed; inset: 0; background: #080807b3; backdrop-filter: blur(4px); z-index: 100; }
-.iv-dialog { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(540px, calc(100vw - 32px)); max-height: calc(100dvh - 48px); overflow-y: auto; padding: 26px; background: #262522; border-radius: 14px; box-shadow: 0 16px 60px #0000004d, inset 0 1px #fff3df0a; z-index: 101; }
-.iv-dialog-heading { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 10px; }
-.iv-dialog-heading button { background: none; padding: 5px; min-height: 27px; }
-.iv-dialog > p { color: #bfb6a9; font-size: 12px; line-height: 1.7; margin-bottom: 22px; }
-.iv-dialog-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
-.iv-dialog .iv-danger { background: #a8604e; color: #fff2ec; }
-.iv-issue-checklist { max-height: 340px; overflow-y: auto; padding: 8px 0; }
-.iv-issue-checklist p { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; font-size: 12px; color: #d0c5b7; }
-.iv-issue-checklist p > span:first-child { color: #ba9476; min-width: 16px; }
-.iv-ready { display: flex; align-items: center; gap: 14px; color: #bcc8a8; padding: 18px 0; }
-.iv-outstanding { display: flex; flex-direction: column; gap: 3px; margin-bottom: 15px !important; font-size: 25px; font-variant-numeric: tabular-nums; }
-.iv-outstanding > span:last-child { color: #a49b8b; font-size: 11px; }
-.iv-payment { display: flex; align-items: center; justify-content: space-between; margin: 14px 0; font-size: 11px; }
-.iv-payment strong { display: block; font-weight: 450; color: #c8b49d; margin-top: 4px; font-variant-numeric: tabular-nums; }
-.iv-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-.iv-signin { position: relative; display: flex; flex-direction: column; background: linear-gradient(117deg, #23231f, #29271f 45%, #443326 78%, #6c4f37); padding: 35px 52px 26px; }
-.iv-back { display: inline-flex; align-items: center; gap: 12px; font-size: 12px; width: fit-content; color: #c6b6a1; }
-.iv-signin-content { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; padding: 60px 5vw; }
-.iv-wordmark { font-size: 17px; font-weight: 500; letter-spacing: -.03em; margin-bottom: 40px; }
-.iv-wordmark span { color: #b78860; margin-left: 6px; }
-.iv-signin h1 { font-size: clamp(45px, 6vw, 86px); font-weight: 400; line-height: 1.05; letter-spacing: -.05em; }
-.iv-signin p { max-width: 340px; color: #b9afa0; margin: 26px 0; font-size: 14px; line-height: 1.7; }
-.iv-signin .iv-primary { padding: 13px 18px; }
-.iv-signin-owner { color: #aa9985; font-size: 11px; margin-top: 15px; }
-.iv-signin-foot { display: flex; justify-content: space-between; gap: 20px; color: #b5a18a; font-size: 11px; }
-.iv-directory { padding: 0 42px 40px; }
-.iv-directory-heading { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin: 42px 0 30px; }
-.iv-directory-heading p { margin-top: 10px; color: var(--iv-muted); }
-.iv-directory-rows { display: flex; flex-direction: column; }
-.iv-directory-row { display: flex; align-items: center; gap: 20px; padding: 20px 5px; border-bottom: 1px solid var(--iv-line); }
-.iv-directory-row > div { flex: 1; }
-.iv-directory-row strong { display: block; font-size: 14px; font-weight: 450; margin-bottom: 4px; }
-.iv-directory-row span { font-size: 12px; color: var(--iv-muted); }
-.iv-settings { max-width: 880px; padding: 0 42px 60px; }
-.iv-settings h1 { margin: 42px 0 12px; }
-.iv-settings > p { color: var(--iv-muted); margin-bottom: 35px; }
-.iv-settings-section { background: #ffffff03; border-radius: 12px; padding: 5px 24px 24px; margin-bottom: 24px; }
-.iv-settings-actions { display: flex; gap: 20px; align-items: center; }
-.iv-settings-actions > span { color: var(--iv-muted); font-size: 12px; }
-@media (min-width: 1500px) { .iv-inspector { flex-basis: 420px; width: 420px; } .iv-canvas { padding-left: 42px; padding-right: 42px; } }
-@media (max-width: 1100px) { .iv-inspector { flex-basis: 345px; width: 345px; } .iv-topbar { padding: 0 20px; } .iv-breadcrumb { gap: 10px; } .iv-header-actions .iv-save-status { max-width: 125px; white-space: normal; } .iv-canvas { padding: 0 16px; } }
-@media (max-width: 820px) {
-  .iv-app { margin: 0; border-radius: 0; min-height: 100dvh; }
-  .iv-rail { flex-basis: 52px; width: 52px; padding-top: 14px; gap: 10px; }
-  .iv-rail a, .iv-rail button { width: 36px; }
-  .iv-editor { height: auto; min-height: 100dvh; }
-  .iv-editor-body { flex-direction: column; }
-  .iv-canvas { min-height: 600px; height: 70dvh; flex: none; }
-  .iv-inspector { width: auto; flex: none; min-height: 600px; }
-  .iv-inspector-scroll { overflow: visible; }
-  .iv-inspector-title { padding-top: 25px; }
-  .iv-header-actions { gap: 5px; }
-  .iv-header-actions .iv-save-status { display: none; }
-  .iv-topbar { min-height: 63px; padding: 10px 16px; flex-wrap: wrap; gap: 12px; }
-  .iv-list-heading { padding: 35px 22px 28px; }
-  .iv-list-heading h1 { font-size: 35px; }
-  .iv-overview { margin: 0 22px 30px; padding: 22px; gap: 15px; }
-  .iv-overview strong { font-size: 23px; }
-  .iv-list-tools { margin: 0 22px 15px; flex-wrap: wrap; }
-  .iv-table-wrap { margin: 0 22px; }
-  .iv-list-footer { margin-left: 22px; margin-right: 22px; }
-  .iv-account { display: none; }
-  .iv-directory { padding: 0 22px 35px; }
-  .iv-settings { padding: 0 22px 35px; }
-  .iv-signin { padding: 25px; }
-  .iv-signin-content { padding: 45px 0; }
+
+/* Narrower, the body scrolls as one and the preview follows the composer.
+   The rows size to what they hold; the rail stays in view and scrolls
+   itself. */
+@media (max-width: 1180px) {
+  .iv-studio {
+    --studio-columns: 244px minmax(0, 1fr) auto;
+  }
+  .iv-studio-body {
+    grid-template-columns: 244px minmax(0, 1fr);
+    grid-template-rows: max-content max-content;
+    align-items: start;
+    overflow-y: auto;
+  }
+  .iv-studio-composer,
+  .iv-studio-preview {
+    overflow: visible;
+  }
+  .iv-studio-rail {
+    position: sticky;
+    top: 0;
+    grid-row: 1 / span 2;
+    max-height: calc(100dvh - 64px);
+  }
+  /* The island is the composer's measure plus its own padding, so its
+     text starts on the sentences' edge. */
+  .iv-studio-preview {
+    justify-self: center;
+    width: min(724px, 100% - 36px);
+    margin: 0 0 24px;
+  }
 }
-@media (max-width: 480px) {
-  .iv-topbar { align-items: flex-start; }
-  .iv-breadcrumb { font-size: 11px; gap: 8px; }
-  .iv-header-actions { margin-left: auto; }
-  .iv-overview { grid-template-columns: 1fr 1fr; }
-  .iv-overview > div:first-child { grid-column: 1 / -1; }
-  .iv-list-heading { align-items: flex-start; flex-direction: column; }
-  .iv-list-footer, .iv-signin-foot { flex-direction: column; gap: 6px; }
-  .iv-tabs button { font-size: 11px; padding: 7px 8px; }
-  .iv-directory-heading { align-items: flex-start; flex-direction: column; }
-  .iv-settings-section { padding-left: 14px; padding-right: 14px; }
+@media (max-width: 760px) {
+  .iv-studio {
+    --studio-columns: auto minmax(0, 1fr) auto;
+  }
+  .iv-studio-back {
+    margin-left: 8px;
+  }
+  .iv-studio-title {
+    width: auto;
+    justify-self: start;
+    padding-left: 8px;
+  }
+  .iv-studio-title p {
+    display: none;
+  }
+  .iv-studio-saved {
+    margin-right: 16px;
+  }
+  .iv-studio-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .iv-studio-rail {
+    position: static;
+    grid-row: auto;
+    max-height: none;
+    overflow: visible;
+    padding: 4px 12px 0;
+  }
+  .iv-choices {
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(200px, 72%);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+  }
+  .iv-choice {
+    scroll-snap-align: start;
+  }
+  .iv-studio-rail > .iv-rail-group:last-child {
+    display: none;
+  }
+  .iv-studio-composer {
+    padding: 16px 12px 0;
+  }
+  .iv-composer-name {
+    font-size: 26px;
+  }
+  .iv-sentence {
+    font-size: 19px;
+  }
+  .iv-part {
+    padding: 10px 12px 14px 6px;
+    column-gap: 6px;
+  }
+  .iv-studio-preview {
+    width: auto;
+    margin: 0 12px 24px;
+  }
+  /* On a phone the bar keeps its icons and names only what it is done
+     with; each button still says what it does to a screen reader. */
+  .iv-studio-bar-word {
+    display: none;
+  }
+  .iv-studio-bar .iv-btn[data-variant='ghost'][data-size] {
+    padding-inline: 10px;
+  }
+}
+
+/* The customer's choice of plan. */
+.iv-pay-plans legend,
+.iv-pay-amount-legend {
+  margin-bottom: 8px;
+  padding: 0;
+  font-weight: 500;
+}
+.iv-pay-plans > label {
+  min-height: 60px;
+}
+.iv-pay-plan-now {
+  display: grid;
+  justify-items: end;
+}
+.iv-pay-plan-now .iv-num {
+  font-weight: 500;
+}
+.iv-pay-plan-now small {
+  color: var(--iv-ink-3);
+  font-size: 11.5px;
+}
+.iv-pay-plan-kept {
+  color: var(--iv-ink-2);
+  font-size: 12.5px;
+}
+
+/* ---------------------------------------------------------------- Settings */
+
+.iv-settings {
+  width: min(880px, 100%);
+  /* Room for the save bar, so it never sits on the last field. */
+  padding-bottom: 120px;
+}
+.iv-settings-group {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 32px;
+  padding: 28px 0;
+}
+.iv-settings-group + .iv-settings-group {
+  box-shadow: inset 0 1px 0 var(--iv-line);
+}
+.iv-settings-group > :first-child > h2 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px !important;
+}
+.iv-settings-group > :first-child > p {
+  color: var(--iv-ink-2);
+  line-height: 1.55;
+}
+.iv-settings-group > .iv-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+}
+
+/* Save bar: rises like a toast once there is something to save. */
+.iv-savebar {
+  position: fixed;
+  left: calc(50% + var(--iv-rail-column) / 2);
+  bottom: 24px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 48px;
+  padding: 0 7px 0 18px;
+  border-radius: 999px;
+  background: var(--iv-dark);
+  color: #fff;
+  translate: -50% 0;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08),
+    0 12px 32px -10px rgb(0 0 0 / 0.45);
+  opacity: 0;
+  transform: translateY(16px) scale(0.97);
+  filter: blur(2px);
+  pointer-events: none;
+  transition: opacity var(--iv-fast) var(--iv-ease),
+    transform var(--iv-fast) var(--iv-ease), filter var(--iv-fast) var(--iv-ease);
+}
+.iv-savebar[data-open='true'] {
+  opacity: 1;
+  transform: none;
+  filter: none;
+  pointer-events: auto;
+  transition-duration: var(--iv-medium);
+}
+.iv-savebar > span {
+  color: #c9c9cc;
+  font-weight: 500;
+}
+.iv-savebar .iv-btn[data-variant='ghost'] {
+  color: #c9c9cc;
+}
+.iv-savebar .iv-btn[data-variant='ghost']:hover {
+  color: #fff;
+  background: rgb(255 255 255 / 0.08);
+}
+.iv-savebar .iv-btn[data-variant='primary'] {
+  color: var(--iv-ink);
+  background: #fff;
+  box-shadow: none;
+}
+.iv-savebar .iv-btn[data-variant='primary']:hover:not(:disabled) {
+  background: #ececec;
+}
+.iv-savebar :focus-visible {
+  outline-color: #fff;
+}
+
+/* ---------------------------------------------------------------- Sign in */
+
+.iv-signin {
+  position: relative;
+  display: grid;
+  min-height: 100dvh;
+  place-items: center;
+  padding: 24px;
+  isolation: isolate;
+}
+.iv-signin .iv-backdrop img {
+  opacity: 1;
+}
+.iv-signin-back {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 14px 0 11px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.72);
+  backdrop-filter: blur(12px);
+  font-weight: 500;
+}
+.iv-signin-back:hover {
+  background: rgb(255 255 255 / 0.9);
+}
+.iv-signin-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: min(400px, 100%);
+  padding: 28px;
+  border-radius: 24px;
+  background: var(--iv-surface);
+  box-shadow: var(--iv-float);
+}
+.iv-signin-card .iv-rail-mark {
+  display: flex;
+  margin: -6px 0 28px -8px;
+  color: var(--iv-ink);
+}
+.iv-signin-card .iv-rail-mark span {
+  color: #a0a0a4;
+}
+.iv-signin h1 {
+  margin-bottom: 8px;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+.iv-signin-card > p {
+  margin-bottom: 24px;
+  color: var(--iv-ink-2);
+  line-height: 1.55;
+}
+.iv-signin-card .iv-btn {
+  width: 100%;
+  height: 40px;
+}
+.iv-signin-card small {
+  margin-top: 14px;
+  color: var(--iv-ink-3);
+  font-size: 12px;
+}
+/* The other door, for customers: below a rule, so it reads as a footnote to
+   the card rather than a second action competing with the first. */
+.iv-signin-card > .iv-signin-error {
+  margin: 12px 0 0;
+  color: var(--iv-danger);
+  font-size: 12.5px;
+}
+.iv-signin-alt {
+  display: flex;
+  align-self: stretch;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 22px;
+  padding-top: 16px;
+  box-shadow: inset 0 1px 0 var(--iv-line);
+  color: var(--iv-ink-3);
+  font-size: 12.5px;
+}
+.iv-signin-alt span:last-child {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--iv-ink);
+  font-weight: 500;
+}
+/* The arrow slides toward where the link goes; the link itself stays put. */
+.iv-signin-alt svg {
+  transition: transform var(--iv-quick) var(--iv-ease);
+}
+@media (hover: hover) and (pointer: fine) {
+  .iv-signin-alt:hover svg {
+    transform: translateX(2px);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  .iv-app *, .iv-dialog * { scroll-behavior: auto !important; transition: none !important; }
+  .iv-signin-alt svg {
+    transition: none;
+  }
+}
+
+/* ---------------------------------------------------------------- Payment link */
+
+/* The customer's page is the invoice and its remittance stub on one ticket:
+   the document above (or beside, on a wide screen), the part that pays it
+   below, joined at a perforation with a notch cut into each edge. Masks cut
+   the notches, so the shadow is a drop-shadow on the ticket: it follows the
+   cut paper, not the box. */
+.iv-pay {
+  --ticket-radius: 24px;
+  --notch: 11px;
+  /* The stub is a shade off the paper, the way a tear-off part reads. */
+  --stub: #fbfbfa;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: 100dvh;
+  padding: max(40px, env(safe-area-inset-top)) 16px
+    max(28px, env(safe-area-inset-bottom));
+  isolation: isolate;
+}
+.iv-pay .iv-backdrop {
+  position: fixed;
+}
+.iv-pay-ticket {
+  display: grid;
+  width: min(480px, 100%);
+  filter: drop-shadow(0 0 0.5px rgb(20 20 20 / 0.22))
+    drop-shadow(0 1px 1px rgb(20 20 20 / 0.06))
+    drop-shadow(0 18px 28px rgb(20 20 20 / 0.16));
+}
+.iv-pay-doc,
+.iv-pay-stub {
+  position: relative;
+  min-width: 0;
+}
+/* The halves overlap by a pixel: each mask softens its own edge row, and two
+   soft edges side by side would let a hairline of the backdrop through. */
+.iv-pay-doc {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: -1px;
+  padding: 8px 8px 23px;
+  border-radius: var(--ticket-radius) var(--ticket-radius) 0 0;
+  background: var(--iv-surface);
+  mask:
+    radial-gradient(
+        circle var(--notch) at 0 100%,
+        #0000 var(--notch),
+        #000 calc(var(--notch) + 0.5px)
+      )
+      left / 51% 100% no-repeat,
+    radial-gradient(
+        circle var(--notch) at 100% 100%,
+        #0000 var(--notch),
+        #000 calc(var(--notch) + 0.5px)
+      )
+      right / 51% 100% no-repeat;
+}
+.iv-pay-stub {
+  padding: 26px 30px 28px;
+  border-radius: 0 0 var(--ticket-radius) var(--ticket-radius);
+  background: var(--stub);
+  mask:
+    radial-gradient(
+        circle var(--notch) at 0 0,
+        #0000 var(--notch),
+        #000 calc(var(--notch) + 0.5px)
+      )
+      left / 51% 100% no-repeat,
+    radial-gradient(
+        circle var(--notch) at 100% 0,
+        #0000 var(--notch),
+        #000 calc(var(--notch) + 0.5px)
+      )
+      right / 51% 100% no-repeat;
+}
+/* The perforation runs from notch to notch. */
+.iv-pay-stub::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: calc(var(--notch) + 8px);
+  right: calc(var(--notch) + 8px);
+  height: 1px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--iv-line-strong) 0 5px,
+    transparent 5px 10px
+  );
+}
+
+/* The document. Its banner sits inside the paper's margin, as on the PDF:
+   radius is the ticket's minus that margin, and a faint inner edge keeps a
+   pale cover from dissolving into the white. */
+.iv-pay-banner {
+  display: block;
+  width: 100%;
+  height: 92px;
+  object-fit: cover;
+  border-radius: calc(var(--ticket-radius) - 8px);
+  outline: 1px solid rgb(0 0 0 / 0.1);
+  outline-offset: -1px;
+}
+.iv-pay-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 22px 22px 0;
+}
+.iv-pay-issuer {
+  color: var(--iv-ink-2);
+  font-weight: 500;
+}
+.iv-pay-head h1 {
+  margin-top: 2px;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+.iv-pay-pdf {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 11px 0 9px;
+  border-radius: 999px;
+  color: var(--iv-ink-2);
+  box-shadow: var(--iv-ring);
+  font-size: 12px;
+  font-weight: 500;
+}
+/* Instant, like every frequent hover in the workspace. */
+.iv-pay-pdf:hover {
+  color: var(--iv-ink);
+  background: var(--iv-hover);
+}
+.iv-pay-title {
+  padding: 4px 22px 0;
+  color: var(--iv-ink);
+}
+.iv-pay-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 0;
+  padding: 10px 22px 0;
+  color: var(--iv-ink-3);
+  font-size: 12.5px;
+}
+.iv-pay-lines {
+  margin: 18px 22px 0;
+}
+.iv-pay-notes {
+  margin: 22px 22px 0;
+  color: var(--iv-ink-2);
+  white-space: pre-line;
+}
+/* Who it is from and who it is for close the document, as on the PDF. On a
+   wide ticket they sit at the foot of the paper, level with the stub's end. */
+.iv-pay-parties {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(136px, 1fr));
+  gap: 20px 24px;
+  margin: auto 22px 0;
+  padding-top: 40px;
+}
+.iv-pay-parties address {
+  display: grid;
+  align-content: start;
+  gap: 1px;
+  padding-top: 14px;
+  box-shadow: inset 0 1px 0 var(--iv-line);
+  color: var(--iv-ink-2);
+  font-size: 12.5px;
+  font-style: normal;
+  overflow-wrap: anywhere;
+}
+.iv-pay-parties address > span:first-child {
+  margin-bottom: 4px;
+  color: var(--iv-ink-3);
+  font-size: 12px;
+}
+.iv-pay-parties strong {
+  color: var(--iv-ink);
+  font-size: 13px;
+  font-weight: 500;
+}
+.iv-pay-lines ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.iv-pay-lines li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  padding: 10px 0;
+  box-shadow: inset 0 1px 0 var(--iv-line);
+}
+.iv-pay-lines li > span:first-child {
+  display: grid;
+  gap: 1px;
+  overflow-wrap: anywhere;
+}
+.iv-pay-lines small {
+  color: var(--iv-ink-3);
+  font-size: 12px;
+}
+.iv-pay-lines li > span:last-child {
+  text-align: right;
+}
+.iv-pay-more {
+  height: 28px;
+  margin: 0 0 0 -8px;
+  padding: 0 8px;
+  border-radius: 8px;
+  color: var(--iv-ink-2);
+  font-size: 12.5px;
+  font-weight: 500;
+}
+.iv-pay-more:hover {
+  color: var(--iv-ink);
+  background: var(--iv-hover);
+}
+.iv-pay-totals {
+  display: grid;
+  gap: 6px;
+  margin: 8px 22px 0;
+  padding-top: 12px;
+  box-shadow: inset 0 1px 0 var(--iv-line);
+}
+.iv-pay-totals > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+.iv-pay-totals dt {
+  color: var(--iv-ink-2);
+}
+.iv-pay-totals dd {
+  margin: 0;
+  text-align: right;
+}
+.iv-pay-totals > div[data-total] {
+  margin-top: 4px;
+  padding-top: 10px;
+  box-shadow: inset 0 1px 0 var(--iv-line);
+  font-weight: 600;
+}
+.iv-pay-totals > div[data-total] dt {
+  color: var(--iv-ink);
+}
+.iv-pay-totals > div[data-received] {
+  color: var(--iv-ink-2);
+}
+
+/* The stub: what is owed, and the means to pay it. */
+.iv-pay-due {
+  position: relative;
+  display: grid;
+  gap: 2px;
+  margin-bottom: 22px;
+}
+.iv-pay-due > span:first-child {
+  color: var(--iv-ink-3);
+  font-size: 12.5px;
+  font-weight: 500;
+}
+.iv-pay-due strong {
+  font-size: 40px;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.12;
+}
+.iv-pay-due > span:not(:first-child):not(.iv-pay-stamp) {
+  color: var(--iv-ink-2);
+}
+.iv-pay-due > span[data-tone='late']:not(:first-child) {
+  color: var(--iv-danger);
+}
+
+/* A rubber stamp in the paid green, inked unevenly: a fixed speckle masks
+   a little of it out, so it reads as pressed, not printed. */
+.iv-pay-stamp {
+  position: absolute;
+  top: 6px;
+  right: -4px;
+  padding: 5px 12px 4px;
+  border: 2.5px solid currentColor;
+  border-radius: 10px;
+  color: #256b3c;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  opacity: 0.86;
+  transform: rotate(-9deg);
+  mix-blend-mode: multiply;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='i' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -3 2.4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23i)'/%3E%3C/svg%3E")
+    0 0 / 160px 160px;
+  pointer-events: none;
+}
+/* Pressed in front of the customer: a quick fall, a small give, then rest.
+   Rare and earned, so it may move; a page opened later shows it at rest. */
+.iv-pay-stamp[data-live] {
+  animation: iv-stamp 520ms both;
+}
+@keyframes iv-stamp {
+  0% {
+    opacity: 0;
+    transform: rotate(-16deg) scale(1.9);
+    animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45);
+  }
+  45% {
+    opacity: 0.95;
+    transform: rotate(-8deg) scale(0.93);
+    animation-timing-function: var(--iv-ease);
+  }
+  100% {
+    opacity: 0.86;
+    transform: rotate(-9deg) scale(1);
+  }
+}
+
+.iv-pay-form {
+  display: grid;
+  gap: 16px;
+}
+/* The plan on the stub. The bar is drawn to scale, a segment per payment;
+   inside each, what is paid fills from the left in ink, and what the chosen
+   payment would settle follows it in a lighter ink. Both are scaled, not
+   resized, so a change of choice glides instead of reflowing. */
+.iv-plan {
+  display: grid;
+  gap: 14px;
+}
+.iv-plan-bar {
+  display: flex;
+  gap: 3px;
+  height: 8px;
+}
+.iv-plan-bar > span {
+  position: relative;
+  min-width: 6px;
+  border-radius: 3px;
+  background: rgb(20 20 20 / 0.08);
+  overflow: hidden;
+}
+/* Late is an edge, not a fill, so the ink of a payment about to settle it
+   still reads true over it. */
+.iv-plan-bar > span[data-state='late'] {
+  box-shadow: inset 0 0 0 1px rgb(180 49 42 / 0.55);
+}
+.iv-plan-bar span[data-paid],
+.iv-plan-bar span[data-pending] {
+  position: absolute;
+  inset: 0;
+  transform-origin: left;
+  transition: transform var(--iv-fast) var(--iv-ease);
+}
+.iv-plan-bar span[data-paid] {
+  background: var(--iv-ink);
+}
+.iv-plan-bar span[data-pending] {
+  background: rgb(20 20 20 / 0.32);
+}
+.iv-plan-list {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.iv-plan-list li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+}
+/* A ring for a payment still to make, filled once it is made. The chosen
+   payment's rings darken, matching the bar above. */
+.iv-plan-mark {
+  display: grid;
+  place-items: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1.5px rgb(20 20 20 / 0.2);
+  color: #fff;
+  transition: box-shadow var(--iv-quick) var(--iv-ease);
+}
+.iv-plan-list li[data-pending] .iv-plan-mark {
+  box-shadow: inset 0 0 0 1.5px var(--iv-ink);
+}
+.iv-plan-list li[data-state='paid'] .iv-plan-mark {
+  background: var(--iv-ink);
+  box-shadow: none;
+}
+.iv-plan-list li[data-state='late'] .iv-plan-mark {
+  box-shadow: inset 0 0 0 1.5px var(--iv-danger);
+}
+.iv-plan-what,
+.iv-plan-amount {
+  display: grid;
+  min-width: 0;
+}
+.iv-plan-what strong {
+  overflow: hidden;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.iv-plan-what span,
+.iv-plan-amount span + span {
+  color: var(--iv-ink-3);
+  font-size: 12px;
+}
+.iv-plan-amount {
+  justify-items: end;
+  text-align: right;
+}
+.iv-plan-list li[data-state='paid'] .iv-plan-amount .iv-num {
+  color: var(--iv-ink-2);
+}
+.iv-plan-list li[data-state='late'] .iv-plan-amount span + span {
+  color: var(--iv-danger);
+}
+.iv-plan + .iv-pay-options {
+  margin-top: 4px;
+}
+
+/* The payments the plan allows now, as a list of rows: each one says what
+   it is and what it takes. The chosen row is raised onto paper with an ink
+   edge; the others are flat. */
+.iv-pay-options {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.iv-pay-options > label,
+.iv-pay-other > label {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 8px 14px 8px 12px;
+  border-radius: 12px;
+  box-shadow: inset 0 0 0 1px var(--iv-line-strong);
+  cursor: pointer;
+}
+.iv-pay-other {
+  border-radius: 12px;
+}
+.iv-pay-other > label {
+  grid-template-columns: auto minmax(0, 1fr);
+}
+@media (hover: hover) and (pointer: fine) {
+  .iv-pay-options > label:hover,
+  .iv-pay-other > label:hover {
+    box-shadow: inset 0 0 0 1px rgb(20 20 20 / 0.24);
+  }
+}
+.iv-pay-options > label[data-checked='true'],
+.iv-pay-other[data-checked='true'] > label {
+  background: var(--iv-surface);
+  box-shadow: inset 0 0 0 1px var(--iv-ink), 0 1px 2px rgb(20 20 20 / 0.06);
+}
+.iv-pay-options input[type='radio'] {
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  accent-color: var(--iv-ink);
+}
+.iv-pay-option-what {
+  display: grid;
+  min-width: 0;
+}
+.iv-pay-option-what strong {
+  font-weight: 500;
+}
+.iv-pay-option-what span {
+  color: var(--iv-ink-3);
+  font-size: 12px;
+}
+.iv-pay-options label > .iv-num {
+  font-weight: 500;
+}
+/* The amount field folds open under the choice. The inner padding keeps its
+   focus ring clear of the fold's clip. */
+.iv-pay-part {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--iv-fast) var(--iv-ease);
+}
+.iv-pay-part[data-open='true'] {
+  grid-template-rows: 1fr;
+}
+.iv-pay-part > div {
+  min-height: 0;
+  overflow: hidden;
+  margin: 0 -4px;
+}
+.iv-pay-part > div > div {
+  padding: 8px 4px 2px;
+}
+.iv-pay-amount {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 46px;
+  padding: 0 14px;
+  border-radius: 10px;
+  background: var(--iv-surface);
+  box-shadow: 0 0 0 1px rgb(20 20 20 / 0.12);
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+}
+.iv-pay-amount:hover {
+  box-shadow: 0 0 0 1px rgb(20 20 20 / 0.2);
+}
+.iv-pay-amount:focus-within {
+  box-shadow: 0 0 0 1px var(--iv-ink), 0 0 0 4px rgb(20 20 20 / 0.08);
+}
+.iv-pay-amount[data-invalid] {
+  box-shadow: 0 0 0 1px var(--iv-danger);
+}
+.iv-pay-amount > span {
+  color: var(--iv-ink-3);
+}
+.iv-pay-amount input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  outline: none;
+  background: none;
+  font-variant-numeric: tabular-nums;
+}
+.iv-pay-amount input::placeholder {
+  color: #b3b3b7;
+}
+.iv-pay-hint {
+  margin-top: 7px;
+  color: var(--iv-ink-3);
+  font-size: 12px;
+}
+.iv-pay-hint[data-tone='error'] {
+  color: var(--iv-danger);
+}
+/* Room for the form before Stripe draws it, so nothing jumps when it does. */
+.iv-pay-element:not([data-loaded]) {
+  min-height: 196px;
+}
+.iv-pay-error {
+  color: var(--iv-danger);
+}
+.iv-pay-error:empty {
+  display: none;
+}
+.iv-pay-submit.iv-btn {
+  width: 100%;
+  height: 46px;
+  font-size: 14.5px;
+}
+.iv-pay-note {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 10px;
+  align-items: start;
+  outline: none;
+}
+.iv-pay-note + .iv-pay-form,
+.iv-pay-note + .iv-pay-note {
+  margin-top: 18px;
+}
+/* The mark alone, optically on the title's first line. */
+.iv-pay-note-icon {
+  display: grid;
+  margin-top: 1px;
+  color: var(--iv-ink);
+}
+.iv-pay-note strong {
+  font-size: 14px;
+  font-weight: 600;
+}
+.iv-pay-note p {
+  margin-top: 2px;
+  color: var(--iv-ink-2);
+}
+.iv-pay-note .iv-btn {
+  margin-top: 12px;
+}
+/* The ticket sits in the middle of whatever room the footer leaves, and the
+   footer keeps to the bottom of the page, however short the content. */
+.iv-pay:not(.iv-account) > .iv-pay-ticket {
+  margin-top: auto;
+}
+.iv-pay-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 4px 12px;
+  margin-top: auto;
+  padding: 7px 14px;
+  line-height: 18px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.72);
+  backdrop-filter: blur(12px);
+  color: var(--iv-ink-2);
+  font-size: 12px;
+}
+.iv-pay-foot a::before {
+  content: '·';
+  margin-right: 12px;
+  color: var(--iv-ink-3);
+}
+.iv-pay-foot a:hover {
+  color: var(--iv-ink);
+}
+
+/* Room for the way back above the ticket. */
+.iv-pay:has(> .iv-pay-back) {
+  padding-top: 72px;
+}
+/* The way back to the list from one of the account's invoices: the same
+   frosted mark the sign-in page puts in this corner. */
+.iv-pay-back {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 14px 0 11px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.72);
+  backdrop-filter: blur(12px);
+  font-weight: 500;
+}
+.iv-pay-back:hover {
+  background: rgb(255 255 255 / 0.9);
+}
+
+/* A link that does not open: plain paper, no stub. */
+.iv-pay-ticket[data-plain] .iv-pay-doc {
+  display: grid;
+  margin: 0;
+  gap: 22px;
+  padding: 28px;
+  border-radius: var(--ticket-radius);
+  mask: none;
+}
+.iv-pay-gone h1 {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+.iv-pay-gone p {
+  margin-top: 4px;
+  color: var(--iv-ink-2);
+}
+.iv-pay-gone .iv-btn {
+  margin-top: 14px;
+}
+
+/* Wide screens lay the ticket on its side: the document on the left, the
+   stub on the right, the perforation and its notches between them. */
+@media (min-width: 980px) {
+  .iv-pay-ticket:not([data-plain]) {
+    width: min(940px, 100%);
+    grid-template-columns: minmax(0, 1fr) 390px;
+  }
+  .iv-pay-ticket:not([data-plain]) .iv-pay-doc {
+    margin: 0 -1px 0 0;
+    padding-bottom: 22px;
+    border-radius: var(--ticket-radius) 0 0 var(--ticket-radius);
+    mask:
+      radial-gradient(
+          circle var(--notch) at 100% 0,
+          #0000 var(--notch),
+          #000 calc(var(--notch) + 0.5px)
+        )
+        top / 100% 51% no-repeat,
+      radial-gradient(
+          circle var(--notch) at 100% 100%,
+          #0000 var(--notch),
+          #000 calc(var(--notch) + 0.5px)
+        )
+        bottom / 100% 51% no-repeat;
+  }
+  .iv-pay-ticket:not([data-plain]) .iv-pay-stub {
+    padding: 34px 32px 30px;
+    border-radius: 0 var(--ticket-radius) var(--ticket-radius) 0;
+    mask:
+      radial-gradient(
+          circle var(--notch) at 0 0,
+          #0000 var(--notch),
+          #000 calc(var(--notch) + 0.5px)
+        )
+        top / 100% 51% no-repeat,
+      radial-gradient(
+          circle var(--notch) at 0 100%,
+          #0000 var(--notch),
+          #000 calc(var(--notch) + 0.5px)
+        )
+        bottom / 100% 51% no-repeat;
+  }
+  .iv-pay-ticket:not([data-plain]) .iv-pay-stub::before {
+    top: calc(var(--notch) + 8px);
+    bottom: calc(var(--notch) + 8px);
+    left: 0;
+    right: auto;
+    width: 1px;
+    height: auto;
+    background: repeating-linear-gradient(
+      180deg,
+      var(--iv-line-strong) 0 5px,
+      transparent 5px 10px
+    );
+  }
+}
+@media (max-width: 520px) {
+  .iv-pay {
+    justify-content: flex-start;
+    padding: 12px 8px max(20px, env(safe-area-inset-bottom));
+  }
+  .iv-pay {
+    --ticket-radius: 20px;
+  }
+  .iv-pay-stub {
+    padding: 24px 22px 24px;
+  }
+  .iv-pay-head,
+  .iv-pay-title,
+  .iv-pay-meta {
+    padding-inline: 16px;
+  }
+  .iv-pay-lines,
+  .iv-pay-totals,
+  .iv-pay-notes,
+  .iv-pay-parties {
+    margin-inline: 16px;
+  }
+  .iv-pay-parties {
+    gap: 16px;
+    padding-top: 28px;
+  }
+  .iv-pay-parties address {
+    font-size: 12px;
+  }
+  .iv-pay-due strong {
+    font-size: 34px;
+  }
+}
+
+/* The owner's share menu. */
+.iv-share {
+  display: grid;
+  gap: 10px;
+  width: 300px;
+  padding: 14px;
+}
+.iv-share-title {
+  font-weight: 600;
+}
+.iv-share-note {
+  color: var(--iv-ink-2);
+  font-size: 12px;
+}
+.iv-share .iv-segmented {
+  display: flex;
+}
+.iv-share .iv-segmented > label {
+  flex: 1;
+  justify-content: center;
+}
+.iv-share-go.iv-btn {
+  height: 32px;
+  margin-top: 2px;
+}
+.iv-share-link {
+  display: flex;
+  gap: 6px;
+}
+.iv-share-link input {
+  flex: 1;
+  min-width: 0;
+  height: 28px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--iv-sunken);
+  color: var(--iv-ink-2);
+  font-size: 12px;
+  text-overflow: ellipsis;
+}
+.iv-share-link input:focus-visible {
+  outline: 2px solid var(--iv-ink);
+  outline-offset: 1px;
+}
+
+/* ---------------------------------------------------------------- Narrow */
+
+@media (max-width: 1100px) {
+  .iv-editor {
+    --inspector: 356px;
+  }
+  .iv-page {
+    padding-inline: 28px;
+  }
+}
+@media (max-width: 900px) {
+  .iv-app {
+    grid-template-columns: 1fr;
+    padding-bottom: 76px;
+  }
+  /* The rail becomes a bottom bar on narrow screens. */
+  .iv-rail {
+    position: fixed;
+    inset: auto 12px 12px 12px;
+    z-index: 30;
+    flex-direction: row;
+    justify-content: space-around;
+    height: 56px;
+    margin: 0;
+    padding: 0 8px;
+  }
+  .iv-rail-mark,
+  .iv-rail-spacer {
+    display: none;
+  }
+  .iv-rail-create {
+    margin: 0;
+  }
+  .iv-editor {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
+    height: calc(100dvh - 76px);
+  }
+  .iv-editor[data-view='edit'] .iv-stage {
+    display: none;
+  }
+  .iv-editor[data-view='preview'] .iv-inspector {
+    display: none;
+  }
+  .iv-editor[data-view='edit'] .iv-inspector {
+    margin: 12px;
+  }
+  .iv-topbar {
+    position: relative;
+    inset: auto;
+    flex-wrap: wrap;
+    padding: 12px 12px 0;
+  }
+  .iv-dock-zoom,
+  .iv-dock-divider-zoom {
+    display: none;
+  }
+  .iv-dock-slot {
+    bottom: 12px;
+  }
+  .iv-dock-search input {
+    width: 120px;
+  }
+  .iv-page {
+    padding: 24px 16px 48px;
+  }
+  .iv-stats {
+    grid-template-columns: 1fr 1fr;
+  }
+  .iv-stat:first-child {
+    grid-column: 1 / -1;
+  }
+  .iv-stat:nth-child(2) {
+    box-shadow: inset 0 1px 0 var(--iv-line);
+  }
+  .iv-stat:nth-child(3) {
+    box-shadow: inset 0 1px 0 var(--iv-line), -1px 0 0 var(--iv-line);
+  }
+  .iv-settings-group {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .iv-savebar {
+    left: 50%;
+    bottom: 84px;
+  }
+  .iv-toast-region,
+  body:has(.iv-dock) .iv-toast-region {
+    left: 50%;
+    bottom: 84px;
+  }
+}
+@media (max-width: 640px) {
+  .iv-page-head {
+    flex-wrap: wrap;
+  }
+  .iv-search {
+    width: 100%;
+  }
+  .iv-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .iv-hide-narrow {
+    display: none !important;
+  }
+  .iv-grid {
+    grid-template-columns: 1fr;
+  }
+  .iv-rows[data-list='invoices'] {
+    --cols: minmax(0, 1fr) 84px 96px;
+  }
+  .iv-rows[data-list='invoices'] .iv-row > .iv-muted:not(.iv-num) {
+    display: none;
+  }
+  .iv-rows[data-list='invoices'] .iv-row-head > span:nth-child(2) {
+    display: none;
+  }
+  .iv-rows[data-list='customers'],
+  .iv-rows[data-list='items'] {
+    --cols: minmax(0, 1fr) 72px;
+  }
+}
+
+/* Reduced motion keeps opacity and colour changes, which carry meaning, and
+   drops movement. */
+@media (prefers-reduced-motion: reduce) {
+  .iv-pay-stamp[data-live] {
+    animation: none;
+  }
+  .iv-pay-part {
+    transition: none;
+  }
+  :is(.iv-app, .iv-layer, .iv-signin, .iv-pay) *,
+  :is(.iv-app, .iv-layer, .iv-signin, .iv-pay) *::before,
+  :is(.iv-app, .iv-layer, .iv-signin, .iv-pay) *::after {
+    scroll-behavior: auto !important;
+  }
+  .iv-btn,
+  .iv-icon-btn,
+  .iv-rail-create,
+  .iv-cover-swatch {
+    transition: none !important;
+  }
+  .iv-btn:active,
+  .iv-icon-btn:active,
+  .iv-rail-create:active,
+  .iv-cover:active .iv-cover-swatch {
+    transform: none !important;
+  }
+  .iv-menu,
+  .iv-select-menu,
+  .iv-combo,
+  .iv-picker,
+  .iv-dialog,
+  .iv-tip {
+    animation-name: iv-fade-in !important;
+  }
+  .iv-menu[data-state='closed'],
+  .iv-picker[data-state='closed'],
+  .iv-dialog[data-state='closed'] {
+    animation-name: iv-fade-out !important;
+  }
+  .iv-picker-surface,
+  .iv-picker-rows,
+  .iv-picker-list {
+    transition: none !important;
+  }
+  .iv-toast,
+  .iv-savebar {
+    transform: none !important;
+    filter: none !important;
+  }
+  .iv-section-panel,
+  .iv-line-panel,
+  .iv-line-clip,
+  .iv-line-options,
+  .iv-section-chevron,
+  .iv-line-more svg {
+    transition: none !important;
+  }
+  .iv-section-inner {
+    filter: none !important;
+  }
+  .iv-check-mark {
+    animation: none !important;
+    opacity: 1;
+  }
+  .iv-check-mark path {
+    animation: none !important;
+    stroke-dashoffset: 0 !important;
+  }
+  .iv-shake {
+    animation: none !important;
+  }
+  .iv-shimmer {
+    animation: none;
+    color: #a3a3a7;
+    background: none;
+  }
+}
+
+/* ---------------------------------------------------------------- Accounts */
+
+/* Sign-in by emailed code: the address, then the code, on one form. */
+.iv-code,
+.iv-code-step {
+  display: grid;
+  gap: 14px;
+  width: 100%;
+}
+.iv-code-note {
+  color: var(--iv-ink-2);
+}
+.iv-code-address {
+  color: var(--iv-ink);
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+/* The answer to the field above it, close enough to read as its caption.
+   An empty status on the code step keeps its line, so "Checking…" and the
+   error replace each other without moving the buttons. */
+.iv-code-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 19px;
+  margin-top: -8px;
+  color: var(--iv-ink-2);
+  font-size: 12.5px;
+}
+.iv-code-status[data-tone='error'] {
+  color: var(--iv-danger);
+}
+.iv-code-step[data-step='address'] > .iv-code-status:empty {
+  display: none;
+}
+.iv-code .iv-btn[type='submit'] {
+  width: 100%;
+  height: 40px;
+}
+.iv-code-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: -6px;
+}
+.iv-signin-card .iv-code-actions .iv-btn {
+  width: auto;
+  height: 28px;
+}
+.iv-btn.iv-flush-end {
+  margin-right: -11px;
+}
+/* The step after "Email me a code" settles in, so the swap reads as one
+   form moving on rather than a new page. It starts readable: the motion is
+   a cue, not a curtain. */
+.iv-code-step[data-step='code'] {
+  animation: iv-code-step 240ms var(--iv-ease);
+}
+@keyframes iv-code-step {
+  from {
+    opacity: 0.35;
+    filter: blur(3px);
+    transform: translateY(4px);
+  }
+}
+
+/* Six slots over one transparent input. The input takes every tap, paste,
+   and autofill; the slots draw what it holds. */
+.iv-otp {
+  position: relative;
+}
+.iv-otp-input {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: transparent;
+  caret-color: transparent;
+  /* At 16px iOS leaves the zoom alone when the field takes focus. */
+  font-size: 16px;
+  letter-spacing: 2em;
+  outline: none;
+}
+.iv-otp-input::selection {
+  background: transparent;
+}
+.iv-otp-slots {
+  display: flex;
+  gap: 8px;
+}
+.iv-otp-slot {
+  display: grid;
+  flex: 1;
+  place-items: center;
+  max-width: 52px;
+  height: 52px;
+  border-radius: var(--iv-r-control);
+  background: var(--iv-surface);
+  box-shadow: 0 0 0 1px var(--iv-line-strong), 0 1px 2px rgb(20 20 20 / 0.04);
+  font-size: 22px;
+  font-weight: 600;
+  transition: opacity var(--iv-quick) ease;
+}
+/* Instant, like every hover here: the cursor is already on its way. */
+@media (hover: hover) and (pointer: fine) {
+  .iv-otp:hover .iv-otp-slot:not([data-active]) {
+    box-shadow: 0 0 0 1px rgb(20 20 20 / 0.2), 0 1px 2px rgb(20 20 20 / 0.04);
+  }
+}
+.iv-otp-slot[data-active] {
+  box-shadow: 0 0 0 1px rgb(20 20 20 / 0.55), 0 0 0 4px rgb(20 20 20 / 0.07);
+}
+.iv-otp-slot[data-filled] {
+  animation: iv-otp-digit 160ms var(--iv-ease);
+}
+@keyframes iv-otp-digit {
+  from {
+    opacity: 0.4;
+    transform: translateY(3px);
+  }
+}
+.iv-otp-caret {
+  width: 1.5px;
+  height: 22px;
+  border-radius: 1px;
+  background: var(--iv-ink);
+  animation: iv-otp-caret 1.1s steps(1) infinite;
+}
+@keyframes iv-otp-caret {
+  50% {
+    opacity: 0;
+  }
+}
+.iv-otp[data-state='checking'] .iv-otp-slot {
+  opacity: 0.55;
+}
+.iv-otp[data-state='wrong'] .iv-otp-slot {
+  color: var(--iv-danger);
+  box-shadow: 0 0 0 1px var(--iv-danger), 0 0 0 4px rgb(180 49 42 / 0.1);
+}
+.iv-otp[data-state='accepted'] .iv-otp-slot {
+  background: var(--iv-sunken);
+  box-shadow: 0 0 0 1px var(--iv-line);
+}
+
+/* The offer beside the ticket on a payment page. Frosted rather than paper:
+   it belongs to the customer, not to the invoice. */
+.iv-pay-keep {
+  display: grid;
+  gap: 16px;
+  width: min(480px, 100%);
+  padding: 20px 22px;
+  border-radius: var(--iv-r-panel);
+  background: rgb(255 255 255 / 0.84);
+  backdrop-filter: blur(16px) saturate(1.2);
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.5), var(--iv-raise);
+}
+.iv-pay-keep-intro strong {
+  font-size: 14px;
+  font-weight: 600;
+}
+.iv-pay-keep p {
+  color: var(--iv-ink-2);
+}
+.iv-pay-keep-intro p {
+  margin-top: 2px;
+}
+.iv-pay-keep[data-kept] {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  padding: 12px 12px 12px 22px;
+}
+.iv-pay-keep[data-kept] p {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--iv-ink);
+}
+/* On the wide ticket the offer lines up with it: text on the document's
+   content edge, the form on the stub's. */
+@media (min-width: 980px) {
+  .iv-pay-keep {
+    width: min(940px, 100%);
+    grid-template-columns: minmax(0, 1fr) 326px;
+    align-items: start;
+    gap: 32px;
+    padding: 22px 32px 22px 30px;
+  }
+  .iv-pay-keep[data-kept] {
+    padding: 12px 32px 12px 30px;
+  }
+}
+
+/* The customer's list of invoices: one sheet of paper, a row per invoice. */
+.iv-pay.iv-account {
+  justify-content: flex-start;
+  padding-top: max(72px, env(safe-area-inset-top));
+}
+.iv-account-panel {
+  width: min(640px, 100%);
+  padding: 8px;
+  border-radius: 24px;
+  background: var(--iv-surface);
+  box-shadow: var(--iv-float);
+}
+.iv-account-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 14px 4px 18px;
+}
+.iv-account-head h1 {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+.iv-account-head p {
+  margin-top: 2px;
+  color: var(--iv-ink-3);
+  font-size: 12.5px;
+  overflow-wrap: anywhere;
+}
+/* What the customer owes, before the list that adds up to it. */
+.iv-account-totals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 40px;
+  padding: 14px 18px 18px;
+}
+.iv-account-totals div {
+  display: grid;
+  gap: 2px;
+}
+.iv-account-totals span {
+  color: var(--iv-ink-3);
+  font-size: 12px;
+}
+.iv-account-totals strong {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.iv-account-totals strong:not(.iv-num) {
+  font-size: 14px;
+  font-weight: 500;
+}
+.iv-account-totals [data-tone='late'] strong {
+  color: var(--iv-danger);
+}
+.iv-account-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+/* Rules between rows sit inside the paper's margin; a hovered row hides the
+   rules on both its edges, so its highlight reads as one shape. */
+.iv-account-list li::before {
+  content: '';
+  display: block;
+  height: 1px;
+  margin: 0 18px;
+  background: var(--iv-line);
+}
+@media (hover: hover) and (pointer: fine) {
+  .iv-account-list li:hover::before,
+  .iv-account-list li:hover + li::before {
+    background: transparent;
+  }
+}
+/* Radius 16 = the panel's 24 less its 8px inset. */
+.iv-account-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 8px 10px 10px;
+  border-radius: 16px;
+  outline: none;
+}
+@media (hover: hover) and (pointer: fine) {
+  .iv-account-row:hover {
+    background: var(--iv-hover);
+  }
+  .iv-account-row:hover .iv-account-get {
+    color: var(--iv-ink);
+  }
+}
+.iv-account-row:active {
+  background: var(--iv-press);
+}
+.iv-account-row:focus-visible {
+  box-shadow: inset 0 0 0 2px rgb(20 20 20 / 0.55);
+}
+.iv-account-what,
+.iv-account-owed {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+.iv-account-what strong {
+  font-weight: 500;
+}
+.iv-account-what span {
+  overflow: hidden;
+  color: var(--iv-ink-2);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.iv-account-owed {
+  justify-items: end;
+  text-align: right;
+}
+.iv-account-owed > span:first-child {
+  font-weight: 500;
+}
+.iv-account-owed > span:last-child {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--iv-ink-3);
+  font-size: 12px;
+}
+.iv-account-owed span[data-tone='late'] {
+  color: var(--iv-danger);
+}
+.iv-account-owed span[data-tone='paid'] {
+  color: var(--iv-ink-2);
+}
+/* The cover the invoice wears, as a swatch to know it by. Radius 8 sits
+   inside the row's 16 less its 10px inset; a faint inner edge keeps pale
+   art from dissolving into the paper. */
+.iv-account-thumb {
+  display: block;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  background: var(--iv-sunken);
+  object-fit: cover;
+  outline: 1px solid rgb(0 0 0 / 0.1);
+  outline-offset: -1px;
+}
+.iv-account-group h2 {
+  padding: 18px 18px 6px;
+  color: var(--iv-ink-3);
+  font-size: 12px;
+  font-weight: 500;
+}
+.iv-account-group + .iv-account-group h2 {
+  padding-top: 22px;
+}
+/* The one payment to make next, ahead of everything else: a tonal panel
+   inside the paper, whole as one link. */
+.iv-account-next {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'label pay'
+    'amount pay'
+    'what pay';
+  align-items: center;
+  gap: 0 16px;
+  margin: 10px 0 2px;
+  padding: 16px 16px 16px 18px;
+  border-radius: 16px;
+  background: var(--iv-sunken);
+  box-shadow: inset 0 0 0 1px var(--iv-line);
+  outline: none;
+}
+.iv-account-next:focus-visible {
+  box-shadow: inset 0 0 0 2px rgb(20 20 20 / 0.55);
+}
+.iv-account-next-label {
+  grid-area: label;
+  color: var(--iv-ink-3);
+  font-size: 12px;
+  font-weight: 500;
+}
+.iv-account-next[data-tone='late'] .iv-account-next-label {
+  color: var(--iv-danger);
+}
+.iv-account-next strong {
+  grid-area: amount;
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.25;
+}
+.iv-account-next-what {
+  grid-area: what;
+  color: var(--iv-ink-2);
+  font-size: 12.5px;
+}
+.iv-account-next > .iv-btn {
+  grid-area: pay;
+}
+@media (hover: hover) and (pointer: fine) {
+  .iv-account-next:hover > .iv-btn {
+    background: #000;
+  }
+}
+.iv-account-get {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  color: var(--iv-ink-3);
+}
+.iv-account-empty {
+  padding: 16px 18px 20px;
+  box-shadow: inset 0 1px 0 var(--iv-line);
+  color: var(--iv-ink-2);
+}
+.iv-account-empty strong {
+  color: var(--iv-ink);
+  font-weight: 500;
+}
+/* The footer's way home is a link, never a lone dot-led one. */
+.iv-pay-foot a[data-home]::before {
+  content: none;
+}
+
+@media (max-width: 520px) {
+  .iv-pay.iv-account {
+    padding-top: 12px;
+  }
+  /* Room for the way back above the ticket. */
+  .iv-pay:has(> .iv-pay-back) {
+    padding-top: 64px;
+  }
+  /* The amount and its status take their own line, so the title keeps the
+     width it needs to be recognised. */
+  .iv-account-row {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 4px 12px;
+    padding-left: 8px;
+  }
+  .iv-account-thumb {
+    grid-row: 1 / span 2;
+  }
+  .iv-account-owed {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px 8px;
+    grid-column: 2;
+    grid-row: 2;
+    justify-content: flex-start;
+    text-align: left;
+  }
+  .iv-account-row > .iv-account-get {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+  }
+  .iv-account-next {
+    grid-template-areas:
+      'label label'
+      'amount amount'
+      'what pay';
+    gap: 0 12px;
+    padding: 14px;
+  }
+  .iv-account-group h2 {
+    padding-inline: 14px;
+  }
+  .iv-pay-back {
+    top: 16px;
+    left: 16px;
+  }
+  .iv-account-head {
+    padding: 14px 10px 4px 14px;
+  }
+  .iv-account-totals {
+    padding: 12px 14px 16px;
+    gap: 8px 32px;
+  }
+  .iv-account-list li::before {
+    margin: 0 14px;
+  }
+  .iv-otp-slot {
+    height: 48px;
+  }
+}
+
+/* A form that summons the keyboard stays clear of it: on a phone the card
+   sits near the top, not in the middle the keyboard will cover. */
+@media (max-width: 520px) {
+  .iv-signin {
+    place-items: start center;
+    padding: 76px 16px max(24px, env(safe-area-inset-bottom));
+  }
+  .iv-signin-back {
+    top: 16px;
+    left: 16px;
+  }
+  .iv-signin-card {
+    padding: 24px;
+  }
+}
+/* At 16px iOS leaves the zoom alone when a field takes focus. */
+@media (pointer: coarse) {
+  .iv-code .iv-input {
+    font-size: 16px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .iv-code-step[data-step='code'],
+  .iv-otp-slot[data-filled] {
+    animation: none;
+  }
+  .iv-otp-caret {
+    animation: none;
+  }
 }

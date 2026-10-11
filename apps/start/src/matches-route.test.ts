@@ -1,12 +1,11 @@
-import assert from 'node:assert/strict';
-import { test } from 'node:test';
 import { astroMatcher, routeOwner } from '@portfolio/site-routing';
 import {
   createRootRoute,
   createRoute,
   createRouter,
 } from '@tanstack/react-router';
-import { matchesStartRoute } from './matches-route.ts';
+import { expect, test } from 'vitest';
+import { matchesStartRoute } from './matches-route';
 
 const root = createRootRoute();
 const store = createRoute({ getParentRoute: () => root, path: 'store' });
@@ -34,7 +33,7 @@ const matches = {
   ]),
   start: (path: string) => matchesStartRoute(router, path),
 };
-for (const [path, owner] of [
+test.each([
   ['/store', 'astro'],
   ['/store/cart', 'start'],
   ['/store/missing', 'astro'],
@@ -49,13 +48,11 @@ for (const [path, owner] of [
   ['/blog/tool', 'astro'],
   ['/blog/missing', 'astro'],
   ['/missing', 'astro'],
-] as const) {
-  test(`TanStack tree: ${path} belongs to ${owner}`, () =>
-    assert.equal(routeOwner(path, matches), owner));
-}
+] as const)('TanStack tree: %s belongs to %s', (path, owner) =>
+  expect(routeOwner(path, matches)).toBe(owner));
 
 test('a fuzzy match does not claim an undeclared parent route', () => {
-  assert.equal(matches.start('/store/missing'), false);
-  assert.equal(matches.start('/products'), false);
-  assert.equal(matches.start('/'), false);
+  expect(matches.start('/store/missing')).toBe(false);
+  expect(matches.start('/products')).toBe(false);
+  expect(matches.start('/')).toBe(false);
 });

@@ -1,0 +1,28 @@
+{
+  "name": "@portfolio/database",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./local": "./src/local.ts",
+    "./hosted": "./src/hosted.ts"
+  },
+  "scripts": {
+    "check": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@effect/sql-pg": "4.0.0",
+    "@effect/sql-pglite": "4.0.0",
+    "@electric-sql/pglite": "0.5.8",
+    "drizzle-orm": "1.0.0-rc.5-5935859",
+    "effect": "4.0.0",
+    "pg": "8.16.3"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:types",
+    "@types/pg": "8.15.6",
+    "typescript": "catalog:dev",
+    "vitest": "catalog:test"
+  }
+}

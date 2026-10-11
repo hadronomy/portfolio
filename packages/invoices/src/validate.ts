@@ -1,4 +1,5 @@
 import Decimal from 'decimal.js';
+import { addressLabels, postalCodeValid, requiredFields } from './address';
 import { calculate } from './calculate';
 import type { InvoiceData } from './model';
 import { igicRates, repepLegend } from './tax-policy';
@@ -14,16 +15,30 @@ const realDate = (day: string) =>
 export function issueErrors(data: InvoiceData): readonly Issue[] {
   const errors: Issue[] = [];
   const add = (path: string, message: string) => errors.push({ path, message });
+  const words = { name: 'name', taxId: 'tax ID' } as const;
   (['issuer', 'customer'] as const).forEach((role) => {
-    (
-      ['name', 'taxId', 'address', 'postalCode', 'city', 'country'] as const
-    ).forEach((field) => {
-      if (!data[role][field].trim())
-        add(
-          `${role}.${field}`,
-          `Enter the ${role} ${field === 'taxId' ? 'tax ID' : field}.`,
-        );
+    const party = data[role];
+    (Object.keys(words) as (keyof typeof words)[]).forEach((field) => {
+      if (!party[field].trim())
+        add(`${role}.${field}`, `Enter the ${role} ${words[field]}.`);
     });
+    // Each country's post decides what an address needs, and what it calls
+    // it: a Spanish one needs a province, a British one a post town.
+    const { country } = party.address;
+    const labels = addressLabels(country);
+    for (const field of requiredFields(country)) {
+      if (!party.address[field].trim())
+        add(
+          `${role}.address.${field}`,
+          `Enter the ${role} ${labels[field].toLowerCase()}.`,
+        );
+    }
+    const { postalCode } = party.address;
+    if (postalCode.trim() && !postalCodeValid(country, postalCode))
+      add(
+        `${role}.address.postalCode`,
+        `This ${labels.postalCode.toLowerCase()} does not match the ${country} format.`,
+      );
   });
   (['issueDate', 'supplyDate', 'dueDate'] as const).forEach((field) => {
     if (!realDate(data[field])) add(field, 'Enter a valid calendar date.');

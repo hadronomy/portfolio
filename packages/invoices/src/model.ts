@@ -1,9 +1,13 @@
 import { Schema } from 'effect';
+import { Address, blankAddress } from './address';
 
-const DecimalText = Schema.String.check(
+/** A decimal amount as text: money, quantities, and rates cross the wire this way. */
+export const DecimalText = Schema.String.check(
   Schema.isPattern(/^-?\d{1,12}(?:\.\d{1,6})?$/),
 );
-const DateText = Schema.String.check(Schema.isPattern(/^\d{4}-\d{2}-\d{2}$/));
+export const DateText = Schema.String.check(
+  Schema.isPattern(/^\d{4}-\d{2}-\d{2}$/),
+);
 export const InvoiceId = Schema.String.check(Schema.isUUID()).pipe(
   Schema.brand('InvoiceId'),
 );
@@ -16,17 +20,23 @@ export const Language = Schema.Literals(['en', 'es']);
 export type Language = typeof Language.Type;
 export const Currency = Schema.Literals(['EUR', 'USD', 'GBP']);
 export type Currency = typeof Currency.Type;
+/** Header art printed above the document. `none` prints a plain page. */
+export const Cover = Schema.Literals(['none', 'ember', 'tide', 'moss', 'rose']);
+export type Cover = typeof Cover.Type;
 /** DID of the workspace owner. Store methods take it as the audit actor so anonymous strings never reach the audit log. */
 export const OwnerDid = Schema.String.pipe(Schema.brand('OwnerDid'));
 export type OwnerDid = typeof OwnerDid.Type;
+/** Who changed a record: the owner, or Stripe when it settles a payment on its own. */
+export const Actor = Schema.Union([
+  OwnerDid,
+  Schema.Literals(['system:stripe', 'customer']),
+]);
+export type Actor = typeof Actor.Type;
 export const Party = Schema.Struct({
   name: Schema.String,
   taxId: Schema.String,
-  address: Schema.String,
-  postalCode: Schema.String,
-  city: Schema.String,
-  country: Schema.String,
   email: Schema.String,
+  address: Address,
 });
 export interface Party extends Schema.Schema.Type<typeof Party> {}
 export const Issuer = Schema.Struct({
@@ -90,6 +100,7 @@ export const InvoiceData = Schema.Struct({
   kind: Schema.Literals(['invoice', 'rectification', 'proforma']),
   language: Language,
   currency: Currency,
+  cover: Cover,
   title: Schema.String,
   issuer: Issuer,
   customer: Party,
@@ -164,7 +175,9 @@ export const Payment = Schema.Struct({
   invoiceId: InvoiceId,
   amount: DecimalText,
   date: DateText,
-  method: Schema.Literals(['transfer', 'cash', 'card', 'other']),
+  // `stripe` marks a payment Stripe settled; its reference is the Stripe
+  // invoice payment it came from.
+  method: Schema.Literals(['transfer', 'cash', 'card', 'other', 'stripe']),
   reference: Schema.String,
   createdAt: Schema.String,
   reversedAt: Schema.NullOr(Schema.String),
@@ -175,6 +188,7 @@ export const Preferences = Schema.Struct({
   language: Language,
   defaultTerms: Schema.String,
   defaultSeries: Schema.String,
+  cover: Cover,
 });
 export interface Preferences extends Schema.Schema.Type<typeof Preferences> {}
 export class InvalidInvoice extends Schema.TaggedError<InvalidInvoice>()(
@@ -200,11 +214,8 @@ export class StorageFailure extends Schema.TaggedError<StorageFailure>()(
 export const blankParty: Party = {
   name: '',
   taxId: '',
-  address: '',
-  postalCode: '',
-  city: '',
-  country: 'ES',
   email: '',
+  address: blankAddress('ES'),
 };
 export const defaultPreferences: Preferences = {
   issuer: {
@@ -229,6 +240,7 @@ export const defaultPreferences: Preferences = {
   language: 'en',
   defaultTerms: 'Payment by bank transfer within 30 days.',
   defaultSeries: 'INV',
+  cover: 'ember',
 };
 /** Creates an unnumbered document. Issuance allocates its number in the database transaction. */
 export function newInvoice(
@@ -251,6 +263,7 @@ export function newInvoice(
       kind: 'invoice',
       language: preferences.language,
       currency: 'EUR',
+      cover: preferences.cover,
       title: '',
       issuer: preferences.issuer,
       customer: blankParty,

@@ -1,5 +1,10 @@
-import { balance, calculate, formatMoney } from '@portfolio/invoices/calculate';
+import {
+  calculate,
+  formatMoney,
+  type Totals,
+} from '@portfolio/invoices/calculate';
 import type {
+  Customer,
   Invoice,
   InvoiceData,
   Line,
@@ -12,12 +17,13 @@ import { Link, useNavigate } from '@tanstack/react-router';
 import {
   ArrowLeft,
   ArrowUpRight,
-  CheckCircle2,
+  CircleAlert,
+  CircleCheck,
   Download,
   Plus,
   Trash2,
 } from 'lucide-react';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, Reorder } from 'motion/react';
 import {
   lazy,
   memo,
@@ -28,10 +34,43 @@ import {
   useRef,
   useState,
 } from 'react';
+import {
+  currencies,
+  currencySymbol,
+  customerTypes,
+  documentKinds,
+  paymentMethods,
+} from './choices';
+import { CoverPicker } from './cover-picker';
+import { coverArt, coverLabel } from './covers';
 import { LineEditor } from './line-editor';
 import { PartyFields } from './party-fields';
-import { Field, Modal, Morph, Select, Tabs } from './ui';
-import { useDraft } from './use-draft';
+import { PaymentLinkMenu, PaymentReview } from './payment-link';
+import { PaymentList } from './payment-list';
+import type { DockParts } from './pdf-viewer';
+import { CatalogMenu, CustomerPicker } from './pickers';
+import { OfferPanel, offerSummary, useOffer } from './plans';
+import {
+  AmountField,
+  DueDateField,
+  SeriesField,
+  TerritorySelect,
+} from './smart-fields';
+import { type DocumentStatus, documentStatus } from './status';
+import { useToast } from './toast';
+import {
+  Button,
+  Field,
+  IconButton,
+  Modal,
+  MorphText,
+  Section,
+  Segmented,
+  Select,
+  StatusChip,
+  Tip,
+} from './ui';
+import { type DraftStatus, type PreviewStatus, useDraft } from './use-draft';
 import { useWorkspace } from './workspace';
 
 const PdfViewer = lazy(() => import('./pdf-viewer'));
@@ -41,7 +80,7 @@ function useInvoiceForm(data: InvoiceData) {
 }
 type InvoiceForm = ReturnType<typeof useInvoiceForm>;
 
-type PaymentMethod = 'transfer' | 'cash' | 'card' | 'other';
+type PaymentMethod = Payment['method'];
 type PaymentDraft = {
   amount: string;
   date: string;
@@ -56,12 +95,19 @@ type DraftHandle = {
 };
 
 type DraftMeta = {
-  status: string;
-  previewStatus: string;
+  status: DraftStatus;
+  previewStatus: PreviewStatus;
   recovery: InvoiceData | null;
   conflict: Invoice | null;
-  hasBytes: boolean;
 };
+
+const longDate = new Intl.DateTimeFormat('en-GB', {
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
+const day = (value: string) => longDate.format(new Date(`${value}T12:00:00Z`));
 
 function useMutationState() {
   const [pending, setPending] = useState(false);
@@ -92,7 +138,7 @@ function useMutationState() {
   return { pending, error, setError, run };
 }
 
-function useTotals(form: InvoiceForm) {
+function useTotals(form: InvoiceForm): Totals | null {
   const lines = useStore(form.store, (state) => state.values.lines);
   const discount = useStore(form.store, (state) => state.values.discount);
   const withholdingRate = useStore(
@@ -127,55 +173,77 @@ export function InvoiceEditor({ id }: { id: string }) {
   const invoice = workspace?.invoices.find((invoice) => invoice.id === id);
   if (!workspace)
     return (
-      <div className="iv-preview-message">
+      <output className="iv-message">
         {isError ? 'The invoice could not load.' : 'Loading invoice…'}
-      </div>
+      </output>
     );
   if (!invoice)
     return (
-      <div className="iv-empty">
-        <h1>Invoice not found</h1>
-        <Link to="/invoices">Return to invoices</Link>
+      <div className="iv-message">
+        <p>This invoice does not exist.</p>
+        <Link to="/invoices" className="iv-btn" data-variant="secondary">
+          <span>Back to invoices</span>
+        </Link>
       </div>
     );
   return <Editor key={`${id}:${invoice.status}`} invoice={invoice} />;
 }
 
-type Section = 'details' | 'customer' | 'items' | 'terms';
-const SECTIONS: ReadonlyArray<readonly [Section, string]> = [
-  ['details', 'Details'],
-  ['customer', 'Customer'],
-  ['items', 'Items'],
-  ['terms', 'Terms'],
-];
+type SectionKey =
+  | 'payments'
+  | 'plan'
+  | 'customer'
+  | 'items'
+  | 'details'
+  | 'terms'
+  | 'from'
+  | 'appearance';
 
 function Editor({ invoice }: { invoice: Invoice }) {
-  const { mutate } = useWorkspace();
+  const { workspace, mutate } = useWorkspace();
   const navigate = useNavigate();
+  const toast = useToast();
   const form = useInvoiceForm(invoice.data);
   const { pending, error, setError, run } = useMutationState();
-  const [section, setSection] = useState<Section>('details');
   const [dialog, setDialog] = useState<'issue' | 'delete' | 'payment' | null>(
     null,
   );
-  const [view, setView] = useState<'preview' | 'edit'>('edit');
+  const [view, setView] = useState<'preview' | 'edit'>('preview');
   const [meta, setMeta] = useState<DraftMeta>({
-    status: 'Saved',
-    previewStatus: 'Preparing PDF…',
+    status: 'saved',
+    previewStatus: 'idle',
     recovery: null,
     conflict: null,
-    hasBytes: false,
   });
   const [snapshot, setSnapshot] = useState<InvoiceData | null>(null);
-  const [paymentAmount, setPaymentAmount] = useState('');
   const draftApi = useRef<DraftHandle | null>(null);
   const narrow = useNarrow();
   const issued = invoice.status === 'issued';
   const onMeta = useCallback((next: DraftMeta) => setMeta(next), []);
+  const onDownloadError = useCallback(
+    (message: string) => toast(message, 'error'),
+    [toast],
+  );
   const flush = useCallback(
     () => draftApi.current?.flush() ?? Promise.resolve(null),
     [],
   );
+  const { status, remaining } = useMemo(
+    () => documentStatus(invoice, workspace?.payments ?? []),
+    [invoice, workspace],
+  );
+
+  // Saving is automatic; ⌘S only saves now instead of opening the browser's
+  // save-page dialog.
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== 's' || !(event.metaKey || event.ctrlKey)) return;
+      event.preventDefault();
+      flush();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [flush]);
 
   const issue = useCallback(async () => {
     await run(async () => {
@@ -192,10 +260,14 @@ function Editor({ invoice }: { invoice: Invoice }) {
           result.issues.map((issue) => issue.message).join(' ') ||
           'The invoice could not be issued. Reload the draft and try again.'
         );
+      const number = result.workspace.invoices.find(
+        (item) => item.id === saved.id,
+      )?.number;
       setDialog(null);
+      toast(number ? `Issued as ${number}` : 'Invoice issued');
       return null;
     }, 'The issue request failed. You can safely retry it.');
-  }, [run, flush, mutate]);
+  }, [run, flush, mutate, toast]);
 
   const remove = useCallback(async () => {
     await run(async () => {
@@ -207,9 +279,10 @@ function Editor({ invoice }: { invoice: Invoice }) {
         return 'The draft was deleted, but device storage could not be cleared.';
       }
       await navigate({ to: '/invoices' });
+      toast('Draft deleted');
       return null;
     }, 'The draft could not be deleted. Try again.');
-  }, [run, mutate, invoice.id, navigate]);
+  }, [run, mutate, invoice.id, navigate, toast]);
 
   const rectify = useCallback(async () => {
     await run(async () => {
@@ -251,10 +324,11 @@ function Editor({ invoice }: { invoice: Invoice }) {
             'The payment could not be saved.'
           );
         setDialog(null);
+        toast('Payment recorded');
         return null;
       }, 'The payment could not be saved. Check the values and try again.');
     },
-    [run, mutate, invoice.id],
+    [run, mutate, invoice.id, toast],
   );
 
   const reversePayment = useCallback(
@@ -265,110 +339,132 @@ function Editor({ invoice }: { invoice: Invoice }) {
           id: paymentId,
         });
         if (!result.ok) return 'The payment could not be reversed.';
+        toast('Payment reversed');
         return null;
       }, 'The payment could not be reversed.');
     },
-    [run, mutate],
+    [run, mutate, toast],
   );
 
   function openIssue() {
+    setError('');
     setSnapshot(form.state.values);
     setDialog('issue');
   }
 
-  function openPayment(amount: string) {
-    setPaymentAmount(amount);
-    setDialog('payment');
-  }
-
   return (
-    <div className="iv-editor">
+    <div className="iv-editor" data-view={narrow ? view : undefined}>
+      <Backdrop form={form} />
+      {/* The top bar is a sibling of the stage, not a child: on narrow
+          screens the stage hides while editing, and the bar still has to
+          switch back to the preview. */}
       <header className="iv-topbar">
-        <div className="iv-breadcrumb">
-          <Link to="/invoices" aria-label="Back to invoices">
-            <ArrowLeft size={17} />
-          </Link>
-          <Link to="/invoices">Invoices</Link>
-          <span>/</span>
-          <form.Field name="title">
-            {(title) => (
-              <>{invoice.number ?? (title.state.value || 'Untitled draft')}</>
-            )}
-          </form.Field>
-        </div>
-        <div className="iv-header-actions">
-          <button
-            className="iv-save-status"
-            onClick={() => {
-              flush();
-            }}
-            disabled={issued}
-          >
-            <Morph>{issued ? 'Issued · Record locked' : meta.status}</Morph>
-          </button>
-          <DownloadLink
-            form={form}
-            invoiceId={invoice.id}
-            flush={flush}
-            onError={setError}
-          />
-          {!issued && (
-            <button
-              className="iv-primary"
-              onClick={openIssue}
-              disabled={pending}
+        <div className="iv-topbar-group">
+          <Tip label="All invoices">
+            <Link
+              to="/invoices"
+              className="iv-icon-btn"
+              data-variant="secondary"
+              aria-label="All invoices"
             >
-              Review & issue
-              <ArrowUpRight size={16} />
-            </button>
+              <ArrowLeft size={16} />
+            </Link>
+          </Tip>
+          <div className="iv-crumb">
+            {/* A draft without a title is still recognisable by who it is
+                for; only a blank one is untitled. */}
+            <form.Subscribe
+              selector={(state) =>
+                state.values.title || state.values.customer.name
+              }
+            >
+              {(name) => (
+                <span>{invoice.number ?? (name || 'Untitled draft')}</span>
+              )}
+            </form.Subscribe>
+            <StatusChip status={status} />
+          </div>
+        </div>
+        <div className="iv-topbar-group">
+          {!issued && (
+            <SaveState
+              status={meta.status}
+              onRetry={() => {
+                flush();
+              }}
+            />
+          )}
+          {narrow && (
+            <Segmented
+              label="Editor view"
+              value={view}
+              onChange={setView}
+              options={[
+                ['preview', 'Preview'],
+                ['edit', 'Edit'],
+              ]}
+            />
+          )}
+          <LanguageToggle form={form} />
+          {!issued ? (
+            <Button variant="primary" onClick={openIssue} disabled={pending}>
+              Issue
+            </Button>
+          ) : (
+            invoice.data.kind !== 'proforma' &&
+            Number(remaining) > 0 && (
+              <Button
+                variant="primary"
+                onClick={() => {
+                  setError('');
+                  setDialog('payment');
+                }}
+              >
+                <Plus size={15} />
+                Record payment
+              </Button>
+            )
           )}
         </div>
       </header>
-      {narrow && (
-        <Tabs
-          label="Editor view"
-          value={view}
-          onChange={setView}
-          options={[
-            ['preview', 'Preview'],
-            ['edit', 'Details'],
-          ]}
+      <div className="iv-stage">
+        <DraftScope
+          form={form}
+          invoice={invoice}
+          apiRef={draftApi}
+          onMeta={onMeta}
+          flush={flush}
+          onError={onDownloadError}
         />
-      )}
-      <div className="iv-editor-body">
-        {(!narrow || view === 'preview') && (
-          <DraftScope
-            form={form}
-            invoice={invoice}
-            apiRef={draftApi}
-            onMeta={onMeta}
-          />
-        )}
-        {(!narrow || view === 'edit') && (
-          <Inspector
-            form={form}
-            invoice={invoice}
-            issued={issued}
-            section={section}
-            onSection={setSection}
-            meta={meta}
-            draftApi={draftApi}
-            error={error}
-            pending={pending}
-            rectify={rectify}
-            reversePayment={reversePayment}
-            onDelete={() => setDialog('delete')}
-            onPayment={openPayment}
-          />
-        )}
       </div>
+      <Inspector
+        form={form}
+        invoice={invoice}
+        issued={issued}
+        status={status}
+        remaining={remaining}
+        meta={meta}
+        draftApi={draftApi}
+        error={dialog ? '' : error}
+        pending={pending}
+        rectify={rectify}
+        reversePayment={reversePayment}
+        onDelete={() => {
+          setError('');
+          setDialog('delete');
+        }}
+        onPayment={() => {
+          setError('');
+          setDialog('payment');
+        }}
+      />
       <Modal
         open={dialog === 'issue'}
         onOpenChange={(open) => {
           if (!pending && !open) setDialog(null);
         }}
-        title="Review and issue"
-        description="Issuing assigns a permanent number and locks the document. Use a rectifying invoice for later corrections."
+        title="Issue this invoice"
+        description="Issuing gives the document its permanent number and locks it. Later corrections use a rectifying invoice."
       >
         {snapshot && (
           <IssueDialogBody
@@ -388,37 +484,118 @@ function Editor({ invoice }: { invoice: Invoice }) {
           if (!pending && !open) setDialog(null);
         }}
         title="Delete this draft?"
-        description="The draft and unsaved changes on this device will be deleted."
+        description="The draft and any unsaved changes on this device go away. Issued invoices are never affected."
       >
+        {error && (
+          <p className="iv-banner" role="alert">
+            {error}
+          </p>
+        )}
         <div className="iv-dialog-actions">
-          <button onClick={() => setDialog(null)}>Keep draft</button>
-          <button
-            className="iv-danger"
+          <Button onClick={() => setDialog(null)}>Keep draft</Button>
+          <Button
+            variant="danger"
             onClick={() => {
               remove();
             }}
             disabled={pending}
           >
-            {pending ? 'Deleting…' : 'Delete draft'}
-          </button>
+            <MorphText>{pending ? 'Deleting…' : 'Delete draft'}</MorphText>
+          </Button>
         </div>
       </Modal>
-      {dialog === 'payment' && (
-        <PaymentDialog
-          initialAmount={paymentAmount}
-          pending={pending}
-          error={error}
-          onClose={() => setDialog(null)}
-          onRecord={(payment) => {
-            recordPayment(payment);
-          }}
-        />
-      )}
+      <PaymentDialog
+        open={dialog === 'payment'}
+        remaining={remaining}
+        currency={invoice.data.currency}
+        pending={pending}
+        error={error}
+        onClose={() => setDialog(null)}
+        onRecord={(payment) => {
+          recordPayment(payment);
+        }}
+      />
     </div>
   );
 }
 
-function DownloadLink({
+const saveLabels: Record<DraftStatus, string> = {
+  saved: 'Saved',
+  local: 'Editing…',
+  saving: 'Saving…',
+  failed: 'Not saved',
+  conflict: 'Changed elsewhere',
+};
+
+function SaveState({
+  status,
+  onRetry,
+}: {
+  status: DraftStatus;
+  onRetry: () => void;
+}) {
+  return (
+    <Tip label="Drafts save as you type" shortcut="⌘S">
+      <output className="iv-save" data-state={status}>
+        {status === 'saved' && <CircleCheck size={13} />}
+        {(status === 'failed' || status === 'conflict') && (
+          <CircleAlert size={13} />
+        )}
+        <MorphText>{saveLabels[status]}</MorphText>
+        {status === 'failed' && (
+          <button type="button" onClick={onRetry}>
+            Retry
+          </button>
+        )}
+      </output>
+    </Tip>
+  );
+}
+
+const LanguageToggle = memo(function LanguageToggle({
+  form,
+}: {
+  form: InvoiceForm;
+}) {
+  return (
+    <form.Field name="language">
+      {(language) => (
+        <Segmented
+          label="Document language"
+          value={language.state.value}
+          onChange={(next) => language.handleChange(next)}
+          options={[
+            ['en', 'EN'],
+            ['es', 'ES'],
+          ]}
+        />
+      )}
+    </form.Field>
+  );
+});
+
+/**
+ * The cover art, softened, fills the room around the page. Every backdrop is
+ * mounted so switching covers cross-fades instead of flashing an empty frame.
+ */
+const Backdrop = memo(function Backdrop({ form }: { form: InvoiceForm }) {
+  const cover = useStore(form.store, (state) => state.values.cover);
+  return (
+    <div className="iv-backdrop" aria-hidden>
+      {Object.entries(coverArt).map(([name, art]) => (
+        <img
+          key={name}
+          src={art.backdrop}
+          alt=""
+          data-active={cover === name}
+          decoding="async"
+        />
+      ))}
+    </div>
+  );
+});
+
+function DownloadButton({
   form,
   invoiceId,
   flush,
@@ -434,20 +611,23 @@ function DownloadLink({
   // component, so client-side navigation would render nothing and download
   // nothing. A document request lets the browser handle the file.
   return (
-    <a
-      href={`/invoices/pdf/${invoiceId}?lang=${language}`}
-      download
-      aria-label="Download PDF"
-      onClick={async (event) => {
-        const saved = await flush();
-        if (!saved) {
-          event.preventDefault();
-          onError('Save the draft before downloading the PDF.');
-        }
-      }}
-    >
-      <Download size={17} />
-    </a>
+    <Tip label="Download PDF" side="top">
+      <a
+        className="iv-icon-btn"
+        href={`/invoices/pdf/${invoiceId}?lang=${language}`}
+        download
+        aria-label="Download PDF"
+        onClick={async (event) => {
+          const saved = await flush();
+          if (!saved) {
+            event.preventDefault();
+            onError('Save the draft before downloading the PDF.');
+          }
+        }}
+      >
+        <Download size={15} />
+      </a>
+    </Tip>
   );
 }
 
@@ -456,21 +636,38 @@ function DraftScope({
   invoice,
   apiRef,
   onMeta,
+  flush,
+  onError,
 }: {
   form: InvoiceForm;
   invoice: Invoice;
   apiRef: { current: DraftHandle | null };
   onMeta: (meta: DraftMeta) => void;
+  flush: () => Promise<Invoice | null>;
+  onError: (message: string) => void;
 }) {
+  // Stable across keystrokes, so the memoised preview below only re-renders
+  // when its bytes or status change.
+  const actions = useMemo(
+    () => (
+      <DownloadButton
+        form={form}
+        invoiceId={invoice.id}
+        flush={flush}
+        onError={onError}
+      />
+    ),
+    [form, invoice.id, flush, onError],
+  );
   return (
     <form.Subscribe selector={(state) => state.values}>
       {(values) => (
         <DraftInner
-          form={form}
           invoice={invoice}
           values={values}
           apiRef={apiRef}
           onMeta={onMeta}
+          actions={actions}
         />
       )}
     </form.Subscribe>
@@ -478,17 +675,17 @@ function DraftScope({
 }
 
 const DraftInner = memo(function DraftInner({
-  form,
   invoice,
   values,
   apiRef,
   onMeta,
+  actions,
 }: {
-  form: InvoiceForm;
   invoice: Invoice;
   values: InvoiceData;
   apiRef: { current: DraftHandle | null };
   onMeta: (meta: DraftMeta) => void;
+  actions: React.ReactNode;
 }) {
   const draft = useDraft(invoice, values);
   const [client] = useState(() => typeof window !== 'undefined');
@@ -498,93 +695,65 @@ const DraftInner = memo(function DraftInner({
   }, [apiRef, flush, acceptServer, clearRecovery]);
   const { status, previewStatus, recovery, conflict, bytes } = draft;
   useEffect(() => {
-    onMeta({
-      status,
-      previewStatus,
-      recovery,
-      conflict,
-      hasBytes: bytes.length > 0,
-    });
-  }, [status, previewStatus, recovery, conflict, bytes, onMeta]);
+    onMeta({ status, previewStatus, recovery, conflict });
+  }, [status, previewStatus, recovery, conflict, onMeta]);
   return (
-    <div className="iv-canvas">
-      <CanvasHeading form={form} />
+    <div className="iv-document">
       <PreviewBody
         client={client}
         bytes={bytes}
         previewStatus={previewStatus}
+        actions={actions}
       />
-      <div className="iv-canvas-footer">
-        <span>
-          <Morph>{previewStatus}</Morph>
-        </span>
-        <span>A4 · Selectable PDF</span>
-      </div>
     </div>
   );
 });
 
-// Heading chrome never reads draft values, so keystrokes that re-render the
-// subscribed parent skip it through memo.
-const CanvasHeading = memo(function CanvasHeading({
-  form,
-}: {
-  form: InvoiceForm;
-}) {
-  return (
-    <div className="iv-canvas-heading">
-      <span>Document preview</span>
-      <div className="iv-language">
-        <form.Field name="language">
-          {(language) => (
-            <>
-              <button
-                aria-pressed={language.state.value === 'en'}
-                onClick={() => language.handleChange('en')}
-              >
-                EN
-              </button>
-              <span>/</span>
-              <button
-                aria-pressed={language.state.value === 'es'}
-                onClick={() => language.handleChange('es')}
-              >
-                ES
-              </button>
-            </>
-          )}
-        </form.Field>
-      </div>
-    </div>
-  );
-});
+const previewLabels: Record<PreviewStatus, string> = {
+  idle: 'Waiting for valid values',
+  rendering: 'Rendering…',
+  outdated: 'Updating…',
+  current: 'Up to date',
+};
 
-// Preview body only re-renders when the debounced bytes or status change.
+// Re-renders only when the debounced bytes or the preview status change.
 const PreviewBody = memo(function PreviewBody({
   client,
   bytes,
   previewStatus,
+  actions,
 }: {
   client: boolean;
   bytes: string;
-  previewStatus: string;
+  previewStatus: PreviewStatus;
+  actions: React.ReactNode;
 }) {
+  const busy = previewStatus === 'rendering' || previewStatus === 'outdated';
+  const dock: DockParts = useMemo(
+    () => ({
+      status: (
+        <span className={busy ? 'iv-shimmer' : undefined}>
+          {previewLabels[previewStatus]}
+        </span>
+      ),
+      actions,
+    }),
+    [busy, previewStatus, actions],
+  );
+  if (!client || !bytes)
+    return (
+      <output className="iv-stage-message">
+        {previewStatus === 'idle'
+          ? 'Complete the numeric values to see the document.'
+          : 'Preparing the document…'}
+      </output>
+    );
   return (
-    <div className="iv-viewer-frame">
-      {client && bytes ? (
-        <Suspense
-          fallback={
-            <div className="iv-preview-message">Loading PDF viewer…</div>
-          }
-        >
-          <PdfViewer bytes={bytes} />
-        </Suspense>
-      ) : (
-        <div className="iv-preview-message">
-          <Morph>{previewStatus}</Morph>
-        </div>
-      )}
-    </div>
+    <Suspense
+      fallback={<output className="iv-stage-message">Opening viewer…</output>}
+    >
+      <PdfViewer bytes={bytes} dock={dock} />
+    </Suspense>
   );
 });
 
@@ -592,8 +761,8 @@ type InspectorProps = {
   form: InvoiceForm;
   invoice: Invoice;
   issued: boolean;
-  section: Section;
-  onSection: (section: Section) => void;
+  status: DocumentStatus;
+  remaining: string;
   meta: DraftMeta;
   draftApi: { current: DraftHandle | null };
   error: string;
@@ -601,15 +770,15 @@ type InspectorProps = {
   rectify: () => void;
   reversePayment: (paymentId: Payment['id']) => void;
   onDelete: () => void;
-  onPayment: (amount: string) => void;
+  onPayment: () => void;
 };
 
 const Inspector = memo(function Inspector({
   form,
   invoice,
   issued,
-  section,
-  onSection,
+  status,
+  remaining,
   meta,
   draftApi,
   error,
@@ -620,496 +789,374 @@ const Inspector = memo(function Inspector({
   onPayment,
 }: InspectorProps) {
   const totals = useTotals(form);
+  const [open, setOpen] = useState<Record<SectionKey, boolean>>(() => ({
+    payments: true,
+    plan: false,
+    customer: !issued && !invoice.data.customer.name,
+    items: !issued,
+    details: false,
+    terms: false,
+    from: false,
+    appearance: false,
+  }));
+  const toggle = (key: SectionKey) =>
+    setOpen((current) => ({ ...current, [key]: !current[key] }));
+  const section = (key: SectionKey) => ({
+    open: open[key],
+    onToggle: () => toggle(key),
+  });
   return (
     <aside className="iv-inspector" aria-label="Invoice details">
-      <div className="iv-inspector-title">
-        <h2>{issued ? 'Invoice record' : 'Make it yours'}</h2>
-        <span>{issued ? (invoice.number ?? '') : 'Draft'}</span>
+      <div className="iv-inspector-head">
+        <h2>{issued ? 'Invoice record' : 'Draft'}</h2>
+        {!issued && (
+          <IconButton label="Delete draft" onClick={onDelete}>
+            <Trash2 size={15} />
+          </IconButton>
+        )}
       </div>
-      <Tabs
-        label="Invoice sections"
-        value={section}
-        onChange={onSection}
-        options={SECTIONS}
-        className="iv-editor-tabs"
-      />
       <div className="iv-inspector-scroll">
         {error && (
-          <div role="alert" className="iv-error">
-            <Morph>{error}</Morph>
+          <div role="alert" className="iv-banner">
+            <MorphText>{error}</MorphText>
           </div>
         )}
         {meta.recovery && (
-          <div className="iv-notice">
-            <p>Unsaved changes are available on this device.</p>
-            <button
-              onClick={() => {
-                if (meta.recovery) form.reset(meta.recovery);
-                draftApi.current?.clearRecovery();
-              }}
-            >
-              Restore changes
-            </button>
-            <button
-              onClick={() => {
-                try {
-                  localStorage.removeItem(`invoice-draft:${invoice.id}`);
-                } catch {
-                  /* Device storage is unavailable; the saved version stays. */
-                }
-                draftApi.current?.clearRecovery();
-              }}
-            >
-              Use saved version
-            </button>
+          <div className="iv-banner" data-tone="notice">
+            Unsaved changes from this device.
+            <div>
+              <Button
+                size="sm"
+                onClick={() => {
+                  if (meta.recovery) form.reset(meta.recovery);
+                  draftApi.current?.clearRecovery();
+                }}
+              >
+                Restore
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  try {
+                    localStorage.removeItem(`invoice-draft:${invoice.id}`);
+                  } catch {
+                    /* Device storage is unavailable; the saved version stays. */
+                  }
+                  draftApi.current?.clearRecovery();
+                }}
+              >
+                Discard
+              </Button>
+            </div>
           </div>
         )}
         {meta.conflict && (
-          <div className="iv-notice" role="alert">
-            <p>
-              Another tab saved this draft. Your changes remain on this device.
-            </p>
-            <button
+          <div className="iv-banner" role="alert">
+            Another tab saved this draft. Your edits stay on this device.
+            <Button
+              size="sm"
               onClick={() => {
                 const server = draftApi.current?.acceptServer();
                 if (server) form.reset(server);
               }}
             >
-              Load the saved version
-            </button>
+              Load saved
+            </Button>
           </div>
         )}
-        {/* Panel transitions animate section switches only: first paint and
-            resting states match the static layout exactly. */}
-        <AnimatePresence initial={false} mode="wait">
-          <motion.div
-            key={section}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
-          >
-            {section === 'details' && (
-              <DetailsSection
-                form={form}
-                invoice={invoice}
-                issued={issued}
-                totals={totals}
-                pending={pending}
-                rectify={rectify}
-                reversePayment={reversePayment}
-                onPayment={onPayment}
-              />
-            )}
-            {section === 'customer' && (
-              <CustomerSection form={form} issued={issued} />
-            )}
-            {section === 'items' && (
-              <ItemsSection form={form} issued={issued} />
-            )}
-            {section === 'terms' && (
-              <TermsSection form={form} issued={issued} />
-            )}
-          </motion.div>
-        </AnimatePresence>
-      </div>
-      <div className="iv-inspector-bottom">
-        <TotalsLabel form={form} totals={totals} />
-        {!issued && (
-          <button className="iv-delete" onClick={onDelete}>
-            <Trash2 size={14} />
-            Delete draft
-          </button>
+        {issued && invoice.data.kind !== 'proforma' && (
+          <PaymentsSection
+            {...section('payments')}
+            form={form}
+            invoice={invoice}
+            status={status}
+            remaining={remaining}
+            pending={pending}
+            rectify={rectify}
+            reversePayment={reversePayment}
+            onPayment={onPayment}
+          />
         )}
+        {/* An issued invoice is about getting paid, so the plan sits by its
+            payments; a draft is still about what it charges for. */}
+        {issued && (
+          <PlanSection
+            {...section('plan')}
+            form={form}
+            invoice={invoice}
+            totals={totals}
+          />
+        )}
+        <CustomerSection {...section('customer')} form={form} issued={issued} />
+        <ItemsSection
+          {...section('items')}
+          form={form}
+          issued={issued}
+          totals={totals}
+        />
+        {!issued && (
+          <PlanSection
+            {...section('plan')}
+            form={form}
+            invoice={invoice}
+            totals={totals}
+          />
+        )}
+        <DetailsSection {...section('details')} form={form} issued={issued} />
+        <TermsSection {...section('terms')} form={form} issued={issued} />
+        <FromSection {...section('from')} form={form} issued={issued} />
+        <AppearanceSection
+          {...section('appearance')}
+          form={form}
+          issued={issued}
+        />
       </div>
+      <TotalsFoot form={form} totals={totals} />
     </aside>
   );
 });
 
-const TotalsLabel = memo(function TotalsLabel({
-  form,
-  totals,
-}: {
+type SectionProps = {
+  open: boolean;
+  onToggle: () => void;
   form: InvoiceForm;
-  totals: ReturnType<typeof calculate> | null;
-}) {
-  const currency = useStore(form.store, (state) => state.values.currency);
-  const language = useStore(form.store, (state) => state.values.language);
-  return (
-    <div>
-      <span>Total</span>
-      <strong>
-        <Morph>
-          {totals ? formatMoney(totals.total, language, currency) : '—'}
-        </Morph>
-      </strong>
-    </div>
-  );
-});
-
-const DetailsSection = memo(function DetailsSection({
-  form,
-  invoice,
-  issued,
-  totals,
-  pending,
-  rectify,
-  reversePayment,
-  onPayment,
-}: {
-  form: InvoiceForm;
-  invoice: Invoice;
   issued: boolean;
-  totals: ReturnType<typeof calculate> | null;
-  pending: boolean;
-  rectify: () => void;
-  reversePayment: (paymentId: Payment['id']) => void;
-  onPayment: (amount: string) => void;
+};
+
+const TotalsFoot = memo(function TotalsFoot({
+  form,
+  totals,
+}: {
+  form: InvoiceForm;
+  totals: Totals | null;
 }) {
-  const { workspace } = useWorkspace();
-  const payments = useMemo(
-    () =>
-      (workspace?.payments ?? []).filter(
-        (payment) => payment.invoiceId === invoice.id,
-      ),
-    [workspace, invoice.id],
-  );
   const currency = useStore(form.store, (state) => state.values.currency);
   const language = useStore(form.store, (state) => state.values.language);
-  const correction = useStore(form.store, (state) => state.values.correction);
-  const remaining = totals ? balance(totals.total, payments) : '0';
+  const money = (value: string) => formatMoney(value, language, currency);
   return (
-    <>
-      <form.Field name="title">
-        {(title) => (
-          <Field
-            label="Document title (optional)"
-            value={title.state.value}
-            disabled={issued}
-            onChange={(next) => title.handleChange(next)}
-            placeholder="A name for this project"
-          />
-        )}
-      </form.Field>
-      <div className="iv-form-grid">
-        <form.Field name="kind">
-          {(kind) => (
-            <Select
-              label="Document type"
-              value={kind.state.value}
-              disabled={issued || kind.state.value === 'rectification'}
-              onChange={(next) => kind.handleChange(next)}
-              options={
-                kind.state.value === 'rectification'
-                  ? [['rectification', 'Rectifying invoice']]
-                  : [
-                      ['invoice', 'Invoice'],
-                      ['proforma', 'Proforma'],
-                    ]
-              }
-            />
-          )}
-        </form.Field>
-        <form.Field name="series">
-          {(series) => (
-            <Field
-              label="Numbering series"
-              value={series.state.value}
-              disabled={issued}
-              onChange={(next) => series.handleChange(next)}
-            />
-          )}
-        </form.Field>
-        <form.Field name="issueDate">
-          {(date) => (
-            <Field
-              label="Issue date"
-              type="date"
-              value={date.state.value}
-              disabled={issued}
-              onChange={(next) => date.handleChange(next)}
-            />
-          )}
-        </form.Field>
-        <form.Field name="supplyDate">
-          {(date) => (
-            <Field
-              label="Supply date"
-              type="date"
-              value={date.state.value}
-              disabled={issued}
-              onChange={(next) => date.handleChange(next)}
-            />
-          )}
-        </form.Field>
-        <form.Field name="dueDate">
-          {(date) => (
-            <Field
-              label="Due date"
-              type="date"
-              value={date.state.value}
-              disabled={issued}
-              onChange={(next) => date.handleChange(next)}
-            />
-          )}
-        </form.Field>
-        <form.Field name="currency">
-          {(money) => (
-            <Select
-              label="Currency"
-              value={money.state.value}
-              disabled={issued}
-              onChange={(next) => money.handleChange(next)}
-              options={[
-                ['EUR', 'EUR · Euro'],
-                ['USD', 'USD · US dollar (draft)'],
-                ['GBP', 'GBP · Pound (draft)'],
-              ]}
-            />
-          )}
-        </form.Field>
-      </div>
-      {correction && (
+    <div className="iv-inspector-foot" aria-live="polite">
+      {totals && (
         <>
-          <Field
-            label="Original invoice"
-            value={correction.number}
-            disabled
-            onChange={() => {}}
-          />
-          <form.Field name="correction">
-            {(field) => (
-              <Field
-                label="Reason for correction"
-                value={field.state.value?.reason ?? ''}
-                disabled={issued}
-                multiline
-                onChange={(reason) => {
-                  if (field.state.value)
-                    field.handleChange({ ...field.state.value, reason });
-                }}
-              />
-            )}
-          </form.Field>
-        </>
-      )}
-      <h3>From</h3>
-      <IssuerSummary form={form} />
-      {!issued && (
-        <div className="iv-inline-actions">
-          <Link to="/invoices/settings">
-            Edit issuer settings <ArrowUpRight size={14} />
-          </Link>
-          <button
-            onClick={() => {
-              if (workspace)
-                form.setFieldValue('issuer', workspace.preferences.issuer);
-            }}
-          >
-            Apply current profile
-          </button>
-        </div>
-      )}
-      {issued && invoice.data.kind !== 'proforma' && (
-        <>
-          <h3>Payment record</h3>
-          <p className="iv-outstanding">
-            <Morph>{formatMoney(remaining, language, currency)}</Morph>
-            <span>outstanding</span>
-          </p>
-          <button
-            onClick={() => onPayment(remaining)}
-            disabled={Number(remaining) <= 0}
-          >
-            Record payment <Plus size={15} />
-          </button>
-          {payments.map((payment) => (
-            <div className="iv-payment" key={payment.id}>
+          <div className="iv-sum">
+            <span>Subtotal</span>
+            <MorphText>{money(totals.subtotal)}</MorphText>
+          </div>
+          {totals.discount !== '0.00' && (
+            <div className="iv-sum">
+              <span>Discount</span>
+              <MorphText>{money(`-${totals.discount}`)}</MorphText>
+            </div>
+          )}
+          {totals.groups.map((group) => (
+            <div
+              className="iv-sum"
+              key={`${group.treatment}:${group.rate}:${group.reason}`}
+            >
               <span>
-                {payment.date}
-                <strong>
-                  <Morph>
-                    {formatMoney(payment.amount, language, currency)}
-                  </Morph>
-                </strong>
+                {group.treatment === 'taxable'
+                  ? `IGIC ${group.rate}%`
+                  : group.treatment === 'exempt'
+                    ? 'Exempt'
+                    : group.treatment === 'reverse-charge'
+                      ? 'Reverse charge'
+                      : 'Outside scope'}
               </span>
-              {payment.reversedAt ? (
-                'Reversed'
-              ) : (
-                <button
-                  disabled={pending}
-                  onClick={() => {
-                    reversePayment(payment.id);
-                  }}
-                >
-                  Reverse
-                </button>
-              )}
+              <MorphText>{money(group.tax)}</MorphText>
             </div>
           ))}
-          <button
-            onClick={() => {
-              rectify();
-            }}
-            disabled={pending}
-          >
-            Create rectifying invoice
-          </button>
         </>
       )}
-    </>
-  );
-});
-
-const IssuerSummary = memo(function IssuerSummary({
-  form,
-}: {
-  form: InvoiceForm;
-}) {
-  const name = useStore(form.store, (state) => state.values.issuer.name);
-  const taxId = useStore(form.store, (state) => state.values.issuer.taxId);
-  const regime = useStore(form.store, (state) => state.values.issuer.regime);
-  return (
-    <div className="iv-issuer-summary">
-      <strong>{name || 'Add your legal identity'}</strong>
-      <span>{taxId || 'Tax ID not set'}</span>
-      <span>{regime === 'repep' ? 'REPEP · Exempt' : 'Ordinary IGIC'}</span>
+      <div className="iv-sum-total">
+        <span>Total</span>
+        <strong>
+          <MorphText>{totals ? money(totals.total) : '—'}</MorphText>
+        </strong>
+      </div>
     </div>
   );
 });
 
 const CustomerSection = memo(function CustomerSection({
+  open,
+  onToggle,
   form,
   issued,
-}: {
-  form: InvoiceForm;
-  issued: boolean;
-}) {
+}: SectionProps) {
   const { workspace } = useWorkspace();
+  const name = useStore(form.store, (state) => state.values.customer.name);
+  const address = useStore(
+    form.store,
+    (state) => state.values.customer.address,
+  );
   const applyCustomer = useCallback(
-    (id: string) => {
-      const customer = workspace?.customers.find(
-        (customer) => customer.id === id,
-      );
-      if (!customer) return;
-      form.setFieldValue('customer', customer);
-      form.setFieldValue('customerId', customer.id);
-      form.setFieldValue('customerType', customer.type);
-      form.setFieldValue('customerTerritory', customer.territory);
-      form.setFieldValue('language', customer.language);
+    (customer: Customer) => {
+      const { id, type, territory, language, ...party } = customer;
+      form.setFieldValue('customer', party);
+      form.setFieldValue('customerId', id);
+      form.setFieldValue('customerType', type);
+      form.setFieldValue('customerTerritory', territory);
+      form.setFieldValue('language', language);
     },
-    [form, workspace],
+    [form],
   );
   return (
-    <>
-      {!issued && (
-        <form.Field name="customerId">
-          {(field) => (
-            <Select
-              label="Saved customer"
-              value={field.state.value ?? ''}
-              onChange={applyCustomer}
-              options={[
-                ['', 'Enter customer details'],
-                ...(workspace?.customers ?? []).map(
-                  (customer) => [customer.id, customer.name] as const,
-                ),
-              ]}
-            />
-          )}
-        </form.Field>
-      )}
-      <form.Field name="customer">
-        {(customer) => (
-          <PartyFields
-            value={customer.state.value}
-            disabled={issued}
-            onChange={(next) => customer.handleChange(next)}
-          />
+    <Section
+      title="Customer"
+      summary={name || 'Not set'}
+      open={open}
+      onToggle={onToggle}
+    >
+      <div className="iv-section-body">
+        {!issued && (
+          <form.Field name="customerId">
+            {(field) => (
+              <CustomerPicker
+                customers={workspace?.customers ?? []}
+                selected={field.state.value}
+                onPick={applyCustomer}
+                onClear={() => field.handleChange(null)}
+              />
+            )}
+          </form.Field>
         )}
-      </form.Field>
-      <div className="iv-form-grid">
-        <form.Field name="customerType">
-          {(field) => (
-            <Select
-              label="Customer type"
-              value={field.state.value}
+        <form.Field name="customer">
+          {(customer) => (
+            <PartyFields
+              value={customer.state.value}
               disabled={issued}
-              onChange={(next) => field.handleChange(next)}
-              options={[
-                ['business', 'Business'],
-                ['consumer', 'Consumer'],
-              ]}
+              onChange={(next) => customer.handleChange(next)}
             />
           )}
         </form.Field>
-        <form.Field name="customerTerritory">
-          {(field) => (
-            <Select
-              label="Customer territory"
-              value={field.state.value}
-              disabled={issued}
-              onChange={(next) => field.handleChange(next)}
-              options={[
-                ['canary-islands', 'Canary Islands'],
-                ['mainland-spain', 'Mainland Spain / Balearics'],
-                ['eu', 'European Union'],
-                ['other', 'Other'],
-              ]}
-            />
-          )}
-        </form.Field>
+        <div className="iv-grid">
+          <form.Field name="customerType">
+            {(field) => (
+              <Select
+                label="Customer type"
+                value={field.state.value}
+                disabled={issued}
+                onChange={(next) => field.handleChange(next)}
+                options={customerTypes}
+              />
+            )}
+          </form.Field>
+          <form.Field name="customerTerritory">
+            {(field) => (
+              <TerritorySelect
+                value={field.state.value}
+                address={address}
+                disabled={issued}
+                onChange={(next) => field.handleChange(next)}
+              />
+            )}
+          </form.Field>
+        </div>
       </div>
-    </>
+    </Section>
   );
 });
 
 const ItemsSection = memo(function ItemsSection({
+  open,
+  onToggle,
   form,
   issued,
-}: {
-  form: InvoiceForm;
-  issued: boolean;
-}) {
+  totals,
+}: SectionProps & { totals: Totals | null }) {
   const { workspace } = useWorkspace();
   const lines = useStore(form.store, (state) => state.values.lines);
   const regime = useStore(form.store, (state) => state.values.issuer.regime);
-  const updateLine = useCallback(
-    (next: Line) => {
-      form.setFieldValue(
-        'lines',
-        form.state.values.lines.map((item) =>
-          item.id === next.id ? next : item,
-        ),
-      );
-    },
+  const language = useStore(form.store, (state) => state.values.language);
+  const currency = useStore(form.store, (state) => state.values.currency);
+  const setLines = useCallback(
+    (update: (lines: Line[]) => Line[]) =>
+      form.setFieldValue('lines', update([...form.state.values.lines])),
     [form],
+  );
+  const updateLine = useCallback(
+    (next: Line) =>
+      setLines((current) =>
+        current.map((item) => (item.id === next.id ? next : item)),
+      ),
+    [setLines],
+  );
+  // One line shows its editor at a time; the rest stay single rows, so the
+  // list reads like the invoice. A lone line starts open: it is the one to
+  // fill in.
+  const [openId, setOpenId] = useState<string | null>(() =>
+    lines.length === 1 ? (lines[0]?.id ?? null) : null,
   );
   const removeLine = useCallback(
     (id: string) => {
-      form.setFieldValue(
-        'lines',
-        form.state.values.lines.filter((item) => item.id !== id),
-      );
+      setOpenId((current) => (current === id ? null : current));
+      setLines((current) => current.filter((item) => item.id !== id));
     },
-    [form],
+    [setLines],
+  );
+  const toggleLine = useCallback(
+    (id: string) => setOpenId((current) => (current === id ? null : id)),
+    [],
+  );
+  // The line just created, by any route: it opens, and its description takes
+  // focus, which also scrolls it into view when it lands below the fold.
+  const [fresh, setFreshId] = useState<string | null>(null);
+  const setFresh = useCallback((id: string) => {
+    setFreshId(id);
+    setOpenId(id);
+  }, []);
+  // The order while a row is being dragged. The form, and with it the save
+  // and the preview, only hears about the order the drag ends on.
+  const [dragOrder, setDragOrderState] = useState<RecordId[] | null>(null);
+  const dragged = useRef<RecordId[] | null>(null);
+  const setDragOrder = useCallback((next: RecordId[]) => {
+    dragged.current = next;
+    setDragOrderState(next);
+  }, []);
+  const order = dragOrder ?? lines.map((line) => line.id);
+  const dropLine = useCallback(() => {
+    const final = dragged.current;
+    dragged.current = null;
+    setDragOrderState(null);
+    if (!final) return;
+    setLines((current) => {
+      const byId = new Map(current.map((line) => [line.id, line]));
+      const moved = final.flatMap((id) => byId.get(id) ?? []);
+      // Anything added mid-drag keeps its place at the end.
+      return [...moved, ...current.filter((line) => !final.includes(line.id))];
+    });
+  }, [setLines]);
+  const duplicateLine = useCallback(
+    (id: string) => {
+      const copy = RecordId.make(crypto.randomUUID());
+      setFresh(copy);
+      setLines((current) => {
+        const at = current.findIndex((item) => item.id === id);
+        const source = current[at];
+        if (!source) return current;
+        current.splice(at + 1, 0, { ...source, id: copy });
+        return current;
+      });
+    },
+    [setLines, setFresh],
   );
   const moveLine = useCallback(
-    (id: string, offset: number) => {
-      const current = [...form.state.values.lines];
-      const at = current.findIndex((item) => item.id === id);
-      const to = at + offset;
-      if (at < 0 || to < 0 || to >= current.length) return;
-      const [moved] = current.splice(at, 1);
-      if (moved) current.splice(to, 0, moved);
-      form.setFieldValue('lines', current);
-    },
-    [form],
+    (id: string, offset: number) =>
+      setLines((current) => {
+        const at = current.findIndex((item) => item.id === id);
+        const to = at + offset;
+        if (at < 0 || to < 0 || to >= current.length) return current;
+        const [moved] = current.splice(at, 1);
+        if (moved) current.splice(to, 0, moved);
+        return current;
+      }),
+    [setLines],
   );
   const addLine = useCallback(() => {
     const line = newLine();
-    form.setFieldValue('lines', [
-      ...form.state.values.lines,
+    setFresh(line.id);
+    setLines((current) => [
+      ...current,
       regime === 'repep'
         ? {
             ...line,
@@ -1121,102 +1168,149 @@ const ItemsSection = memo(function ItemsSection({
           }
         : line,
     ]);
-  }, [form, regime]);
-  const addCatalogItem = useCallback(
-    (id: string) => {
-      const item = workspace?.items.find((item) => item.id === id);
-      if (item)
-        form.setFieldValue('lines', [
-          ...form.state.values.lines,
-          { ...item, id: RecordId.make(crypto.randomUUID()) },
-        ]);
-    },
-    [form, workspace],
-  );
+  }, [setLines, regime, setFresh]);
+  const count = lines.filter((line) => line.kind !== 'note').length;
   return (
-    <>
-      {lines.map((line, index) => (
-        <LineRow
-          key={line.id}
-          line={line}
-          index={index}
-          last={index === lines.length - 1}
-          disabled={issued}
-          onUpdate={updateLine}
-          onRemove={removeLine}
-          onMove={moveLine}
-        />
-      ))}
-      {!issued && (
-        <>
-          <button className="iv-add-line" onClick={addLine}>
-            <Plus size={16} />
-            Add item
-          </button>
-          {!!workspace?.items.length && (
-            <Select<string>
-              label="Add from catalog"
-              value=""
-              onChange={addCatalogItem}
-              options={[
-                ['', 'Select an item'],
-                ...workspace.items.map((item) => [item.id, item.name] as const),
-              ]}
-            />
-          )}
-        </>
-      )}
-      <h3>Adjustments</h3>
-      <form.Field name="discount">
-        {(discount) => (
-          <div className="iv-form-grid">
-            <Select
-              label="Document discount"
-              value={discount.state.value.kind}
-              disabled={issued}
-              onChange={(kind) =>
-                discount.handleChange({ ...discount.state.value, kind })
-              }
-              options={[
-                ['percent', 'Percentage'],
-                ['amount', 'Fixed amount'],
-              ]}
-            />
-            <Field
-              label="Discount value"
-              value={discount.state.value.value}
-              disabled={issued}
-              onChange={(value) =>
-                discount.handleChange({ ...discount.state.value, value })
-              }
+    <Section
+      title="Items"
+      summary={`${count} item${count === 1 ? '' : 's'}`}
+      open={open}
+      onToggle={onToggle}
+    >
+      <div className="iv-section-body">
+        <Reorder.Group
+          as="div"
+          axis="y"
+          className="iv-lines"
+          values={order}
+          onReorder={setDragOrder}
+        >
+          {/* initial={false}: lines already on the invoice are simply there;
+              only lines added or removed now animate. */}
+          <AnimatePresence initial={false}>
+            {order.map((id, index) => {
+              const at = lines.findIndex((line) => line.id === id);
+              const line = lines[at];
+              if (!line) return null;
+              return (
+                <LineRow
+                  key={id}
+                  fresh={id === fresh}
+                  line={line}
+                  index={index}
+                  open={id === openId}
+                  disabled={issued}
+                  net={totals?.lines[at]?.net ?? null}
+                  language={language}
+                  currency={currency}
+                  onToggle={toggleLine}
+                  onUpdate={updateLine}
+                  onRemove={removeLine}
+                  onDuplicate={duplicateLine}
+                  onMove={moveLine}
+                  onDrop={dropLine}
+                />
+              );
+            })}
+          </AnimatePresence>
+        </Reorder.Group>
+        {!issued && (
+          <div className="iv-add">
+            <Button onClick={addLine}>
+              <Plus size={15} />
+              Add item
+            </Button>
+            <CatalogMenu
+              items={workspace?.items ?? []}
+              onPick={({ name: _name, ...item }) => {
+                const id = RecordId.make(crypto.randomUUID());
+                setFresh(id);
+                setLines((current) => [...current, { ...item, id }]);
+              }}
             />
           </div>
         )}
-      </form.Field>
-    </>
+        <form.Field name="discount">
+          {(discount) => (
+            <div className="iv-grid">
+              <AmountField
+                label="Discount on the whole invoice"
+                className="iv-span"
+                value={discount.state.value.value}
+                disabled={issued}
+                unit={
+                  discount.state.value.kind === 'percent'
+                    ? '%'
+                    : currencySymbol(currency)
+                }
+                unitSwitch={{
+                  label:
+                    discount.state.value.kind === 'percent'
+                      ? 'Switch to a fixed amount'
+                      : 'Switch to a percentage',
+                  onSwitch: () =>
+                    discount.handleChange({
+                      ...discount.state.value,
+                      kind:
+                        discount.state.value.kind === 'percent'
+                          ? 'amount'
+                          : 'percent',
+                    }),
+                }}
+                onChange={(value) =>
+                  discount.handleChange({ ...discount.state.value, value })
+                }
+              />
+            </div>
+          )}
+        </form.Field>
+      </div>
+    </Section>
   );
 });
 
 const LineRow = memo(function LineRow({
+  fresh,
   line,
   index,
-  last,
+  open,
   disabled,
+  net,
+  language,
+  currency,
+  onToggle,
   onUpdate,
   onRemove,
+  onDuplicate,
   onMove,
+  onDrop,
 }: {
+  fresh: boolean;
   line: Line;
   index: number;
-  last: boolean;
+  open: boolean;
   disabled: boolean;
+  net: string | null;
+  language: InvoiceData['language'];
+  currency: InvoiceData['currency'];
+  onToggle: (id: string) => void;
   onUpdate: (line: Line) => void;
   onRemove: (id: string) => void;
+  onDuplicate: (id: string) => void;
   onMove: (id: string, offset: number) => void;
+  onDrop: () => void;
 }) {
+  const handleToggle = useCallback(
+    () => onToggle(line.id),
+    [onToggle, line.id],
+  );
   const handleRemove = useCallback(
     () => onRemove(line.id),
     [onRemove, line.id],
+  );
+  const handleDuplicate = useCallback(
+    () => onDuplicate(line.id),
+    [onDuplicate, line.id],
   );
   const handleMove = useCallback(
     (offset: number) => onMove(line.id, offset),
@@ -1224,63 +1318,438 @@ const LineRow = memo(function LineRow({
   );
   return (
     <LineEditor
+      fresh={fresh}
       line={line}
       index={index}
-      last={last}
+      open={open}
       disabled={disabled}
+      net={net}
+      language={language}
+      currency={currency}
+      onToggle={handleToggle}
       onChange={onUpdate}
       onRemove={handleRemove}
+      onDuplicate={handleDuplicate}
       onMove={handleMove}
+      onDrop={onDrop}
     />
   );
 });
 
-const TermsSection = memo(function TermsSection({
+const DetailsSection = memo(function DetailsSection({
+  open,
+  onToggle,
   form,
   issued,
-}: {
-  form: InvoiceForm;
-  issued: boolean;
-}) {
+}: SectionProps) {
+  const dueDate = useStore(form.store, (state) => state.values.dueDate);
+  const issueDate = useStore(form.store, (state) => state.values.issueDate);
+  const correction = useStore(form.store, (state) => state.values.correction);
   return (
-    <>
-      <form.Field name="reference">
-        {(reference) => (
-          <Field
-            label="Customer reference / purchase order"
-            value={reference.state.value}
-            disabled={issued}
-            onChange={(next) => reference.handleChange(next)}
+    <Section
+      title="Dates & numbering"
+      summary={`Due ${day(dueDate)}`}
+      open={open}
+      onToggle={onToggle}
+    >
+      <div className="iv-section-body">
+        <form.Field name="title">
+          {(title) => (
+            <Field
+              label="Title"
+              value={title.state.value}
+              disabled={issued}
+              onChange={(next) => title.handleChange(next)}
+              placeholder="A name for this project"
+            />
+          )}
+        </form.Field>
+        <div className="iv-grid">
+          <form.Field name="kind">
+            {(kind) => (
+              <Select
+                label="Document"
+                value={kind.state.value}
+                disabled={issued || kind.state.value === 'rectification'}
+                onChange={(next) => kind.handleChange(next)}
+                options={
+                  kind.state.value === 'rectification'
+                    ? [['rectification', 'Rectifying invoice']]
+                    : documentKinds
+                }
+              />
+            )}
+          </form.Field>
+          <form.Field name="series">
+            {(series) => (
+              <SeriesField
+                value={series.state.value}
+                disabled={issued}
+                onChange={(next) => series.handleChange(next)}
+              />
+            )}
+          </form.Field>
+          <form.Field name="issueDate">
+            {(date) => (
+              <Field
+                label="Issue date"
+                type="date"
+                value={date.state.value}
+                disabled={issued}
+                onChange={(next) => date.handleChange(next)}
+              />
+            )}
+          </form.Field>
+          <form.Field name="dueDate">
+            {(date) => (
+              <DueDateField
+                issueDate={issueDate}
+                value={date.state.value}
+                disabled={issued}
+                onChange={(next) => date.handleChange(next)}
+              />
+            )}
+          </form.Field>
+          <form.Field name="supplyDate">
+            {(date) => (
+              <Field
+                label="Supply date"
+                type="date"
+                value={date.state.value}
+                disabled={issued}
+                onChange={(next) => date.handleChange(next)}
+                // The PDF prints a supply date only when it differs from the
+                // issue date; a different one can be put back in one click.
+                {...(date.state.value !== issueDate && !issued
+                  ? {
+                      hint: (
+                        <button
+                          type="button"
+                          className="iv-hint-action"
+                          onClick={() => date.handleChange(issueDate)}
+                        >
+                          Match issue date
+                        </button>
+                      ),
+                    }
+                  : {})}
+              />
+            )}
+          </form.Field>
+          <form.Field name="currency">
+            {(money) => (
+              <Select
+                label="Currency"
+                value={money.state.value}
+                disabled={issued}
+                onChange={(next) => money.handleChange(next)}
+                options={currencies}
+              />
+            )}
+          </form.Field>
+        </div>
+        <form.Field name="reference">
+          {(reference) => (
+            <Field
+              label="Customer reference"
+              value={reference.state.value}
+              disabled={issued}
+              placeholder="Purchase order or project code"
+              onChange={(next) => reference.handleChange(next)}
+            />
+          )}
+        </form.Field>
+        {correction && (
+          <>
+            <Field
+              label="Original invoice"
+              value={correction.number}
+              disabled
+              onChange={() => {}}
+            />
+            <form.Field name="correction">
+              {(field) => (
+                <Field
+                  label="Reason for correction"
+                  value={field.state.value?.reason ?? ''}
+                  disabled={issued}
+                  multiline
+                  onChange={(reason) => {
+                    if (field.state.value)
+                      field.handleChange({ ...field.state.value, reason });
+                  }}
+                />
+              )}
+            </form.Field>
+          </>
+        )}
+      </div>
+    </Section>
+  );
+});
+
+const TermsSection = memo(function TermsSection({
+  open,
+  onToggle,
+  form,
+  issued,
+}: SectionProps) {
+  const terms = useStore(form.store, (state) => state.values.paymentTerms);
+  return (
+    <Section
+      title="Payment & notes"
+      summary={terms.split('\n')[0] || 'None'}
+      open={open}
+      onToggle={onToggle}
+    >
+      <div className="iv-section-body">
+        <form.Field name="paymentTerms">
+          {(field) => (
+            <Field
+              label="Payment terms"
+              multiline
+              value={field.state.value}
+              disabled={issued}
+              onChange={(next) => field.handleChange(next)}
+            />
+          )}
+        </form.Field>
+        <form.Field name="notes">
+          {(field) => (
+            <Field
+              label="Notes"
+              multiline
+              value={field.state.value}
+              disabled={issued}
+              placeholder="Thank you for your business."
+              onChange={(next) => field.handleChange(next)}
+            />
+          )}
+        </form.Field>
+      </div>
+    </Section>
+  );
+});
+
+const FromSection = memo(function FromSection({
+  open,
+  onToggle,
+  form,
+  issued,
+}: SectionProps) {
+  const { workspace } = useWorkspace();
+  const issuer = useStore(form.store, (state) => state.values.issuer);
+  const current = workspace?.preferences.issuer;
+  // A draft copies the owner's identity when it is made; the button to
+  // refresh that copy only means something once settings have moved on.
+  const stale = !!current && JSON.stringify(current) !== JSON.stringify(issuer);
+  return (
+    <Section
+      title="From"
+      summary={issuer.name || 'Not set'}
+      open={open}
+      onToggle={onToggle}
+    >
+      <div className="iv-section-body">
+        <div className="iv-from">
+          <strong>{issuer.name || 'Add your legal identity'}</strong>
+          <span>{issuer.taxId || 'Tax ID not set'}</span>
+          <span>
+            {issuer.regime === 'repep' ? 'REPEP · Exempt' : 'Ordinary IGIC'}
+          </span>
+        </div>
+        {!issued && (
+          <div className="iv-inline">
+            {stale ? (
+              <Button
+                size="sm"
+                onClick={() => form.setFieldValue('issuer', current)}
+              >
+                Use current settings
+              </Button>
+            ) : (
+              <span className="iv-muted">Matches your settings.</span>
+            )}
+            <Link
+              to="/invoices/settings"
+              className="iv-btn"
+              data-variant="ghost"
+              data-size="sm"
+            >
+              <span>Edit settings</span>
+              <ArrowUpRight size={13} />
+            </Link>
+          </div>
+        )}
+      </div>
+    </Section>
+  );
+});
+
+const AppearanceSection = memo(function AppearanceSection({
+  open,
+  onToggle,
+  form,
+  issued,
+}: SectionProps) {
+  return (
+    <form.Field name="cover">
+      {(field) => (
+        <Section
+          title="Cover"
+          summary={coverLabel(field.state.value)}
+          open={open}
+          onToggle={onToggle}
+        >
+          <div className="iv-section-body">
+            <CoverPicker
+              value={field.state.value}
+              disabled={issued}
+              onChange={(next) => field.handleChange(next)}
+            />
+          </div>
+        </Section>
+      )}
+    </form.Field>
+  );
+});
+
+const PlanSection = memo(function PlanSection({
+  open,
+  onToggle,
+  form,
+  invoice,
+  totals,
+}: Omit<SectionProps, 'issued'> & { invoice: Invoice; totals: Totals | null }) {
+  const kind = useStore(form.store, (state) => state.values.kind);
+  const currency = useStore(form.store, (state) => state.values.currency);
+  const language = useStore(form.store, (state) => state.values.language);
+  const issueDate = useStore(form.store, (state) => state.values.issueDate);
+  const dueDate = useStore(form.store, (state) => state.values.dueDate);
+  const customer = useStore(form.store, (state) => state.values.customer.name);
+  const issued = invoice.status === 'issued';
+  const terms =
+    totals && Number(totals.total) > 0
+      ? { total: totals.total, currency, issueDate, dueDate }
+      : null;
+  const { plans } = useOffer(invoice.id, terms, issued);
+  // Only an invoice proper asks for money; a proforma is a quote.
+  if (kind !== 'invoice') return null;
+  return (
+    <Section
+      title="Payment plan"
+      summary={offerSummary(plans, terms, language)}
+      open={open}
+      onToggle={onToggle}
+    >
+      <div className="iv-section-body">
+        <OfferPanel
+          id={invoice.id}
+          terms={terms}
+          language={language}
+          issued={issued}
+          title={[invoice.number ?? 'Draft', customer]
+            .filter(Boolean)
+            .join(' · ')}
+        />
+      </div>
+    </Section>
+  );
+});
+
+const PaymentsSection = memo(function PaymentsSection({
+  open,
+  onToggle,
+  form,
+  invoice,
+  status,
+  remaining,
+  pending,
+  rectify,
+  reversePayment,
+  onPayment,
+}: Omit<SectionProps, 'issued'> & {
+  invoice: Invoice;
+  status: DocumentStatus;
+  remaining: string;
+  pending: boolean;
+  rectify: () => void;
+  reversePayment: (paymentId: Payment['id']) => void;
+  onPayment: () => void;
+}) {
+  const { workspace } = useWorkspace();
+  const currency = useStore(form.store, (state) => state.values.currency);
+  const language = useStore(form.store, (state) => state.values.language);
+  const payments = useMemo(
+    () =>
+      (workspace?.payments ?? []).filter(
+        (payment) => payment.invoiceId === invoice.id,
+      ),
+    [workspace, invoice.id],
+  );
+  const money = (value: string) => formatMoney(value, language, currency);
+  return (
+    <Section
+      title="Payments"
+      summary={<StatusChip status={status} />}
+      open={open}
+      onToggle={onToggle}
+    >
+      <div className="iv-section-body">
+        <div className="iv-outstanding">
+          <span>Outstanding</span>
+          <strong>
+            <MorphText>{money(remaining)}</MorphText>
+          </strong>
+        </div>
+        {invoice.data.kind === 'invoice' && (
+          <PaymentReview
+            id={invoice.id}
+            currency={currency}
+            language={language}
           />
         )}
-      </form.Field>
-      <form.Field name="paymentTerms">
-        {(terms) => (
-          <Field
-            label="Payment terms"
-            multiline
-            value={terms.state.value}
-            disabled={issued}
-            onChange={(next) => terms.handleChange(next)}
+        {payments.length > 0 && (
+          <PaymentList
+            payments={payments}
+            money={money}
+            day={day}
+            pending={pending}
+            onReverse={reversePayment}
           />
         )}
-      </form.Field>
-      <form.Field name="notes">
-        {(notes) => (
-          <Field
-            label="Notes"
-            multiline
-            value={notes.state.value}
-            disabled={issued}
-            onChange={(next) => notes.handleChange(next)}
-          />
+        {/* The ways to get paid share a row; correcting the invoice is a
+            different act, so it sits apart, quieter. */}
+        {Number(remaining) > 0 && (
+          <div className="iv-inline">
+            {invoice.data.kind === 'invoice' && (
+              <PaymentLinkMenu
+                id={invoice.id}
+                outstanding={remaining}
+                currency={currency}
+                language={language}
+                options={workspace?.offers[invoice.id]?.plans.length ?? 1}
+              />
+            )}
+            <Button size="sm" onClick={onPayment}>
+              <Plus size={14} />
+              Record payment
+            </Button>
+          </div>
         )}
-      </form.Field>
-      <p className="iv-hint">
-        Legal tax notes come from each item’s tax treatment. The PDF includes
-        them automatically.
-      </p>
-    </>
+        <div className="iv-inline">
+          <Button
+            size="sm"
+            variant="ghost"
+            className="iv-flush"
+            onClick={rectify}
+            disabled={pending}
+          >
+            Create rectifying invoice
+          </Button>
+        </div>
+      </div>
+    </Section>
   );
 });
 
@@ -1297,116 +1766,183 @@ function IssueDialogBody({
   onClose: () => void;
   onIssue: () => void;
 }) {
-  const issues = useMemo(() => {
+  const { issues, total } = useMemo(() => {
     try {
-      return issueErrors(snapshot);
+      return {
+        issues: issueErrors(snapshot),
+        total: calculate(snapshot).total,
+      };
     } catch {
-      return [{ path: 'lines', message: 'Complete all numeric values.' }];
+      return {
+        issues: [{ path: 'lines', message: 'Complete every numeric value.' }],
+        total: null,
+      };
     }
   }, [snapshot]);
+  const count = snapshot.lines.filter((line) => line.kind !== 'note').length;
   return (
     <>
+      <div className="iv-review">
+        <div>
+          <span>Customer</span>
+          <strong>{snapshot.customer.name || '—'}</strong>
+        </div>
+        <div>
+          <span>Items</span>
+          <strong>{count}</strong>
+        </div>
+        <div>
+          <span>Due</span>
+          <strong>{day(snapshot.dueDate)}</strong>
+        </div>
+        <div>
+          <span>Total</span>
+          <strong>
+            {total === null
+              ? '—'
+              : formatMoney(total, snapshot.language, snapshot.currency)}
+          </strong>
+        </div>
+      </div>
       {issues.length ? (
-        <div className="iv-issue-checklist">
+        <div className="iv-checklist">
           {issues.map((issue, index) => (
             <p key={`${issue.path}:${index}`}>
-              <span>{index + 1}</span>
+              <CircleAlert size={14} />
               {issue.message}
             </p>
           ))}
         </div>
       ) : (
         <div className="iv-ready">
-          <CheckCircle2 size={24} />
-          <p>The required invoice fields are complete.</p>
+          <CircleCheck size={18} />
+          Every required field is complete.
         </div>
       )}
-      {error && <p role="alert">{error}</p>}
+      {error && (
+        <p className="iv-banner" role="alert" style={{ marginTop: 14 }}>
+          {error}
+        </p>
+      )}
       <div className="iv-dialog-actions">
-        <button onClick={onClose} disabled={pending}>
+        <Button onClick={onClose} disabled={pending}>
           Back to draft
-        </button>
-        <button
-          className="iv-primary"
+        </Button>
+        <Button
+          variant="primary"
           onClick={onIssue}
           disabled={pending || issues.length > 0}
         >
-          {pending ? 'Issuing…' : 'Issue invoice'}
-          <ArrowUpRight size={16} />
-        </button>
+          <MorphText>{pending ? 'Issuing…' : 'Issue invoice'}</MorphText>
+        </Button>
       </div>
     </>
   );
 }
 
-const PaymentDialog = memo(function PaymentDialog({
-  initialAmount,
+function PaymentDialog({
+  open,
+  remaining,
+  currency,
   pending,
   error,
   onClose,
   onRecord,
 }: {
-  initialAmount: string;
+  open: boolean;
+  remaining: string;
+  currency: InvoiceData['currency'];
   pending: boolean;
   error: string;
   onClose: () => void;
   onRecord: (payment: PaymentDraft) => void;
 }) {
   const [payment, setPayment] = useState<PaymentDraft>({
-    amount: initialAmount,
+    amount: remaining,
     date: new Date().toISOString().slice(0, 10),
     reference: '',
     method: 'transfer',
   });
+  // Each opening starts from the balance still owed.
+  useEffect(() => {
+    if (open) setPayment((current) => ({ ...current, amount: remaining }));
+  }, [open, remaining]);
   return (
     <Modal
-      open
-      onOpenChange={(open) => {
-        if (!pending && !open) onClose();
+      open={open}
+      onOpenChange={(next) => {
+        if (!pending && !next) onClose();
       }}
       title="Record payment"
-      description="Record money received against this invoice."
+      description="Money received against this invoice. The status follows from the balance."
     >
-      <div className="iv-form-grid">
-        <Field
-          label="Amount"
-          value={payment.amount}
-          onChange={(amount) => setPayment({ ...payment, amount })}
-        />
-        <Field
-          label="Payment date"
-          type="date"
-          value={payment.date}
-          onChange={(date) => setPayment({ ...payment, date })}
-        />
-        <Select
-          label="Method"
-          value={payment.method}
-          onChange={(method) => setPayment({ ...payment, method })}
-          options={[
-            ['transfer', 'Bank transfer'],
-            ['cash', 'Cash'],
-            ['card', 'Card'],
-            ['other', 'Other'],
-          ]}
-        />
-        <Field
-          label="Reference"
-          value={payment.reference}
-          onChange={(reference) => setPayment({ ...payment, reference })}
-        />
-      </div>
-      {error && <p role="alert">{error}</p>}
-      <div className="iv-dialog-actions">
-        <button onClick={onClose}>Cancel</button>
-        <button
-          className="iv-primary"
-          onClick={() => onRecord(payment)}
-          disabled={pending}
-        >
-          {pending ? 'Saving…' : 'Record payment'}
-        </button>
-      </div>
+      <form
+        className="iv-stack"
+        onSubmit={(event) => {
+          event.preventDefault();
+          onRecord(payment);
+        }}
+      >
+        <div className="iv-field">
+          <span className="iv-label">Method</span>
+          <Segmented
+            label="Method"
+            value={payment.method}
+            onChange={(method) => setPayment({ ...payment, method })}
+            options={paymentMethods.map(([key, text]) => [key, text] as const)}
+          />
+        </div>
+        <div className="iv-grid">
+          <AmountField
+            label="Amount"
+            unit={currencySymbol(currency)}
+            value={payment.amount}
+            onChange={(amount) => setPayment({ ...payment, amount })}
+            {...(Number(payment.amount) !== Number(remaining)
+              ? {
+                  hint: (
+                    <button
+                      type="button"
+                      className="iv-hint-action"
+                      onClick={() =>
+                        setPayment({ ...payment, amount: remaining })
+                      }
+                    >
+                      Use the balance,{' '}
+                      <span className="iv-num">
+                        {formatMoney(remaining, 'en', currency)}
+                      </span>
+                    </button>
+                  ),
+                }
+              : {})}
+          />
+          <Field
+            label="Date"
+            type="date"
+            value={payment.date}
+            onChange={(date) => setPayment({ ...payment, date })}
+          />
+          <Field
+            className="iv-span"
+            label="Reference"
+            placeholder="Bank reference or note"
+            value={payment.reference}
+            onChange={(reference) => setPayment({ ...payment, reference })}
+          />
+        </div>
+        {error && (
+          <p className="iv-banner" role="alert">
+            {error}
+          </p>
+        )}
+        <div className="iv-dialog-actions" style={{ marginTop: 8 }}>
+          <Button onClick={onClose}>Cancel</Button>
+          <Button type="submit" variant="primary" disabled={pending}>
+            <MorphText>{pending ? 'Saving…' : 'Record payment'}</MorphText>
+          </Button>
+        </div>
+      </form>
     </Modal>
   );
-});
+}

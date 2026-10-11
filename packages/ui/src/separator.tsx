@@ -1,8 +1,8 @@
 'use client';
 
 import * as RadixSeparator from '@radix-ui/react-separator';
-import { tv } from 'tailwind-variants';
 import type { VariantProps } from 'tailwind-variants';
+import { tv } from 'tailwind-variants';
 
 import { cn } from './utils/cn';
 

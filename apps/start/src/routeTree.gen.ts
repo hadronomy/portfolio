@@ -16,10 +16,13 @@ import { Route as InvoicesInvoiceIdRouteImport } from './routes/invoices.$invoic
 import { Route as InvoicesCustomersRouteImport } from './routes/invoices.customers'
 import { Route as InvoicesItemsRouteImport } from './routes/invoices.items'
 import { Route as InvoicesSettingsRouteImport } from './routes/invoices.settings'
-import { Route as InvoicesAuthCallbackRouteImport } from './routes/invoices_.auth.callback'
-import { Route as InvoicesAuthClientMetadataDotjsonRouteImport } from './routes/invoices_.auth.client-metadata[.]json'
-import { Route as InvoicesAuthJwksDotjsonRouteImport } from './routes/invoices_.auth.jwks[.]json'
+import { Route as InvoicesAccountRouteImport } from './routes/invoices_.account'
+import { Route as InvoicesAccountInvoiceIdRouteImport } from './routes/invoices_.account_.$invoiceId'
+import { Route as InvoicesAuthSplatRouteImport } from './routes/invoices_.auth.$'
+import { Route as InvoicesPayTokenRouteImport } from './routes/invoices_.pay.$token'
 import { Route as InvoicesPdfInvoiceIdRouteImport } from './routes/invoices_.pdf.$invoiceId'
+import { Route as InvoicesAccountPdfInvoiceIdRouteImport } from './routes/invoices_.account_.pdf.$invoiceId'
+import { Route as InvoicesPayTokenPdfRouteImport } from './routes/invoices_.pay.$token_.pdf'
 
 const InvoicesRoute = InvoicesRouteImport.update({
   id: '/invoices',
@@ -56,25 +59,41 @@ const InvoicesSettingsRoute = InvoicesSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => InvoicesRoute,
 } as any)
-const InvoicesAuthCallbackRoute = InvoicesAuthCallbackRouteImport.update({
-  id: '/invoices_/auth/callback',
-  path: '/invoices/auth/callback',
+const InvoicesAccountRoute = InvoicesAccountRouteImport.update({
+  id: '/invoices_/account',
+  path: '/invoices/account',
   getParentRoute: () => rootRouteImport,
 } as any)
-const InvoicesAuthClientMetadataDotjsonRoute =
-  InvoicesAuthClientMetadataDotjsonRouteImport.update({
-    id: '/invoices_/auth/client-metadata.json',
-    path: '/invoices/auth/client-metadata.json',
+const InvoicesAccountInvoiceIdRoute =
+  InvoicesAccountInvoiceIdRouteImport.update({
+    id: '/invoices_/account_/$invoiceId',
+    path: '/invoices/account/$invoiceId',
     getParentRoute: () => rootRouteImport,
   } as any)
-const InvoicesAuthJwksDotjsonRoute = InvoicesAuthJwksDotjsonRouteImport.update({
-  id: '/invoices_/auth/jwks.json',
-  path: '/invoices/auth/jwks.json',
+const InvoicesAuthSplatRoute = InvoicesAuthSplatRouteImport.update({
+  id: '/invoices_/auth/$',
+  path: '/invoices/auth/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InvoicesPayTokenRoute = InvoicesPayTokenRouteImport.update({
+  id: '/invoices_/pay/$token',
+  path: '/invoices/pay/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InvoicesPdfInvoiceIdRoute = InvoicesPdfInvoiceIdRouteImport.update({
   id: '/invoices_/pdf/$invoiceId',
   path: '/invoices/pdf/$invoiceId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InvoicesAccountPdfInvoiceIdRoute =
+  InvoicesAccountPdfInvoiceIdRouteImport.update({
+    id: '/invoices_/account_/pdf/$invoiceId',
+    path: '/invoices/account/pdf/$invoiceId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const InvoicesPayTokenPdfRoute = InvoicesPayTokenPdfRouteImport.update({
+  id: '/invoices_/pay/$token_/pdf',
+  path: '/invoices/pay/$token/pdf',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -85,11 +104,14 @@ export interface FileRoutesByFullPath {
   '/invoices/customers': typeof InvoicesCustomersRoute
   '/invoices/items': typeof InvoicesItemsRoute
   '/invoices/settings': typeof InvoicesSettingsRoute
+  '/invoices/account': typeof InvoicesAccountRoute
   '/invoices/': typeof InvoicesIndexRoute
-  '/invoices/auth/callback': typeof InvoicesAuthCallbackRoute
-  '/invoices/auth/client-metadata.json': typeof InvoicesAuthClientMetadataDotjsonRoute
-  '/invoices/auth/jwks.json': typeof InvoicesAuthJwksDotjsonRoute
+  '/invoices/account/$invoiceId': typeof InvoicesAccountInvoiceIdRoute
+  '/invoices/auth/$': typeof InvoicesAuthSplatRoute
+  '/invoices/pay/$token': typeof InvoicesPayTokenRoute
   '/invoices/pdf/$invoiceId': typeof InvoicesPdfInvoiceIdRoute
+  '/invoices/account/pdf/$invoiceId': typeof InvoicesAccountPdfInvoiceIdRoute
+  '/invoices/pay/$token/pdf': typeof InvoicesPayTokenPdfRoute
 }
 export interface FileRoutesByTo {
   '/experiments/text': typeof ExperimentsTextRoute
@@ -97,11 +119,14 @@ export interface FileRoutesByTo {
   '/invoices/customers': typeof InvoicesCustomersRoute
   '/invoices/items': typeof InvoicesItemsRoute
   '/invoices/settings': typeof InvoicesSettingsRoute
+  '/invoices/account': typeof InvoicesAccountRoute
   '/invoices': typeof InvoicesIndexRoute
-  '/invoices/auth/callback': typeof InvoicesAuthCallbackRoute
-  '/invoices/auth/client-metadata.json': typeof InvoicesAuthClientMetadataDotjsonRoute
-  '/invoices/auth/jwks.json': typeof InvoicesAuthJwksDotjsonRoute
+  '/invoices/account/$invoiceId': typeof InvoicesAccountInvoiceIdRoute
+  '/invoices/auth/$': typeof InvoicesAuthSplatRoute
+  '/invoices/pay/$token': typeof InvoicesPayTokenRoute
   '/invoices/pdf/$invoiceId': typeof InvoicesPdfInvoiceIdRoute
+  '/invoices/account/pdf/$invoiceId': typeof InvoicesAccountPdfInvoiceIdRoute
+  '/invoices/pay/$token/pdf': typeof InvoicesPayTokenPdfRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -111,11 +136,14 @@ export interface FileRoutesById {
   '/invoices/customers': typeof InvoicesCustomersRoute
   '/invoices/items': typeof InvoicesItemsRoute
   '/invoices/settings': typeof InvoicesSettingsRoute
+  '/invoices_/account': typeof InvoicesAccountRoute
   '/invoices/': typeof InvoicesIndexRoute
-  '/invoices_/auth/callback': typeof InvoicesAuthCallbackRoute
-  '/invoices_/auth/client-metadata.json': typeof InvoicesAuthClientMetadataDotjsonRoute
-  '/invoices_/auth/jwks.json': typeof InvoicesAuthJwksDotjsonRoute
+  '/invoices_/account_/$invoiceId': typeof InvoicesAccountInvoiceIdRoute
+  '/invoices_/auth/$': typeof InvoicesAuthSplatRoute
+  '/invoices_/pay/$token': typeof InvoicesPayTokenRoute
   '/invoices_/pdf/$invoiceId': typeof InvoicesPdfInvoiceIdRoute
+  '/invoices_/account_/pdf/$invoiceId': typeof InvoicesAccountPdfInvoiceIdRoute
+  '/invoices_/pay/$token_/pdf': typeof InvoicesPayTokenPdfRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -126,11 +154,14 @@ export interface FileRouteTypes {
     | '/invoices/customers'
     | '/invoices/items'
     | '/invoices/settings'
+    | '/invoices/account'
     | '/invoices/'
-    | '/invoices/auth/callback'
-    | '/invoices/auth/client-metadata.json'
-    | '/invoices/auth/jwks.json'
+    | '/invoices/account/$invoiceId'
+    | '/invoices/auth/$'
+    | '/invoices/pay/$token'
     | '/invoices/pdf/$invoiceId'
+    | '/invoices/account/pdf/$invoiceId'
+    | '/invoices/pay/$token/pdf'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/experiments/text'
@@ -138,11 +169,14 @@ export interface FileRouteTypes {
     | '/invoices/customers'
     | '/invoices/items'
     | '/invoices/settings'
+    | '/invoices/account'
     | '/invoices'
-    | '/invoices/auth/callback'
-    | '/invoices/auth/client-metadata.json'
-    | '/invoices/auth/jwks.json'
+    | '/invoices/account/$invoiceId'
+    | '/invoices/auth/$'
+    | '/invoices/pay/$token'
     | '/invoices/pdf/$invoiceId'
+    | '/invoices/account/pdf/$invoiceId'
+    | '/invoices/pay/$token/pdf'
   id:
     | '__root__'
     | '/invoices'
@@ -151,20 +185,26 @@ export interface FileRouteTypes {
     | '/invoices/customers'
     | '/invoices/items'
     | '/invoices/settings'
+    | '/invoices_/account'
     | '/invoices/'
-    | '/invoices_/auth/callback'
-    | '/invoices_/auth/client-metadata.json'
-    | '/invoices_/auth/jwks.json'
+    | '/invoices_/account_/$invoiceId'
+    | '/invoices_/auth/$'
+    | '/invoices_/pay/$token'
     | '/invoices_/pdf/$invoiceId'
+    | '/invoices_/account_/pdf/$invoiceId'
+    | '/invoices_/pay/$token_/pdf'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   InvoicesRoute: typeof InvoicesRouteWithChildren
   ExperimentsTextRoute: typeof ExperimentsTextRoute
-  InvoicesAuthCallbackRoute: typeof InvoicesAuthCallbackRoute
-  InvoicesAuthClientMetadataDotjsonRoute: typeof InvoicesAuthClientMetadataDotjsonRoute
-  InvoicesAuthJwksDotjsonRoute: typeof InvoicesAuthJwksDotjsonRoute
+  InvoicesAccountRoute: typeof InvoicesAccountRoute
+  InvoicesAccountInvoiceIdRoute: typeof InvoicesAccountInvoiceIdRoute
+  InvoicesAuthSplatRoute: typeof InvoicesAuthSplatRoute
+  InvoicesPayTokenRoute: typeof InvoicesPayTokenRoute
   InvoicesPdfInvoiceIdRoute: typeof InvoicesPdfInvoiceIdRoute
+  InvoicesAccountPdfInvoiceIdRoute: typeof InvoicesAccountPdfInvoiceIdRoute
+  InvoicesPayTokenPdfRoute: typeof InvoicesPayTokenPdfRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -218,25 +258,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InvoicesSettingsRouteImport
       parentRoute: typeof InvoicesRoute
     }
-    '/invoices_/auth/callback': {
-      id: '/invoices_/auth/callback'
-      path: '/invoices/auth/callback'
-      fullPath: '/invoices/auth/callback'
-      preLoaderRoute: typeof InvoicesAuthCallbackRouteImport
+    '/invoices_/account': {
+      id: '/invoices_/account'
+      path: '/invoices/account'
+      fullPath: '/invoices/account'
+      preLoaderRoute: typeof InvoicesAccountRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/invoices_/auth/client-metadata.json': {
-      id: '/invoices_/auth/client-metadata.json'
-      path: '/invoices/auth/client-metadata.json'
-      fullPath: '/invoices/auth/client-metadata.json'
-      preLoaderRoute: typeof InvoicesAuthClientMetadataDotjsonRouteImport
+    '/invoices_/account_/$invoiceId': {
+      id: '/invoices_/account_/$invoiceId'
+      path: '/invoices/account/$invoiceId'
+      fullPath: '/invoices/account/$invoiceId'
+      preLoaderRoute: typeof InvoicesAccountInvoiceIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/invoices_/auth/jwks.json': {
-      id: '/invoices_/auth/jwks.json'
-      path: '/invoices/auth/jwks.json'
-      fullPath: '/invoices/auth/jwks.json'
-      preLoaderRoute: typeof InvoicesAuthJwksDotjsonRouteImport
+    '/invoices_/auth/$': {
+      id: '/invoices_/auth/$'
+      path: '/invoices/auth/$'
+      fullPath: '/invoices/auth/$'
+      preLoaderRoute: typeof InvoicesAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/invoices_/pay/$token': {
+      id: '/invoices_/pay/$token'
+      path: '/invoices/pay/$token'
+      fullPath: '/invoices/pay/$token'
+      preLoaderRoute: typeof InvoicesPayTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/invoices_/pdf/$invoiceId': {
@@ -244,6 +291,20 @@ declare module '@tanstack/react-router' {
       path: '/invoices/pdf/$invoiceId'
       fullPath: '/invoices/pdf/$invoiceId'
       preLoaderRoute: typeof InvoicesPdfInvoiceIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/invoices_/account_/pdf/$invoiceId': {
+      id: '/invoices_/account_/pdf/$invoiceId'
+      path: '/invoices/account/pdf/$invoiceId'
+      fullPath: '/invoices/account/pdf/$invoiceId'
+      preLoaderRoute: typeof InvoicesAccountPdfInvoiceIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/invoices_/pay/$token_/pdf': {
+      id: '/invoices_/pay/$token_/pdf'
+      path: '/invoices/pay/$token/pdf'
+      fullPath: '/invoices/pay/$token/pdf'
+      preLoaderRoute: typeof InvoicesPayTokenPdfRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -272,11 +333,13 @@ const InvoicesRouteWithChildren = InvoicesRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   InvoicesRoute: InvoicesRouteWithChildren,
   ExperimentsTextRoute: ExperimentsTextRoute,
-  InvoicesAuthCallbackRoute: InvoicesAuthCallbackRoute,
-  InvoicesAuthClientMetadataDotjsonRoute:
-    InvoicesAuthClientMetadataDotjsonRoute,
-  InvoicesAuthJwksDotjsonRoute: InvoicesAuthJwksDotjsonRoute,
+  InvoicesAccountRoute: InvoicesAccountRoute,
+  InvoicesAccountInvoiceIdRoute: InvoicesAccountInvoiceIdRoute,
+  InvoicesAuthSplatRoute: InvoicesAuthSplatRoute,
+  InvoicesPayTokenRoute: InvoicesPayTokenRoute,
   InvoicesPdfInvoiceIdRoute: InvoicesPdfInvoiceIdRoute,
+  InvoicesAccountPdfInvoiceIdRoute: InvoicesAccountPdfInvoiceIdRoute,
+  InvoicesPayTokenPdfRoute: InvoicesPayTokenPdfRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

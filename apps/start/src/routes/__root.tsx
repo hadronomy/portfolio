@@ -7,7 +7,9 @@ import {
   Scripts,
   useRouterState,
 } from '@tanstack/react-router';
-import stylesheet from '../styles.css?url';
+// A plain import, not ?url: Start links it on the server for the first
+// paint and Vite hot-updates it in development.
+import '../styles.css';
 
 export const Route = createRootRouteWithContext<{
   ownerOf: (pathname: string) => RouteOwner;
@@ -22,7 +24,6 @@ export const Route = createRootRouteWithContext<{
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
       { title: 'Experiments · Pablo Hernández' },
     ],
-    links: [{ rel: 'stylesheet', href: stylesheet }],
     scripts: [
       {
         children: `try { const theme = localStorage.getItem('theme'); if (theme === 'light' || theme === 'dark') document.documentElement.dataset.theme = theme; } catch {}`,

@@ -1,298 +1,326 @@
-import { balance, calculate, formatMoney } from '@portfolio/invoices/calculate';
-import type { Invoice, Payment } from '@portfolio/invoices/model';
-import { newInvoice } from '@portfolio/invoices/model';
+import { formatMoney } from '@portfolio/invoices/calculate';
 import { useLiveQuery } from '@tanstack/react-db';
-import { Link, useNavigate } from '@tanstack/react-router';
-import { ArrowUpRight, FilePlus2, Plus, Search } from 'lucide-react';
-import type { KeyboardEvent } from 'react';
-import { useMemo, useState } from 'react';
-import { Morph } from './ui';
-import { useWorkspace } from './workspace';
+import { Link } from '@tanstack/react-router';
+import { Plus, Search } from 'lucide-react';
+import {
+  type KeyboardEvent,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { documentStatus, today } from './status';
+import { useToast } from './toast';
+import { Button, MorphText, Segmented, StatusChip } from './ui';
+import { useCreateInvoice, useWorkspace } from './workspace';
 
-type Filter = 'all' | 'draft' | 'issued';
+type Filter = 'all' | 'draft' | 'open' | 'paid';
 
 const FILTERS: ReadonlyArray<readonly [Filter, string]> = [
-  ['all', 'All documents'],
+  ['all', 'All'],
   ['draft', 'Drafts'],
-  ['issued', 'Issued'],
+  ['open', 'Open'],
+  ['paid', 'Paid'],
 ];
 
-function invoiceStatus(
-  invoice: Invoice,
-  remaining: string,
-  today: string,
-): string {
-  if (invoice.status === 'draft') return 'Draft';
-  if (invoice.data.kind === 'proforma') return 'Proforma';
-  if (Number(remaining) <= 0) return 'Paid';
-  if (invoice.data.dueDate < today) return 'Overdue';
-  return 'Unpaid';
+const emptyFilter: Record<Exclude<Filter, 'all'>, string> = {
+  draft: 'No drafts',
+  open: 'Nothing waiting for payment',
+  paid: 'No paid invoices yet',
+};
+
+const kindLabel = {
+  invoice: 'Invoice',
+  rectification: 'Rectifying invoice',
+  proforma: 'Proforma',
+} as const;
+
+const shortDate = new Intl.DateTimeFormat('en-GB', {
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
+const day = (value: string) => shortDate.format(new Date(`${value}T12:00:00Z`));
+
+/** Moves focus between row links with the arrow keys, like a list box. */
+function onRowsKey(event: KeyboardEvent<HTMLDivElement>) {
+  if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+  const links = [
+    ...event.currentTarget.querySelectorAll<HTMLAnchorElement>('.iv-row-link'),
+  ];
+  const at = links.indexOf(document.activeElement as HTMLAnchorElement);
+  const next = links[at + (event.key === 'ArrowDown' ? 1 : -1)];
+  if (!next) return;
+  event.preventDefault();
+  next.focus();
 }
 
 export function InvoiceList() {
-  const { workspace, invoices, mutate, isError, refetch } = useWorkspace();
+  const { workspace, invoices, isError, refetch } = useWorkspace();
   const { data = [] } = useLiveQuery((query) =>
     query
       .from({ invoice: invoices })
       .orderBy(({ invoice }) => invoice.updatedAt, 'desc'),
   );
-  const navigate = useNavigate();
+  const { create, pending, ready } = useCreateInvoice();
+  const toast = useToast();
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<Filter>('all');
-  const [pending, setPending] = useState(false);
-  const [error, setError] = useState('');
-  async function create() {
-    if (!workspace) return;
-    setPending(true);
-    setError('');
-    try {
-      const invoice = newInvoice(workspace.preferences);
-      const result = await mutate({ action: 'save', invoice });
-      if (!result.ok) throw new Error('The draft could not be saved.');
-      await navigate({
-        to: '/invoices/$invoiceId',
-        params: { invoiceId: invoice.id },
-      });
-    } catch {
-      setError('The draft could not be saved. Try again.');
-    } finally {
-      setPending(false);
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  // "/" jumps to search from anywhere on the page that is not a text field.
+  useEffect(() => {
+    const onKey = (event: globalThis.KeyboardEvent) => {
+      if (event.key !== '/' || event.metaKey || event.ctrlKey) return;
+      const target = event.target as HTMLElement;
+      if (target.closest('input, textarea, [contenteditable="true"]')) return;
+      event.preventDefault();
+      searchRef.current?.focus();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
+  const on = useMemo(() => today(), []);
+  const documents = useMemo(() => {
+    const payments = workspace?.payments ?? [];
+    return data.map((invoice) => ({
+      invoice,
+      ...documentStatus(invoice, payments, on),
+    }));
+  }, [data, workspace, on]);
+
+  const stats = useMemo(() => {
+    let outstanding = 0;
+    let overdue = 0;
+    let overdueCount = 0;
+    let open = 0;
+    for (const item of documents) {
+      if (item.status === 'unpaid' || item.status === 'overdue') {
+        outstanding += Number(item.remaining);
+        open += 1;
+      }
+      if (item.status === 'overdue') {
+        overdue += Number(item.remaining);
+        overdueCount += 1;
+      }
     }
-  }
-  const payments = useMemo(() => workspace?.payments ?? [], [workspace]);
-  const query = search.toLowerCase();
+    return {
+      outstanding,
+      overdue,
+      overdueCount,
+      open,
+      drafts: documents.filter((item) => item.status === 'draft').length,
+    };
+  }, [documents]);
+
+  const query = search.trim().toLowerCase();
   const rows = useMemo(
     () =>
-      data.filter(
-        (invoice) =>
-          (filter === 'all' || invoice.status === filter) &&
+      documents.filter(({ invoice, status }) => {
+        const matches =
+          filter === 'all' ||
+          (filter === 'draft' && status === 'draft') ||
+          (filter === 'open' &&
+            (status === 'unpaid' || status === 'overdue')) ||
+          (filter === 'paid' && status === 'paid');
+        return (
+          matches &&
           `${invoice.number ?? ''} ${invoice.data.customer.name} ${invoice.data.title}`
             .toLowerCase()
-            .includes(query),
-      ),
-    [data, filter, query],
+            .includes(query)
+        );
+      }),
+    [documents, filter, query],
   );
-  const issued = useMemo(
-    () =>
-      data.filter(
-        (invoice) =>
-          invoice.status === 'issued' && invoice.data.kind !== 'proforma',
-      ),
-    [data],
-  );
-  const drafts = useMemo(
-    () => data.filter((invoice) => invoice.status === 'draft').length,
-    [data],
-  );
-  const outstanding = useMemo(
-    () =>
-      issued.reduce(
-        (sum, invoice) =>
-          sum +
-          Number(
-            balance(
-              calculate(invoice.data).total,
-              payments.filter(
-                (payment: Payment) => payment.invoiceId === invoice.id,
-              ),
-            ),
-          ),
-        0,
-      ),
-    [issued, payments],
-  );
-  const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
-  function onFilterKey(event: KeyboardEvent<HTMLDivElement>) {
-    if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
-    event.preventDefault();
-    const order: Filter[] = ['all', 'draft', 'issued'];
-    const at = order.indexOf(filter);
-    const next =
-      order[
-        (at + (event.key === 'ArrowRight' ? 1 : order.length - 1)) %
-          order.length
-      ];
-    if (next) setFilter(next);
+
+  async function onCreate() {
+    if (!(await create()))
+      toast('The draft could not be created. Try again.', 'error');
   }
+
   return (
-    <div className="iv-index">
-      <header className="iv-topbar">
-        <div className="iv-breadcrumb">
-          Workspace<span>/</span>Invoices
+    <div className="iv-page">
+      <header className="iv-page-head">
+        <h1>
+          Invoices
+          <small>
+            <MorphText>{`${data.length} document${data.length === 1 ? '' : 's'}`}</MorphText>
+          </small>
+        </h1>
+        <div className="iv-page-actions">
+          <label className="iv-search iv-hide-narrow">
+            <Search size={15} />
+            <input
+              ref={searchRef}
+              aria-label="Search invoices"
+              placeholder="Search number or customer"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Escape') {
+                  setSearch('');
+                  event.currentTarget.blur();
+                }
+              }}
+            />
+            <kbd className="iv-kbd">/</kbd>
+          </label>
+          <Button
+            variant="primary"
+            disabled={pending || !ready}
+            onClick={onCreate}
+          >
+            <Plus size={16} />
+            New invoice
+          </Button>
         </div>
-        <span className="iv-account">hadronomy.com</span>
       </header>
-      <section className="iv-list-heading">
-        <div>
-          <h1>Invoices</h1>
-          <p>A record of your work.</p>
-        </div>
-        <button
-          className="iv-primary"
-          disabled={pending || !workspace}
-          onClick={create}
-        >
-          <Plus size={17} />
-          {pending ? 'Creating…' : 'New invoice'}
-        </button>
-      </section>
-      <div className="iv-overview">
-        <div>
+
+      <section className="iv-card iv-stats" aria-label="Summary">
+        <div className="iv-stat">
           <span>Outstanding</span>
           <strong>
-            <Morph>{formatMoney(String(outstanding), 'en', 'EUR')}</Morph>
+            <MorphText>
+              {formatMoney(stats.outstanding.toFixed(2), 'en', 'EUR')}
+            </MorphText>
           </strong>
+          <small>
+            <MorphText>{`${stats.open} open invoice${stats.open === 1 ? '' : 's'}`}</MorphText>
+          </small>
         </div>
-        <div>
-          <span>Issued invoices</span>
+        <div className="iv-stat">
+          <span>Overdue</span>
           <strong>
-            <Morph>{issued.length}</Morph>
+            <MorphText>
+              {formatMoney(stats.overdue.toFixed(2), 'en', 'EUR')}
+            </MorphText>
           </strong>
+          <small>
+            <MorphText>
+              {stats.overdueCount
+                ? `${stats.overdueCount} past due`
+                : 'Nothing past due'}
+            </MorphText>
+          </small>
         </div>
-        <div>
+        <div className="iv-stat">
           <span>Drafts</span>
           <strong>
-            <Morph>{drafts}</Morph>
+            <MorphText>{String(stats.drafts)}</MorphText>
           </strong>
+          <small>Not issued yet</small>
         </div>
+      </section>
+
+      <div className="iv-toolbar">
+        <Segmented
+          label="Filter invoices"
+          value={filter}
+          onChange={setFilter}
+          options={FILTERS}
+        />
       </div>
-      <div className="iv-list-tools">
-        <div
-          className="iv-tabs"
-          role="tablist"
-          aria-label="Filter invoices"
-          onKeyDown={onFilterKey}
-        >
-          {FILTERS.map(([value, label]) => (
-            <button
-              key={value}
-              role="tab"
-              aria-selected={filter === value}
-              tabIndex={filter === value ? 0 : -1}
-              onClick={() => setFilter(value)}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-        <div className="iv-search">
-          <Search size={16} />
-          <input
-            aria-label="Search invoices"
-            placeholder="Search invoices…"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-          />
-        </div>
-      </div>
-      {(isError || error) && (
-        <div className="iv-error" role="alert">
-          {error || 'The workspace could not load.'}
-          <button onClick={() => refetch()}>Try again</button>
+
+      {isError && (
+        <div className="iv-banner" role="alert">
+          The workspace could not load.
+          <Button size="sm" onClick={() => refetch()}>
+            Try again
+          </Button>
         </div>
       )}
-      {rows.length ? (
-        <div className="iv-table-wrap">
-          <table className="iv-table">
-            <thead>
-              <tr>
-                <th>Document</th>
-                <th>Customer</th>
-                <th>Issued</th>
-                <th>Status</th>
-                <th className="iv-number">Amount</th>
-                <th>
-                  <span className="iv-sr">Open</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((invoice) => {
-                const total = calculate(invoice.data).total;
-                const remaining = balance(
-                  total,
-                  payments.filter(
-                    (payment: Payment) => payment.invoiceId === invoice.id,
-                  ),
-                );
-                const status = invoiceStatus(invoice, remaining, today);
-                return (
-                  <tr key={invoice.id}>
-                    <td>
-                      <Link
-                        to="/invoices/$invoiceId"
-                        params={{ invoiceId: invoice.id }}
-                      >
-                        {invoice.number ??
-                          (invoice.data.title || 'Untitled draft')}
-                      </Link>
-                      <small>
-                        {invoice.data.kind === 'rectification'
-                          ? 'Rectifying invoice'
-                          : invoice.data.kind === 'proforma'
-                            ? 'Proforma'
-                            : 'Invoice'}
-                      </small>
-                    </td>
-                    <td>{invoice.data.customer.name || 'No customer yet'}</td>
-                    <td>{invoice.data.issueDate}</td>
-                    <td>
-                      <span
-                        className={`iv-status iv-status-${status.toLowerCase()}`}
-                      >
-                        <Morph>{status}</Morph>
-                      </span>
-                    </td>
-                    <td className="iv-number">
-                      <Morph>
-                        {formatMoney(
-                          total,
-                          invoice.data.language,
-                          invoice.data.currency,
-                        )}
-                      </Morph>
-                    </td>
-                    <td>
-                      <Link
-                        to="/invoices/$invoiceId"
-                        params={{ invoiceId: invoice.id }}
-                        aria-label={`Open ${invoice.number ?? 'draft'}`}
-                      >
-                        <ArrowUpRight size={17} />
-                      </Link>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        <div className="iv-empty">
-          <FilePlus2 size={36} strokeWidth={1.2} />
-          <h2>
-            {search
-              ? 'No matching invoices'
-              : filter === 'issued'
-                ? 'No issued invoices yet'
-                : 'Your next project starts here'}
-          </h2>
-          <p>
-            {search
-              ? 'Try another customer or document number.'
-              : 'Create a draft. Add the details. Make it official when it is ready.'}
-          </p>
-          {!search && filter !== 'issued' && (
-            <button onClick={create} disabled={pending || !workspace}>
-              Create your first invoice <ArrowUpRight size={16} />
-            </button>
-          )}
-        </div>
-      )}
-      <footer className="iv-list-footer">
-        {`${rows.length} document${rows.length === 1 ? '' : 's'}`}
-        <span>Private workspace · Canary Islands</span>
-      </footer>
+
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: the rows are
+          focusable links; this only moves focus between them with arrows. */}
+      <div
+        className="iv-card iv-rows"
+        data-list="invoices"
+        onKeyDown={onRowsKey}
+      >
+        {rows.length > 0 && (
+          <div className="iv-row-head" aria-hidden>
+            <span>Document</span>
+            <span>Customer</span>
+            <span className="iv-hide-narrow">Issued</span>
+            <span className="iv-hide-narrow">Due</span>
+            <span>Status</span>
+            <span className="iv-end">Amount</span>
+          </div>
+        )}
+        {rows.map(({ invoice, status, total }) => {
+          const name =
+            invoice.number ?? (invoice.data.title || 'Untitled draft');
+          return (
+            <div className="iv-row" key={invoice.id}>
+              <Link
+                to="/invoices/$invoiceId"
+                params={{ invoiceId: invoice.id }}
+                className="iv-row-link"
+                aria-label={`${name}, ${invoice.data.customer.name || 'no customer'}`}
+              />
+              <div>
+                <strong>{name}</strong>
+                <small>
+                  {invoice.number && invoice.data.title
+                    ? invoice.data.title
+                    : kindLabel[invoice.data.kind]}
+                </small>
+              </div>
+              <span className="iv-muted">
+                {invoice.data.customer.name || 'No customer yet'}
+              </span>
+              <span className="iv-muted iv-num iv-hide-narrow">
+                {day(invoice.data.issueDate)}
+              </span>
+              <span className="iv-muted iv-num iv-hide-narrow">
+                {day(invoice.data.dueDate)}
+              </span>
+              <span>
+                <StatusChip status={status} />
+              </span>
+              <strong className="iv-end iv-num">
+                <MorphText>
+                  {formatMoney(
+                    total,
+                    invoice.data.language,
+                    invoice.data.currency,
+                  )}
+                </MorphText>
+              </strong>
+            </div>
+          );
+        })}
+        {rows.length === 0 && (
+          <div className="iv-empty">
+            <h2>
+              {query
+                ? 'No matching invoices'
+                : filter === 'all'
+                  ? 'No invoices yet'
+                  : emptyFilter[filter]}
+            </h2>
+            <p>
+              {query
+                ? 'Try another customer name or document number.'
+                : filter === 'all'
+                  ? 'Start a draft, add the work, and issue it when it is ready.'
+                  : 'Documents appear here as their status changes.'}
+            </p>
+            {!query && filter === 'all' && (
+              <Button
+                variant="primary"
+                disabled={pending || !ready}
+                onClick={onCreate}
+              >
+                <Plus size={16} />
+                New invoice
+              </Button>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

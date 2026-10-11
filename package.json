@@ -15,7 +15,10 @@
     "update:write": "bun taze --write",
     "dev": "bun run --cwd apps/astro dev",
     "dev:stop": "bun run --cwd apps/astro astro dev stop",
-    "build": "turbo run build --filter=@portfolio/astro"
+    "build": "turbo run build --filter=@portfolio/astro",
+    "db:generate": "bun run --cwd packages/invoices db:generate && bun run --cwd apps/start db:generate",
+    "db:migrate": "bun run --cwd packages/invoices db:migrate && bun run --cwd apps/start db:migrate",
+    "db:check": "bun run --cwd packages/invoices db:check && bun run --cwd apps/start db:check"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:lint",
@@ -123,6 +126,9 @@
       },
       "syntax": {
         "@shikijs/twoslash": "^3.20.0"
+      },
+      "test": {
+        "vitest": "5.0.2"
       },
       "types": {
         "@types/node": "25.0.3",

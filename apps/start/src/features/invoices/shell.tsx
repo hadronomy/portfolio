@@ -1,59 +1,138 @@
-import { Link, Outlet, useRouter } from '@tanstack/react-router';
+import { ATPROTO_CALLBACK_ERRORS } from '@portfolio/auth-atproto/client';
+import {
+  Link,
+  Outlet,
+  useRouter,
+  useRouterState,
+} from '@tanstack/react-router';
 import {
   ArrowLeft,
+  ArrowRight,
   ArrowUpRight,
   FileText,
   LogOut,
   Package,
+  Plus,
   Settings2,
   Users,
 } from 'lucide-react';
-import { useCallback, useState } from 'react';
-import { beginSignIn, endSignIn } from './api';
-import { Morph } from './ui';
-import { WorkspaceProvider } from './workspace';
+import { MotionConfig } from 'motion/react';
+import { type ReactNode, useCallback, useState } from 'react';
+import { authClient } from '../auth/client';
+import { ownerHandle } from '../auth/shared';
+import { coverArt } from './covers';
+import { ToastProvider, useToast } from './toast';
+import { Button, MorphText, Tip, TooltipProvider } from './ui';
+import { useCreateInvoice, WorkspaceProvider } from './workspace';
+// Imported here, with the workspace, rather than in the route file: the
+// route's component code is split into its own chunk, so the styles ship
+// with the invoice pages and nowhere else. A plain import lets Start link
+// it for the first paint and Vite hot-update it in development.
+import './invoices.css';
 
-function SignInScreen({
-  pending,
-  error,
-  onSignIn,
-}: {
-  pending: boolean;
-  error: string;
-  onSignIn: () => void;
-}) {
+// What the callback's `?error=` means, in words the owner can act on.
+const signInErrors: Record<string, string> = {
+  not_owner: `That account does not own this workspace. Sign in as ${ownerHandle}.`,
+  [ATPROTO_CALLBACK_ERRORS.ACCESS_DENIED]: 'Sign-in was cancelled.',
+  [ATPROTO_CALLBACK_ERRORS.STATE_MISMATCH]:
+    'That sign-in started in another browser or expired. Start again.',
+};
+
+function SignInScreen() {
+  const callbackError = useRouterState({
+    select: (state) => (state.location.search as Record<string, unknown>).error,
+  });
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState(
+    typeof callbackError === 'string'
+      ? (signInErrors[callbackError] ?? 'Sign-in failed. Try again.')
+      : '',
+  );
+  const signIn = async () => {
+    setPending(true);
+    setError('');
+    const { error } = await authClient.signIn.atproto({
+      handle: ownerHandle,
+      callbackURL: '/invoices',
+      errorCallbackURL: '/invoices',
+    });
+    // Success leaves the page for the account's authorization screen.
+    if (error) {
+      setPending(false);
+      setError(error.message ?? 'Sign-in failed. Try again.');
+    }
+  };
   // Plain anchors, not TanStack Link: '/' is the portfolio site outside this
   // router (same as routes/__root.tsx). Link to='/' fails tsc and 404s.
   return (
-    <div className="iv-app iv-signin">
-      <a href="/" className="iv-back">
-        <ArrowLeft size={16} /> hadronomy
+    <div className="iv-signin">
+      <div className="iv-backdrop" aria-hidden>
+        <img src={coverArt.ember.backdrop} alt="" />
+      </div>
+      <a href="/" className="iv-signin-back">
+        <ArrowLeft size={15} /> hadronomy
       </a>
-      <div className="iv-signin-content">
-        <div className="iv-wordmark">
-          Invoices<span> / </span>
-        </div>
-        <h1>
-          A little order.
-          <br />
-          For the work you do.
-        </h1>
+      <main className="iv-signin-card">
+        <span className="iv-rail-mark" aria-hidden>
+          h<span>/</span>
+        </span>
+        <h1>Invoices</h1>
         <p>Your invoices, customers, and records in one private workspace.</p>
-        <button className="iv-primary" disabled={pending} onClick={onSignIn}>
-          <Morph>{pending ? 'Connecting…' : 'Sign in with AT Protocol'}</Morph>
-          <ArrowUpRight size={18} />
-        </button>
-        <span className="iv-signin-owner">Private access · hadronomy.com</span>
+        <Button variant="primary" disabled={pending} onClick={signIn}>
+          <MorphText>
+            {pending ? 'Connecting…' : 'Continue with AT Protocol'}
+          </MorphText>
+          <ArrowUpRight size={15} />
+        </Button>
+        {/* The answer sits under the button that asked the question. */}
         {error && (
-          <p role="alert">
-            <Morph>{error}</Morph>
+          <p className="iv-signin-error" role="alert">
+            {error}
           </p>
         )}
-      </div>
-      <div className="iv-signin-foot">
-        Made for independent work.<span>Canary Islands · EN / ES</span>
-      </div>
+        <small>Private access · {ownerHandle}</small>
+        <a className="iv-signin-alt" href="/invoices/account">
+          <span>Billed by Hadronomy?</span>
+          <span>
+            See your invoices
+            <ArrowRight size={14} aria-hidden />
+          </span>
+        </a>
+      </main>
     </div>
+  );
+}
+
+function RailLink({
+  to,
+  label,
+  exact = false,
+  current = false,
+  children,
+}: {
+  to:
+    | '/invoices'
+    | '/invoices/customers'
+    | '/invoices/items'
+    | '/invoices/settings';
+  label: string;
+  exact?: boolean;
+  /** Marks the link as the current section even when the route is deeper. */
+  current?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <Tip label={label} side="right">
+      <Link
+        to={to}
+        activeOptions={{ exact }}
+        aria-label={label}
+        className="iv-rail-item"
+        data-current={current}
+      >
+        {children}
+      </Link>
+    </Tip>
   );
 }
 
@@ -64,37 +143,58 @@ function Rail({
   pending: boolean;
   onSignOut: () => void;
 }) {
+  const { create, pending: creating, ready } = useCreateInvoice();
+  const toast = useToast();
+  // An open invoice still belongs to the invoices section. Matching the id's
+  // UUID shape keeps /invoices/customers and /invoices/items out of it, which
+  // a fuzzy route match or the $invoiceId pattern would both let in.
+  const inInvoice = useRouterState({
+    select: (state) =>
+      /^\/invoices\/[0-9a-f-]{36}$/i.test(state.location.pathname),
+  });
   return (
     <nav className="iv-rail" aria-label="Invoice workspace">
-      <a href="/" className="iv-mark" aria-label="Back to portfolio">
+      <a href="/" className="iv-rail-mark" aria-label="Back to portfolio">
         h<span>/</span>
       </a>
-      <Link
-        to="/invoices"
-        activeOptions={{ exact: true }}
-        aria-label="Invoices"
-        title="Invoices"
-      >
-        <FileText size={21} />
-      </Link>
-      <Link to="/invoices/customers" aria-label="Customers" title="Customers">
-        <Users size={21} />
-      </Link>
-      <Link to="/invoices/items" aria-label="Items" title="Items">
-        <Package size={21} />
-      </Link>
+      <Tip label="New invoice" side="right">
+        <button
+          type="button"
+          className="iv-rail-create"
+          aria-label="New invoice"
+          disabled={creating || !ready}
+          onClick={async () => {
+            if (!(await create()))
+              toast('The draft could not be created. Try again.', 'error');
+          }}
+        >
+          <Plus size={18} strokeWidth={2.2} />
+        </button>
+      </Tip>
+      <RailLink to="/invoices" label="Invoices" exact current={inInvoice}>
+        <FileText size={18} />
+      </RailLink>
+      <RailLink to="/invoices/customers" label="Customers">
+        <Users size={18} />
+      </RailLink>
+      <RailLink to="/invoices/items" label="Items">
+        <Package size={18} />
+      </RailLink>
       <div className="iv-rail-spacer" />
-      <Link to="/invoices/settings" aria-label="Settings" title="Settings">
-        <Settings2 size={21} />
-      </Link>
-      <button
-        aria-label="Sign out"
-        title="Sign out"
-        disabled={pending}
-        onClick={onSignOut}
-      >
-        <LogOut size={19} />
-      </button>
+      <RailLink to="/invoices/settings" label="Settings">
+        <Settings2 size={18} />
+      </RailLink>
+      <Tip label="Sign out" side="right">
+        <button
+          type="button"
+          className="iv-rail-item"
+          aria-label="Sign out"
+          disabled={pending}
+          onClick={onSignOut}
+        >
+          <LogOut size={17} />
+        </button>
+      </Tip>
     </nav>
   );
 }
@@ -103,40 +203,34 @@ export function InvoiceShell({ signedIn }: { signedIn: boolean }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
-  const authenticate = useCallback(async () => {
+  const signOut = useCallback(async () => {
     setPending(true);
     setError('');
-    try {
-      if (signedIn) {
-        await endSignIn();
-        await router.invalidate();
-      } else {
-        window.location.assign(await beginSignIn());
-      }
-    } catch (_error: unknown) {
-      // [shell:auth] sign-in/out failed; the toast carries the message.
-      setError('Sign-in failed. Try again.');
-    } finally {
-      setPending(false);
-    }
-  }, [router, signedIn]);
-  if (!signedIn)
-    return (
-      <SignInScreen pending={pending} error={error} onSignIn={authenticate} />
-    );
+    const { error } = await authClient.signOut();
+    if (error) setError('Sign-out failed. Try again.');
+    else await router.invalidate();
+    setPending(false);
+  }, [router]);
+  if (!signedIn) return <SignInScreen />;
   return (
-    <WorkspaceProvider>
-      <div className="iv-app">
-        <Rail pending={pending} onSignOut={authenticate} />
-        <div className="iv-workspace">
-          <Outlet />
-        </div>
-        {error && (
-          <div className="iv-toast" role="alert">
-            <Morph>{error}</Morph>
-          </div>
-        )}
-      </div>
-    </WorkspaceProvider>
+    <MotionConfig reducedMotion="user">
+      <TooltipProvider>
+        <WorkspaceProvider>
+          <ToastProvider>
+            <div className="iv-app">
+              <Rail pending={pending} onSignOut={signOut} />
+              <div className="iv-main">
+                {error && (
+                  <div className="iv-banner" role="alert">
+                    <MorphText>{error}</MorphText>
+                  </div>
+                )}
+                <Outlet />
+              </div>
+            </div>
+          </ToastProvider>
+        </WorkspaceProvider>
+      </TooltipProvider>
+    </MotionConfig>
   );
 }

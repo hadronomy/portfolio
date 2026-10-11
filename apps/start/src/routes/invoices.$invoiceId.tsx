@@ -3,16 +3,25 @@ import { createFileRoute, Link } from '@tanstack/react-router';
 import { InvoiceEditor } from '../features/invoices/editor';
 
 function EditorPending() {
-  return <output className="iv-preview-message">Loading invoice…</output>;
+  return <output className="iv-message">Loading invoice…</output>;
 }
 
 function EditorError({ reset }: ErrorComponentProps) {
   return (
-    <div className="iv-preview-message" role="alert">
+    <div className="iv-message" role="alert">
       <p>The invoice could not load.</p>
-      <div>
-        <button onClick={() => reset()}>Try again</button>
-        <Link to="/invoices">Back to invoices</Link>
+      <div className="iv-inline">
+        <button
+          type="button"
+          className="iv-btn"
+          data-variant="primary"
+          onClick={() => reset()}
+        >
+          <span>Try again</span>
+        </button>
+        <Link to="/invoices" className="iv-btn" data-variant="secondary">
+          <span>Back to invoices</span>
+        </Link>
       </div>
     </div>
   );

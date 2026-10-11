@@ -92,7 +92,8 @@ export default defineConfig({
     plugins: [tailwindcss(), preserveDirectives()],
     ssr: {
       // Keep in sync with apps/start/vite.config.ts: native-only modules the
-      // server runtime must not bundle.
+      // server runtime must not bundle. The built server loads them from
+      // this package, so each is also one of its dependencies.
       external: [
         'takumi-pdf',
         '@electric-sql/pglite',

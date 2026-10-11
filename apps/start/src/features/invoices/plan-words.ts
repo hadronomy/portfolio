@@ -1,0 +1,180 @@
+import { formatMoney } from '@portfolio/invoices/calculate';
+import type { Currency, Language } from '@portfolio/invoices/model';
+import type {
+  Due,
+  PaymentPlan,
+  Portion,
+  Span,
+  Unit,
+} from '@portfolio/invoices/plan';
+
+// Plans in words. The owner builds a plan as sentences ("Then the rest in
+// 6 payments every month, starting 1 month later"), so the editor needs
+// each piece of a sentence on its own; the customer only ever reads a plan
+// whole, as one line, in the invoice's language.
+
+const locale = (language: Language) => (language === 'es' ? 'es-ES' : 'en-GB');
+
+/** "1 Oct", or "1 Oct 2027" outside `year`. */
+export function shortDate(language: Language, date: string, year?: string) {
+  return new Intl.DateTimeFormat(locale(language), {
+    day: 'numeric',
+    month: 'short',
+    ...(year && date.slice(0, 4) !== year ? { year: 'numeric' } : {}),
+    timeZone: 'UTC',
+  }).format(new Date(`${date}T12:00:00Z`));
+}
+
+const units: Record<Unit, [string, string]> = {
+  day: ['day', 'days'],
+  week: ['week', 'weeks'],
+  month: ['month', 'months'],
+};
+
+/** "1 month", "30 days". */
+export const spanText = (count: number, unit: Unit) =>
+  `${count} ${units[unit][count === 1 ? 0 : 1]}`;
+
+/** What a part asks for, as a token reads it: "30%", "€500.00", "the rest". */
+export function portionText(portion: Portion, currency: Currency) {
+  switch (portion._tag) {
+    case 'Percent':
+      return `${portion.value}%`;
+    case 'Amount':
+      return formatMoney(portion.value, 'en', currency);
+    case 'Rest':
+      return 'the rest';
+  }
+}
+
+/**
+ * When a payment falls due, as the end of a sentence. The first part has
+ * no payment before it, so "later" there means after issue; a series reads
+ * "starting …", which wants "on the issue date" rather than "when issued".
+ */
+export function dueText(
+  due: Due,
+  where: { readonly first: boolean; readonly series: boolean },
+  year: string,
+): string {
+  switch (due._tag) {
+    case 'OnIssue':
+      return where.series ? 'on the issue date' : 'when issued';
+    case 'InvoiceDue':
+      return 'on the due date';
+    case 'OnDate':
+      return `on ${shortDate('en', due.date, year)}`;
+    case 'After': {
+      const afterIssue = due.from === 'issue' || where.first;
+      if (due.count === 0)
+        return afterIssue
+          ? dueText({ _tag: 'OnIssue' }, where, year)
+          : 'the same day';
+      return `${spanText(due.count, due.unit)} ${afterIssue ? 'after issue' : 'later'}`;
+    }
+  }
+}
+
+/** "every month", "every 2 weeks". */
+export const everyText = (every: Span) =>
+  every.count === 1
+    ? `every ${units[every.unit][0]}`
+    : `every ${spanText(every.count, every.unit)}`;
+
+const customer = {
+  en: {
+    now: 'now',
+    on: (date: string) => `on ${date}`,
+    from: (date: string) => ` from ${date}`,
+    next: ', then ',
+    by: (amount: string, date: string) => `${amount} by ${date}`,
+    any: (floor: string, date: string) =>
+      `Any amount from ${floor}, until ${date}`,
+    every: (span: Span) =>
+      span.count === 1
+        ? { day: 'daily', week: 'weekly', month: 'monthly' }[span.unit]
+        : `every ${spanText(span.count, span.unit)}`,
+    whole: 'Pay in full',
+    flexible: 'Pay as you go',
+    payments: (count: number) => `${count} payments`,
+  },
+  es: {
+    now: 'ahora',
+    on: (date: string) => `el ${date}`,
+    from: (date: string) => ` desde el ${date}`,
+    next: ', luego ',
+    by: (amount: string, date: string) => `${amount} antes del ${date}`,
+    any: (floor: string, date: string) =>
+      `Lo que quieras desde ${floor}, hasta el ${date}`,
+    every: (span: Span) =>
+      span.count === 1
+        ? { day: 'cada día', week: 'cada semana', month: 'al mes' }[span.unit]
+        : `cada ${span.count} ${{ day: 'días', week: 'semanas', month: 'meses' }[span.unit]}`,
+    whole: 'Pago único',
+    flexible: 'A tu ritmo',
+    payments: (count: number) => `${count} pagos`,
+  },
+} satisfies Record<Language, unknown>;
+
+/** A payment of a plan, in the order the plan lays them out. */
+interface Laid {
+  readonly amount: string;
+  readonly date: string;
+}
+
+/** The name a customer reads a plan by: the owner's, or one that says what it is. */
+export function planName(
+  plan: PaymentPlan,
+  payments: readonly Laid[],
+  language: Language,
+) {
+  if (plan.name) return plan.name;
+  const t = customer[language];
+  if (payments.length > 1) return t.payments(payments.length);
+  return plan.floor ? t.flexible : t.whole;
+}
+
+/**
+ * A plan as one line: "€714.23 now, then 6 × €277.75 monthly from 1 Nov".
+ * `payments` are the plan's own, laid out for the invoice; a series reads
+ * as its count and the first payment, since only its last cent differs.
+ */
+export function planLine(
+  plan: PaymentPlan,
+  payments: readonly Laid[],
+  options: {
+    readonly language: Language;
+    readonly currency: Currency;
+    readonly today: string;
+    /** The least part payment, when the plan takes them. */
+    readonly floor?: string;
+  },
+) {
+  const { language, currency, today } = options;
+  const t = customer[language];
+  const money = (amount: string) => formatMoney(amount, language, currency);
+  const date = (value: string) => shortDate(language, value, today.slice(0, 4));
+  const [only] = payments;
+  if (payments.length === 1 && only)
+    return plan.floor && options.floor
+      ? t.any(money(options.floor), date(only.date))
+      : t.by(money(only.amount), date(only.date));
+  const pieces: string[] = [];
+  let at = 0;
+  for (const part of plan.parts) {
+    const first = payments[at];
+    if (!first) break;
+    if (part._tag === 'Once') {
+      pieces.push(
+        `${money(first.amount)} ${first.date <= today ? t.now : t.on(date(first.date))}`,
+      );
+      at += 1;
+      continue;
+    }
+    pieces.push(
+      `${part.count} × ${money(first.amount)} ${t.every(part.every)}${first.date <= today ? '' : t.from(date(first.date))}`,
+    );
+    at += part.count;
+  }
+  return pieces.join(t.next);
+}

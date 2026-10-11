@@ -1,11 +1,10 @@
-import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { after, before, test } from 'node:test';
 import { pathToFileURL } from 'node:url';
 import { dev } from 'astro';
+import { afterAll, beforeAll, expect, test, vi } from 'vitest';
 
 const root = new URL('../', import.meta.url);
 const requireInvoices = createRequire(
@@ -29,7 +28,7 @@ let origin;
 let sessionCookie = '';
 let invoiceId = '';
 
-before(async () => {
+beforeAll(async () => {
   invoiceData = await mkdtemp(join(tmpdir(), 'portfolio-pdf-test-'));
   const migration = await readFile(
     new URL(
@@ -66,7 +65,7 @@ before(async () => {
     updatedAt: new Date().toISOString(),
   });
   const check = await db.select().from(tables.invoices);
-  assert.equal(check.length, 1);
+  expect(check.length).toBe(1);
   await seed.close();
   invoiceId = invoice.id;
   process.env.INVOICE_DATA_DIRECTORY = invoiceData;
@@ -80,7 +79,7 @@ before(async () => {
   origin = `http://127.0.0.1:${server.address.port}`;
 });
 
-after(async () => {
+afterAll(async () => {
   await server?.stop();
   if (globalThis.invoiceRuntime)
     await (await globalThis.invoiceRuntime).database.close();
@@ -89,22 +88,24 @@ after(async () => {
   delete process.env.INVOICE_DATA_DIRECTORY;
 });
 
-test('sign in as owner for PDF download check', async (t) => {
+test('sign in as owner for PDF download check', async () => {
   const requireStart = createRequire(
     new URL('../../start/package.json', import.meta.url),
   );
   const { NodeOAuthClient } = await import(
     pathToFileURL(requireStart.resolve('@atproto/oauth-client-node')).href
   );
-  t.mock.method(NodeOAuthClient.prototype, 'callback', async () => ({
-    session: { did: 'did:plc:tvgjv46t4ebxbrvekr2vrnls' },
-    state: 'pdf-nonce',
-  }));
+  vi.spyOn(NodeOAuthClient.prototype, 'callback').mockImplementation(
+    async () => ({
+      session: { did: 'did:plc:tvgjv46t4ebxbrvekr2vrnls' },
+      state: 'pdf-nonce',
+    }),
+  );
   const response = await fetch(`${origin}/invoices/auth/callback?state=test`, {
     headers: { cookie: 'invoice-login=pdf-nonce' },
     redirect: 'manual',
   });
-  assert.equal(response.status, 303);
+  expect(response.status).toBe(303);
   sessionCookie = response.headers
     .getSetCookie()
     .find((cookie) => cookie.startsWith('invoice-session='))
@@ -116,8 +117,10 @@ test('draft PDF downloads with PDF bytes', async () => {
     headers: { cookie: sessionCookie },
   });
   const body = Buffer.from(await response.arrayBuffer());
-  assert.equal(response.status, 200);
-  assert.match(response.headers.get('content-type') ?? '', /application\/pdf/);
-  assert.match(body.slice(0, 8).toString('utf8'), /^%PDF/);
-  assert.ok(body.length > 5000);
+  expect(response.status).toBe(200);
+  expect(response.headers.get('content-type') ?? '').toMatch(
+    /application\/pdf/,
+  );
+  expect(body.slice(0, 8).toString('utf8')).toMatch(/^%PDF/);
+  expect(body.length > 5000).toBeTruthy();
 });

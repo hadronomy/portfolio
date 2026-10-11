@@ -1,15 +1,29 @@
+import { CountryCode } from '@portfolio/invoices/address';
+import { AttemptId } from '@portfolio/invoices/collection-model';
 import {
   CatalogItem,
   Customer,
+  DecimalText,
   Invoice,
   InvoiceId,
   Payment,
   Preferences,
   RecordId,
 } from '@portfolio/invoices/model';
+import { Offer, PlanLibrary } from '@portfolio/invoices/plan';
 import { createServerFn } from '@tanstack/react-start';
-import { Result, Schema } from 'effect';
-import { identity, signIn, signOut } from './auth.server';
+import { Effect, Result, Schema } from 'effect';
+import { requireOwner, viewer } from '../../server/auth.server';
+import { Geocoder } from '../../server/geocoder.server';
+import { serve } from '../../server/runtime.server';
+import { accountOffer } from '../account/account.server';
+import {
+  checkout,
+  collectionStatus,
+  revoke,
+  share,
+  startPayment,
+} from './collection.server';
 import { mutate, preview, workspace } from './operations.server';
 
 export const SaveMutation = Schema.Struct({
@@ -55,6 +69,22 @@ export const ReversePaymentMutation = Schema.Struct({
   action: Schema.Literal('reverse-payment'),
   id: RecordId,
 });
+/** Replaces the plans an invoice offers; null drops its own. */
+export const OfferMutation = Schema.Struct({
+  action: Schema.Literal('offer'),
+  id: InvoiceId,
+  plans: Schema.NullOr(Offer),
+});
+/** Sets the plan the customer pays under, as the owner agreed it with them. */
+export const ChooseMutation = Schema.Struct({
+  action: Schema.Literal('choose'),
+  id: InvoiceId,
+  plan: Schema.NullOr(RecordId),
+});
+export const LibraryMutation = Schema.Struct({
+  action: Schema.Literal('library'),
+  library: PlanLibrary,
+});
 export const Mutation = Schema.Union([
   SaveMutation,
   IssueMutation,
@@ -66,6 +96,9 @@ export const Mutation = Schema.Union([
   ForgetMutation,
   PaymentMutation,
   ReversePaymentMutation,
+  OfferMutation,
+  ChooseMutation,
+  LibraryMutation,
 ]);
 export type Mutation = typeof Mutation.Type;
 
@@ -81,29 +114,106 @@ const decodeWith =
 
 const decodeMutation = decodeWith(Mutation, 'Invalid invoice request.');
 
+export const AddressSearch = Schema.Struct({
+  query: Schema.String.check(Schema.isMaxLength(200)),
+  country: CountryCode,
+});
+export const PostalLookup = Schema.Struct({
+  postalCode: Schema.String.check(Schema.isMaxLength(20)),
+  country: CountryCode,
+});
+const decodeAddressSearch = decodeWith(
+  AddressSearch,
+  'Invalid address search.',
+);
+const decodePostalLookup = decodeWith(PostalLookup, 'Invalid postal code.');
+
 const decodeInvoiceInput = decodeWith(Invoice, 'Invalid invoice.');
+
+export const InvoiceRef = Schema.Struct({ id: InvoiceId });
+const decodeInvoiceRef = decodeWith(InvoiceRef, 'Invalid invoice.');
+// The token's own shape is checked where it is resolved; here only its size.
+export const LinkRef = Schema.Struct({
+  token: Schema.String.check(Schema.isMaxLength(64)),
+});
+const decodeLinkRef = decodeWith(LinkRef, 'Invalid link.');
+/** How the customer's page reached the invoice; see `Access` in collection.server. */
+export const Access = Schema.TaggedUnion({
+  Link: { token: LinkRef.fields.token },
+  Account: { id: InvoiceId },
+});
+export type Access = typeof Access.Type;
+export const PaymentRequest = Schema.Struct({
+  access: Access,
+  amount: DecimalText,
+  attempt: AttemptId,
+  plan: RecordId,
+});
+const decodePaymentRequest = decodeWith(PaymentRequest, 'Invalid payment.');
 
 // Client/server seam: the build replaces each handler body with an RPC stub
 // in client bundles, so statically importing *.server modules here is safe
 // and preferred over dynamic import. Mutation is the single source of truth
 // for actions; operations.server handles each arm exhaustively.
-export const getIdentity = createServerFn({ method: 'GET' }).handler(async () =>
-  identity(),
+export const getViewer = createServerFn({ method: 'GET' }).handler(() =>
+  serve(viewer),
 );
-export const beginSignIn = createServerFn({ method: 'POST' }).handler(
-  async () => signIn(),
-);
-export const endSignIn = createServerFn({ method: 'POST' }).handler(
-  async () => {
-    await signOut();
-  },
-);
-export const getWorkspace = createServerFn({ method: 'GET' }).handler(
-  async () => workspace(),
+export const getWorkspace = createServerFn({ method: 'GET' }).handler(() =>
+  serve(workspace()),
 );
 export const mutateWorkspace = createServerFn({ method: 'POST' })
   .validator((input: unknown) => decodeMutation(input))
-  .handler(async ({ data }) => mutate(data));
+  .handler(({ data }) => serve(mutate(data)));
 export const previewInvoice = createServerFn({ method: 'POST' })
   .validator((input: unknown) => decodeInvoiceInput(input))
-  .handler(async ({ data }) => preview(data));
+  .handler(({ data }) => serve(preview(data)));
+export const findAddresses = createServerFn({ method: 'GET' })
+  .validator((input: unknown) => decodeAddressSearch(input))
+  .handler(({ data }) =>
+    serve(
+      requireOwner.pipe(
+        Effect.andThen(
+          Geocoder.use((geocoder) => geocoder.search(data.query, data.country)),
+        ),
+      ),
+    ),
+  );
+export const findLocality = createServerFn({ method: 'GET' })
+  .validator((input: unknown) => decodePostalLookup(input))
+  .handler(({ data }) =>
+    serve(
+      requireOwner.pipe(
+        Effect.andThen(
+          Geocoder.use((geocoder) =>
+            geocoder.locality(data.postalCode, data.country),
+          ),
+        ),
+      ),
+    ),
+  );
+export const getCollection = createServerFn({ method: 'GET' })
+  .validator((input: unknown) => decodeInvoiceRef(input))
+  .handler(({ data }) => serve(collectionStatus(data.id)));
+export const sharePaymentLink = createServerFn({ method: 'POST' })
+  .validator((input: unknown) => decodeInvoiceRef(input))
+  .handler(({ data }) => serve(share(data.id)));
+export const revokePaymentLinks = createServerFn({ method: 'POST' })
+  .validator((input: unknown) => decodeInvoiceRef(input))
+  .handler(({ data }) => serve(revoke(data.id)));
+export const beginPayment = createServerFn({ method: 'POST' })
+  .validator((input: unknown) => decodePaymentRequest(input))
+  .handler(({ data }) => serve(startPayment(data)));
+export const getCheckout = createServerFn({ method: 'GET' })
+  .validator((input: unknown) => decodeLinkRef(input))
+  .handler(({ data }) =>
+    serve(
+      Effect.gen(function* () {
+        const found = yield* checkout({ _tag: 'Link', token: data.token });
+        if (!found) return null;
+        return {
+          ...found,
+          account: yield* accountOffer(found.page.invoice.customerEmail),
+        };
+      }),
+    ),
+  );

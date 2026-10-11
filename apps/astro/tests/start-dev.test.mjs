@@ -1,4 +1,3 @@
-import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { once } from 'node:events';
 import {
@@ -14,9 +13,9 @@ import { createRequire } from 'node:module';
 import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { after, before, test } from 'node:test';
 import { pathToFileURL } from 'node:url';
 import { dev } from 'astro';
+import { afterAll, beforeAll, expect, test, vi } from 'vitest';
 
 const root = new URL('../', import.meta.url);
 const parentRoute = new URL('../start/src/routes/experiments.tsx', root);
@@ -57,11 +56,11 @@ async function eventually(check, label) {
 
 async function textTool() {
   const response = await fetch(`${origin}/experiments/text`);
-  assert.equal(response.status, 200);
-  assert.ok((await response.text()).includes('Count text locally'));
+  expect(response.status).toBe(200);
+  expect((await response.text()).includes('Count text locally')).toBeTruthy();
 }
 
-before(async () => {
+beforeAll(async () => {
   invoiceData = await mkdtemp(join(tmpdir(), 'portfolio-auth-test-'));
   process.env.INVOICE_DATA_DIRECTORY = invoiceData;
   delete process.env.DATABASE_URL;
@@ -81,7 +80,7 @@ before(async () => {
   origin = `http://127.0.0.1:${server.address.port}`;
 });
 
-after(async () => {
+afterAll(async () => {
   if (fixtureCreated) await unlink(parentRoute).catch(() => {});
   for (const file of fixtures) await unlink(file).catch(() => {});
   await server?.stop();
@@ -102,11 +101,9 @@ test('invoice OAuth metadata uses the public origin through the development prox
   const response = await fetch(`${origin}/invoices/auth/client-metadata.json`, {
     headers: { 'x-forwarded-host': 'attacker.example' },
   });
-  assert.equal(response.status, 200);
+  expect(response.status).toBe(200);
   const metadata = await response.json();
-  assert.deepEqual(metadata.redirect_uris, [
-    `${origin}/invoices/auth/callback`,
-  ]);
+  expect(metadata.redirect_uris).toEqual([`${origin}/invoices/auth/callback`]);
 });
 
 test('invoice OAuth rejects an invalid callback with a readable response', async () => {
@@ -116,48 +113,50 @@ test('invoice OAuth rejects an invalid callback with a readable response', async
       headers: { cookie: 'invoice-login=invalid' },
     },
   );
-  assert.equal(response.status, 400);
-  assert.match(await response.text(), /Start again/);
+  expect(response.status).toBe(400);
+  expect(await response.text()).toMatch(/Start again/);
 });
 
-test('invoice OAuth sets the session cookie and redirects after owner authentication', async (t) => {
+test('invoice OAuth sets the session cookie and redirects after owner authentication', async () => {
   const requireStart = createRequire(
     new URL('../../start/package.json', import.meta.url),
   );
   const { NodeOAuthClient } = await import(
     pathToFileURL(requireStart.resolve('@atproto/oauth-client-node')).href
   );
-  t.mock.method(NodeOAuthClient.prototype, 'callback', async () => ({
-    session: { did: 'did:plc:tvgjv46t4ebxbrvekr2vrnls' },
-    state: 'test-browser-nonce',
-  }));
+  vi.spyOn(NodeOAuthClient.prototype, 'callback').mockImplementation(
+    async () => ({
+      session: { did: 'did:plc:tvgjv46t4ebxbrvekr2vrnls' },
+      state: 'test-browser-nonce',
+    }),
+  );
   const response = await fetch(`${origin}/invoices/auth/callback?state=test`, {
     headers: { cookie: 'invoice-login=test-browser-nonce' },
     redirect: 'manual',
   });
-  assert.equal(response.status, 303);
-  assert.equal(response.headers.get('location'), `${origin}/invoices`);
+  expect(response.status).toBe(303);
+  expect(response.headers.get('location')).toBe(`${origin}/invoices`);
   const cookies = response.headers.getSetCookie();
-  assert.ok(
+  expect(
     cookies.some(
       (cookie) =>
         cookie.startsWith('invoice-login=') && /Max-Age=0/i.test(cookie),
     ),
-  );
+  ).toBeTruthy();
   const session = cookies.find((cookie) =>
     cookie.startsWith('invoice-session='),
   );
-  assert.ok(session);
-  assert.match(session, /HttpOnly/i);
-  assert.match(session, /SameSite=Lax/i);
+  expect(session).toBeTruthy();
+  expect(session).toMatch(/HttpOnly/i);
+  expect(session).toMatch(/SameSite=Lax/i);
   const workspace = await fetch(`${origin}/invoices`, {
     headers: { cookie: session.split(';')[0] },
   });
-  assert.equal(workspace.status, 200);
-  assert.match(await workspace.text(), /Invoice workspace/);
+  expect(workspace.status).toBe(200);
+  expect(await workspace.text()).toMatch(/Invoice workspace/);
 });
 
-test('invoice OAuth refuses a different account without a browser session', async (t) => {
+test('invoice OAuth refuses a different account without a browser session', async () => {
   const requireStart = createRequire(
     new URL('../../start/package.json', import.meta.url),
   );
@@ -165,28 +164,27 @@ test('invoice OAuth refuses a different account without a browser session', asyn
     pathToFileURL(requireStart.resolve('@atproto/oauth-client-node')).href
   );
   const otherDid = 'did:plc:other-account';
-  t.mock.method(NodeOAuthClient.prototype, 'callback', async () => ({
-    session: { did: otherDid },
-    state: 'test-browser-nonce',
-  }));
-  const revoke = t.mock.method(
-    NodeOAuthClient.prototype,
-    'revoke',
-    async () => {},
+  vi.spyOn(NodeOAuthClient.prototype, 'callback').mockImplementation(
+    async () => ({
+      session: { did: otherDid },
+      state: 'test-browser-nonce',
+    }),
   );
+  const revoke = vi
+    .spyOn(NodeOAuthClient.prototype, 'revoke')
+    .mockImplementation(async () => {});
   const response = await fetch(`${origin}/invoices/auth/callback?state=test`, {
     headers: { cookie: 'invoice-login=test-browser-nonce' },
     redirect: 'manual',
   });
-  assert.equal(response.status, 403);
-  assert.match(await response.text(), /belongs to hadronomy.com/);
-  assert.equal(
+  expect(response.status).toBe(403);
+  expect(await response.text()).toMatch(/belongs to hadronomy.com/);
+  expect(
     response.headers
       .getSetCookie()
       .some((cookie) => cookie.startsWith('invoice-session=')),
-    false,
-  );
-  assert.equal(revoke.mock.calls[0].arguments[0], otherDid);
+  ).toBe(false);
+  expect(revoke.mock.calls[0][0]).toBe(otherDid);
 });
 
 test('removing a Start parent keeps its child route working without a restart', async () => {
@@ -198,24 +196,26 @@ test('removing a Start parent keeps its child route working without a restart', 
   );
   fixtureCreated = true;
   await eventually(async () => {
-    assert.ok((await readFile(routeTree, 'utf8')).includes('ExperimentsRoute'));
+    expect(
+      (await readFile(routeTree, 'utf8')).includes('ExperimentsRoute'),
+    ).toBeTruthy();
     await textTool();
   }, 'add parent');
   const clientTree = await fetch(`${origin}/_apps/src/routeTree.gen.ts`);
-  assert.equal(clientTree.status, 200);
+  expect(clientTree.status).toBe(200);
   await clientTree.text();
   await unlink(parentRoute);
   fixtureCreated = false;
   await eventually(async () => {
     const generated = await readFile(routeTree, 'utf8');
-    assert.ok(!generated.includes('ExperimentsRoute'), generated);
+    expect(!generated.includes('ExperimentsRoute'), generated).toBeTruthy();
     await textTool();
   }, 'remove parent');
 });
 
 test('Start assets and HMR use the Astro origin while port 4322 is occupied', async () => {
   const response = await fetch(`${origin}/_apps/@vite/client`);
-  assert.equal(response.status, 200);
+  expect(response.status).toBe(200);
   const source = await response.text();
   const token = JSON.parse(source.match(/const wsToken = ("[^"\n]+");/)[1]);
   const socket = new WebSocket(
@@ -226,7 +226,7 @@ test('Start assets and HMR use the Astro origin while port 4322 is occupied', as
     const [message] = await once(socket, 'message', {
       signal: AbortSignal.timeout(5000),
     });
-    assert.equal(JSON.parse(message.data).type, 'connected');
+    expect(JSON.parse(message.data).type).toBe('connected');
   } finally {
     socket.close();
   }
@@ -247,21 +247,21 @@ test('Start route additions, renames, and removals update without a restart', as
   );
   await eventually(async () => {
     const response = await fetch(`${origin}/experiments/dx-probe`);
-    assert.equal(response.status, 200);
-    assert.ok((await response.text()).includes('DX route probe'));
+    expect(response.status).toBe(200);
+    expect((await response.text()).includes('DX route probe')).toBeTruthy();
   }, 'add Start route');
   await rename(route, renamed);
   await eventually(async () => {
     const response = await fetch(`${origin}/experiments/dx-renamed`);
-    assert.equal(response.status, 200);
-    assert.ok((await response.text()).includes('DX route probe'));
-    assert.equal((await fetch(`${origin}/experiments/dx-probe`)).status, 404);
+    expect(response.status).toBe(200);
+    expect((await response.text()).includes('DX route probe')).toBeTruthy();
+    expect((await fetch(`${origin}/experiments/dx-probe`)).status).toBe(404);
   }, 'rename Start route');
   await unlink(renamed);
   await eventually(async () => {
     const response = await fetch(`${origin}/experiments/dx-renamed`);
-    assert.equal(response.status, 404);
-    assert.ok((await response.text()).includes('Go back'));
+    expect(response.status).toBe(404);
+    expect((await response.text()).includes('Go back')).toBeTruthy();
   }, 'remove Start route');
 });
 
@@ -272,19 +272,19 @@ test('Astro route additions and removals update Start ownership', async () => {
   await writeFile(route, '<h1>Astro route probe</h1>\n', { flag: 'wx' });
   await eventually(async () => {
     const exact = await fetch(`${origin}/experiments/text/dx-probe`);
-    assert.equal(exact.status, 200);
-    assert.ok((await exact.text()).includes('Astro route probe'));
+    expect(exact.status).toBe(200);
+    expect((await exact.text()).includes('Astro route probe')).toBeTruthy();
     const missing = await fetch(`${origin}/experiments/text/dx-probe/missing`);
-    assert.equal(missing.status, 404);
-    assert.ok((await missing.text()).includes('Go back'));
+    expect(missing.status).toBe(404);
+    expect((await missing.text()).includes('Go back')).toBeTruthy();
   }, 'add Astro child');
   await unlink(route);
   await eventually(async () => {
     const response = await fetch(`${origin}/experiments/text/dx-probe`);
-    assert.equal(response.status, 404);
-    assert.ok(
+    expect(response.status).toBe(404);
+    expect(
       (await response.text()).includes('This experiment has no page here'),
-    );
+    ).toBeTruthy();
   }, 'remove Astro child');
 });
 
@@ -321,15 +321,15 @@ test('a production build keeps the dev server available', async () => {
     }
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
-  assert.equal(await complete, 0, output);
-  assert.equal(failure, undefined, String(failure));
-  assert.ok(requests > 1);
+  expect(await complete, output).toBe(0);
+  expect(failure, String(failure)).toBe(undefined);
+  expect(requests > 1).toBeTruthy();
   await textTool();
 });
 
 test('Astro React islands render without invalid-hook warnings', async () => {
   const response = await fetch(`${origin}/missing`);
-  assert.equal(response.status, 404);
-  assert.ok((await response.text()).includes('Go back'));
-  assert.equal(reactWarnings.length, 0, reactWarnings.join('\n'));
+  expect(response.status).toBe(404);
+  expect((await response.text()).includes('Go back')).toBeTruthy();
+  expect(reactWarnings.length, reactWarnings.join('\n')).toBe(0);
 });

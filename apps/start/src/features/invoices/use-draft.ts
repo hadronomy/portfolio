@@ -4,6 +4,11 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { previewInvoice } from './api';
 import { useWorkspace } from './workspace';
 
+// Server saves wait for this pause in typing...
+const saveDelay = 800;
+// ...but a long burst of edits still saves at least this often.
+const maxWait = 5000;
+
 export type DraftStatus = 'local' | 'saving' | 'saved' | 'failed' | 'conflict';
 export type PreviewStatus = 'idle' | 'rendering' | 'current' | 'outdated';
 
@@ -24,6 +29,8 @@ export function useDraft(original: Invoice, data: InvoiceData) {
   const hasConflict = useRef(false);
   const saveInFlight = useRef<Promise<Invoice | null> | null>(null);
   const dirty = useRef(false);
+  // When the oldest unsaved change was made; bounds the debounce.
+  const pendingSince = useRef<number | null>(null);
   const storageKey = `invoice-draft:${original.id}`;
 
   // All ref writes live in effects; nothing assigns refs during render.
@@ -146,11 +153,42 @@ export function useDraft(original: Invoice, data: InvoiceData) {
     } catch (_error: unknown) {
       // [draft:persist] device recovery is unavailable; the draft stays in memory.
     }
-    const timer = setTimeout(() => {
-      flush();
-    }, 65);
+    // The device copy above is written on every change, so nothing is lost
+    // to a crash. The server save waits for a pause in typing, and never
+    // longer than maxWait during a long unbroken burst, so a paragraph is one
+    // save, not one per keystroke.
+    const now = Date.now();
+    pendingSince.current ??= now;
+    const wait = Math.min(saveDelay, pendingSince.current + maxWait - now);
+    const timer = setTimeout(
+      () => {
+        pendingSince.current = null;
+        flush();
+      },
+      Math.max(0, wait),
+    );
     return () => clearTimeout(timer);
   }, [data, original.status, recovery, flush, storageKey]);
+
+  // A pending save goes out as soon as the owner looks away or leaves the
+  // editor, instead of waiting out the debounce.
+  useEffect(() => {
+    const save = () => {
+      if (!dirty.current) return;
+      pendingSince.current = null;
+      flush();
+    };
+    const onHide = () => {
+      if (document.visibilityState === 'hidden') save();
+    };
+    document.addEventListener('visibilitychange', onHide);
+    window.addEventListener('pagehide', save);
+    return () => {
+      document.removeEventListener('visibilitychange', onHide);
+      window.removeEventListener('pagehide', save);
+      save();
+    };
+  }, [flush]);
 
   useEffect(() => {
     // Subscription, not derived state: the handler reads refs at event time.

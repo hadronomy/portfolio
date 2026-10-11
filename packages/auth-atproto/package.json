@@ -1,0 +1,28 @@
+{
+  "name": "@portfolio/auth-atproto",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./client": "./src/client.ts"
+  },
+  "scripts": {
+    "check": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@atproto/oauth-client-node": "0.5.9",
+    "zod": "4.5.4"
+  },
+  "peerDependencies": {
+    "@better-auth/core": "^1.7.7",
+    "better-auth": "^1.7.7"
+  },
+  "devDependencies": {
+    "@better-auth/core": "1.7.7",
+    "@types/node": "catalog:types",
+    "better-auth": "1.7.7",
+    "typescript": "catalog:dev",
+    "vitest": "catalog:test"
+  }
+}

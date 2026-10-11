@@ -1,3 +1,4 @@
+import { newInvoice } from '@portfolio/invoices/model';
 import type { Workspace } from '@portfolio/invoices/store';
 import { queryCollectionOptions } from '@tanstack/query-db-collection';
 import { createCollection } from '@tanstack/react-db';
@@ -6,9 +7,11 @@ import {
   QueryClientProvider,
   useQuery,
 } from '@tanstack/react-query';
+import { useNavigate } from '@tanstack/react-router';
 import {
   createContext,
   type ReactNode,
+  useCallback,
   useContext,
   useMemo,
   useState,
@@ -91,4 +94,30 @@ export function useWorkspace() {
   });
   const workspace = useMemo(() => query.data, [query.data]);
   return { ...context, ...query, workspace };
+}
+
+/** Saves a fresh draft from the owner's defaults and opens it. Resolves false when the save fails. */
+export function useCreateInvoice() {
+  const { workspace, mutate } = useWorkspace();
+  const navigate = useNavigate();
+  const [pending, setPending] = useState(false);
+  const create = useCallback(async () => {
+    if (!workspace) return false;
+    setPending(true);
+    try {
+      const invoice = newInvoice(workspace.preferences);
+      const result = await mutate({ action: 'save', invoice });
+      if (!result.ok) return false;
+      await navigate({
+        to: '/invoices/$invoiceId',
+        params: { invoiceId: invoice.id },
+      });
+      return true;
+    } catch {
+      return false;
+    } finally {
+      setPending(false);
+    }
+  }, [workspace, mutate, navigate]);
+  return { create, pending, ready: !!workspace };
 }
