@@ -30,10 +30,10 @@ for each technical term.
 | --- | --- |
 | Profile | Introduce the engineering range with `stack`, `bare-metal`, and `frontend`. Connect the interest in `agentic AI` with `open source` work. See [the profile research](cv-profile-research.md). |
 | Canary | Retain `retrieval pipeline` and `vector embeddings`. Explain the BOE documents and legal validity in Spanish. |
-| Inari | Retain `hardware`, `device enrollment`, `offline`, and `controller`. Use a Spanish sentence to describe what the project connects. |
+| Inari | Retain `hardware`, `device enrollment`, `offline`, and `controller`. Describe connecting hardware and operating offline with direct Spanish verbs. |
 | RAM and routing | Retain `tooling`, `emulator`, `vehicle routing`, and `transshipments`. Use present tense for RAM and past tense for the earlier routing implementation. |
-| Other work | Name Autographa and King of the Hollywood Hill directly. Describe advice to other `developers` on `software architecture`. |
-| Projects | Use English technical terms with short Spanish descriptions of purpose. `Recommender` names the movie tool; «para descubrir películas» explains its purpose. |
+| Other work | Name Autographa and King of the Hollywood Hill directly. Describe help to other `developers` with decisions on `software architecture`. |
+| Projects | Use English technical terms with short Spanish descriptions of purpose. Use «sistemas de agentic AI» and «algoritmos de vehicle routing» to give the English terms a clear Spanish context. `Recommender` names the movie tool; «para descubrir películas» explains its purpose. |
 | Skills | Keep `Development` and `Tools & infrastructure` as technical group names. Keep technology names unchanged. |
 | General text | Keep document labels, contact details, location, academic names, language levels, and metadata in Spanish. The official degree and university names retain their original form. |
 

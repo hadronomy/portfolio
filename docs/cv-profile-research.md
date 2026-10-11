@@ -68,7 +68,7 @@ The wording keeps technical terms in English: *software*, *stack*, *bare-metal*,
 *frontend*, *agentic AI*, and *open source*. It avoids claims about users, revenue, performance, seniority,
 or production adoption because the profile data does not establish them.
 
-The selected wording describes the technical range with «desde bare-metal
+The selected wording describes the technical range with «desde sistemas bare-metal
 hasta el frontend». Spanish carries the verbs and connections; English carries
 the technical terms. The owner's terminology preference takes precedence over
 Spanish translations in the language references. This is a choice for this CV,
@@ -76,12 +76,18 @@ rather than a rule prescribed by Cervantes or LinkedIn.
 
 ## Selected paragraph
 
-> Desarrollo software en todo el stack, desde bare-metal hasta el frontend. Me interesa especialmente agentic AI y publico la mayor parte de mi trabajo como open source.
+> Desarrollo software en todo el stack, desde sistemas bare-metal hasta el frontend. Me interesa crear sistemas de agentic AI y comparto mi trabajo en proyectos open source.
 
 The first sentence gives the reader a clear technical range. The second
 connects the current interest with the open-source practice. It uses direct
 first-person verbs and avoids repeating the technology and project lists.
 The English role names remain outside the translation dictionary.
+
+Spanish nouns and verbs give the English terms a clear role in each sentence:
+«crear sistemas de agentic AI», «proyectos open source», and «algoritmos de
+vehicle routing». This keeps the technical vocabulary intact while describing
+concrete work. It avoids bare technical labels as stand-alone objects of vague
+verbs.
 
 ## Factual boundary
 

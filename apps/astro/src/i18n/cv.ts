@@ -92,12 +92,12 @@ export const cvCopy = {
     portraitAlt: 'Retrato de Pablo Hernández',
     engagement: 'Por cuenta propia',
     summary:
-      'Desarrollo software en todo el stack, desde bare-metal hasta el frontend. Me interesa especialmente agentic AI y publico la mayor parte de mi trabajo como open source.',
+      'Desarrollo software en todo el stack, desde sistemas bare-metal hasta el frontend. Me interesa crear sistemas de agentic AI y comparto mi trabajo en proyectos open source.',
     highlights: [
       'Desarrollo el retrieval pipeline de Canary con documentos del BOE, control de vigencia y vector embeddings.',
-      'Desarrollo Inari para conectar hardware, con device enrollment, funcionamiento offline y un controller en Rust.',
-      'Desarrollo tooling y un emulator para RAM. Implementé vehicle routing con transshipments en VRPT-SWTS.',
-      'Creé Autographa y King of the Hollywood Hill. Asesoro a otros developers en software architecture.',
+      'Desarrollo Inari para conectar hardware y operar offline, con device enrollment y un controller en Rust.',
+      'Desarrollo tooling y el emulator de RAM. Implementé algoritmos de vehicle routing en VRPT-SWTS.',
+      'Creé Autographa y King of the Hollywood Hill. Ayudo a otros developers con decisiones de software architecture.',
     ],
     location: 'Islas Canarias, España',
     educationTitle: 'Ingeniería Informática',
@@ -121,9 +121,9 @@ export const cvCopy = {
       inari:
         'Plataforma local-first con device enrollment y funcionamiento offline.',
       autographa: 'Herramienta para crear animated signatures.',
-      canary: 'Legal assistant con agentic AI para legislación española.',
-      ram: 'Programming language y emulator para el modelo RAM.',
-      vrpt: 'Vehicle routing con transshipments para recoger residuos.',
+      canary: 'Software de agentic AI para consultar legislación española.',
+      ram: 'Language tooling y emulator para programar en RAM.',
+      vrpt: 'Algoritmos de vehicle routing con transshipments.',
       movies: 'Recommender interactivo para descubrir películas.',
     },
     metadataDescription:
