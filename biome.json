@@ -61,6 +61,11 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "includes": ["**", "!**/*.astro", "!**/routeTree.gen.ts"]
+    "includes": [
+      "**",
+      "!**/*.astro",
+      "!**/routeTree.gen.ts",
+      "!apps/start/src/components/arc"
+    ]
   }
 }

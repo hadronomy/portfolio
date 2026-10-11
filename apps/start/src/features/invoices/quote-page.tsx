@@ -3,14 +3,29 @@ import { calculate, formatMoney } from '@portfolio/invoices/calculate';
 import type { Invoice } from '@portfolio/invoices/model';
 import { hasPages } from '@portfolio/invoices/pages';
 import type { PaymentPlan } from '@portfolio/invoices/plan';
-import type {
-  QuoteResponse,
-  QuoteState,
+import {
+  type QuoteResponse,
+  type QuoteState,
+  signatureSource,
 } from '@portfolio/invoices/quote-model';
 import { quoteNotices } from '@portfolio/invoices/quote-notices';
 import { useRouter } from '@tanstack/react-router';
 import { Check, ChevronDown, Download, Hourglass, Mail, X } from 'lucide-react';
-import { type ReactNode, useId, useState } from 'react';
+import {
+  type ReactNode,
+  type PointerEvent as ReactPointerEvent,
+  type RefObject,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from 'react';
+import {
+  type InkStroke,
+  SignaturePad,
+  signatureToSvg,
+} from '../../components/arc/signature-pad/signature-pad';
 import { answerQuoteLink } from './api';
 import { coverArt } from './covers';
 import { PageView } from './page-view';
@@ -19,10 +34,12 @@ import { type QuoteWords, quoteWords } from './quote-words';
 import { Button, MorphText } from './ui';
 import './invoices.css';
 
-// The customer's page for one quote, behind its link: the quote itself on
-// the ticket, the answer on the stub below it. The customer reads it whole
-// (the lines, the proposal, the conditions, the legal information) before
-// the form lets them sign, and the answer names the exact PDF they read.
+// The customer's page for one quote, behind its link. They read the PDF
+// itself, page by page, and answer on a ticket: its face says what the
+// quote costs and until when, and the slip below the perforation is where
+// they sign. On a wide screen the ticket stands beside the pages; on a
+// phone it waits docked at the foot of the screen, face up, and pulls up
+// over the pages to be signed. The answer names the exact PDF they read.
 
 const today = () => new Date().toISOString().slice(0, 10);
 const daysUntil = (day: string) =>
@@ -30,6 +47,23 @@ const daysUntil = (day: string) =>
     (Date.parse(`${day}T12:00:00Z`) - Date.parse(`${today()}T12:00:00Z`)) /
       86_400_000,
   );
+
+/** The page images are rendered at this many pixels per PDF point. */
+const pageScale = 2.25;
+
+/** Where the ticket stops standing beside the pages and docks instead. */
+const narrow = '(max-width: 899px)';
+function useNarrow() {
+  return useSyncExternalStore(
+    (change) => {
+      const query = window.matchMedia(narrow);
+      query.addEventListener('change', change);
+      return () => query.removeEventListener('change', change);
+    },
+    () => window.matchMedia(narrow).matches,
+    () => false,
+  );
+}
 
 function Note({
   icon,
@@ -53,87 +87,96 @@ function Note({
   );
 }
 
-function Document({
-  quote,
-  token,
-  t,
-}: {
-  quote: Invoice;
-  token: string;
-  t: QuoteWords;
-}) {
+/** What the PDF is, for the customer who cannot see its pages: the same lines, pages and notices. */
+function TextVersion({ quote, t }: { quote: Invoice; t: QuoteWords }) {
   const d = quote.data;
   const totals = calculate(d);
   const money = (value: string) => formatMoney(value, d.language, d.currency);
   const legal = d.quote ? quoteNotices(d, d.quote, d.language) : [];
   return (
-    <article className="iv-pay-doc">
-      {d.cover !== 'none' && (
-        <img className="iv-pay-banner" src={coverArt[d.cover].banner} alt="" />
-      )}
-      <header className="iv-pay-head">
-        <div>
-          <p className="iv-pay-issuer">{d.issuer.name}</p>
-          <h1>
-            {t.quote} <span className="iv-num">{quote.number}</span>
-          </h1>
+    <details className="iv-quote-text">
+      <summary>
+        {t.asText}
+        <ChevronDown size={15} aria-hidden />
+      </summary>
+      <div className="iv-quote-text-body">
+        <div className="iv-pay-lines">
+          <ul>
+            {d.lines.map((line, index) =>
+              line.kind === 'note' ? null : (
+                <li key={line.id}>
+                  <span>{line.description}</span>
+                  <span className="iv-num">
+                    {money(totals.lines[index]?.net ?? '0')}
+                  </span>
+                </li>
+              ),
+            )}
+          </ul>
         </div>
-        <a
-          className="iv-pay-pdf"
-          href={`/invoices/quote/${token}/pdf?lang=${d.language}`}
-          download
-          aria-label={t.pdfLabel}
-        >
-          <Download size={14} aria-hidden />
-          {t.pdf}
-        </a>
-      </header>
-      {d.title && <p className="iv-pay-title">{d.title}</p>}
-      <div className="iv-pay-lines">
-        <ul>
-          {d.lines.map((line, index) =>
-            line.kind === 'note' ? null : (
-              <li key={line.id}>
-                <span>{line.description}</span>
-                <span className="iv-num">
-                  {money(totals.lines[index]?.net ?? '0')}
-                </span>
-              </li>
-            ),
-          )}
-        </ul>
+        <dl className="iv-pay-totals">
+          <div>
+            <dt>{t.total}</dt>
+            <dd className="iv-num">{money(totals.total)}</dd>
+          </div>
+        </dl>
+        {d.quote && hasPages(d.quote.pages) && (
+          <section className="iv-quote-pages" aria-label={t.pages}>
+            <PageView pages={d.quote.pages} language={d.language} />
+          </section>
+        )}
+        {legal.length > 0 && (
+          <section className="iv-quote-legal" aria-label={t.legal}>
+            <h2>{t.legal}</h2>
+            <dl>
+              {legal.map((notice) => (
+                <div key={notice.id}>
+                  <dt>{notice.title}</dt>
+                  <dd>
+                    <p>{notice.body}</p>
+                    <p className="iv-prose-source">{notice.source}</p>
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+        )}
       </div>
-      <dl className="iv-pay-totals">
-        <div>
-          <dt>{t.total}</dt>
-          <dd className="iv-num">{money(totals.total)}</dd>
-        </div>
-      </dl>
-      {d.quote && hasPages(d.quote.pages) && (
-        <section className="iv-quote-pages" aria-label={t.pages}>
-          <PageView pages={d.quote.pages} language={d.language} />
-        </section>
-      )}
-      {legal.length > 0 && (
-        <details className="iv-quote-legal">
-          <summary>
-            {t.legal}
-            <ChevronDown size={15} aria-hidden />
-          </summary>
-          <dl>
-            {legal.map((notice) => (
-              <div key={notice.id}>
-                <dt>{notice.title}</dt>
-                <dd>
-                  <p>{notice.body}</p>
-                  <p className="iv-prose-source">{notice.source}</p>
-                </dd>
-              </div>
-            ))}
-          </dl>
-        </details>
-      )}
-    </article>
+    </details>
+  );
+}
+
+/** The PDF's pages as the server renders them, stacked like paper. */
+function Sheets({
+  token,
+  language,
+  sheets,
+  t,
+}: {
+  token: string;
+  language: Invoice['data']['language'];
+  sheets: QuotePageProps['sheets'];
+  t: QuoteWords;
+}) {
+  const width = Math.round(sheets.width * pageScale);
+  const height = Math.round(sheets.height * pageScale);
+  return (
+    <ol className="iv-quote-sheets">
+      {Array.from({ length: sheets.count }, (_, index) => (
+        <li key={`${sheets.digest}-${index}`}>
+          <img
+            src={`/invoices/quote/${token}/pages/${index + 1}?lang=${language}&v=${sheets.digest}`}
+            width={width}
+            height={height}
+            alt={t.pageOf(index + 1, sheets.count)}
+            // The first two fill the first screen; the rest wait until the
+            // customer reads towards them.
+            loading={index < 2 ? 'eager' : 'lazy'}
+            decoding="async"
+          />
+        </li>
+      ))}
+    </ol>
   );
 }
 
@@ -155,16 +198,16 @@ function Plans({
   t: QuoteWords;
 }) {
   const d = quote.data;
-  const today = new Date().toISOString().slice(0, 10);
+  const now = today();
   const words = (plan: PaymentPlan) =>
     planTerms(plan, d.language, d.currency, (day) => longDate(d.language, day));
   const first = (plan: PaymentPlan) => {
-    const [payment] = bills(d, plan, today);
+    const [payment] = bills(d, plan, now);
     if (!payment) return null;
     return {
       amount: formatMoney(payment.amount, d.language, d.currency),
       when:
-        payment.date <= today
+        payment.date <= now
           ? t.onAcceptance
           : longDate(d.language, payment.date),
     };
@@ -212,18 +255,21 @@ function Answer({
   token,
   digest,
   plans,
+  onAnswered,
   t,
 }: {
   quote: Invoice;
   token: string;
   digest: string;
   plans: readonly PaymentPlan[];
+  onAnswered: () => void;
   t: QuoteWords;
 }) {
   const router = useRouter();
   const d = quote.data;
   const consumer = d.customerType === 'consumer';
   const [name, setName] = useState('');
+  const [strokes, setStrokes] = useState<InkStroke[]>([]);
   const [agreed, setAgreed] = useState(false);
   const [earlyStart, setEarlyStart] = useState(false);
   const [declining, setDeclining] = useState(false);
@@ -233,7 +279,8 @@ function Answer({
     plans[0]?.id ?? null,
   );
   const nameId = useId();
-  const ready = name.trim().length >= 2;
+  const named = name.trim().length >= 2;
+  const signed = strokes.length > 0;
 
   const send = async (outcome: 'accepted' | 'declined') => {
     setPending(outcome);
@@ -249,6 +296,7 @@ function Answer({
             language: d.language,
             digest,
             plan: plans.length > 1 ? plan : null,
+            signature: outcome === 'accepted' ? signatureToSvg(strokes) : null,
           },
         },
       });
@@ -256,6 +304,7 @@ function Answer({
         setProblem(result.reason === 'stale-document' ? 'stale' : 'failed');
         return;
       }
+      onAnswered();
       await router.invalidate();
     } catch {
       setProblem('failed');
@@ -269,7 +318,7 @@ function Answer({
       className="iv-quote-answer"
       onSubmit={(event) => {
         event.preventDefault();
-        if (ready && agreed) void send('accepted');
+        if (named && signed && agreed) void send('accepted');
       }}
     >
       <Plans
@@ -291,6 +340,19 @@ function Answer({
           maxLength={200}
         />
       </label>
+      <fieldset className="iv-quote-sign">
+        <legend>{t.sign}</legend>
+        <SignaturePad
+          variant="field"
+          className="iv-signature"
+          defaultColor="blue"
+          signer={name.trim()}
+          hint={t.signHint}
+          label={t.sign}
+          words={t.pad}
+          onChange={setStrokes}
+        />
+      </fieldset>
       <label className="iv-check iv-quote-check">
         <input
           type="checkbox"
@@ -328,7 +390,7 @@ function Answer({
         type="submit"
         variant="primary"
         className="iv-quote-accept"
-        disabled={!ready || !agreed || pending !== null}
+        disabled={!named || !signed || !agreed || pending !== null}
       >
         <MorphText>{pending === 'accepted' ? t.accepting : t.accept}</MorphText>
       </Button>
@@ -344,7 +406,7 @@ function Answer({
           <div>
             <Button
               size="sm"
-              disabled={!ready || pending !== null}
+              disabled={!named || pending !== null}
               onClick={() => void send('declined')}
             >
               <span>{t.declineYes}</span>
@@ -374,34 +436,211 @@ function Answer({
 function Answered({
   response,
   currency,
+  live,
   t,
 }: {
   response: QuoteResponse;
   currency: Invoice['data']['currency'];
+  /** The answer was given on this page just now, so its stamp falls. */
+  live: boolean;
   t: QuoteWords;
 }) {
   const day = longDate(response.language, response.decidedAt.slice(0, 10));
   const accepted = response.outcome === 'accepted';
   return (
-    <Note
-      icon={accepted ? <Check size={16} /> : <X size={16} />}
-      title={
-        accepted
-          ? t.accepted(response.name, day)
-          : t.declined(response.name, day)
-      }
-    >
-      {response.plan && (
-        <p>
-          {planTerms(response.plan, response.language, currency, (day) =>
-            longDate(response.language, day),
+    <div className="iv-quote-answered">
+      {response.signature && (
+        <figure className="iv-quote-signed">
+          <img
+            src={signatureSource(response.signature)}
+            alt={t.signedBy(response.name)}
+          />
+          <figcaption>
+            <strong>{response.name}</strong>
+            <span>{day}</span>
+          </figcaption>
+          {accepted && (
+            <span
+              className="iv-pay-stamp"
+              data-live={live || undefined}
+              aria-hidden
+            >
+              {t.stampAccepted}
+            </span>
           )}
-        </p>
+        </figure>
       )}
-      {response.confirmedAt && <p>{t.emailed(response.email)}</p>}
-      {response.earlyStart && <p>{t.earlyStarted}</p>}
-    </Note>
+      <Note
+        icon={accepted ? <Check size={16} /> : <X size={16} />}
+        title={
+          accepted
+            ? t.accepted(response.name, day)
+            : t.declined(response.name, day)
+        }
+      >
+        {response.plan && (
+          <p>
+            {planTerms(response.plan, response.language, currency, (date) =>
+              longDate(response.language, date),
+            )}
+          </p>
+        )}
+        {response.confirmedAt && <p>{t.emailed(response.email)}</p>}
+        {response.earlyStart && <p>{t.earlyStarted}</p>}
+      </Note>
+    </div>
   );
+}
+
+/**
+ * The ticket's motion on a phone: docked with its face showing, or pulled
+ * up over the pages. A drag follows the finger; on release a short flick
+ * is enough, or half the way, and a tap on the face toggles it.
+ */
+function useDock(
+  ticket: RefObject<HTMLElement | null>,
+  face: RefObject<HTMLElement | null>,
+  docked: boolean,
+) {
+  const [open, setOpen] = useState(false);
+  const drag = useRef<{
+    id: number;
+    y: number;
+    at: number;
+    from: number;
+    moved: boolean;
+  } | null>(null);
+
+  // How far down a docked ticket sits, so only its face shows; and on a
+  // wide screen, where it sticks: at the top while it fits the screen, at
+  // its foot once it is taller, so its last line can always be reached.
+  useEffect(() => {
+    const node = ticket.current;
+    const top = face.current;
+    if (!node || !top) return;
+    const measure = () => {
+      // The room reads it too, to leave the docked face room at the end.
+      for (const holder of [node, node.parentElement])
+        holder?.style.setProperty('--face', `${top.offsetHeight}px`);
+      node.style.setProperty(
+        '--stick',
+        `${Math.min(24, window.innerHeight - node.offsetHeight - 24)}px`,
+      );
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(node);
+    observer.observe(top);
+    window.addEventListener('resize', measure);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', measure);
+    };
+  }, [ticket, face]);
+
+  useEffect(() => {
+    if (!docked) setOpen(false);
+  }, [docked]);
+
+  // Pulled up, the ticket is the page: what is behind it neither scrolls
+  // nor takes focus, and Escape lays it back down.
+  useEffect(() => {
+    if (!docked || !open) return;
+    const root = document.documentElement;
+    const paper = document.querySelector<HTMLElement>('.iv-quote-paper');
+    root.style.overflow = 'hidden';
+    paper?.setAttribute('inert', '');
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => {
+      root.style.overflow = '';
+      paper?.removeAttribute('inert');
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [docked, open]);
+
+  const closedOffset = () =>
+    (ticket.current?.offsetHeight ?? 0) - (face.current?.offsetHeight ?? 0);
+
+  const onPointerDown = (event: ReactPointerEvent<HTMLElement>) => {
+    if (!docked || drag.current) return;
+    // Its button and link answer taps of their own.
+    if ((event.target as HTMLElement).closest('a, button')) return;
+    drag.current = {
+      id: event.pointerId,
+      y: event.clientY,
+      at: event.timeStamp,
+      from: open ? 0 : closedOffset(),
+      moved: false,
+    };
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+  const onPointerMove = (event: ReactPointerEvent<HTMLElement>) => {
+    const current = drag.current;
+    const node = ticket.current;
+    if (!current || current.id !== event.pointerId || !node) return;
+    const dy = event.clientY - current.y;
+    if (!current.moved && Math.abs(dy) < 4) return;
+    current.moved = true;
+    const raw = current.from + dy;
+    // Past either end it gives a little, then less and less.
+    const limit = closedOffset();
+    const y =
+      raw < 0
+        ? -Math.sqrt(-raw) * 2
+        : raw > limit
+          ? limit + Math.sqrt(raw - limit) * 2
+          : raw;
+    node.style.transition = 'none';
+    node.style.transform = `translateY(${y}px)`;
+  };
+  const onPointerUp = (event: ReactPointerEvent<HTMLElement>) => {
+    const current = drag.current;
+    const node = ticket.current;
+    if (!current || current.id !== event.pointerId) return;
+    drag.current = null;
+    if (node) {
+      node.style.transition = '';
+      node.style.transform = '';
+    }
+    if (!current.moved) {
+      setOpen((was) => !was);
+      return;
+    }
+    const dy = event.clientY - current.y;
+    const speed = dy / Math.max(1, event.timeStamp - current.at);
+    const half = closedOffset() / 2;
+    if (open) setOpen(!(dy > half || speed > 0.11));
+    else setOpen(-dy > half || speed < -0.11);
+  };
+
+  return {
+    open,
+    setOpen,
+    grip: {
+      onPointerDown,
+      onPointerMove,
+      onPointerUp,
+      onPointerCancel: onPointerUp,
+    },
+  };
+}
+
+interface QuotePageProps {
+  token: string;
+  quote: Invoice;
+  response: QuoteResponse | null;
+  state: QuoteState;
+  digests: Readonly<Record<'en' | 'es', string>>;
+  plans: readonly PaymentPlan[];
+  sheets: {
+    readonly count: number;
+    readonly width: number;
+    readonly height: number;
+    readonly digest: string;
+  };
 }
 
 export function QuotePage({
@@ -411,24 +650,24 @@ export function QuotePage({
   state,
   digests,
   plans,
-}: {
-  token: string;
-  quote: Invoice;
-  response: QuoteResponse | null;
-  state: QuoteState;
-  digests: Readonly<Record<'en' | 'es', string>>;
-  plans: readonly PaymentPlan[];
-}) {
+  sheets,
+}: QuotePageProps) {
   const d = quote.data;
   const t = quoteWords[d.language];
   const money = (value: string) => formatMoney(value, d.language, d.currency);
   const total = calculate(d).total;
   const until = d.quote?.validUntil ?? d.issueDate;
   const left = daysUntil(until);
-  const stubId = useId();
-  const accepted = state === 'accepted' || state === 'invoiced';
+  const faceId = useId();
+  const accepted = response?.outcome === 'accepted';
+  // The stamp falls only when it is pressed in front of the customer.
+  const [justAnswered, setJustAnswered] = useState(false);
+  const docked = useNarrow();
+  const ticket = useRef<HTMLElement>(null);
+  const face = useRef<HTMLDivElement>(null);
+  const dock = useDock(ticket, face, docked);
   return (
-    <div className="iv-pay">
+    <div className="iv-pay iv-quote-room" lang={d.language}>
       <div className="iv-backdrop" aria-hidden>
         <img
           src={coverArt[d.cover === 'none' ? 'ember' : d.cover].backdrop}
@@ -436,24 +675,107 @@ export function QuotePage({
           data-active="true"
         />
       </div>
-      <main className="iv-pay-ticket" lang={d.language}>
-        <Document quote={quote} token={token} t={t} />
-        <section className="iv-pay-stub" aria-labelledby={stubId}>
-          <div className="iv-pay-due">
-            <span id={stubId}>{t.total}</span>
-            <strong className="iv-num">{money(total)}</strong>
-            <span data-tone={state === 'expired' ? 'late' : undefined}>
-              {t.validUntil(longDate(d.language, until))}
-              {state === 'open' && ` · ${t.daysLeft(Math.max(left, 0))}`}
+      <main className="iv-quote-paper">
+        <header className="iv-quote-top">
+          <p>
+            <strong>{d.issuer.name}</strong>
+            <span>
+              {t.quote} <span className="iv-num">{quote.number}</span> ·{' '}
+              {t.pageCount(sheets.count)}
             </span>
-            {accepted && (
-              <span className="iv-pay-stamp" aria-hidden>
-                {t.stampAccepted}
+          </p>
+          <a
+            className="iv-pay-pdf"
+            href={`/invoices/quote/${token}/pdf?lang=${d.language}`}
+            download
+            aria-label={t.pdfLabel}
+          >
+            <Download size={14} aria-hidden />
+            {t.pdf}
+          </a>
+        </header>
+        <Sheets token={token} language={d.language} sheets={sheets} t={t} />
+        <TextVersion quote={quote} t={t} />
+        {d.issuer.email && (
+          <footer className="iv-quote-foot">
+            <a href={`mailto:${d.issuer.email}`}>{d.issuer.email}</a>
+          </footer>
+        )}
+      </main>
+      {docked && (
+        <div
+          className="iv-quote-scrim"
+          data-open={dock.open || undefined}
+          aria-hidden
+          onClick={() => dock.setOpen(false)}
+        />
+      )}
+      <aside
+        ref={ticket}
+        className="iv-quote-ticket"
+        aria-labelledby={faceId}
+        data-docked={docked || undefined}
+        data-open={dock.open || undefined}
+      >
+        <div ref={face} className="iv-quote-face" {...dock.grip}>
+          {docked && <span className="iv-quote-grip" aria-hidden />}
+          <p className="iv-quote-number" id={faceId}>
+            {t.quote} <span className="iv-num">{quote.number}</span>
+          </p>
+          {d.title && <p className="iv-quote-title">{d.title}</p>}
+          <div className="iv-pay-due">
+            <span>{t.total}</span>
+            <strong className="iv-num">{money(total)}</strong>
+            {response ? (
+              <span data-tone={accepted ? 'done' : undefined}>
+                {(accepted ? t.acceptedOn : t.declinedOn)(
+                  longDate(response.language, response.decidedAt.slice(0, 10)),
+                )}
+              </span>
+            ) : (
+              <span data-tone={state === 'expired' ? 'late' : undefined}>
+                {/* Docked, the face has one short line to spare. */}
+                {docked && state === 'open'
+                  ? t.daysLeft(Math.max(left, 0))
+                  : t.validUntil(longDate(d.language, until))}
+                {!docked &&
+                  state === 'open' &&
+                  ` · ${t.daysLeft(Math.max(left, 0))}`}
               </span>
             )}
           </div>
+          {docked && (
+            <Button
+              variant={
+                dock.open || response || state === 'expired'
+                  ? 'secondary'
+                  : 'primary'
+              }
+              className="iv-quote-open"
+              aria-expanded={dock.open}
+              onClick={() => dock.setOpen(!dock.open)}
+            >
+              <MorphText>
+                {dock.open
+                  ? t.back
+                  : response || state === 'expired'
+                    ? t.answer
+                    : t.review}
+              </MorphText>
+            </Button>
+          )}
+        </div>
+        <section
+          className="iv-quote-slip"
+          inert={docked && !dock.open ? true : undefined}
+        >
           {response ? (
-            <Answered response={response} currency={d.currency} t={t} />
+            <Answered
+              response={response}
+              currency={d.currency}
+              live={justAnswered}
+              t={t}
+            />
           ) : state === 'expired' ? (
             <Note
               icon={<Hourglass size={16} />}
@@ -478,16 +800,12 @@ export function QuotePage({
               token={token}
               digest={digests[d.language]}
               plans={plans}
+              onAnswered={() => setJustAnswered(true)}
               t={t}
             />
           )}
         </section>
-      </main>
-      <footer className="iv-pay-foot">
-        {d.issuer.email && (
-          <a href={`mailto:${d.issuer.email}`}>{d.issuer.email}</a>
-        )}
-      </footer>
+      </aside>
     </div>
   );
 }

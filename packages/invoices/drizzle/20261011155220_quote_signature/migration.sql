@@ -1,0 +1,1 @@
+ALTER TABLE "invoices"."responses" ADD COLUMN "signature" text;

@@ -161,6 +161,8 @@ export const responses = namespace.table(
     confirmedAt: at('confirmed_at'),
     /** The accepted plan as it stood, so later edits never move it. */
     plan: jsonb(),
+    /** The signature the customer drew, as SVG. */
+    signature: text(),
   },
   (table) => [
     check(

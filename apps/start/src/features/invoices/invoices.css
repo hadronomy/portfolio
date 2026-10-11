@@ -4947,6 +4947,14 @@ body:has(.iv-dock) .iv-toast-region {
   color: var(--iv-ink-2);
   font-size: 12.5px;
 }
+/* The signature as drawn, in its own ink, at the size of a line of hand. */
+.iv-answer-signature {
+  display: block;
+  max-width: 100%;
+  height: 48px;
+  width: auto;
+  margin: 8px 0 2px;
+}
 .iv-answer-proof {
   margin-top: 6px;
 }
@@ -5098,8 +5106,8 @@ body:has(.iv-dock) .iv-toast-region {
   }
 }
 
-/* ---- The customer's quote page: the pay ticket, with the proposal in the
-   document and the answer on the stub. */
+/* ---- The customer's quote page: the PDF's own pages beside a ticket. The
+   rules below until the room are the text version's, and the answer form's. */
 .iv-quote-pages {
   margin: 28px 22px 0;
   padding-top: 24px;
@@ -5112,21 +5120,10 @@ body:has(.iv-dock) .iv-toast-region {
   margin: 20px 22px 0;
   border-top: 1px solid var(--iv-line);
 }
-.iv-quote-legal summary {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 0;
-  color: var(--iv-ink-2);
-  font-weight: 500;
-  cursor: pointer;
-  list-style: none;
-}
-.iv-quote-legal summary::-webkit-details-marker {
-  display: none;
-}
-.iv-quote-legal[open] summary svg {
-  transform: rotate(180deg);
+.iv-quote-legal h2 {
+  padding: 18px 0 12px;
+  font-size: 14px;
+  font-weight: 600;
 }
 .iv-quote-legal dl {
   display: grid;
@@ -5207,6 +5204,406 @@ body:has(.iv-dock) .iv-toast-region {
 .iv-quote-decline > div {
   display: flex;
   gap: 6px;
+}
+
+/* The room: the paper on the left, the ticket standing beside it. The
+   backdrop is the quote's cover, out of focus, the way a desk is. */
+.iv-pay.iv-quote-room {
+  --drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  display: grid;
+  grid-template-columns: minmax(0, 680px) 372px;
+  align-items: start;
+  justify-content: center;
+  gap: 36px;
+  padding: max(24px, env(safe-area-inset-top)) 32px 56px;
+}
+.iv-quote-paper {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+/* What the paper is, on a strip of the same white. */
+.iv-quote-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 48px;
+  padding: 6px 8px 6px 16px;
+  border-radius: var(--iv-r-card);
+  background: rgb(255 255 255 / 0.94);
+  box-shadow: var(--iv-ring);
+}
+.iv-quote-top p {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
+  min-width: 0;
+}
+.iv-quote-top strong {
+  font-weight: 500;
+}
+.iv-quote-top p > span {
+  color: var(--iv-ink-3);
+  font-size: 12.5px;
+}
+
+/* The pages, as paper: a near-square corner, a hairline edge and one short
+   cast below, so they read as sheets lying on the desk, not as cards. The
+   white shows while an image loads, at the page's own size. */
+.iv-quote-sheets {
+  display: grid;
+  gap: 20px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.iv-quote-sheets img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 3px;
+  background: #fff;
+  box-shadow:
+    0 0 0 1px rgb(20 20 20 / 0.05),
+    0 1px 1px rgb(20 20 20 / 0.05),
+    0 14px 30px -16px rgb(20 20 20 / 0.4);
+}
+
+/* The same quote as text: for a screen reader, or a phone held at arm's
+   length. Closed, it is one line on the strip's white. */
+.iv-quote-text {
+  border-radius: var(--iv-r-card);
+  background: rgb(255 255 255 / 0.94);
+  box-shadow: var(--iv-ring);
+}
+.iv-quote-text[open] {
+  background: var(--iv-surface);
+}
+.iv-quote-text > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 48px;
+  padding: 0 16px;
+  color: var(--iv-ink-2);
+  font-weight: 500;
+  cursor: pointer;
+  list-style: none;
+}
+.iv-quote-text > summary::-webkit-details-marker {
+  display: none;
+}
+.iv-quote-text > summary:hover {
+  color: var(--iv-ink);
+}
+.iv-quote-text[open] > summary svg {
+  transform: rotate(180deg);
+}
+.iv-quote-text-body {
+  padding-bottom: 22px;
+  border-top: 1px solid var(--iv-line);
+}
+/* The summary's rule already opens the list. */
+.iv-quote-text-body .iv-pay-lines li:first-child {
+  box-shadow: none;
+}
+.iv-quote-foot {
+  justify-self: center;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.94);
+  color: var(--iv-ink-2);
+  font-size: 12px;
+}
+.iv-quote-foot a:hover {
+  color: var(--iv-ink);
+}
+
+/* The ticket: a face that says what the quote costs and until when, and a
+   slip below the perforation, a shade off the white, where it is signed.
+   The masks cut a notch into each edge at the perforation, so the shadow
+   is a drop-shadow that follows the cut paper. On a wide screen it sticks
+   where the script measures it can: at the top while it fits the screen,
+   by its foot once it is taller. */
+.iv-quote-ticket {
+  --notch: 11px;
+  --ticket-radius: 24px;
+  position: sticky;
+  top: var(--stick, 24px);
+  display: grid;
+  min-width: 0;
+  filter: drop-shadow(0 0 0.5px rgb(20 20 20 / 0.22))
+    drop-shadow(0 1px 1px rgb(20 20 20 / 0.06))
+    drop-shadow(0 18px 28px rgb(20 20 20 / 0.16));
+}
+.iv-quote-face {
+  position: relative;
+  margin-bottom: -1px;
+  padding: 24px 28px 26px;
+  border-radius: var(--ticket-radius) var(--ticket-radius) 0 0;
+  background: var(--iv-surface);
+  mask:
+    radial-gradient(
+        circle var(--notch) at 0 100%,
+        #0000 var(--notch),
+        #000 calc(var(--notch) + 0.5px)
+      )
+      left / 51% 100% no-repeat,
+    radial-gradient(
+        circle var(--notch) at 100% 100%,
+        #0000 var(--notch),
+        #000 calc(var(--notch) + 0.5px)
+      )
+      right / 51% 100% no-repeat;
+}
+.iv-quote-number {
+  color: var(--iv-ink-3);
+  font-size: 12.5px;
+}
+.iv-quote-title {
+  margin-top: 2px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+.iv-quote-face .iv-pay-due {
+  margin: 22px 0 0;
+}
+.iv-quote-slip {
+  position: relative;
+  min-width: 0;
+  padding: 26px 28px 26px;
+  border-radius: 0 0 var(--ticket-radius) var(--ticket-radius);
+  background: #fbfbfa;
+  mask:
+    radial-gradient(
+        circle var(--notch) at 0 0,
+        #0000 var(--notch),
+        #000 calc(var(--notch) + 0.5px)
+      )
+      left / 51% 100% no-repeat,
+    radial-gradient(
+        circle var(--notch) at 100% 0,
+        #0000 var(--notch),
+        #000 calc(var(--notch) + 0.5px)
+      )
+      right / 51% 100% no-repeat;
+}
+.iv-quote-slip::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: calc(var(--notch) + 8px);
+  right: calc(var(--notch) + 8px);
+  height: 1px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--iv-line-strong) 0 5px,
+    transparent 5px 10px
+  );
+}
+
+/* The signature: a white field on the slip, the line to sign on and the
+   name typed above it printed beneath, as on paper. The pad's own tokens
+   take the workspace's values here. */
+.iv-quote-sign {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.iv-quote-sign > legend {
+  float: left;
+  width: 100%;
+  margin-bottom: 6px;
+  padding: 0;
+  font-weight: 500;
+}
+.iv-signature {
+  --foreground: var(--iv-ink);
+  --text-secondary: var(--iv-ink-2);
+  --text-muted: var(--iv-ink-3);
+  --border: var(--iv-line-strong);
+  --border-strong: rgb(20 20 20 / 0.26);
+  --surface: var(--iv-surface);
+  --surface-muted: var(--iv-hover);
+  --radius-panel: var(--iv-r-card);
+  --radius-control: var(--iv-r-control);
+  --radius-pill: 999px;
+  --control-height-sm: 28px;
+  --duration-fast: var(--iv-quick);
+  --duration-instant: 100ms;
+  --ease-standard: var(--iv-ease);
+  --font-body: 'Geist Variable', system-ui, sans-serif;
+  --leading-body: 1.45;
+  --tracking-body: normal;
+  --text-lg: 16px;
+  --text-sm: 13px;
+  --text-xs: 12px;
+  clear: both;
+}
+
+/* A signed slip keeps the signature, on its line, over the name. */
+.iv-quote-signed {
+  position: relative;
+  margin: 0 0 20px;
+  padding: 12px 16px 12px;
+  border-radius: var(--iv-r-card);
+  background: var(--iv-surface);
+  box-shadow: var(--iv-ring);
+}
+.iv-quote-signed img {
+  display: block;
+  max-width: 100%;
+  height: 76px;
+  width: auto;
+  object-fit: contain;
+  object-position: left bottom;
+}
+.iv-quote-signed figcaption {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 1px solid var(--iv-line-strong);
+  color: var(--iv-ink-3);
+  font-size: 12px;
+}
+.iv-quote-signed strong {
+  color: var(--iv-ink);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* The stamp is pressed beside the signature it accepts, never over the
+   total the customer needs to read. */
+.iv-quote-signed .iv-pay-stamp {
+  top: 18px;
+  right: 14px;
+}
+.iv-quote-ticket .iv-quote-face .iv-pay-due > span[data-tone='done'] {
+  color: #256b3c;
+}
+
+/* On a phone the ticket docks at the foot of the screen, face up, and the
+   pages scroll above it with room left for it. Pulled up, it covers them
+   on a dimmed scrim; the slip scrolls on its own. */
+.iv-quote-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 19;
+  background: rgb(20 20 20 / 0.3);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 360ms var(--iv-ease);
+}
+.iv-quote-scrim[data-open] {
+  opacity: 1;
+  pointer-events: auto;
+}
+.iv-quote-grip {
+  grid-column: 1 / -1;
+  justify-self: center;
+  width: 36px;
+  height: 4px;
+  margin-bottom: 6px;
+  border-radius: 2px;
+  background: var(--iv-line-strong);
+}
+.iv-quote-open.iv-btn {
+  grid-column: 2;
+  grid-row: 2 / span 2;
+  align-self: end;
+  height: 40px;
+  padding-inline: 16px;
+  border-radius: 999px;
+}
+
+@media (max-width: 899px) {
+  .iv-pay.iv-quote-room {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+    padding: max(10px, env(safe-area-inset-top)) 10px
+      calc(var(--face, 128px) + 16px);
+  }
+  .iv-quote-paper {
+    gap: 10px;
+  }
+  .iv-quote-sheets {
+    gap: 10px;
+  }
+  .iv-quote-top {
+    padding-left: 14px;
+  }
+  .iv-quote-top p {
+    display: grid;
+  }
+  .iv-quote-ticket[data-docked] {
+    --ticket-radius: 22px;
+    position: fixed;
+    top: auto;
+    right: 6px;
+    bottom: 0;
+    left: 6px;
+    z-index: 20;
+    grid-template-rows: auto minmax(0, 1fr);
+    max-height: calc(100dvh - 32px);
+    transform: translateY(calc(100% - var(--face, 0px)));
+    transition: transform 460ms var(--drawer);
+  }
+  .iv-quote-ticket[data-docked][data-open] {
+    transform: none;
+  }
+  .iv-quote-ticket[data-docked] .iv-quote-face {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 12px;
+    padding: 8px 14px 16px 18px;
+    touch-action: none;
+    cursor: grab;
+  }
+  .iv-quote-ticket[data-docked]:not([data-open]) .iv-quote-face {
+    padding-bottom: calc(14px + env(safe-area-inset-bottom));
+  }
+  .iv-quote-ticket[data-docked] .iv-quote-title {
+    display: none;
+  }
+  /* Docked, the face is three lines and a button: the number, the total
+     level with the button, and the state across the full width below. */
+  .iv-quote-ticket[data-docked] .iv-quote-number {
+    grid-column: 1;
+  }
+  .iv-quote-ticket[data-docked] .iv-pay-due {
+    display: contents;
+  }
+  .iv-quote-ticket[data-docked] .iv-pay-due > span:first-child {
+    display: none;
+  }
+  .iv-quote-ticket[data-docked] .iv-pay-due strong {
+    grid-column: 1;
+    font-size: 26px;
+  }
+  .iv-quote-ticket[data-docked] .iv-pay-due > span:not(:first-child) {
+    grid-column: 1 / -1;
+    margin-top: 6px;
+    font-size: 12.5px;
+  }
+  .iv-quote-ticket[data-docked] .iv-quote-slip {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 24px 18px max(24px, env(safe-area-inset-bottom));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .iv-quote-ticket[data-docked],
+  .iv-quote-scrim {
+    transition: none;
+  }
 }
 
 /* The customer's choice of plan. */
@@ -6601,7 +6998,7 @@ body:has(.iv-dock) .iv-toast-region {
   width: min(480px, 100%);
   padding: 20px 22px;
   border-radius: var(--iv-r-panel);
-  background: rgb(255 255 255 / 0.84);
+  background: rgb(255 255 255 / 0.94);
   backdrop-filter: blur(16px) saturate(1.2);
   box-shadow: 0 0 0 1px rgb(255 255 255 / 0.5), var(--iv-raise);
 }

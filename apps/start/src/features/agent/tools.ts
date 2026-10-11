@@ -37,6 +37,16 @@ export class ToolFailure extends Schema.TaggedError<ToolFailure>()(
 const described = <S extends Schema.Top>(schema: S, description: string) =>
   schema.annotate({ description });
 
+/** A quote's answer as agents read it: the evidence, and whether it was signed, without the drawing. */
+const { signature: _drawing, ...answerFields } = QuoteResponse.fields;
+const AgentAnswer = Schema.Struct({
+  ...answerFields,
+  signed: described(
+    Schema.Boolean,
+    'Whether the customer drew their signature. Every acceptance has one; the owner sees it on the quote.',
+  ),
+});
+
 const DocumentRef = described(
   Schema.String,
   'A document: its ID, or its number, such as INV-2026-0003 or P-2026-0001.',
@@ -177,7 +187,7 @@ export const DocumentDetail = Schema.Struct({
     'A quote’s proposal pages, as Markdown.',
   ),
   answer: described(
-    Schema.NullOr(QuoteResponse),
+    Schema.NullOr(AgentAnswer),
     'A quote’s answer from its customer, with the evidence it rests on and the payments billed so far.',
   ),
   pdf: described(

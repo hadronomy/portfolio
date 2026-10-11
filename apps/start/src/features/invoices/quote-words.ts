@@ -1,4 +1,5 @@
 import type { Language } from '@portfolio/invoices/model';
+import type { PadWords } from '../../components/arc/signature-pad/signature-pad';
 
 // The customer's quote page, in the quote's language.
 
@@ -32,10 +33,34 @@ export const quoteWords = {
     declineYes: 'Decline',
     declineNo: 'Keep it',
     signature:
-      'Your typed name is your electronic signature. We keep the time, this browser and the fingerprint of the document you accept.',
+      'Your name and the signature you draw are your electronic signature. We keep the time, this browser and the fingerprint of the document you accept.',
+    sign: 'Your signature',
+    signHint: 'Sign here',
+    signedBy: (name: string) => `Signature of ${name}`,
+    pad: {
+      undo: 'Undo',
+      redo: 'Redo',
+      clear: 'Clear the signature',
+      state: (strokes: number) =>
+        `${strokes === 0 ? 'Empty.' : strokes === 1 ? '1 stroke.' : `${strokes} strokes.`} Draw with a mouse, a pen or a finger.`,
+      keys: 'Control or Command Z undoes, with Shift it redoes, and Delete clears.',
+      added: (strokes: number) =>
+        strokes === 1 ? 'Stroke added.' : `Stroke added. ${strokes} in all.`,
+      undone: 'Undone',
+      redone: 'Redone',
+      cleared: 'Signature cleared. Undo brings it back.',
+    } satisfies PadWords,
+    pageOf: (page: number, pages: number) => `Page ${page} of ${pages}`,
+    pageCount: (pages: number) => (pages === 1 ? '1 page' : `${pages} pages`),
+    asText: 'Read it as text',
+    review: 'Review and sign',
+    answer: 'See the answer',
+    back: 'Back to the quote',
     fingerprint: 'Fingerprint',
     stampAccepted: 'Accepted',
     accepted: (name: string, day: string) => `Accepted by ${name} on ${day}`,
+    acceptedOn: (day: string) => `Accepted on ${day}`,
+    declinedOn: (day: string) => `Declined on ${day}`,
     declined: (name: string, day: string) => `Declined by ${name} on ${day}`,
     emailed: (email: string) => `A copy went to ${email}.`,
     earlyStarted:
@@ -86,10 +111,37 @@ export const quoteWords = {
     declineYes: 'Rechazar',
     declineNo: 'Mantenerlo',
     signature:
-      'Tu nombre escrito es tu firma electrónica. Guardamos la hora, este navegador y la huella del documento que aceptas.',
+      'Tu nombre y la firma que dibujas son tu firma electrónica. Guardamos la hora, este navegador y la huella del documento que aceptas.',
+    sign: 'Tu firma',
+    signHint: 'Firma aquí',
+    signedBy: (name: string) => `Firma de ${name}`,
+    pad: {
+      undo: 'Deshacer',
+      redo: 'Rehacer',
+      clear: 'Borrar la firma',
+      state: (strokes: number) =>
+        `${strokes === 0 ? 'Vacío.' : strokes === 1 ? '1 trazo.' : `${strokes} trazos.`} Dibuja con el ratón, un lápiz o el dedo.`,
+      keys: 'Control o Comando Z deshace, con Mayúsculas rehace, y Suprimir borra.',
+      added: (strokes: number) =>
+        strokes === 1
+          ? 'Trazo añadido.'
+          : `Trazo añadido. ${strokes} en total.`,
+      undone: 'Deshecho',
+      redone: 'Rehecho',
+      cleared: 'Firma borrada. Deshacer la recupera.',
+    } satisfies PadWords,
+    pageOf: (page: number, pages: number) => `Página ${page} de ${pages}`,
+    pageCount: (pages: number) =>
+      pages === 1 ? '1 página' : `${pages} páginas`,
+    asText: 'Leerlo como texto',
+    review: 'Revisar y firmar',
+    answer: 'Ver la respuesta',
+    back: 'Volver al presupuesto',
     fingerprint: 'Huella',
     stampAccepted: 'Aceptado',
     accepted: (name: string, day: string) => `Aceptado por ${name} el ${day}`,
+    acceptedOn: (day: string) => `Aceptado el ${day}`,
+    declinedOn: (day: string) => `Rechazado el ${day}`,
     declined: (name: string, day: string) => `Rechazado por ${name} el ${day}`,
     emailed: (email: string) => `Hemos enviado una copia a ${email}.`,
     earlyStarted:

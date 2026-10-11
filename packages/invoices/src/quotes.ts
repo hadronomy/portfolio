@@ -48,6 +48,7 @@ export class QuoteClosed extends Schema.TaggedError<QuoteClosed>()(
       'stale-document',
       'no-such-plan',
       'no-such-payment',
+      'unsigned',
     ]),
   },
 ) {}
@@ -262,6 +263,8 @@ export const makeQuotes = Effect.gen(function* () {
             : plans.find((item) => item.id === answer.plan);
       if (plan === undefined)
         return yield* new QuoteClosed({ reason: 'no-such-plan' });
+      if (answer.outcome === 'accepted' && !answer.signature)
+        return yield* new QuoteClosed({ reason: 'unsigned' });
       const saved: QuoteResponse = {
         quoteId: id,
         outcome: answer.outcome,
@@ -275,6 +278,7 @@ export const makeQuotes = Effect.gen(function* () {
         agent: evidence.agent.slice(0, 500),
         decidedAt: new Date().toISOString(),
         confirmedAt: null,
+        signature: answer.outcome === 'accepted' ? answer.signature : null,
         plan,
         billed: [],
       };

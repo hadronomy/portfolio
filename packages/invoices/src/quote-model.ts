@@ -6,6 +6,23 @@ import { PaymentPlan } from './plan';
 // A quote's life after it is issued, as data: the customer's answer, and
 // the invoices an accepted quote is billed in. Safe in the browser.
 
+/**
+ * A drawn signature, exactly as the pad exports it: one SVG of filled
+ * paths, each a closed outline of numbers in one hex colour. Nothing else
+ * matches, so no script, link or style can ride in with it, wherever it is
+ * shown later. The size bound keeps a page from storing anything else.
+ */
+export const Signature = Schema.String.check(
+  Schema.isMaxLength(200_000),
+  Schema.isPattern(
+    /^<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg" viewBox="-?\d+ -?\d+ \d+ \d+" width="\d+" height="\d+">(?:<path d="M[-\d. ]+Q[-\d. ]+Z" fill="#[0-9a-f]{6}"\/>)+<\/svg>$/,
+  ),
+);
+
+/** A stored signature as an image source. An image never runs what it shows. */
+export const signatureSource = (svg: string) =>
+  `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+
 /** What the customer sends back from the quote page. */
 export const Answer = Schema.Struct({
   outcome: Schema.Literals(['accepted', 'declined']),
@@ -15,6 +32,8 @@ export const Answer = Schema.Struct({
   digest: Schema.String.check(Schema.isPattern(/^[a-f0-9]{64}$/)),
   /** The plan they accept under; null when the quote offers only one. */
   plan: Schema.NullOr(RecordId),
+  /** The signature they drew, as SVG; an acceptance needs one. */
+  signature: Schema.NullOr(Signature),
 });
 export interface Answer extends Schema.Schema.Type<typeof Answer> {}
 
@@ -29,8 +48,10 @@ export interface Billed extends Schema.Schema.Type<typeof Billed> {}
 export const QuoteResponse = Schema.Struct({
   quoteId: InvoiceId,
   outcome: Schema.Literals(['accepted', 'declined']),
-  /** The full name the customer typed: their simple electronic signature. */
+  /** The full name the customer typed. With `signature`, their simple electronic signature. */
   name: Schema.String,
+  /** The signature they drew, as SVG; null on a declined quote. */
+  signature: Schema.NullOr(Schema.String),
   /** The address the quote was sent to. */
   email: Schema.String,
   /** A consumer's express request to start inside the withdrawal period. */

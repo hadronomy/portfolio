@@ -1,9 +1,9 @@
-import { Effect } from 'effect';
+import { Effect, Schema } from 'effect';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { quoteSpecimen } from './fixtures';
 import { type Invoice, OwnerDid, RecordId } from './model';
 import type { PaymentPlan } from './plan';
-import type { Answer } from './quote-model';
+import { type Answer, Signature } from './quote-model';
 import { Quotes, type QuotesApi } from './quotes';
 import { InvoiceStore, type StoreApi } from './store';
 import { testRuntime } from './testing';
@@ -13,6 +13,9 @@ let store: StoreApi;
 let quotes: QuotesApi;
 const owner = OwnerDid.make('owner');
 const evidence = { address: '203.0.113.7', agent: 'Test browser' };
+/** A drawn signature, as the pad exports one. */
+const ink =
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-4 12 240 96" width="240" height="96"><path d="M10.5 20 Q12 22 14.25 21 16 18 10.5 20 Z" fill="#1d3fae"/></svg>';
 beforeAll(async () => {
   store = await runtime.runPromise(Effect.service(InvoiceStore));
   quotes = await runtime.runPromise(Effect.service(Quotes));
@@ -55,6 +58,7 @@ async function answer(quote: Invoice, change: Partial<Answer> = {}) {
         language: 'en',
         digest: digests.en,
         plan: null,
+        signature: ink,
         ...change,
       },
       evidence,
@@ -95,6 +99,7 @@ describe('quotes', () => {
             language: 'en',
             digest: '0'.repeat(64),
             plan: null,
+            signature: ink,
           },
           evidence,
         ),
@@ -124,6 +129,28 @@ describe('quotes', () => {
     expect(await fail(quotes.share(quote.id, owner))).toMatchObject({
       reason: 'answered',
     });
+  });
+
+  it('refuse an acceptance without a drawn signature', async () => {
+    const quote = await issuedQuote();
+    expect(
+      await fail(
+        quotes.respond(
+          quote.id,
+          {
+            outcome: 'accepted',
+            name: 'Lucy Martin',
+            earlyStart: false,
+            language: 'en',
+            digest: (await run(quotes.view(quote.id))).digests.en,
+            plan: null,
+            signature: null,
+          },
+          evidence,
+        ),
+      ),
+    ).toMatchObject({ reason: 'unsigned' });
+    expect((await answer(quote)).signature).toBe(ink);
   });
 
   it('keep the early-start request to consumers', async () => {
@@ -197,6 +224,7 @@ describe('quotes', () => {
             language: 'en',
             digest: (await run(quotes.view(quote.id))).digests.en,
             plan: id(),
+            signature: ink,
           },
           evidence,
         ),
@@ -239,5 +267,23 @@ describe('quotes', () => {
     expect(revision.status).toBe('draft');
     expect(revision.id).not.toBe(quote.id);
     expect(revision.data.quote?.pages).toEqual(quote.data.quote?.pages);
+  });
+});
+
+describe('signature', () => {
+  const valid = Schema.is(Signature);
+  it('take the SVG the pad exports', () => {
+    expect(valid(ink)).toBe(true);
+  });
+  it('refuse anything the pad does not export', () => {
+    for (const tampered of [
+      ink.replace('<path', '<script>alert(1)</script><path'),
+      ink.replace('fill="#1d3fae"', 'fill="#1d3fae" onload="alert(1)"'),
+      ink.replace('fill="#1d3fae"', 'fill="url(https://example.com/x)"'),
+      ink.replace('<svg ', '<svg onload="alert(1)" '),
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1" width="1" height="1"></svg>',
+      `${ink}<img src=x>`,
+    ])
+      expect(valid(tampered)).toBe(false);
   });
 });

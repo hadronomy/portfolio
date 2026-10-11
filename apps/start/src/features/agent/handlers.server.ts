@@ -13,7 +13,12 @@ import {
 } from '@portfolio/invoices/model';
 import { pagesFromMarkdown, pagesToMarkdown } from '@portfolio/invoices/pages';
 import { noOffer } from '@portfolio/invoices/plan';
-import { type QuoteError, Quotes } from '@portfolio/invoices/quotes';
+import type { QuoteResponse } from '@portfolio/invoices/quote-model';
+import {
+  type QuoteClosed,
+  type QuoteError,
+  Quotes,
+} from '@portfolio/invoices/quotes';
 import { InvoiceStore, type Workspace } from '@portfolio/invoices/store';
 import { issueErrors } from '@portfolio/invoices/validate';
 import { Effect, Match, Result } from 'effect';
@@ -46,7 +51,7 @@ import {
 
 const fail = (message: string) => Effect.fail(new ToolFailure({ message }));
 
-const closed: Record<string, string> = {
+const closed: Record<QuoteClosed['reason'], string> = {
   'not-a-quote': 'That document is not a quote.',
   draft: 'Issue the quote first.',
   expired:
@@ -59,6 +64,19 @@ const closed: Record<string, string> = {
   'no-such-plan': 'The quote does not offer that payment plan.',
   'no-such-payment':
     'The accepted plan has no payment at that place. Read the plan in get_document; payments count from 0.',
+  unsigned:
+    'An acceptance needs the signature the customer draws on the quote page.',
+};
+
+/**
+ * A quote's answer as an agent reads it. The drawn signature is SVG path
+ * data, useless in a conversation and long; the agent learns that it is
+ * there, and the owner sees it on the quote.
+ */
+const answerFor = (response: QuoteResponse | undefined) => {
+  if (!response) return null;
+  const { signature, ...answer } = response;
+  return { ...answer, signed: signature !== null };
 };
 
 /** A store or quote failure, as the agent should hear it. */
@@ -287,7 +305,7 @@ export const invoiceToolsLayer = InvoiceTools.toLayer(
             plans: [...offer.plans],
             chosenPlan: offer.chosen,
             pages: data.quote ? pagesToMarkdown(data.quote.pages) : null,
-            answer: workspace.responses[invoice.id] ?? null,
+            answer: answerFor(workspace.responses[invoice.id]),
             pdf: `invoices://documents/${invoice.id}/${data.language}.pdf`,
             openLinks,
           };

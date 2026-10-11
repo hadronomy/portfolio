@@ -11,6 +11,7 @@ import {
 import {
   acceptedOn,
   type QuoteResponse,
+  signatureSource,
 } from '@portfolio/invoices/quote-model';
 import { quoteNotices } from '@portfolio/invoices/quote-notices';
 import * as Popover from '@radix-ui/react-popover';
@@ -273,6 +274,13 @@ function AnswerCard({ response }: { response: QuoteResponse }) {
           {response.earlyStart &&
             ' · Asked to start before the withdrawal period ends'}
         </p>
+        {response.signature && (
+          <img
+            className="iv-answer-signature"
+            src={signatureSource(response.signature)}
+            alt={`Signature of ${response.name}`}
+          />
+        )}
         <details className="iv-answer-proof">
           <summary>
             Evidence
