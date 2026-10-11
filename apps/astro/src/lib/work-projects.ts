@@ -3,8 +3,7 @@ import type { WorkProject } from './work';
 /**
  * The projects the gallery shows.
  *
- * Each one links to where the work actually lives, so the gallery is a way
- * into the projects rather than a set of pages about them. Covers are either a
+ * Each one links to its project page, which links to the source or demo. Covers are either a
  * capture of the real thing or a shader that draws the project's own subject —
  * never stock artwork standing in for one.
  */
@@ -22,7 +21,8 @@ export const workProjects = [
       width: 1200,
       height: 900,
     },
-    href: 'https://github.com/hadronomy/canary',
+    href: '/work/canary/',
+    sourceUrl: 'https://github.com/hadronomy/canary',
   },
   {
     id: 'inari',
@@ -38,7 +38,8 @@ export const workProjects = [
       height: 900,
       shader: 'inari',
     },
-    href: 'https://github.com/hadronomy/inari',
+    href: '/work/inari/',
+    sourceUrl: 'https://github.com/hadronomy/inari',
   },
   {
     id: 'ram',
@@ -54,7 +55,8 @@ export const workProjects = [
       height: 900,
       shader: 'ram',
     },
-    href: 'https://ram.hadronomy.com',
+    href: '/work/ram/',
+    sourceUrl: 'https://ram.hadronomy.com',
   },
   {
     id: 'vrpt-swts',
@@ -70,6 +72,7 @@ export const workProjects = [
       height: 900,
       shader: 'routes',
     },
-    href: 'https://github.com/hadronomy/VRPT-SWTS',
+    href: '/work/vrpt-swts/',
+    sourceUrl: 'https://github.com/hadronomy/VRPT-SWTS',
   },
 ] as const satisfies readonly WorkProject[];

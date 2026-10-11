@@ -5,7 +5,7 @@ import Overline from '~/components/core/Overline.astro';
 import Row from '~/components/core/Row.astro';
 import Section from '~/components/core/Section.astro';
 import Shortcut from '~/components/core/Shortcut.astro';
-import { socials } from '~/lib/profile';
+import { profile, socials } from '~/lib/profile';
 import { languageNames, locales } from '~/i18n/locales';
 ---
 
@@ -23,26 +23,16 @@ import { languageNames, locales } from '~/i18n/locales';
 
   {
     /*
-    The line belongs to the rows, not to the heading, so it sits against them:
-    32px of air above it and 16px below. "These" is then pointing at something
-    directly underneath it.
-
-    It sets in normal inline flow rather than as a flex row. A flex line treats
-    the run of text after the keycap as one item, so at narrow widths it cannot
-    break inside that run and strands the key at the end of the first line.
-
-    The shortcut is global, so it is worth naming again this far down the
-    page. Email has no row of its own — one key is already the faster route.
-
-    This is also a static site with no endpoint behind it, and a form that
-    silently drops messages is worse than no form, so the rows are the whole
-    contact surface until there is somewhere to post to.
+    Inline flow lets the text wrap around the keycap on narrow screens.
   */
   }
   <div class="flex w-full flex-col gap-4">
     <Section>
       <p class="type-body text-muted-foreground">
-        Press <Shortcut key="C" /> any time to copy my email. These reach me too.
+        <a href={`mailto:${profile.email}`} class="text-foreground underline underline-offset-4"
+          >{profile.email}</a
+        >
+        {' · '}Press <Shortcut key="C" /> to copy it. These reach me too.
       </p>
     </Section>
 

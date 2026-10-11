@@ -8,7 +8,8 @@
     "start": "astro preview",
     "shaders:check": "vgpu check src/shaders/inari.wgsl --require-validation && vgpu check src/shaders/ram.wgsl --require-validation && vgpu check src/shaders/routes.wgsl --require-validation",
     "covers:render": "node scripts/shaders/render-covers.mjs",
-    "build": "astro check && astro build",
+    "build": "astro check && astro build && node scripts/seo/check.mjs",
+    "seo:check": "node scripts/seo/check.mjs",
     "preview": "astro preview",
     "astro": "astro"
   },

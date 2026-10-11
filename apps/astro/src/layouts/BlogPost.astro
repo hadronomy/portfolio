@@ -1,16 +1,13 @@
 ---
 import { Icon } from 'astro-icon/components';
+import { Image } from 'astro:assets';
 import Overline from '~/components/core/Overline.astro';
 import Section from '~/components/core/Section.astro';
 import WritingList from '~/components/core/WritingList.astro';
 import Layout from '~/layouts/Layout.astro';
-import {
-  getPosts,
-  longDate,
-  type Post,
-  readingMinutes,
-  wordCount,
-} from '~/lib/posts';
+import { profile } from '~/lib/profile';
+import { breadcrumbData, pageUrl, person } from '~/lib/seo';
+import { getPosts, longDate, type Post, readingMinutes, wordCount } from '~/lib/posts';
 
 // KaTeX, twoslash and the article styles load with this layout rather than
 // globally, so no other page pays for them.
@@ -23,39 +20,83 @@ interface Props {
 }
 
 const { post } = Astro.props;
-const { title, description, pubDate, heroImage, state } = post.data;
+const { title, description, pubDate, updatedDate, heroImage, state } = post.data;
+const url = pageUrl(`/blog/${post.id}/`);
 
 const words = wordCount(post.body);
 
-const more = (await getPosts())
-  .filter((entry) => entry.id !== post.id)
-  .slice(0, 4);
+const more = (await getPosts()).filter((entry) => entry.id !== post.id).slice(0, 4);
 ---
 
 <Layout
-  {title}
+  title={`${title} | ${profile.name}`}
   {description}
-  back="/blog"
+  back="/blog/"
   type="article"
-  image={heroImage.src}
+  image={{
+    src: heroImage.src,
+    width: heroImage.width,
+    height: heroImage.height,
+    alt: post.data.heroImageAlt ?? title,
+  }}
   publishedTime={pubDate.toISOString()}
+  modifiedTime={updatedDate?.toISOString()}
+  noindex={state !== 'published'}
+  structuredData={state === 'published'
+    ? [
+        person,
+        breadcrumbData([
+          { name: 'Home', path: '/' },
+          { name: 'Writing', path: '/blog/' },
+          { name: title, path: `/blog/${post.id}/` },
+        ]),
+        {
+          '@type': 'BlogPosting',
+          '@id': `${url}#article`,
+          url,
+          headline: title,
+          description,
+          image: [new URL(heroImage.src, Astro.site).href],
+          datePublished: pubDate.toISOString(),
+          ...(updatedDate && { dateModified: updatedDate.toISOString() }),
+          author: {
+            '@type': 'Person',
+            '@id': person['@id'],
+            name: profile.name,
+            url: pageUrl('/'),
+          },
+          mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+          inLanguage: 'en',
+        },
+      ]
+    : []}
 >
   <article>
     <Section gap={24}>
+      <nav aria-label="Breadcrumb" class="type-body-sm text-muted-foreground">
+        <a href="/" class="hover:text-foreground">Home</a> / <a
+          href="/blog/"
+          class="hover:text-foreground">Writing</a
+        > / {title}
+      </nav>
       <div class="flex items-center gap-2.5">
         <p class="type-overline flex-1 text-muted-foreground">
-          <time datetime={pubDate.toISOString()}>{longDate.format(pubDate)}</time
-          >
+          <a href="/" rel="author">{profile.name}</a>
+          {' · '}
+          <time datetime={pubDate.toISOString()}>{longDate.format(pubDate)}</time>
           {
-            state === 'draft' && (
-              <span class="ml-2 text-foreground">· Draft</span>
+            updatedDate && (
+              <>
+                {' '}
+                · Updated{' '}
+                <time datetime={updatedDate.toISOString()}>{longDate.format(updatedDate)}</time>
+              </>
             )
           }
+          {state === 'draft' && <span class="ml-2 text-foreground">· Draft</span>}
         </p>
 
-        <div
-          class="type-overline flex shrink-0 items-center gap-3 text-muted-foreground"
-        >
+        <div class="type-overline flex shrink-0 items-center gap-3 text-muted-foreground">
           <span class="flex items-center gap-1.5">
             <Icon name="tabler:clock" class="size-4" />
             {readingMinutes(post.body)} m
@@ -68,6 +109,15 @@ const more = (await getPosts())
       </div>
 
       <h1 class="type-h1 text-foreground">{title}</h1>
+      <Image
+        src={heroImage}
+        alt={post.data.heroImageAlt ?? title}
+        widths={[480, 960, 1200]}
+        sizes="(max-width: 640px) calc(100vw - 32px), 608px"
+        format="webp"
+        loading="eager"
+        class="h-auto w-full rounded-[6px]"
+      />
 
       <div class="article">
         <slot />
@@ -86,5 +136,4 @@ const more = (await getPosts())
       </div>
     )
   }
-
 </Layout>

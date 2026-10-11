@@ -3,7 +3,12 @@
 Project records live in `apps/astro/src/lib/work-projects.ts` and satisfy
 `readonly WorkProject[]` from `~/lib/work`. `components/core/Work.astro` passes
 that array to `WorkGallery`. Give each project a stable, unique `id` and its own
-`href`; selection and return-state restoration use the ID.
+`href`. Selection and return-state restoration use the ID.
+
+Set `href` to `/work/<id>/` and `sourceUrl` to the source repository or product
+site. Add the project notes to `src/lib/project-details.ts`. The static route
+at `src/pages/work/[id].astro` combines these records into a project page.
+The page includes a breadcrumb, descriptive metadata, and structured data.
 
 Supply the title, category, summary, year, and cover. A cover needs its path,
 alt text, and intrinsic width and height. Use 4:3 artwork to show the full

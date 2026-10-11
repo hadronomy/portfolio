@@ -20,4 +20,5 @@ export interface WorkProject {
     readonly shader?: ShaderCoverId;
   };
   readonly href: `/${string}` | `https://${string}`;
+  readonly sourceUrl: `https://${string}`;
 }

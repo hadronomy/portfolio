@@ -3,23 +3,20 @@ import Shortcut from '~/components/core/Shortcut.astro';
 import Layout from '~/layouts/Layout.astro';
 ---
 
-<Layout
-  title="Not found | Pablo Hernández"
-  description="That page does not exist."
->
-  {/*
+<Layout title="Not found | Pablo Hernández" description="That page does not exist." noindex>
+  {
+    /*
     One line centred in a block, and the header and signature stay, so a
     visitor who lands here still sees a working site rather than an error
     screen — hence no back link and no chrome of its own.
-  */}
-  <section
-    class="flex h-[76vh] w-full flex-col items-center justify-center gap-4 px-4"
-  >
-    <p class="type-body-sm text-muted-foreground select-none" aria-hidden="true">
-      ¯\_(ツ)_/¯
-    </p>
+  */
+  }
+  <section class="flex h-[76vh] w-full flex-col items-center justify-center gap-4 px-4">
+    <p class="type-body-sm text-muted-foreground select-none" aria-hidden="true">¯\_(ツ)_/¯</p>
 
-    <p class="type-body flex flex-wrap items-center justify-center gap-1.5 text-center text-muted-foreground">
+    <p
+      class="type-body flex flex-wrap items-center justify-center gap-1.5 text-center text-muted-foreground"
+    >
       Go back <a
         href="/"
         class="font-medium text-foreground underline decoration-muted-foreground/50 underline-offset-[3px] transition-[text-decoration-color] hover:decoration-current"

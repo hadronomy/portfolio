@@ -1,6 +1,5 @@
 import mdx from '@astrojs/mdx';
 import react from '@astrojs/react';
-import sitemap from '@astrojs/sitemap';
 import { rendererRich, transformerTwoslash } from '@shikijs/twoslash';
 import tailwindcss from '@tailwindcss/vite';
 import { wgslVitePlugin } from '@vgpu/wgsl/loader-vite';
@@ -17,10 +16,13 @@ import remarkMath from 'remark-math';
 import preserveDirectives from 'rollup-preserve-directives';
 
 import { rehypeMarkCodeBlocks } from './plugins/rehype-mark-code-blocks.mjs';
+import { seoSitemap } from './plugins/seo-sitemap.mjs';
+import { SITE_URL } from './src/consts';
 import { defaultLocale, locales } from './src/i18n/locales';
 
 export default defineConfig({
-  site: 'https://hadronomy.com',
+  site: SITE_URL,
+  trailingSlash: 'always',
   i18n: {
     defaultLocale,
     locales: [...locales],
@@ -68,7 +70,7 @@ export default defineConfig({
   },
   integrations: [
     mdx(),
-    sitemap(),
+    seoSitemap(),
     // No `include`: astro-icon loads every installed `@iconify-json/*` pack
     // whole unless a collection names a subset, so the dependency list is
     // already the set of collections. Listing them here as `['*']` restates it

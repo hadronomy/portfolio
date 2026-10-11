@@ -28,7 +28,7 @@ export const profile = {
   status: 'available' satisfies Status,
   avatar: 'https://github.com/hadronomy.png',
   intro:
-    'I build across the whole stack, from bare-metal systems to the interfaces on top of them, with a particular interest in agentic AI. Most of my work is open source.',
+    'I build web applications, product interfaces, and the systems behind them, with a particular interest in agentic AI. Most of my work is open source. Based in the Canary Islands, Spain, I am available for projects with teams across Europe.',
 } as const;
 
 export type ExperienceEntry = {

@@ -4,38 +4,59 @@ import Section from '~/components/core/Section.astro';
 import WritingList from '~/components/core/WritingList.astro';
 import Layout from '~/layouts/Layout.astro';
 import { getPosts } from '~/lib/posts';
+import { breadcrumbData, pageUrl } from '~/lib/seo';
 
 const posts = await getPosts();
 ---
 
 <Layout
   title="Writing | Pablo Hernández"
-  description="Notes on the things I build and the things that break."
+  description="Engineering notes from Pablo Hernández on web development, product interfaces, AI systems, and open-source software."
   back="/"
+  noindex={posts.length === 0}
+  structuredData={posts.length > 0
+    ? [
+        {
+          '@type': 'CollectionPage',
+          url: pageUrl('/blog/'),
+          name: 'Writing | Pablo Hernández',
+          inLanguage: 'en',
+        },
+        breadcrumbData([
+          { name: 'Home', path: '/' },
+          { name: 'Writing', path: '/blog/' },
+        ]),
+      ]
+    : []}
 >
-  {/*
+  {
+    /*
     There is no dedicated writing index elsewhere — the list lives on the
     home page and under each post. This is the same list given a page of its
     own, so the kicker row and the rows below it are the components that
     already exist.
-  */}
+  */
+  }
   <Section gap={24}>
+    <nav aria-label="Breadcrumb" class="type-body-sm text-muted-foreground">
+      <a href="/" class="hover:text-foreground">Home</a> / Writing
+    </nav>
     <div class="flex items-baseline justify-between gap-4">
       <Overline>Writing</Overline>
-      {/* One expression, not two, for the count and the word. Astro keeps a
+      {
+        /* One expression, not two, for the count and the word. Astro keeps a
           literal space between adjacent expressions — the compiler does not
           drop it. But the row above is a flex container, and a flex
           container never renders a whitespace-only run between two items,
           so splitting this into two Overlines would still need gap-4 to do
-          the spacing. One expression is simpler. */}
+          the spacing. One expression is simpler. */
+      }
       <Overline>
         {`${posts.length} ${posts.length === 1 ? 'note' : 'notes'}`}
       </Overline>
     </div>
 
-    <h1 class="type-h1 text-foreground">
-      Notes on the things I build, and the things that break.
-    </h1>
+    <h1 class="type-h1 text-foreground">Notes on the things I build, and the things that break.</h1>
   </Section>
 
   {
@@ -44,8 +65,7 @@ const posts = await getPosts();
     ) : (
       <Section>
         <p class="type-body text-muted-foreground">
-          Nothing published yet. The feed is live, so it will show up there
-          first.
+          Nothing published yet. The feed is live, so it will show up there first.
         </p>
       </Section>
     )
