@@ -2,7 +2,7 @@
 import { renderCVSvg } from '~/lib/cv';
 import { cvCopy } from '~/i18n/cv';
 import { defaultLocale, type Locale } from '~/i18n/locales';
-import { profile } from '~/lib/profile';
+import { engineeringExperience, profile } from '~/lib/profile';
 
 interface Props {
   locale?: Locale;
@@ -17,7 +17,7 @@ const source = `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}
 <div id="print-cv">
   <img
     src={source}
-    alt={`${profile.name} — ${copy.role}. ${copy.folio}.`}
+    alt={`${profile.name} — ${engineeringExperience.role}. ${copy.folio}.`}
     width="794"
     height="1123"
     loading="eager"

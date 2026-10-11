@@ -9,7 +9,7 @@ import displayBold from '../assets/pdf-fonts/SpaceGrotesk-Bold.ttf?inline';
 import displayLight from '../assets/pdf-fonts/SpaceGrotesk-Light.ttf?inline';
 import { cvCopy, cvProjects } from '../i18n/cv';
 import { defaultLocale, type Locale } from '../i18n/locales';
-import { engineeringSkills, profile } from './profile';
+import { engineeringExperience, engineeringSkills, profile } from './profile';
 
 const css = `
   * { box-sizing: border-box; }
@@ -85,7 +85,9 @@ function CVDocument({ locale }: { locale: Locale }) {
               <span className="first">PABLO</span>
               <span className="last">HERNÁNDEZ</span>
             </h1>
-            <p className="role">— {copy.role.toLocaleUpperCase(locale)}</p>
+            <p className="role" lang="en">
+              — {engineeringExperience.role.toUpperCase()}
+            </p>
           </div>
           <img className="portrait" src="portrait" alt={copy.portraitAlt} />
         </div>
@@ -133,7 +135,7 @@ function CVDocument({ locale }: { locale: Locale }) {
                 title={copy.labels.experience.toLocaleUpperCase(locale)}
                 number="02"
               />
-              <h3>{copy.role}</h3>
+              <h3 lang="en">{engineeringExperience.role}</h3>
               <p className="engagement">{copy.engagement}</p>
               <ul>
                 {copy.highlights.map((highlight) => (
@@ -256,7 +258,7 @@ export async function renderCV(locale: Locale = defaultLocale) {
     tagged: 'ua1',
     outline: true,
     metadata: {
-      title: `${profile.name} — ${copy.role}`,
+      title: `${profile.name} — ${engineeringExperience.role}`,
       authors: ['Pablo Hernández'],
       description: copy.metadataDescription,
     },

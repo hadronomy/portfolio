@@ -27,7 +27,6 @@ type ProjectId = (typeof cvProjects)[number]['id'];
 type CVCopy = {
   folio: string;
   portraitAlt: string;
-  role: string;
   engagement: string;
   summary: string;
   highlights: readonly string[];
@@ -55,7 +54,6 @@ export const cvCopy = {
   en: {
     folio: 'Curriculum vitae',
     portraitAlt: 'Portrait of Pablo Hernández',
-    role: engineeringExperience.role,
     engagement: engineeringExperience.engagement,
     summary: engineeringExperience.description,
     highlights: engineeringExperience.highlights,
@@ -92,7 +90,6 @@ export const cvCopy = {
   es: {
     folio: 'Currículum vitae',
     portraitAlt: 'Retrato de Pablo Hernández',
-    role: engineeringExperience.role,
     engagement: 'Independiente',
     summary:
       'Diseño y desarrollo interfaces, API, sistemas de IA, herramientas de programación e infraestructura para dispositivos.',
