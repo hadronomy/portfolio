@@ -1,6 +1,7 @@
 import { CountryCode } from '@portfolio/invoices/address';
 import { AttemptId } from '@portfolio/invoices/collection-model';
 import {
+  Answer,
   CatalogItem,
   Customer,
   DecimalText,
@@ -25,6 +26,13 @@ import {
   startPayment,
 } from './collection.server';
 import { mutate, preview, workspace } from './operations.server';
+import {
+  answerQuote,
+  quoteLinks,
+  quotePage,
+  revokeQuote,
+  shareQuote,
+} from './quotes.server';
 
 export const SaveMutation = Schema.Struct({
   action: Schema.Literal('save'),
@@ -85,6 +93,16 @@ export const LibraryMutation = Schema.Struct({
   action: Schema.Literal('library'),
   library: PlanLibrary,
 });
+/** Starts a new draft quote from an issued one. */
+export const ReviseMutation = Schema.Struct({
+  action: Schema.Literal('revise'),
+  id: InvoiceId,
+});
+/** Drafts the invoice for an accepted quote. */
+export const ConvertMutation = Schema.Struct({
+  action: Schema.Literal('convert'),
+  id: InvoiceId,
+});
 export const Mutation = Schema.Union([
   SaveMutation,
   IssueMutation,
@@ -99,6 +117,8 @@ export const Mutation = Schema.Union([
   OfferMutation,
   ChooseMutation,
   LibraryMutation,
+  ReviseMutation,
+  ConvertMutation,
 ]);
 export type Mutation = typeof Mutation.Type;
 
@@ -150,6 +170,11 @@ export const PaymentRequest = Schema.Struct({
   plan: RecordId,
 });
 const decodePaymentRequest = decodeWith(PaymentRequest, 'Invalid payment.');
+export const QuoteAnswer = Schema.Struct({
+  token: LinkRef.fields.token,
+  answer: Answer,
+});
+const decodeQuoteAnswer = decodeWith(QuoteAnswer, 'Invalid answer.');
 
 // Client/server seam: the build replaces each handler body with an RPC stub
 // in client bundles, so statically importing *.server modules here is safe
@@ -217,3 +242,18 @@ export const getCheckout = createServerFn({ method: 'GET' })
       }),
     ),
   );
+export const shareQuoteLink = createServerFn({ method: 'POST' })
+  .validator((input: unknown) => decodeInvoiceRef(input))
+  .handler(({ data }) => serve(shareQuote(data.id)));
+export const revokeQuoteLinks = createServerFn({ method: 'POST' })
+  .validator((input: unknown) => decodeInvoiceRef(input))
+  .handler(({ data }) => serve(revokeQuote(data.id)));
+export const getQuoteLinks = createServerFn({ method: 'GET' })
+  .validator((input: unknown) => decodeInvoiceRef(input))
+  .handler(({ data }) => serve(quoteLinks(data.id)));
+export const getQuotePage = createServerFn({ method: 'GET' })
+  .validator((input: unknown) => decodeLinkRef(input))
+  .handler(({ data }) => serve(quotePage(data.token)));
+export const answerQuoteLink = createServerFn({ method: 'POST' })
+  .validator((input: unknown) => decodeQuoteAnswer(input))
+  .handler(({ data }) => serve(answerQuote(data.token, data.answer)));

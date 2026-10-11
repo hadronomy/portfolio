@@ -1,5 +1,6 @@
 import { Documents } from '@portfolio/invoices/documents';
 import type { Invoice, InvoiceId, Language } from '@portfolio/invoices/model';
+import { type QuoteError, Quotes } from '@portfolio/invoices/quotes';
 import { InvoiceStore, type StoreError } from '@portfolio/invoices/store';
 import { Effect, Match } from 'effect';
 import { requireOwner } from '../../server/auth.server';
@@ -37,39 +38,60 @@ export const workspace = Effect.fn('Operations.workspace')(function* () {
   return yield* unavailable(InvoiceStore.use((store) => store.workspace()));
 });
 
-/** Applies one workspace edit, then returns the refreshed workspace or a recoverable tagged failure. */
+/** An action's effect, reduced to the document it created, if any. */
+const created = <E>(effect: Effect.Effect<Invoice, E>) =>
+  Effect.map(effect, (invoice): InvoiceId | null => invoice.id);
+const nothing = <A, E>(effect: Effect.Effect<A, E>) =>
+  Effect.as(effect, null as InvoiceId | null);
+
+/**
+ * Applies one workspace edit, then returns the refreshed workspace, with
+ * the ID of any draft the edit created, or a recoverable tagged failure.
+ */
 export const mutate = Effect.fn('Operations.mutate')(function* (
   input: Mutation,
 ) {
   yield* sameOrigin;
   const actor = yield* requireOwner;
   const store = yield* InvoiceStore;
-  const apply: Effect.Effect<unknown, StoreError> = Match.value(input).pipe(
+  const quotes = yield* Quotes;
+  const apply: Effect.Effect<InvoiceId | null, QuoteError> = Match.value(
+    input,
+  ).pipe(
     Match.discriminatorsExhaustive('action')({
-      save: ({ invoice }) => store.save(invoice, actor),
-      issue: (issue) => store.issue(issue, actor),
-      remove: ({ id }) => store.remove(id, actor),
-      rectify: ({ id }) => store.rectify(id, actor),
-      customer: ({ customer }) => store.customer(customer),
-      item: ({ item }) => store.item(item),
-      preferences: ({ preferences }) => store.preferences(preferences),
-      forget: ({ kind, id }) => store.forget(kind, id),
-      payment: ({ payment }) => store.payment(payment, actor),
-      'reverse-payment': ({ id }) => store.reversePayment(id, actor),
-      offer: ({ id, plans }) => store.setOffer(id, plans, actor),
-      choose: ({ id, plan }) => store.choose(id, plan, actor),
-      library: ({ library }) => store.setLibrary(library),
+      save: ({ invoice }) => nothing(store.save(invoice, actor)),
+      issue: (issue) => nothing(store.issue(issue, actor)),
+      remove: ({ id }) => nothing(store.remove(id, actor)),
+      rectify: ({ id }) => created(store.rectify(id, actor)),
+      customer: ({ customer }) => nothing(store.customer(customer)),
+      item: ({ item }) => nothing(store.item(item)),
+      preferences: ({ preferences }) => nothing(store.preferences(preferences)),
+      forget: ({ kind, id }) => nothing(store.forget(kind, id)),
+      payment: ({ payment }) => nothing(store.payment(payment, actor)),
+      'reverse-payment': ({ id }) => nothing(store.reversePayment(id, actor)),
+      offer: ({ id, plans }) => nothing(store.setOffer(id, plans, actor)),
+      choose: ({ id, plan }) => nothing(store.choose(id, plan, actor)),
+      library: ({ library }) => nothing(store.setLibrary(library)),
+      revise: ({ id }) => created(quotes.revise(id, actor)),
+      convert: ({ id }) => created(quotes.convert(id, actor)),
     }),
   );
   return yield* apply.pipe(
-    Effect.andThen(store.workspace()),
+    Effect.flatMap((made) =>
+      Effect.map(store.workspace(), (result) => ({ made, result })),
+    ),
     Effect.match({
-      onSuccess: (result) => ({ ok: true as const, workspace: result }),
+      onSuccess: ({ made, result }) => ({
+        ok: true as const,
+        workspace: result,
+        created: made,
+      }),
       onFailure: (error) => ({
         ok: false as const,
         error: error._tag,
         issues: error._tag === 'InvalidInvoice' ? error.issues : [],
         current: error._tag === 'RevisionConflict' ? error.current : null,
+        reason: error._tag === 'QuoteClosed' ? error.reason : null,
       }),
     }),
   );

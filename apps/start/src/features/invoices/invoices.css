@@ -4252,6 +4252,852 @@ body:has(.iv-dock) .iv-toast-region {
   }
 }
 
+/* ---------------------------------------------------------------- Quotes */
+
+/* Prose: a quote's pages, in the studio's sheet and on the customer's page.
+   Every size and gap is the PDF's, in ems of its 11.5px body, so the one
+   rule set prints at any scale: the sheet sets --u to the page size times
+   its zoom, the customer page to a reading size. */
+.iv-prose {
+  --soft: #67676a;
+  --faint: #8e8e91;
+  --rule: #ebebec;
+  --rule-strong: #d6d6d8;
+  --measure: 40.87em;
+  color: var(--iv-ink);
+  font-size: var(--u, 14px);
+  line-height: 1.62;
+  overflow-wrap: break-word;
+  outline: none;
+}
+.iv-prose > :first-child {
+  margin-top: 0;
+}
+.iv-prose p {
+  max-width: var(--measure);
+  margin: 0 0 0.78em;
+}
+.iv-prose h1,
+.iv-prose h2,
+.iv-prose h3 {
+  max-width: var(--measure);
+  font-weight: 600;
+  text-wrap: balance;
+}
+.iv-prose h1 {
+  margin: 1.58em 0 0.63em;
+  font-size: 1.652em;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+.iv-prose h2 {
+  margin: 1.714em 0 0.571em;
+  font-size: 1.217em;
+  line-height: 1.3;
+}
+.iv-prose h3 {
+  margin: 1.39em 0 0.35em;
+  font-size: 1em;
+  line-height: 1.4;
+}
+.iv-prose ul,
+.iv-prose ol {
+  max-width: var(--measure);
+  margin: 0 0 0.87em;
+  padding-left: 1.74em;
+}
+.iv-prose li + li {
+  margin-top: 0.35em;
+}
+.iv-prose li > p {
+  margin: 0;
+}
+.iv-prose li::marker {
+  color: var(--soft);
+}
+.iv-prose ul > li {
+  list-style: '•\2002';
+}
+.iv-prose blockquote {
+  max-width: var(--measure);
+  margin: 0.35em 0 1.22em;
+  padding: 0.09em 0 0.09em 1.22em;
+  border-left: 2px solid var(--rule-strong);
+  color: var(--soft);
+}
+.iv-prose blockquote > p:last-child {
+  margin-bottom: 0;
+}
+.iv-prose hr {
+  height: 1px;
+  margin: 1.74em 0;
+  border: 0;
+  background: var(--rule);
+}
+.iv-prose a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--rule-strong);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+}
+.iv-prose a:hover {
+  text-decoration-color: currentColor;
+}
+.iv-prose table {
+  width: 100%;
+  margin: 0.52em 0 1.39em;
+  border-collapse: collapse;
+}
+.iv-prose th {
+  padding: 0 1.22em 0.7em 0;
+  border-bottom: 1px solid var(--rule-strong);
+  color: var(--faint);
+  font-size: 0.74em;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-align: left;
+  text-transform: uppercase;
+}
+.iv-prose td {
+  padding: 0.78em 1.22em 0.78em 0;
+  border-bottom: 1px solid var(--rule);
+  font-size: 0.957em;
+  vertical-align: top;
+}
+.iv-prose :is(th, td) > p {
+  margin: 0;
+}
+/* A placed clause prints its title, its words and the law it follows. */
+.iv-prose-clause {
+  max-width: var(--measure);
+  margin: 0 0 1.22em;
+}
+.iv-prose-clause > p:first-child {
+  margin-bottom: 0.17em;
+  font-weight: 600;
+}
+.iv-prose-source {
+  margin-top: 0.17em;
+  color: var(--faint, #8e8e91);
+  font-size: 0.78em;
+  line-height: 1.5;
+}
+/* On screen a page break is only a pause. */
+.iv-prose-break {
+  height: 0;
+  margin: 2.4em 0;
+  border: 0;
+}
+
+/* ---- The pages studio: the plan studio's frame around a sheet of paper. */
+.iv-studio[data-studio='pages'] {
+  --studio-columns: 276px minmax(0, 1fr) auto;
+}
+.iv-studio[data-studio='pages'] .iv-studio-body {
+  grid-template-columns: 276px minmax(0, 1fr);
+}
+.iv-studio[data-studio='pages'] .iv-studio-saved {
+  margin-right: 24px;
+}
+.iv-outline {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.iv-outline button {
+  display: block;
+  width: 100%;
+  padding: 6px 12px;
+  overflow: hidden;
+  border-radius: 10px;
+  color: var(--iv-ink-2);
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.iv-outline [data-level='1'] button {
+  color: var(--iv-ink);
+  font-weight: 500;
+}
+.iv-outline [data-level='3'] button {
+  padding-left: 24px;
+  font-size: 12.5px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .iv-outline button:hover {
+    background: var(--iv-hover);
+    color: var(--iv-ink);
+  }
+}
+.iv-clauses,
+.iv-notices {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.iv-clauses button {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 8px;
+  width: 100%;
+  padding: 8px 10px 9px 12px;
+  border-radius: var(--iv-r-card);
+  text-align: left;
+}
+@media (hover: hover) and (pointer: fine) {
+  .iv-clauses button:not(:disabled):hover {
+    background: var(--iv-hover);
+  }
+}
+.iv-clauses button:disabled {
+  cursor: default;
+}
+.iv-clauses-title {
+  font-weight: 500;
+}
+.iv-clauses-source {
+  grid-row: 2;
+  color: var(--iv-ink-3);
+  font-size: 11.5px;
+}
+.iv-clauses-mark {
+  grid-row: 1 / span 2;
+  grid-column: 2;
+  display: grid;
+  place-items: center;
+  align-self: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  color: var(--iv-ink-3);
+}
+.iv-clauses [data-placed] .iv-clauses-mark {
+  color: #256b3c;
+}
+.iv-clauses button:disabled .iv-clauses-title {
+  color: var(--iv-ink-3);
+}
+.iv-notices li {
+  display: grid;
+  padding: 6px 12px;
+}
+.iv-notices li > span {
+  color: var(--iv-ink-2);
+}
+.iv-notices small {
+  color: var(--iv-ink-3);
+  font-size: 11.5px;
+}
+
+/* The desk holds the sheet, and the bar rides its bottom edge. The sheet is
+   A4 at 1.2×, the PDF's margins and running head scaled with it. */
+.iv-desk {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 0;
+  padding: 8px 32px 0;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scrollbar-width: thin;
+}
+.iv-sheet {
+  --s: 1.2;
+  --u: calc(11.5px * var(--s));
+  position: relative;
+  flex: none;
+  width: calc(794px * var(--s));
+  min-height: calc(1123px * var(--s));
+  padding: calc(40px * var(--s)) calc(44px * var(--s)) calc(64px * var(--s));
+  border-radius: 6px;
+  background: var(--iv-surface);
+  box-shadow: 0 0 0 1px rgb(20 20 20 / 0.05), 0 1px 2px rgb(20 20 20 / 0.05),
+    0 18px 40px -22px rgb(20 20 20 / 0.28);
+}
+.iv-sheet-running {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: calc(30px * var(--s));
+  padding-bottom: calc(9px * var(--s));
+  border-bottom: 1px solid #ebebec;
+  color: #8e8e91;
+  font-size: calc(8.5px * var(--s));
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.iv-pages {
+  position: relative;
+}
+.iv-pages .iv-prose {
+  min-height: calc(820px * var(--s, 1));
+  caret-color: var(--iv-ink);
+}
+.iv-pages .iv-prose ::selection {
+  background: rgb(20 20 20 / 0.12);
+}
+/* Only the empty line the caret is on whispers what to do. */
+.iv-pages .iv-prose .is-empty::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  color: #b4b4b8;
+  pointer-events: none;
+}
+.iv-pages .iv-prose [data-page-break] {
+  position: relative;
+  height: 1.6em;
+  margin: 1.6em 0;
+  cursor: default;
+}
+.iv-pages .iv-prose [data-page-break]::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: calc(-44px * var(--s, 1));
+  left: calc(-44px * var(--s, 1));
+  border-top: 1px dashed var(--rule-strong);
+}
+.iv-pages .iv-prose [data-page-break]::after {
+  content: 'Page break';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  padding: 0 10px;
+  background: var(--iv-surface);
+  color: var(--faint);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  transform: translate(-50%, -50%);
+}
+.iv-pages .iv-prose .ProseMirror-selectednode {
+  outline: none;
+}
+.iv-pages .iv-prose [data-page-break].ProseMirror-selectednode::before {
+  border-top-color: var(--iv-ink);
+}
+.iv-pages .iv-prose .selectedCell {
+  background: rgb(20 20 20 / 0.04);
+}
+
+/* A placed clause: the library's words in a quiet tray, its law under it.
+   The words are not the owner's to type over; "Edit as text" makes them so. */
+.iv-clause {
+  max-width: var(--measure);
+  margin: 0.2em 0 1.22em -0.9em;
+  padding: 0.75em 0.9em 0.7em;
+  border-radius: 0.8em;
+  background: #f7f7f6;
+  cursor: grab;
+}
+.iv-clause > p {
+  margin: 0 0 0.6em;
+}
+.iv-clause-title {
+  padding-right: 7em;
+  font-weight: 600;
+}
+.iv-clause-title + p {
+  margin-top: -0.4em;
+}
+.iv-clause-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5em 1em;
+  margin: 0.4em 0 0 !important;
+  color: var(--faint);
+  font-size: 0.78em;
+}
+.iv-clause {
+  position: relative;
+}
+.iv-clause-detach {
+  position: absolute;
+  top: 0.55em;
+  right: 0.6em;
+  padding: 0.25em 0.75em;
+  border-radius: 999px;
+  color: var(--iv-ink-2);
+  font-size: 0.82em;
+  opacity: 0;
+}
+.iv-clause:hover .iv-clause-detach,
+.iv-clause-selected .iv-clause-detach,
+.iv-clause-detach:focus-visible {
+  opacity: 1;
+}
+.iv-clause-detach:hover {
+  background: rgb(20 20 20 / 0.06);
+  color: var(--iv-ink);
+}
+.iv-clause-selected {
+  box-shadow: 0 0 0 1.5px var(--iv-ink);
+}
+@media (hover: none) {
+  .iv-clause-detach {
+    opacity: 1;
+  }
+}
+
+/* The slash menu, at the caret. It filters as the owner types and answers
+   the arrows at once: it opens many times a session, so nothing animates. */
+.iv-blockmenu {
+  z-index: 70;
+  width: 288px;
+  max-height: 340px;
+  padding: 5px;
+  overflow-y: auto;
+  border-radius: 14px;
+  background: var(--iv-surface);
+  box-shadow: var(--iv-float);
+  font-size: 13px;
+  overscroll-behavior: contain;
+}
+.iv-blockmenu[data-empty] {
+  padding: 10px 12px;
+  color: var(--iv-ink-3);
+}
+.iv-blockmenu-group {
+  padding: 8px 9px 4px;
+  color: var(--iv-ink-3);
+  font-size: 12px;
+  font-weight: 500;
+}
+.iv-blockmenu button {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 34px;
+  padding: 0 9px;
+  border-radius: 9px;
+  color: var(--iv-ink);
+  text-align: left;
+}
+.iv-blockmenu button > svg {
+  color: var(--iv-ink-3);
+}
+.iv-blockmenu button > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.iv-blockmenu button[data-active] {
+  background: var(--iv-hover);
+}
+.iv-blockmenu button[data-active] > svg {
+  color: var(--iv-ink);
+}
+.iv-blockmenu kbd,
+.iv-studio-bar-hint kbd {
+  min-width: 18px;
+  padding: 0 5px;
+  border-radius: 5px;
+  background: var(--iv-sunken);
+  color: var(--iv-ink-3);
+  font: 500 11px/18px 'Geist Variable', system-ui, sans-serif;
+  text-align: center;
+}
+
+/* The format bar over a selection: dark, small, and still. */
+.iv-formatbar {
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  padding: 4px;
+  border-radius: 12px;
+  background: #1b1b1b;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.2), 0 10px 24px -10px rgb(0 0 0 / 0.5);
+  color: #fff;
+}
+.iv-formatbar button {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  color: rgb(255 255 255 / 0.72);
+}
+.iv-formatbar button:hover {
+  background: rgb(255 255 255 / 0.1);
+  color: #fff;
+}
+.iv-formatbar button[aria-pressed='true'] {
+  background: rgb(255 255 255 / 0.16);
+  color: #fff;
+}
+.iv-formatbar-rule {
+  width: 1px;
+  height: 16px;
+  margin: 0 4px;
+  background: rgb(255 255 255 / 0.16);
+}
+.iv-formatbar-link input {
+  width: 260px;
+  height: 30px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  outline: none;
+  background: rgb(255 255 255 / 0.08);
+  color: #fff;
+  font-size: 13px;
+}
+.iv-formatbar-link input::placeholder {
+  color: rgb(255 255 255 / 0.45);
+}
+
+.iv-studio-bar-hint {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 8px 0 12px;
+  color: var(--iv-ink-3);
+  font-size: 12px;
+}
+
+::view-transition-group(pages-studio) {
+  overflow: clip;
+  border-radius: 20px;
+  animation-duration: 420ms;
+  animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+}
+::view-transition-old(pages-studio),
+::view-transition-new(pages-studio) {
+  width: 100%;
+  height: 100%;
+  object-fit: none;
+  object-position: left top;
+}
+::view-transition-old(pages-studio) {
+  animation-duration: 160ms;
+}
+
+@media (max-width: 1400px) {
+  .iv-sheet {
+    --s: 1.05;
+  }
+}
+@media (max-width: 1240px) {
+  .iv-sheet {
+    --s: 0.95;
+  }
+}
+@media (max-width: 1180px) {
+  .iv-studio[data-studio='pages'] .iv-studio-body {
+    grid-template-columns: 244px minmax(0, 1fr);
+  }
+  .iv-studio[data-studio='pages'] .iv-desk {
+    overflow: visible;
+  }
+}
+@media (max-width: 960px) {
+  .iv-sheet {
+    --s: 1;
+    --u: 14px;
+    width: 100%;
+    min-height: 0;
+    padding: 28px 22px 40px;
+  }
+  .iv-sheet-running {
+    margin-bottom: 22px;
+    font-size: 10px;
+  }
+  .iv-pages .iv-prose {
+    min-height: 60vh;
+  }
+}
+@media (max-width: 760px) {
+  .iv-studio[data-studio='pages'] .iv-studio-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .iv-studio[data-studio='pages'] .iv-studio-rail {
+    display: none;
+  }
+  .iv-desk {
+    padding: 8px 8px 0;
+  }
+  .iv-studio-bar-hint {
+    display: none;
+  }
+}
+
+/* ---- The quote in the inspector. */
+.iv-quote-panel {
+  display: grid;
+  gap: 12px;
+}
+.iv-quote-validity {
+  color: var(--iv-ink-2);
+}
+.iv-quote-validity[data-tone='late'] {
+  color: var(--iv-danger);
+}
+/* The pages as a card: a small sheet with lines that stand for the text,
+   what the pages hold, and the word for what opening them does. */
+.iv-pages-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px 10px 10px;
+  border-radius: var(--iv-r-card);
+  background: var(--iv-sunken);
+  text-align: left;
+}
+@media (hover: hover) and (pointer: fine) {
+  .iv-pages-card:hover {
+    background: #ececeb;
+  }
+}
+.iv-pages-card:active {
+  transform: scale(0.99);
+}
+.iv-pages-thumb {
+  display: grid;
+  align-content: start;
+  gap: 3px;
+  width: 34px;
+  height: 46px;
+  padding: 7px 6px;
+  border-radius: 3px;
+  background: var(--iv-surface);
+  box-shadow: 0 0 0 1px rgb(20 20 20 / 0.06), 0 1px 2px rgb(20 20 20 / 0.08);
+}
+.iv-pages-thumb i {
+  height: 2px;
+  border-radius: 1px;
+  background: rgb(20 20 20 / 0.16);
+}
+.iv-pages-thumb i:first-child {
+  width: 70%;
+  height: 3px;
+  margin-bottom: 2px;
+  background: rgb(20 20 20 / 0.5);
+}
+.iv-pages-thumb i:nth-child(3) {
+  width: 85%;
+}
+.iv-pages-thumb i:last-child {
+  width: 55%;
+}
+.iv-pages-card[data-empty] .iv-pages-thumb i {
+  background: rgb(20 20 20 / 0.07);
+}
+.iv-pages-what {
+  display: grid;
+  min-width: 0;
+}
+.iv-pages-what strong {
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.iv-pages-what small {
+  color: var(--iv-ink-3);
+  font-size: 12px;
+}
+.iv-pages-go {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--iv-ink-2);
+  font-weight: 500;
+}
+.iv-quote-notices {
+  color: var(--iv-ink-3);
+  font-size: 12px;
+}
+.iv-answer {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  padding: 12px;
+  border-radius: var(--iv-r-card);
+  background: #f1f6f2;
+}
+.iv-answer[data-outcome='declined'] {
+  background: var(--iv-sunken);
+}
+.iv-answer-mark {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: #256b3c;
+  color: #fff;
+}
+.iv-answer[data-outcome='declined'] .iv-answer-mark {
+  background: var(--iv-ink-3);
+}
+.iv-answer-head strong {
+  font-weight: 600;
+}
+.iv-answer-line {
+  color: var(--iv-ink-2);
+  font-size: 12.5px;
+}
+.iv-answer-proof {
+  margin-top: 6px;
+}
+.iv-answer-proof summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--iv-ink-3);
+  font-size: 12px;
+  cursor: pointer;
+  list-style: none;
+}
+.iv-answer-proof summary::-webkit-details-marker {
+  display: none;
+}
+.iv-answer-proof[open] summary svg {
+  transform: rotate(180deg);
+}
+.iv-answer-proof dl {
+  display: grid;
+  gap: 4px;
+  margin: 8px 0 0;
+}
+.iv-answer-proof dl > div {
+  display: grid;
+  grid-template-columns: 104px minmax(0, 1fr);
+  gap: 8px;
+  font-size: 12px;
+}
+.iv-answer-proof dt {
+  color: var(--iv-ink-3);
+}
+.iv-answer-proof dd {
+  margin: 0;
+  overflow: hidden;
+  color: var(--iv-ink-2);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---- The customer's quote page: the pay ticket, with the proposal in the
+   document and the answer on the stub. */
+.iv-quote-pages {
+  margin: 28px 22px 0;
+  padding-top: 24px;
+  border-top: 1px solid var(--iv-line);
+}
+.iv-quote-pages .iv-prose {
+  --u: 14px;
+}
+.iv-quote-legal {
+  margin: 20px 22px 0;
+  border-top: 1px solid var(--iv-line);
+}
+.iv-quote-legal summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+  color: var(--iv-ink-2);
+  font-weight: 500;
+  cursor: pointer;
+  list-style: none;
+}
+.iv-quote-legal summary::-webkit-details-marker {
+  display: none;
+}
+.iv-quote-legal[open] summary svg {
+  transform: rotate(180deg);
+}
+.iv-quote-legal dl {
+  display: grid;
+  gap: 14px;
+  margin: 0 0 8px;
+}
+.iv-quote-legal dt {
+  font-weight: 600;
+}
+.iv-quote-legal dd {
+  margin: 2px 0 0;
+  color: var(--iv-ink-2);
+}
+.iv-quote-answer {
+  display: grid;
+  gap: 14px;
+}
+.iv-quote-name {
+  display: grid;
+  gap: 6px;
+}
+.iv-quote-name > span {
+  font-weight: 500;
+}
+/* A long consent wraps, so its box sits on the first line, not the middle:
+   2px down centres the 15px box on the first 19px line. */
+.iv-quote-check {
+  align-items: flex-start;
+}
+.iv-quote-check > span {
+  text-box: normal;
+}
+.iv-quote-check input {
+  flex: none;
+  margin-top: 2px;
+}
+.iv-quote-check small {
+  display: block;
+  margin-top: 2px;
+  color: var(--iv-ink-3);
+  font-size: 12px;
+}
+.iv-quote-accept {
+  width: 100%;
+  height: 44px;
+  border-radius: 999px;
+}
+.iv-quote-fine {
+  color: var(--iv-ink-3);
+  font-size: 12px;
+  text-align: center;
+}
+.iv-quote-decline-open {
+  justify-self: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  color: var(--iv-ink-3);
+  font-size: 12.5px;
+}
+.iv-quote-decline-open:hover {
+  background: var(--iv-hover);
+  color: var(--iv-ink);
+}
+.iv-quote-decline {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  margin: 0;
+  border: 0;
+  padding: 12px;
+  border-radius: var(--iv-r-card);
+  background: var(--iv-sunken);
+}
+.iv-quote-decline > legend {
+  float: left;
+  padding: 0;
+}
+.iv-quote-decline > div {
+  display: flex;
+  gap: 6px;
+}
+
 /* The customer's choice of plan. */
 .iv-pay-plans legend,
 .iv-pay-amount-legend {

@@ -5,6 +5,7 @@ import { customerAccessLayer } from '@portfolio/invoices/customer-access';
 import { databaseLayer } from '@portfolio/invoices/database';
 import { documentsLayer } from '@portfolio/invoices/documents';
 import { migrations as invoiceMigrations } from '@portfolio/invoices/migrations';
+import { quotesLayer } from '@portfolio/invoices/quotes';
 import { storeLayer } from '@portfolio/invoices/store';
 import { getRequest } from '@tanstack/react-start/server';
 import {
@@ -47,7 +48,8 @@ const postgresLayer = Layer.unwrap(
   }),
 );
 
-const invoicesLayer = documentsLayer.pipe(
+const invoicesLayer = quotesLayer.pipe(
+  Layer.provideMerge(documentsLayer),
   Layer.provideMerge(Layer.mergeAll(storeLayer, customerAccessLayer)),
   Layer.provideMerge(databaseLayer),
 );

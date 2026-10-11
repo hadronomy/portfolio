@@ -11,6 +11,7 @@ import type {
   Payment,
 } from '@portfolio/invoices/model';
 import { newLine, quoteTerms, RecordId } from '@portfolio/invoices/model';
+import { blankPages } from '@portfolio/invoices/pages';
 import { issueErrors } from '@portfolio/invoices/validate';
 import { useForm, useStore } from '@tanstack/react-form';
 import { Link, useNavigate } from '@tanstack/react-router';
@@ -44,12 +45,14 @@ import {
 import { CoverPicker } from './cover-picker';
 import { coverArt, coverLabel } from './covers';
 import { LineEditor } from './line-editor';
+import { PagesStudio } from './pages-studio';
 import { PartyFields } from './party-fields';
 import { PaymentLinkMenu, PaymentReview } from './payment-link';
 import { PaymentList } from './payment-list';
 import type { DockParts } from './pdf-viewer';
 import { CatalogMenu, CustomerPicker } from './pickers';
 import { OfferPanel, offerSummary, useOffer } from './plans';
+import { QuotePanel } from './quote-panel';
 import {
   AmountField,
   DueDateField,
@@ -64,6 +67,7 @@ import {
   IconButton,
   Modal,
   MorphText,
+  morph,
   Section,
   Segmented,
   Select,
@@ -191,6 +195,7 @@ export function InvoiceEditor({ id }: { id: string }) {
 
 type SectionKey =
   | 'payments'
+  | 'quote'
   | 'plan'
   | 'customer'
   | 'items'
@@ -306,6 +311,31 @@ function Editor({ invoice }: { invoice: Invoice }) {
       return null;
     }, 'The rectifying draft could not be created.');
   }, [run, mutate, invoice.id, navigate]);
+
+  /** Runs a quote action that drafts a new document, then opens it. */
+  const follow = useCallback(
+    async (action: 'convert' | 'revise', failure: string) => {
+      await run(async () => {
+        const result = await mutate({ action, id: invoice.id });
+        if (!result.ok) return failure;
+        if (result.created)
+          await navigate({
+            to: '/invoices/$invoiceId',
+            params: { invoiceId: result.created },
+          });
+        return null;
+      }, failure);
+    },
+    [run, mutate, invoice.id, navigate],
+  );
+  const convert = useCallback(
+    () => follow('convert', 'The invoice could not be drafted. Try again.'),
+    [follow],
+  );
+  const revise = useCallback(
+    () => follow('revise', 'The new version could not be drafted. Try again.'),
+    [follow],
+  );
 
   const recordPayment = useCallback(
     async (payment: PaymentDraft) => {
@@ -453,6 +483,8 @@ function Editor({ invoice }: { invoice: Invoice }) {
         error={dialog ? '' : error}
         pending={pending}
         rectify={rectify}
+        convert={convert}
+        revise={revise}
         reversePayment={reversePayment}
         onDelete={() => {
           setError('');
@@ -773,6 +805,8 @@ type InspectorProps = {
   error: string;
   pending: boolean;
   rectify: () => void;
+  convert: () => void;
+  revise: () => void;
   reversePayment: (paymentId: Payment['id']) => void;
   onDelete: () => void;
   onPayment: () => void;
@@ -789,6 +823,8 @@ const Inspector = memo(function Inspector({
   error,
   pending,
   rectify,
+  convert,
+  revise,
   reversePayment,
   onDelete,
   onPayment,
@@ -796,6 +832,7 @@ const Inspector = memo(function Inspector({
   const totals = useTotals(form);
   const [open, setOpen] = useState<Record<SectionKey, boolean>>(() => ({
     payments: true,
+    quote: true,
     plan: false,
     customer: !issued && !invoice.data.customer.name,
     items: !issued,
@@ -813,7 +850,15 @@ const Inspector = memo(function Inspector({
   return (
     <aside className="iv-inspector" aria-label="Invoice details">
       <div className="iv-inspector-head">
-        <h2>{issued ? 'Invoice record' : 'Draft'}</h2>
+        <h2>
+          {invoice.data.kind === 'quote'
+            ? issued
+              ? 'Quote'
+              : 'Draft quote'
+            : issued
+              ? 'Invoice record'
+              : 'Draft'}
+        </h2>
         {!issued && (
           <IconButton label="Delete draft" onClick={onDelete}>
             <Trash2 size={15} />
@@ -869,6 +914,18 @@ const Inspector = memo(function Inspector({
               Load saved
             </Button>
           </div>
+        )}
+        {invoice.data.kind === 'quote' && (
+          <QuoteSection
+            {...section('quote')}
+            form={form}
+            invoice={invoice}
+            issued={issued}
+            status={status}
+            pending={pending}
+            onConvert={convert}
+            onRevise={revise}
+          />
         )}
         {issued && invoice.data.kind !== 'quote' && (
           <PaymentsSection
@@ -1350,10 +1407,16 @@ const DetailsSection = memo(function DetailsSection({
   const dueDate = useStore(form.store, (state) => state.values.dueDate);
   const issueDate = useStore(form.store, (state) => state.values.issueDate);
   const correction = useStore(form.store, (state) => state.values.correction);
+  const validUntil = useStore(
+    form.store,
+    (state) => state.values.quote?.validUntil ?? null,
+  );
   return (
     <Section
       title="Dates & numbering"
-      summary={`Due ${day(dueDate)}`}
+      summary={
+        validUntil ? `Valid until ${day(validUntil)}` : `Due ${day(dueDate)}`
+      }
       open={open}
       onToggle={onToggle}
     >
@@ -1415,20 +1478,45 @@ const DetailsSection = memo(function DetailsSection({
               />
             )}
           </form.Field>
-          <form.Field name="dueDate">
-            {(date) => (
-              <DueDateField
-                issueDate={issueDate}
-                value={date.state.value}
-                disabled={issued}
-                onChange={(next) => date.handleChange(next)}
-              />
-            )}
-          </form.Field>
+          {validUntil ? (
+            // A quote has no due date: it stands until the customer answers
+            // or its validity ends, which the law asks it to state.
+            <form.Field name="quote">
+              {(field) => (
+                <DueDateField
+                  label="Valid until"
+                  legend="Validity, in days"
+                  steps={[15, 30, 60]}
+                  early="The quote must stay valid until at least its issue date."
+                  issueDate={issueDate}
+                  value={field.state.value?.validUntil ?? issueDate}
+                  disabled={issued}
+                  onChange={(next) => {
+                    if (field.state.value)
+                      field.handleChange({
+                        ...field.state.value,
+                        validUntil: next,
+                      });
+                  }}
+                />
+              )}
+            </form.Field>
+          ) : (
+            <form.Field name="dueDate">
+              {(date) => (
+                <DueDateField
+                  issueDate={issueDate}
+                  value={date.state.value}
+                  disabled={issued}
+                  onChange={(next) => date.handleChange(next)}
+                />
+              )}
+            </form.Field>
+          )}
           <form.Field name="supplyDate">
             {(date) => (
               <Field
-                label="Supply date"
+                label={validUntil ? 'Planned start' : 'Supply date'}
                 type="date"
                 value={date.state.value}
                 disabled={issued}
@@ -1668,6 +1756,69 @@ const PlanSection = memo(function PlanSection({
             .join(' · ')}
         />
       </div>
+    </Section>
+  );
+});
+
+const QuoteSection = memo(function QuoteSection({
+  open,
+  onToggle,
+  form,
+  invoice,
+  issued,
+  status,
+  pending,
+  onConvert,
+  onRevise,
+}: SectionProps & {
+  invoice: Invoice;
+  status: DocumentStatus;
+  pending: boolean;
+  onConvert: () => void;
+  onRevise: () => void;
+}) {
+  const data = useStore(form.store, (state) => state.values);
+  const [studio, setStudio] = useState(false);
+  const show = (next: boolean) => morph(() => setStudio(next));
+  return (
+    <Section
+      title="Quote"
+      summary={<StatusChip status={status} />}
+      open={open}
+      onToggle={onToggle}
+    >
+      <div className="iv-section-body">
+        <QuotePanel
+          id={invoice.id}
+          data={data}
+          number={invoice.number}
+          status={status}
+          issued={issued}
+          pending={pending}
+          studioOpen={studio}
+          onPages={() => show(true)}
+          onConvert={onConvert}
+          onRevise={onRevise}
+        />
+      </div>
+      {studio && data.quote && (
+        <form.Field name="quote">
+          {(field) => (
+            <PagesStudio
+              open
+              onClose={() => show(false)}
+              pages={data.quote?.pages ?? blankPages}
+              data={data}
+              number={invoice.number}
+              editable={!issued}
+              onChange={(pages) => {
+                const current = field.state.value;
+                if (current) field.handleChange({ ...current, pages });
+              }}
+            />
+          )}
+        </form.Field>
+      )}
     </Section>
   );
 });

@@ -81,7 +81,7 @@ describe('persistent invoices', () => {
           ),
         )
       ).number,
-    ).toMatch(/^P-INV-/);
+    ).toMatch(/^P-\d{4}-/);
   });
   it('records partial payment and retains a reversed payment', async () => {
     const draft = await run(store.save(specimen(), owner));

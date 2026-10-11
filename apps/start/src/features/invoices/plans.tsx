@@ -10,32 +10,15 @@ import {
 } from '@portfolio/invoices/plan';
 import { CircleAlert, SlidersHorizontal } from 'lucide-react';
 import { type CSSProperties, useMemo, useState } from 'react';
-import { flushSync } from 'react-dom';
 import { MiniBar, PlanStudio, studioMorph } from './plan-studio';
 import { planLine, planName } from './plan-words';
-import { Button } from './ui';
+import { Button, morph } from './ui';
 import { useWorkspace } from './workspace';
 
 // How the invoice gets paid, as the inspector shows it: the options the
 // customer will choose from, each a name, a line and a bar. The card is
 // also the door to the studio: it grows into it, and every bar flies to its
 // place in the studio's rail.
-
-/**
- * Runs `update` as a view transition where the browser has them and the
- * reader has not asked for less motion: the old and new screens morph
- * into each other instead of cutting.
- */
-function morph(update: () => void) {
-  if (
-    typeof document.startViewTransition !== 'function' ||
-    matchMedia('(prefers-reduced-motion: reduce)').matches
-  ) {
-    update();
-    return;
-  }
-  document.startViewTransition(() => flushSync(update));
-}
 
 /** The plans an invoice offers: its own, or what it would start with. */
 export function useOffer(id: InvoiceId, terms: Terms | null, issued: boolean) {

@@ -1,8 +1,9 @@
 import { Effect } from 'effect';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { quoteSpecimen } from './fixtures';
+import type { Answer } from './model';
 import { type Invoice, OwnerDid } from './model';
-import { type Answer, Quotes, type QuotesApi } from './quotes';
+import { Quotes, type QuotesApi } from './quotes';
 import { InvoiceStore, type StoreApi } from './store';
 import { testRuntime } from './testing';
 
@@ -62,7 +63,7 @@ async function answer(quote: Invoice, change: Partial<Answer> = {}) {
 describe('quotes', () => {
   it('number quotes in their own series', async () => {
     const quote = await issuedQuote();
-    expect(quote.number).toMatch(/^P-INV-\d{4}-\d{4}$/);
+    expect(quote.number).toMatch(/^P-\d{4}-\d{4}$/);
     expect((await run(quotes.view(quote.id))).state).toBe('open');
   });
 

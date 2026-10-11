@@ -404,10 +404,15 @@ export const makeStore = Effect.gen(function* () {
           if (issues.length) return yield* new InvalidInvoice({ issues });
           const d = draft.data;
           const year = d.issueDate.slice(0, 4);
+          // Invoices run in their series and rectifications in a series of
+          // their own beside it, as the invoicing regulation requires. A
+          // quote is no tax document, so quotes share one plain series: P.
           const prefix =
             d.kind === 'invoice'
               ? d.series
-              : `${d.kind === 'rectification' ? 'R' : 'P'}-${d.series}`;
+              : d.kind === 'rectification'
+                ? `R-${d.series}`
+                : 'P';
           const key = `${d.issuer.taxId}/${prefix}/${year}`;
           const [sequence] = yield* tx
             .insert(tables.sequences)

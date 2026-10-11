@@ -12,6 +12,7 @@ import {
   revokeLinks,
 } from './links';
 import {
+  type Answer,
   type Invoice,
   type InvoiceData,
   InvoiceId,
@@ -46,16 +47,6 @@ export class QuoteClosed extends Schema.TaggedError<QuoteClosed>()(
     ]),
   },
 ) {}
-
-/** What the customer sends back from the quote page. */
-export const Answer = Schema.Struct({
-  outcome: Schema.Literals(['accepted', 'declined']),
-  name: Schema.String.check(Schema.isMinLength(2), Schema.isMaxLength(200)),
-  earlyStart: Schema.Boolean,
-  language: Language,
-  digest: Schema.String.check(Schema.isPattern(/^[a-f0-9]{64}$/)),
-});
-export interface Answer extends Schema.Schema.Type<typeof Answer> {}
 
 /** Who answered, as the request shows it: the evidence kept with an acceptance. */
 export interface Evidence {

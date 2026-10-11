@@ -173,6 +173,15 @@ export const Invoice = Schema.Struct({
   calculationVersion: Schema.Literal(1),
 });
 export interface Invoice extends Schema.Schema.Type<typeof Invoice> {}
+/** What the customer sends back from the quote page. */
+export const Answer = Schema.Struct({
+  outcome: Schema.Literals(['accepted', 'declined']),
+  name: Schema.String.check(Schema.isMinLength(2), Schema.isMaxLength(200)),
+  earlyStart: Schema.Boolean,
+  language: Language,
+  digest: Schema.String.check(Schema.isPattern(/^[a-f0-9]{64}$/)),
+});
+export interface Answer extends Schema.Schema.Type<typeof Answer> {}
 /** A customer's answer to an issued quote, with the evidence of who gave it. */
 export const QuoteResponse = Schema.Struct({
   quoteId: InvoiceId,

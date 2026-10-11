@@ -392,31 +392,44 @@ const terms = [15, 30, 60];
  * gap takes its place in order as a pressed number, so "45 days" is visible
  * without arithmetic.
  */
+/**
+ * A date counted in days from the issue date, with the usual counts one
+ * click away: payment terms for a due date, validity for a quote.
+ */
 export function DueDateField({
   issueDate,
+  label = 'Due date',
+  steps = terms,
+  legend = 'Payment terms, in days',
+  early = 'The due date is before the issue date.',
   ...field
-}: Base & { issueDate: string }) {
+}: Base & {
+  issueDate: string;
+  label?: string;
+  steps?: readonly number[];
+  legend?: string;
+  /** What the field says when the date falls before the issue date. */
+  early?: string;
+}) {
   const gap = Math.round((toTime(field.value) - toTime(issueDate)) / day);
   const known = Number.isFinite(gap) && gap >= 0;
-  const shown = known && !terms.includes(gap) ? [...terms, gap] : terms;
+  const shown = known && !steps.includes(gap) ? [...steps, gap] : steps;
   return (
     <Field
       {...field}
-      label="Due date"
+      label={label}
       type="date"
-      {...(Number.isFinite(gap) && gap < 0
-        ? { error: 'The due date is before the issue date.' }
-        : {})}
+      {...(Number.isFinite(gap) && gap < 0 ? { error: early } : {})}
       {...(field.disabled
         ? {}
         : {
             hint: (
               <fieldset className="iv-quick">
-                <legend className="iv-sr">Payment terms, in days</legend>
+                <legend className="iv-sr">{legend}</legend>
                 {[...shown]
                   .sort((a, b) => a - b)
                   .map((net) =>
-                    terms.includes(net) ? (
+                    steps.includes(net) ? (
                       <button
                         key={net}
                         type="button"

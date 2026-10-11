@@ -15,6 +15,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { flushSync } from 'react-dom';
 import { TextMorph as TorphText } from 'torph/react';
 import type { DocumentStatus } from './status';
 
@@ -22,6 +23,22 @@ import type { DocumentStatus } from './status';
 // start app does not depend on, so join here instead of adding a new dep.
 export function cn(...parts: Array<string | false | null | undefined>) {
   return parts.filter(Boolean).join(' ');
+}
+
+/**
+ * Runs `update` as a view transition where the browser has them and the
+ * reader has not asked for less motion: the old and new screens morph
+ * into each other instead of cutting.
+ */
+export function morph(update: () => void) {
+  if (
+    typeof document.startViewTransition !== 'function' ||
+    matchMedia('(prefers-reduced-motion: reduce)').matches
+  ) {
+    update();
+    return;
+  }
+  document.startViewTransition(() => flushSync(update));
 }
 
 // Portalled layers (menus, dialogs, tooltips) render at body level, outside
