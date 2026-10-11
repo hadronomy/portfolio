@@ -50,11 +50,10 @@ one-page technical CV.
   word is therefore suitable for this technical CV.
 - [FundéuRAE: «inteligencia artificial», con minúsculas](https://www.fundeu.es/recomendacion/inteligencia-artificial-ia-minusculas/)
   recommends lowercase for the common expression *inteligencia artificial*
-  and uppercase for the abbreviation *IA*. The CV uses the English technical
-  term *agentic AI*, as requested by its owner.
+  and uppercase for the abbreviation *IA*. The CV uses the abbreviation *IA* in a descriptive Spanish phrase.
 - [FundéuRAE: «agéntico / agentivo»](https://www.fundeu.es/consultas/palabra-clave/agentico/)
   records current uncertainty between *IA agentiva* and *IA agéntica*. The CV
-  retains *agentic AI* rather than choosing a Spanish technical translation.
+  uses *IA basada en agentes* to avoid an unsettled neologism.
 
 ## Editorial decisions
 
@@ -64,30 +63,21 @@ roughly 30–40 words. The first sentence establishes the engineering range;
 the second states the area of interest and the open-source practice. The
 experience bullets carry the project evidence.
 
-The wording keeps technical terms in English: *software*, *stack*, *bare-metal*,
-*frontend*, *agentic AI*, and *open source*. It avoids claims about users, revenue, performance, seniority,
-or production adoption because the profile data does not establish them.
-
-The selected wording describes the technical range with «desde sistemas bare-metal
-hasta el frontend». Spanish carries the verbs and connections; English carries
-the technical terms. The owner's terminology preference takes precedence over
-Spanish translations in the language references. This is a choice for this CV,
-rather than a rule prescribed by Cervantes or LinkedIn.
+The profile keeps `software` and `stack`, but uses natural Spanish descriptions
+for the engineering range and the area of interest. These choices follow the
+owner's request to replace awkward English insertions. They preserve the facts
+without adding claims about users, revenue, seniority, or production adoption.
+The [technical terminology research](cv-technical-terminology.md) records the
+primary usage sources and the editorial decisions for the rest of the CV.
 
 ## Selected paragraph
 
-> Desarrollo software en todo el stack, desde sistemas bare-metal hasta el frontend. Me interesa crear sistemas de agentic AI y comparto mi trabajo en proyectos open source.
+> Desarrollo software en todo el stack, desde sistemas de bajo nivel hasta interfaces de usuario. Me interesa especialmente la IA basada en agentes y publico la mayor parte de mi trabajo como código abierto.
 
-The first sentence gives the reader a clear technical range. The second
-connects the current interest with the open-source practice. It uses direct
-first-person verbs and avoids repeating the technology and project lists.
+The first sentence gives the reader the technical range. The second connects
+the interest in agent-based AI with the open-source practice. The wording uses
+first-person verbs and leaves the project details to the experience section.
 The English role names remain outside the translation dictionary.
-
-Spanish nouns and verbs give the English terms a clear role in each sentence:
-«crear sistemas de agentic AI», «proyectos open source», and «algoritmos de
-vehicle routing». This keeps the technical vocabulary intact while describing
-concrete work. It avoids bare technical labels as stand-alone objects of vague
-verbs.
 
 ## Factual boundary
 
