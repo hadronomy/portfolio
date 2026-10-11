@@ -235,11 +235,7 @@ function CVDocument() {
               <h3>B.S. in Computer Engineering</h3>
               <p className="institution">Universidad de La Laguna</p>
               <p className="date">2022-2026</p>
-              <p className="degree">
-                Grado en Ingeniería Informática
-                <br />
-                In progress
-              </p>
+              <p className="degree">Grado en Ingeniería Informática</p>
             </section>
             <section>
               <SectionTitle title="LANGUAGES" number="06" />
