@@ -181,7 +181,6 @@ function CVDocument() {
             <section>
               <SectionTitle title="EXPERIENCE" number="02" />
               <h3>Independent Developer</h3>
-              <p className="date">Independent / 2014–Present</p>
               <ul>
                 <li>
                   Develop open-source tools and applications, from systems

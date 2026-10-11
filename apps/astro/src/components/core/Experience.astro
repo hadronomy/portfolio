@@ -1,7 +1,6 @@
 ---
 import { Icon } from 'astro-icon/components';
 import Company from '~/components/core/Company.astro';
-import Monogram from '~/components/core/Monogram.astro';
 import Ull from '~/components/svg/Ull.astro';
 import Overline from '~/components/core/Overline.astro';
 import Section from '~/components/core/Section.astro';
@@ -18,34 +17,31 @@ import { experience } from '~/lib/profile';
 
   {
     experience.map((entry) => (
-      /* A fixed-width date rail keeps every row's title starting on the same
-         line, regardless of how long the period string is. */
-      <article class="flex flex-col gap-2 tablet:flex-row tablet:gap-4">
-        <p class="type-overline shrink-0 pt-1 text-muted-foreground opacity-70 tablet:w-32">
-          {entry.period}
-        </p>
+      /* The date column keeps titles aligned even for entries without dates. */
+      <article class="grid gap-2 tablet:grid-cols-[8rem_minmax(0,1fr)] tablet:gap-x-4 tablet:gap-y-0">
+        {entry.period && (
+          <p class="type-overline pt-1 text-muted-foreground opacity-70">{entry.period}</p>
+        )}
 
-        <div class="flex flex-col gap-0.5">
-          {/* The role, the joining word and the company chip are three
-              siblings, so the chip's own padding is what spaces the mark
-              rather than the row gap. */}
+        <div class="flex flex-col gap-0.5 tablet:col-start-2 tablet:row-start-1">
           <h3 class="type-body flex flex-wrap items-center gap-1 font-medium text-foreground">
             <span>{entry.role}</span>
-            <span>at</span>
-            <Company
-              name={entry.organisation}
-              url={entry.url}
-              preview={entry.preview}
-            >
-              {entry.mark === 'monogram' ? (
-                <Monogram />
-              ) : entry.mark === 'ull' ? (
-                /* Bare, like the GitHub glyph beside it — no tile behind it. */
-                <Ull class="size-5 shrink-0 text-foreground" />
-              ) : (
-                <Icon name={entry.mark} class="size-5 shrink-0 text-foreground" />
-              )}
-            </Company>
+            {entry.organisation && (
+              <>
+                <span>at</span>
+                <Company
+                  name={entry.organisation.name}
+                  url={entry.organisation.url}
+                  preview={entry.organisation.preview}
+                >
+                  {entry.organisation.mark === 'ull' ? (
+                    <Ull class="size-5 shrink-0 text-foreground" />
+                  ) : (
+                    <Icon name={entry.organisation.mark} class="size-5 shrink-0 text-foreground" />
+                  )}
+                </Company>
+              </>
+            )}
           </h3>
           <p class="type-body text-muted-foreground">{entry.description}</p>
         </div>

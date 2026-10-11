@@ -30,50 +30,48 @@ export const profile = {
 } as const;
 
 export type ExperienceEntry = {
-  period: string;
+  period?: string;
   role: string;
-  organisation: string;
-  /** Icon set name for astro-icon, or `monogram` / `ull` for an in-house mark. */
-  mark: string;
   description: string;
-  /** Makes the company chip a link. */
-  url?: string;
-  /**
-   * Screenshot of `url` shown in the cursor on hover. Captured from the live
-   * page rather than mocked, so it stays honest — regenerate it when the page
-   * it points at changes.
-   */
-  preview?: string;
+  organisation?: {
+    name: string;
+    /** Icon set name for astro-icon, or `ull` for the university mark. */
+    mark: string;
+    url?: string;
+    /** Screenshot of `url` shown in the cursor on hover. */
+    preview?: string;
+  };
 };
 
 export const experience: ExperienceEntry[] = [
   {
-    period: '2014 — NOW',
     role: 'Independent developer',
-    organisation: 'Independent',
-    mark: 'monogram',
     description:
       'Building production tooling and libraries across systems programming, compilers and the web. Ten years of shipping without a manager.',
   },
   {
     period: '2021 — NOW',
     role: 'B.S. Computer Engineering',
-    organisation: 'Universidad de La Laguna',
-    mark: 'ull',
     description:
       'Algorithms, software architecture and distributed systems. Led student project teams and competed in algorithm contests.',
-    url: 'https://www.ull.es',
-    preview: '/previews/ull.webp',
+    organisation: {
+      name: 'Universidad de La Laguna',
+      mark: 'ull',
+      url: 'https://www.ull.es',
+      preview: '/previews/ull.webp',
+    },
   },
   {
     period: '2014 — NOW',
     role: 'Open source',
-    organisation: 'GitHub',
-    mark: 'simple-icons:github',
     description:
       'Autographa, Canary, a RAM machine language and emulator, and solvers for vehicle routing with transshipments.',
-    url: 'https://github.com/hadronomy',
-    preview: '/previews/github.webp',
+    organisation: {
+      name: 'GitHub',
+      mark: 'simple-icons:github',
+      url: 'https://github.com/hadronomy',
+      preview: '/previews/github.webp',
+    },
   },
 ];
 
