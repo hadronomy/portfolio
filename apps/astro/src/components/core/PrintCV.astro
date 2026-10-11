@@ -1,14 +1,23 @@
 ---
 import { renderCVSvg } from '~/lib/cv';
+import { cvCopy } from '~/i18n/cv';
+import { defaultLocale, type Locale } from '~/i18n/locales';
+import { profile } from '~/lib/profile';
 
-const svg = await renderCVSvg();
+interface Props {
+  locale?: Locale;
+}
+
+const { locale = defaultLocale } = Astro.props;
+const copy = cvCopy[locale];
+const svg = await renderCVSvg(locale);
 const source = `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
 ---
 
 <div id="print-cv">
   <img
     src={source}
-    alt="Pablo Hernández — Full-Stack Engineer. Curriculum vitae."
+    alt={`${profile.name} — ${copy.role}. ${copy.folio}.`}
     width="794"
     height="1123"
     loading="eager"

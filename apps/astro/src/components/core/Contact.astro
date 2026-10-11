@@ -1,23 +1,28 @@
 ---
 import { Icon } from 'astro-icon/components';
+import { getRelativeLocaleUrl } from 'astro:i18n';
 import Overline from '~/components/core/Overline.astro';
 import Row from '~/components/core/Row.astro';
 import Section from '~/components/core/Section.astro';
 import Shortcut from '~/components/core/Shortcut.astro';
 import { socials } from '~/lib/profile';
+import { languageNames, locales } from '~/i18n/locales';
 ---
 
-{/*
+{
+  /*
   Heading, then the rows and the line that introduces them. The heading block
   stays capped to the column width; the rows are full width so their hover
   fill can bleed, which is why these are siblings rather than one wrapper.
-*/}
+*/
+}
 <div id="contact" class="flex w-full flex-col gap-8">
   <Section>
     <Overline>Contact</Overline>
   </Section>
 
-  {/*
+  {
+    /*
     The line belongs to the rows, not to the heading, so it sits against them:
     32px of air above it and 16px below. "These" is then pointing at something
     directly underneath it.
@@ -32,7 +37,8 @@ import { socials } from '~/lib/profile';
     This is also a static site with no endpoint behind it, and a form that
     silently drops messages is worse than no form, so the rows are the whole
     contact surface until there is somewhere to post to.
-  */}
+  */
+  }
   <div class="flex w-full flex-col gap-4">
     <Section>
       <p class="type-body text-muted-foreground">
@@ -46,11 +52,7 @@ import { socials } from '~/lib/profile';
           <li>
             <Row href={social.href} external={social.href.startsWith('http')}>
               <Icon name={social.icon} class="size-5 shrink-0 text-foreground" />
-              <span
-                class:list={[
-                  social.markIsName ? 'sr-only' : 'type-body text-foreground',
-                ]}
-              >
+              <span class:list={[social.markIsName ? 'sr-only' : 'type-body text-foreground']}>
                 {social.label}
               </span>
 
@@ -67,4 +69,26 @@ import { socials } from '~/lib/profile';
       }
     </ul>
   </div>
+  <Section>
+    <nav
+      aria-label="Download curriculum vitae"
+      class="type-body flex flex-wrap items-center gap-x-5 gap-y-2"
+    >
+      <span class="text-muted-foreground">CV</span>
+      {
+        locales.map((locale) => (
+          <a
+            href={`${getRelativeLocaleUrl(locale, '')}cv.pdf`}
+            hreflang={locale}
+            lang={locale}
+            type="application/pdf"
+            download={`Pablo_Hernandez-CV-${locale}.pdf`}
+            class="text-foreground underline underline-offset-4 transition-colors hover:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
+          >
+            {languageNames[locale]} (PDF)
+          </a>
+        ))
+      }
+    </nav>
+  </Section>
 </div>

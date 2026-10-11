@@ -17,9 +17,15 @@ import remarkMath from 'remark-math';
 import preserveDirectives from 'rollup-preserve-directives';
 
 import { rehypeMarkCodeBlocks } from './plugins/rehype-mark-code-blocks.mjs';
+import { defaultLocale, locales } from './src/i18n/locales';
 
 export default defineConfig({
   site: 'https://hadronomy.com',
+  i18n: {
+    defaultLocale,
+    locales: [...locales],
+    routing: { prefixDefaultLocale: false },
+  },
   markdown: {
     syntaxHighlight: false,
     remarkPlugins: [remarkGemoji, remarkMath],

@@ -62,6 +62,7 @@ export const engineeringExperience = {
 
 export const engineeringSkills = [
   {
+    id: 'development',
     label: 'Development',
     items: [
       'TypeScript',
@@ -85,6 +86,7 @@ export const engineeringSkills = [
     ],
   },
   {
+    id: 'tools',
     label: 'Tools & infrastructure',
     items: [
       'Docker',
@@ -100,7 +102,11 @@ export const engineeringSkills = [
       'Zenoh',
     ],
   },
-] as const satisfies readonly { label: string; items: readonly string[] }[];
+] as const satisfies readonly {
+  id: string;
+  label: string;
+  items: readonly string[];
+}[];
 
 export const experience: ExperienceEntry[] = [
   engineeringExperience,

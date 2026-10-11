@@ -7,42 +7,9 @@ import bodyBold from '../assets/pdf-fonts/DMSans-Bold.ttf?inline';
 import bodyRegular from '../assets/pdf-fonts/DMSans-Regular.ttf?inline';
 import displayBold from '../assets/pdf-fonts/SpaceGrotesk-Bold.ttf?inline';
 import displayLight from '../assets/pdf-fonts/SpaceGrotesk-Light.ttf?inline';
-import { engineeringExperience, engineeringSkills, profile } from './profile';
-
-const projects = [
-  {
-    name: 'Inari',
-    url: 'https://github.com/hadronomy/inari',
-    description:
-      'A local-first platform for device enrollment and offline operation.',
-  },
-  {
-    name: 'Autographa',
-    url: 'https://github.com/hadronomy/autographa',
-    description: 'A tool to generate animated signatures.',
-  },
-  {
-    name: 'Canary',
-    url: 'https://github.com/hadronomy/canary',
-    description: 'An agentic legal assistant.',
-  },
-  {
-    name: 'RAM Language',
-    url: 'https://github.com/hadronomy/ram',
-    description: 'A Random Access Machine language and emulator.',
-  },
-  {
-    name: 'VRPT-SWTS',
-    url: 'https://github.com/hadronomy/VRPT-SWTS',
-    description:
-      'Algorithms for the Vehicle Routing Problem with Transshipments.',
-  },
-  {
-    name: 'King of the Hollywood Hill',
-    url: 'https://github.com/SistemasInteligentesHL/Proyecto-Sistemas-Inteligentes',
-    description: 'An interactive movie recommendation system.',
-  },
-];
+import { cvCopy, cvProjects } from '../i18n/cv';
+import { defaultLocale, type Locale } from '../i18n/locales';
+import { engineeringSkills, profile } from './profile';
 
 const css = `
   * { box-sizing: border-box; }
@@ -103,11 +70,12 @@ function SectionTitle({ title, number }: { title: string; number: string }) {
   );
 }
 
-function CVDocument() {
+function CVDocument({ locale }: { locale: Locale }) {
+  const copy = cvCopy[locale];
   return (
-    <main>
+    <main lang={locale}>
       <div className="folio" aria-hidden="true">
-        <span>CURRICULUM VITAE</span>
+        <span>{copy.folio.toLocaleUpperCase(locale)}</span>
         <span>HADRONOMY / {new Date().getFullYear()}</span>
       </div>
       <div className="frame">
@@ -117,30 +85,32 @@ function CVDocument() {
               <span className="first">PABLO</span>
               <span className="last">HERNÁNDEZ</span>
             </h1>
-            <p className="role">— {profile.role.toUpperCase()}</p>
+            <p className="role">— {copy.role.toLocaleUpperCase(locale)}</p>
           </div>
-          <img
-            className="portrait"
-            src="portrait"
-            alt="Portrait of Pablo Hernández"
-          />
+          <img className="portrait" src="portrait" alt={copy.portraitAlt} />
         </div>
         <div className="contacts">
           <div className="contact">
-            <p className="label">LOCATION</p>
-            <p>Canary Islands, Spain</p>
+            <p className="label">
+              {copy.labels.location.toLocaleUpperCase(locale)}
+            </p>
+            <p>{copy.location}</p>
           </div>
           <div className="contact">
-            <p className="label">CONTACT</p>
+            <p className="label">
+              {copy.labels.contact.toLocaleUpperCase(locale)}
+            </p>
             <p>
-              <a href="mailto:pablo@hadronomy.com">pablo@hadronomy.com</a>
+              <a href={`mailto:${profile.email}`}>{profile.email}</a>
             </p>
             <p>
               <a href="tel:+34608733118">+34 608 73 31 18</a>
             </p>
           </div>
           <div className="contact">
-            <p className="label">ONLINE</p>
+            <p className="label">
+              {copy.labels.online.toLocaleUpperCase(locale)}
+            </p>
             <p>
               <a href="https://hadronomy.com">hadronomy.com</a>
             </p>
@@ -152,22 +122,31 @@ function CVDocument() {
         <div className="columns">
           <div className="primary">
             <section>
-              <SectionTitle title="PROFILE" number="01" />
-              <p className="body">{engineeringExperience.description}</p>
+              <SectionTitle
+                title={copy.labels.profile.toLocaleUpperCase(locale)}
+                number="01"
+              />
+              <p className="body">{copy.summary}</p>
             </section>
             <section>
-              <SectionTitle title="EXPERIENCE" number="02" />
-              <h3>{engineeringExperience.role}</h3>
-              <p className="engagement">{engineeringExperience.engagement}</p>
+              <SectionTitle
+                title={copy.labels.experience.toLocaleUpperCase(locale)}
+                number="02"
+              />
+              <h3>{copy.role}</h3>
+              <p className="engagement">{copy.engagement}</p>
               <ul>
-                {engineeringExperience.highlights.map((highlight) => (
+                {copy.highlights.map((highlight) => (
                   <li key={highlight}>{highlight}</li>
                 ))}
               </ul>
             </section>
             <section>
-              <SectionTitle title="PROJECTS" number="03" />
-              {projects.map((project) => (
+              <SectionTitle
+                title={copy.labels.projects.toLocaleUpperCase(locale)}
+                number="03"
+              />
+              {cvProjects.map((project) => (
                 <div className="project" key={project.name}>
                   <h3>
                     <a href={project.url}>
@@ -177,17 +156,22 @@ function CVDocument() {
                       </span>
                     </a>
                   </h3>
-                  <p>{project.description}</p>
+                  <p>{copy.projectDescriptions[project.id]}</p>
                 </div>
               ))}
             </section>
           </div>
           <div className="secondary">
             <section>
-              <SectionTitle title="SKILLS" number="04" />
+              <SectionTitle
+                title={copy.labels.skills.toLocaleUpperCase(locale)}
+                number="04"
+              />
               {engineeringSkills.map((group) => (
                 <div className="skill-group" key={group.label}>
-                  <p className="category">{group.label.toUpperCase()}</p>
+                  <p className="category">
+                    {copy.skillGroups[group.id].toLocaleUpperCase(locale)}
+                  </p>
                   <div className="keys">
                     {group.items.map((skill) => (
                       <span className="key" key={skill}>
@@ -199,20 +183,26 @@ function CVDocument() {
               ))}
             </section>
             <section>
-              <SectionTitle title="EDUCATION" number="05" />
-              <h3>B.S. in Computer Engineering</h3>
+              <SectionTitle
+                title={copy.labels.education.toLocaleUpperCase(locale)}
+                number="05"
+              />
+              <h3>{copy.educationTitle}</h3>
               <p className="institution">Universidad de La Laguna</p>
               <p className="date">2022-2026</p>
               <p className="degree">Grado en Ingeniería Informática</p>
             </section>
             <section>
-              <SectionTitle title="LANGUAGES" number="06" />
+              <SectionTitle
+                title={copy.labels.languages.toLocaleUpperCase(locale)}
+                number="06"
+              />
               <p className="language">
-                <strong>Spanish</strong>
-                <span className="level">Native</span>
+                <strong>{copy.languages.spanish}</strong>
+                <span className="level">{copy.languages.native}</span>
               </p>
               <p className="language">
-                <strong>English</strong>
+                <strong>{copy.languages.english}</strong>
                 <span className="level">C2</span>
               </p>
             </section>
@@ -244,29 +234,31 @@ async function cvResources() {
     ],
     images: [{ src: 'portrait', data: bytes(portrait) }],
     fontFamilies: ['DM Sans'],
-    lang: 'en',
   };
 }
 
-export async function renderCVSvg() {
-  return renderSvg(<CVDocument />, {
+export async function renderCVSvg(locale: Locale = defaultLocale) {
+  return renderSvg(<CVDocument locale={locale} />, {
+    lang: locale,
     ...(await cvResources()),
     width: (210 / 25.4) * 96,
     height: (297 / 25.4) * 96,
   });
 }
 
-export async function renderCV() {
-  return render(<CVDocument />, {
+export async function renderCV(locale: Locale = defaultLocale) {
+  const copy = cvCopy[locale];
+  return render(<CVDocument locale={locale} />, {
+    lang: locale,
     ...(await cvResources()),
     size: 'a4',
     margin: 0,
     tagged: 'ua1',
     outline: true,
     metadata: {
-      title: `${profile.name} — ${profile.role}`,
+      title: `${profile.name} — ${copy.role}`,
       authors: ['Pablo Hernández'],
-      description: 'Experience, projects, education, and technical skills.',
+      description: copy.metadataDescription,
     },
   });
 }
