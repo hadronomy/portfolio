@@ -92,12 +92,12 @@ export const cvCopy = {
     portraitAlt: 'Retrato de Pablo Hernández',
     engagement: 'Por cuenta propia',
     summary:
-      'Desarrollo aplicaciones web, API, búsqueda con IA y herramientas de programación, además de software para gestionar dispositivos.',
+      'Desarrollo aplicaciones web y software para dispositivos. También creo sistemas de IA y herramientas de programación.',
     highlights: [
       'Implemento en Canary búsquedas sobre documentos del BOE con control de vigencia e indexación vectorial.',
       'Desarrollo Inari para gestionar dispositivos sin conexión, con registro centralizado y un controlador en Rust.',
-      'Creo herramientas y un emulador para RAM. Implemento algoritmos de rutas con transbordos en VRPT-SWTS.',
-      'Creo herramientas de firmas y recomendación de películas, y asesoro a otros desarrolladores en arquitectura.',
+      'Desarrollo herramientas y un emulador para RAM. Implementé algoritmos de rutas con transbordos en VRPT-SWTS.',
+      'Creé herramientas de firmas y recomendación de películas. Asesoro a otros desarrolladores en arquitectura.',
     ],
     location: 'Islas Canarias, España',
     educationTitle: 'Ingeniería Informática',

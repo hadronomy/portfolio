@@ -25,11 +25,11 @@ the English CV. Role names, project names, and technology names stay in English.
 | --- | --- | --- |
 | Document label | «Currículum vitae» | Use «Currículum», the Spanish form. |
 | Engagement | «Independiente» | Use «Por cuenta propia» to describe the working arrangement without implying employment at an organisation or a specific tax status. |
-| Profile | «interfaces» and «infraestructura para dispositivos» | Name applications, search systems, and software that connects and manages devices. These describe the work more clearly. |
+| Profile | A list of technologies and activities | Use two complete sentences with direct verbs. The first describes web applications and device software. The second describes AI systems and programming tools. Each verb has concrete software as its object. |
 | Canary experience | «búsqueda jurídica», «fragmentos temporales», «embeddings vectoriales» | Use «búsqueda de legislación española», «control de vigencia», and «indexación vectorial». Preserve the technical meaning while making the text easier to read. |
 | Inari experience | A list after «Desarrollo Inari:» | Explain what the software does before listing registration, offline operation, and the Rust controller. |
 | RAM and routing experience | One sentence joining two projects | Give each project its own sentence. Keep «transbordos», which names the actual routing constraint. |
-| Other work | «herramientas de firmas» and «Oriento» | Describe the two tools together and use «asesoro» for architecture advice. The project descriptions specify animated signatures and a movie recommender. |
+| Other work | All verbs in the present tense | Use «Creé» for the earlier tools and «Asesoro» for current architecture advice. The project descriptions specify animated signatures and a movie recommender. |
 | Project descriptions | Generic phrases such as «plataforma local» | Describe each project's purpose. Explain RAM as a programming language and emulator; identify waste collection in VRPT-SWTS. |
 | Section labels | «Perfil» | Use «Perfil profesional». Keep the other labels: they are concise and standard in a Spanish CV. |
 | Other text | Portrait description, location, education, language levels, skill groups, and metadata | Reviewed and retained. The wording is natural and the official university and degree names are accurate. |
@@ -44,6 +44,18 @@ Project descriptions and experience bullets use the public documentation for
 The signature tool, movie recommender, and architecture advice also appear in
 the shared profile data. The CV states no user counts, revenue, performance
 gains, or production adoption figures.
+
+## Verb tenses
+
+Experience bullets use the first person throughout. Present tense describes
+current development in Canary, Inari, and RAM, and current architecture advice.
+Past tense describes the earlier routing implementation and the signature and
+movie tools. The academic routing project belongs to the 2024–2025 assignment.
+The present tense does not imply that the software is stable or complete.
+
+The [RAE conjugation reference](https://www.rae.es/buen-uso-espa%C3%B1ol/conjugaci%C3%B3n-espa%C3%B1ola)
+supports the forms «Implementé» and «Creé». The tense choice follows the status
+of each activity, rather than applying one tense to every project in the role.
 
 The copy belongs in `apps/astro/src/i18n/cv.ts`. The role belongs in the shared
 profile data and is outside the translation dictionary.
