@@ -11,6 +11,7 @@ export const documentLabels = {
     plannedStart: 'Planned start',
     taxesIncluded: 'All prices include IGIC and every other applicable tax.',
     legal: 'Legal information',
+    legalLede: 'What the law asks you to know before you accept this quote.',
     withdrawalForm: 'Model withdrawal form',
     plan: 'Payment plan',
     choosePlan: 'Payment plans · choose one when accepting',
@@ -55,6 +56,8 @@ export const documentLabels = {
     taxesIncluded:
       'Todos los precios incluyen el IGIC y los demás impuestos aplicables.',
     legal: 'Información legal',
+    legalLede:
+      'Lo que la ley pide que sepas antes de aceptar este presupuesto.',
     withdrawalForm: 'Modelo de formulario de desistimiento',
     plan: 'Forma de pago',
     choosePlan: 'Formas de pago · elige una al aceptar',

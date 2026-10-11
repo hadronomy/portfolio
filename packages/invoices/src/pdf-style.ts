@@ -6,10 +6,15 @@ import type { CSSProperties } from 'react';
 /** A4 is 794 × 1123 CSS px. The side margin leaves a 706px column, which is the width the cover art is cut for. */
 export const side = 44;
 /**
- * The measure of running text. At 11.5px Geist this holds about 72
- * characters a line, inside the 60–75 that long text reads best at.
+ * A quote's pages run on two columns: headings hang in a narrow margin on
+ * the left, text runs in the wide column beside it. At 12px Geist the text
+ * column holds about 75 characters a line, the top of the 60–75 that long
+ * reading is easiest at, and the margin keeps the page from reading as one
+ * grey slab.
  */
-export const measure = 470;
+export const grid = { aside: 150, gutter: 28, text: 528 } as const;
+/** Long text is set a shade off black; pure ink stays for headings and figures. */
+export const text = '#232326';
 export const ink = '#141414';
 export const soft = '#67676a';
 export const faint = '#8e8e91';
