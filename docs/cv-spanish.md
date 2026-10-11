@@ -1,7 +1,7 @@
 # Spanish CV copy
 
 The Spanish CV uses Spanish as spoken in Spain. It describes the same work as
-the English CV. Role names, project names, and technology names stay in English.
+the English CV. Role names, project names, technology names, and technical terms stay in English.
 
 ## Editorial sources
 
@@ -21,18 +21,21 @@ the English CV. Role names, project names, and technology names stay in English.
 
 ## Copy review
 
-| Area | Earlier wording | Editorial decision |
-| --- | --- | --- |
-| Document label | «Currículum vitae» | Use «Currículum», the Spanish form. |
-| Engagement | «Independiente» | Use «Por cuenta propia» to describe the working arrangement without implying employment at an organisation or a specific tax status. |
-| Profile | A list of technologies and activities | Present the engineering range, then connect the interest in agent-based AI with open-source work. See [the profile research](cv-profile-research.md) for the sources and final wording. |
-| Canary experience | «búsqueda jurídica», «fragmentos temporales», «embeddings vectoriales» | Use «búsqueda de legislación española», «control de vigencia», and «indexación vectorial». Preserve the technical meaning while making the text easier to read. |
-| Inari experience | A list after «Desarrollo Inari:» | Explain what the software does before listing registration, offline operation, and the Rust controller. |
-| RAM and routing experience | One sentence joining two projects | Give each project its own sentence. Keep «transbordos», which names the actual routing constraint. |
-| Other work | All verbs in the present tense | Use «Creé» for the earlier tools and «Asesoro» for current architecture advice. The project descriptions specify animated signatures and a movie recommender. |
-| Project descriptions | Generic phrases such as «plataforma local» | Describe each project's purpose. Explain RAM as a programming language and emulator; identify waste collection in VRPT-SWTS. |
-| Section labels | «Perfil» | Use «Perfil profesional». Keep the other labels: they are concise and standard in a Spanish CV. |
-| Other text | Portrait description, location, education, language levels, skill groups, and metadata | Reviewed and retained. The wording is natural and the official university and degree names are accurate. |
+Spanish carries the verbs, tense, and connections between ideas. Technical
+terms retain their English form. This is the owner's preference; Cervantes
+and LinkedIn guide the register and structure, not the choice of language
+for each technical term.
+
+| Area | Wording decision |
+| --- | --- |
+| Profile | Introduce the engineering range with `stack`, `bare-metal`, and `frontend`. Connect the interest in `agentic AI` with `open source` work. See [the profile research](cv-profile-research.md). |
+| Canary | Retain `retrieval pipeline` and `vector embeddings`. Explain the BOE documents and legal validity in Spanish. |
+| Inari | Retain `hardware`, `device enrollment`, `offline`, and `controller`. Use a Spanish sentence to describe what the project connects. |
+| RAM and routing | Retain `tooling`, `emulator`, `vehicle routing`, and `transshipments`. Use present tense for RAM and past tense for the earlier routing implementation. |
+| Other work | Name Autographa and King of the Hollywood Hill directly. Describe advice to other `developers` on `software architecture`. |
+| Projects | Use English technical terms with short Spanish descriptions of purpose. `Recommender` names the movie tool; «para descubrir películas» explains its purpose. |
+| Skills | Keep `Development` and `Tools & infrastructure` as technical group names. Keep technology names unchanged. |
+| General text | Keep document labels, contact details, location, academic names, language levels, and metadata in Spanish. The official degree and university names retain their original form. |
 
 ## Factual sources
 

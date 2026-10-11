@@ -50,60 +50,42 @@ one-page technical CV.
   word is therefore suitable for this technical CV.
 - [FundéuRAE: «inteligencia artificial», con minúsculas](https://www.fundeu.es/recomendacion/inteligencia-artificial-ia-minusculas/)
   recommends lowercase for the common expression *inteligencia artificial*
-  and uppercase for the abbreviation *IA*.
+  and uppercase for the abbreviation *IA*. The CV uses the English technical
+  term *agentic AI*, as requested by its owner.
 - [FundéuRAE: «agéntico / agentivo»](https://www.fundeu.es/consultas/palabra-clave/agentico/)
-  records current uncertainty between *IA agentiva* and *IA agéntica*. The
-  profile avoids choosing between those unsettled adjectives and says
-  «inteligencia artificial basada en agentes» instead.
+  records current uncertainty between *IA agentiva* and *IA agéntica*. The CV
+  retains *agentic AI* rather than choosing a Spanish technical translation.
 
 ## Editorial decisions
 
 The profile is a compact professional introduction, not a second project list.
 It uses first-person present tense for current practice, two sentences, and
-roughly 35–45 words. The first sentence establishes the engineering range;
+roughly 30–40 words. The first sentence establishes the engineering range;
 the second states the area of interest and the open-source practice. The
 experience bullets carry the project evidence.
 
-The wording keeps technical terms that carry useful signal: *software*,
-*sistemas de bajo nivel*, *dispositivos*, *interfaces de usuario*, and
-*código abierto*. It avoids claims about users, revenue, performance, seniority,
+The wording keeps technical terms in English: *software*, *stack*, *bare-metal*,
+*frontend*, *agentic AI*, and *open source*. It avoids claims about users, revenue, performance, seniority,
 or production adoption because the profile data does not establish them.
 
-The selected wording describes the technical range directly with «desde los
-sistemas de bajo nivel hasta las interfaces de usuario». This removes the
-extra label *stack* while retaining the same meaning. This is an editorial
-choice for this CV, rather than a rule prescribed by the sources.
+The selected wording describes the technical range with «desde bare-metal
+hasta el frontend». Spanish carries the verbs and connections; English carries
+the technical terms. The owner's terminology preference takes precedence over
+Spanish translations in the language references. This is a choice for this CV,
+rather than a rule prescribed by Cervantes or LinkedIn.
 
 ## Selected paragraph
 
-> Desarrollo software desde los sistemas de bajo nivel hasta las interfaces de usuario. Me interesa especialmente la inteligencia artificial basada en agentes y publico la mayor parte de mi trabajo como código abierto.
+> Desarrollo software en todo el stack, desde bare-metal hasta el frontend. Me interesa especialmente agentic AI y publico la mayor parte de mi trabajo como open source.
 
 The first sentence gives the reader a clear technical range. The second
 connects the current interest with the open-source practice. It uses direct
 first-person verbs and avoids repeating the technology and project lists.
 The English role names remain outside the translation dictionary.
 
-## Candidate paragraphs
-
-These candidates informed the selected paragraph:
-
-> Desarrollo software en todo el stack, desde sistemas de bajo nivel y dispositivos hasta interfaces de usuario. Me interesa especialmente la inteligencia artificial basada en agentes y publico la mayor parte de mi trabajo como código abierto.
-
-Two alternatives preserve the same facts with a different rhythm:
-
-> Trabajo en varias capas del producto: desarrollo sistemas de bajo nivel y software para dispositivos, además de los servicios y las interfaces que utilizan las personas. Me interesa especialmente la inteligencia artificial basada en agentes y publico gran parte de mi trabajo como código abierto.
-
-> Desarrollo software de extremo a extremo, desde sistemas de bajo nivel y dispositivos hasta servicios e interfaces de usuario. Me interesan especialmente los sistemas basados en agentes y comparto la mayor parte de lo que creo como código abierto.
-
-The first candidate establishes the technical range directly. The second
-adds more explanation and introduces «varias capas». The third uses the
-broader expressions «de extremo a extremo» and «lo que creo». The selected
-paragraph keeps the direct progression of the first candidate and removes
-the extra English label.
-
 ## Factual boundary
 
-The paragraphs above use only facts already present in the shared profile:
+The paragraph above uses only facts already present in the shared profile:
 work across bare-metal systems and interfaces, a particular interest in
 agentic AI, and mostly open-source work. The project-specific evidence remains
 in the Spanish experience bullets and the linked projects.
