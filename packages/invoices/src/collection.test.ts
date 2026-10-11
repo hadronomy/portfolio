@@ -469,9 +469,9 @@ describe('payment links', () => {
     const invoice = await issued();
     const { token } = await run(share(invoice));
     expect((await fail(checkout('not-a-token')))._tag).toBe('LinkInvalid');
-    expect((await fail(checkout(`${token.slice(0, -1)}A`)))._tag).toBe(
-      'LinkInvalid',
-    );
+    // One character off: a different one even when the token ends in A.
+    const near = `${token.slice(0, -1)}${token.endsWith('A') ? 'B' : 'A'}`;
+    expect((await fail(checkout(near)))._tag).toBe('LinkInvalid');
     const revoked = await run(
       Collection.use((collection) => collection.revoke(invoice.id, owner)),
     );
