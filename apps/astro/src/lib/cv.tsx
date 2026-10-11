@@ -175,8 +175,7 @@ function CVDocument() {
               <SectionTitle title="PROFILE" number="01" />
               <p className="body">
                 Full-stack engineer with a focus on web applications, systems
-                programming, and open-source tools. Computer Engineering student
-                at Universidad de La Laguna.
+                programming, and open-source tools.
               </p>
             </section>
             <section>
