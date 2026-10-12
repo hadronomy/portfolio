@@ -111,10 +111,10 @@
       ],
       "selectors": ["treatment"],
       "match": {
-        "treatment=taxable": "IGIC {r} % sobre {base}",
-        "treatment=exempt": "Exenta sobre {base}",
-        "treatment=outside-scope": "No sujeta sobre {base}",
-        "treatment=reverse-charge": "Inversión del sujeto pasivo sobre {base}",
+        "treatment=taxable": "IGIC {r} % sobre {base}",
+        "treatment=exempt": "Operación exenta: {base}",
+        "treatment=outside-scope": "Operación no sujeta: {base}",
+        "treatment=reverse-charge": "Inversión del sujeto pasivo: {base}",
         "treatment=*": "{base}"
       }
     }
@@ -124,7 +124,7 @@
       "declarations": ["input value"],
       "selectors": [],
       "match": {
-        "*": "Descuento {value}"
+        "*": "Descuento: {value}"
       }
     }
   ],
@@ -188,9 +188,9 @@
       ],
       "selectors": ["treatment"],
       "match": {
-        "treatment=taxable": "IGIC {r} %",
-        "treatment=exempt": "Exenta",
-        "treatment=outside-scope": "No sujeta",
+        "treatment=taxable": "IGIC {r} %",
+        "treatment=exempt": "Operación exenta",
+        "treatment=outside-scope": "Operación no sujeta",
         "treatment=reverse-charge": "Inversión del sujeto pasivo",
         "treatment=*": ""
       }
@@ -495,7 +495,7 @@
       ],
       "selectors": [],
       "match": {
-        "*": "IGIC {r} %"
+        "*": "IGIC {r} %"
       }
     }
   ],
@@ -1151,14 +1151,14 @@
   "starter_deposit": "Anticipo",
   "starter_balance": "Resto",
   "starter_deposit_first": "Anticipo y resto",
-  "starter_halves": "Dos mitades",
-  "starter_monthly": "Mensual",
+  "starter_halves": "Dos pagos iguales",
+  "starter_monthly": "Pagos mensuales",
   "starter_deposit_monthly": "Anticipo y mensualidades",
   "starter_kickoff": "Inicio",
   "starter_midpoint": "Mitad del proyecto",
   "starter_delivery": "Entrega",
   "starter_milestones": "Por hitos",
-  "starter_flexible": "A tu ritmo",
+  "starter_flexible": "Pago flexible",
   "typography_open_quote": "«",
   "typography_close_quote": "»",
   "closed_stamp": "Cerrado",
@@ -1211,7 +1211,7 @@
       "declarations": ["input digest"],
       "selectors": [],
       "match": {
-        "*": "La huella digital SHA-256 del PDF al que respondiste es {digest}."
+        "*": "La huella digital SHA-256 del presupuesto en PDF al que respondiste es {digest}."
       }
     }
   ],
@@ -1236,7 +1236,7 @@
       ],
       "selectors": [],
       "match": {
-        "*": "{name} aceptó este presupuesto en línea el {at} (UTC). Esta página deja constancia de la aceptación."
+        "*": "Esta página deja constancia de que {name} aceptó este presupuesto en línea el {at} (UTC)."
       }
     }
   ],
@@ -1257,16 +1257,16 @@
   ],
   "accept_early": "Inicio anticipado",
   "accept_early_yes": "El cliente solicitó que el trabajo comenzara durante el plazo de desistimiento.",
-  "accept_early_no": "El trabajo comienza cuando termine el plazo de desistimiento.",
+  "accept_early_no": "El trabajo comienza una vez finalizado el plazo de desistimiento.",
   "accept_document": "Documento",
-  "accept_document_detail": "Huella digital SHA-256 del PDF que el cliente leyó y aceptó. Cualquier cambio en ese documento la altera.",
+  "accept_document_detail": "Huella digital SHA-256 del PDF que el cliente leyó y aceptó. Cualquier modificación de ese documento cambia su huella digital.",
   "accept_evidence": "Registro",
   "accept_evidence_detail": [
     {
       "declarations": ["input address", "input agent"],
       "selectors": [],
       "match": {
-        "*": "Aceptado desde la dirección IP {address}, con el navegador {agent}."
+        "*": "La aceptación se realizó desde la dirección IP {address}, con el navegador {agent}."
       }
     }
   ],
@@ -1279,15 +1279,15 @@
       }
     }
   ],
-  "mail_code_title": "Tu código de acceso",
-  "mail_code_why": "Recibes este correo porque alguien ha pedido acceder con esta dirección.",
+  "mail_code_title": "Tu código para acceder",
+  "mail_code_why": "Recibes este correo porque alguien ha solicitado acceder con esta dirección de correo.",
   "mail_answer_preview": [
     {
       "declarations": ["input outcome", "input issuer"],
       "selectors": ["outcome"],
       "match": {
-        "outcome=accepted": "Tu copia firmada va adjunta.",
-        "outcome=declined": "{issuer} ya sabe que lo has rechazado.",
+        "outcome=accepted": "Se adjunta tu copia firmada.",
+        "outcome=declined": "{issuer} ya sabe que has rechazado el presupuesto.",
         "outcome=*": ""
       }
     }
@@ -1297,19 +1297,19 @@
       "declarations": ["input issuer"],
       "selectors": [],
       "match": {
-        "*": "Este correo confirma tu respuesta a un presupuesto de {issuer}, como exige la ley para los contratos en línea."
+        "*": "Este correo confirma tu respuesta a un presupuesto de {issuer}. En la contratación electrónica, la ley exige confirmar la recepción de la aceptación."
       }
     }
   ],
-  "mail_answer_attached": "Tu copia firmada va adjunta: el presupuesto completo, con una última página que deja constancia de tu aceptación.",
+  "mail_answer_attached": "Se adjunta tu copia firmada: el presupuesto completo, con una última página que deja constancia de tu aceptación.",
   "mail_answer_open": "Ver el presupuesto",
   "owner_mail_subject": [
     {
       "declarations": ["input outcome", "input name", "input number"],
       "selectors": ["outcome"],
       "match": {
-        "outcome=accepted": "{name} ha aceptado {number}",
-        "outcome=declined": "{name} ha rechazado {number}",
+        "outcome=accepted": "{name} ha aceptado el presupuesto {number}",
+        "outcome=declined": "{name} ha rechazado el presupuesto {number}",
         "outcome=*": ""
       }
     }
@@ -1319,7 +1319,7 @@
       "declarations": ["input outcome"],
       "selectors": ["outcome"],
       "match": {
-        "outcome=accepted": "La copia firmada va adjunta.",
+        "outcome=accepted": "Se adjunta la copia firmada.",
         "outcome=declined": "Esta vez no hay nada que facturar.",
         "outcome=*": ""
       }
@@ -1339,7 +1339,7 @@
       "declarations": ["input outcome"],
       "selectors": ["outcome"],
       "match": {
-        "outcome=accepted": "Factura cada pago de la forma de pago desde el presupuesto cuando venza.",
+        "outcome=accepted": "Cuando venza cada pago acordado, emite la factura correspondiente desde el presupuesto.",
         "outcome=declined": "Puedes revisar el presupuesto y enviarlo de nuevo.",
         "outcome=*": ""
       }
@@ -1351,7 +1351,7 @@
       "declarations": ["input digest"],
       "selectors": [],
       "match": {
-        "*": "El cliente respondió al PDF con la huella digital SHA-256 {digest}."
+        "*": "El cliente respondió al presupuesto en PDF cuya huella digital SHA-256 es {digest}."
       }
     }
   ],
