@@ -2293,6 +2293,9 @@ body:has(.iv-dock) .iv-toast-region {
 }
 .iv-section-panel {
   display: grid;
+  /* minmax(0, …): a grid track grows to fit its widest unbreakable content,
+     and then the section, and the whole inspector, overflow the panel. */
+  grid-template-columns: minmax(0, 1fr);
   grid-template-rows: 0fr;
   transition: grid-template-rows var(--iv-fast) var(--iv-ease);
 }
@@ -2303,6 +2306,7 @@ body:has(.iv-dock) .iv-toast-region {
    8px gutter so what sits flush with the section edge (an open line's ring
    and shadow) still draws its edge; the content itself does not move. */
 .iv-section-inner {
+  min-width: 0;
   min-height: 0;
   margin: 0 -8px;
   padding: 0 8px;
@@ -2546,10 +2550,12 @@ body:has(.iv-dock) .iv-toast-region {
 }
 .iv-add {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
 }
+/* Side by side while both labels fit; one above the other when they do not. */
 .iv-add .iv-btn {
-  flex: 1;
+  flex: 1 1 max-content;
 }
 
 /* ---------------------------------------------------------------- Covers */
@@ -7177,7 +7183,7 @@ body:has(.iv-dock) .iv-toast-region {
     margin: 0;
   }
   .iv-editor {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto minmax(0, 1fr);
     height: calc(100dvh - 76px);
   }
@@ -7195,6 +7201,11 @@ body:has(.iv-dock) .iv-toast-region {
     inset: auto;
     flex-wrap: wrap;
     padding: 12px 12px 0;
+  }
+  /* On the narrowest phones the actions take a second line rather than
+     pushing Issue off the screen. */
+  .iv-topbar-group {
+    flex-wrap: wrap;
   }
   .iv-dock-zoom,
   .iv-dock-divider-zoom {
