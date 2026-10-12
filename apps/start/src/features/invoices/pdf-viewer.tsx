@@ -90,11 +90,17 @@ const plugins = [
   createPluginRegistration(SearchPluginPackage),
 ];
 
-// fetch() runs base64 decoding in native code instead of a JS char loop over
-// the full string on the main thread.
+declare global {
+  // Baseline since 2025; TypeScript 5.9's libraries do not declare it yet.
+  interface Uint8ArrayConstructor {
+    fromBase64(base64: string): Uint8Array<ArrayBuffer>;
+  }
+}
+
+// Decoded in native code, not a JS loop over the whole string, and without
+// fetching a data: URL, which the invoices' content policy refuses.
 async function decodePdfBytes(base64: string): Promise<ArrayBuffer> {
-  const response = await fetch(`data:application/pdf;base64,${base64}`);
-  return response.arrayBuffer();
+  return Uint8Array.fromBase64(base64).buffer;
 }
 
 // At most one readout update per `delay`, always ending on the latest value.
@@ -394,7 +400,9 @@ function Document({ bytes, dock }: { bytes: string; dock: DockParts }) {
             .catch(() => {});
         if (!cancelled)
           setError(
-            'The new preview could not load. The previous preview is still available.',
+            previous
+              ? 'The new preview could not load. The previous preview is still available.'
+              : 'The preview could not load. Reload the page to try again.',
           );
       }
     }
