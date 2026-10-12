@@ -3,8 +3,6 @@ import { Context, Effect, Layer, Schema } from 'effect';
 import { calculate } from './calculate';
 import { InvoiceDatabase } from './database';
 import type { Invoice, InvoiceId, Language } from './model';
-import { renderAcceptance, renderInvoice } from './pdf';
-import { appendPdf } from './pdf-append';
 import { defaultsFor, noOffer } from './plan';
 import type { QuoteResponse } from './quote-model';
 import { stored } from './storage';
@@ -69,7 +67,10 @@ export const makeDocuments = Effect.gen(function* () {
     language: Language,
   ) {
     const plans = yield* plansOf(invoice);
-    return yield* Effect.promise(() => renderInvoice(invoice, language, plans));
+    return yield* Effect.promise(async () => {
+      const { renderInvoice } = await import('./pdf');
+      return renderInvoice(invoice, language, plans);
+    });
   });
 
   /** Bytes kept under `key`, or rendered by `make` and kept for next time. */
@@ -158,9 +159,13 @@ export const makeDocuments = Effect.gen(function* () {
         `${quote.id}:${quote.revision}:${acceptance.language}:signed:${acceptance.digest}`,
         quote,
         acceptance.language,
-        Effect.promise(async () =>
-          appendPdf(bytes, await renderAcceptance(quote, acceptance)),
-        ),
+        Effect.promise(async () => {
+          const [{ renderAcceptance }, { appendPdf }] = await Promise.all([
+            import('./pdf'),
+            import('./pdf-append'),
+          ]);
+          return appendPdf(bytes, await renderAcceptance(quote, acceptance));
+        }),
         true,
       );
     }),

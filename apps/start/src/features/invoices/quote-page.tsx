@@ -15,9 +15,11 @@ import { quoteNotices } from '@portfolio/invoices/quote-notices';
 import { useRouter } from '@tanstack/react-router';
 import { Check, ChevronDown, Download, Hourglass, Mail, X } from 'lucide-react';
 import {
+  lazy,
   type ReactNode,
   type PointerEvent as ReactPointerEvent,
   type RefObject,
+  Suspense,
   useEffect,
   useId,
   useRef,
@@ -35,10 +37,13 @@ import { CollectionNotice } from '../privacy/collection-notice';
 import { answerQuoteLink } from './api';
 import { ClosedLink } from './closed-link';
 import { coverArt } from './covers';
-import { PageView } from './page-view';
 import { QuoteDetailsForm } from './quote-details-form';
 import { Button, MorphText } from './ui';
 import './invoices.css';
+
+const PageView = lazy(() =>
+  import('./page-view').then((module) => ({ default: module.PageView })),
+);
 
 // The customer's page for one quote, behind its link. They read the PDF
 // itself, page by page, and answer on a ticket: its face says what the
@@ -109,12 +114,16 @@ function Note({
 /** What the PDF is, for the customer who cannot see its pages: the same lines, pages and notices. */
 function TextVersion({ quote }: { quote: Invoice }) {
   const t = useT();
+  const [open, setOpen] = useState(false);
   const d = quote.data;
   const totals = calculate(d);
   const money = (value: string) => formatMoney(value, d.language, d.currency);
   const legal = d.quote ? quoteNotices(d, d.quote, d.language) : [];
   return (
-    <details className="iv-quote-text">
+    <details
+      className="iv-quote-text"
+      onToggle={(event) => setOpen(event.currentTarget.open)}
+    >
       <summary>
         {t(m.quote_as_text)}
         <ChevronDown size={15} aria-hidden />
@@ -140,9 +149,11 @@ function TextVersion({ quote }: { quote: Invoice }) {
             <dd className="iv-num">{money(totals.total)}</dd>
           </div>
         </dl>
-        {d.quote && hasPages(d.quote.pages) && (
+        {open && d.quote && hasPages(d.quote.pages) && (
           <section className="iv-quote-pages" aria-label={t(m.quote_pages)}>
-            <PageView pages={d.quote.pages} language={d.language} />
+            <Suspense fallback={<output>{t(m.quote_text_loading)}</output>}>
+              <PageView pages={d.quote.pages} language={d.language} />
+            </Suspense>
           </section>
         )}
         {legal.length > 0 && (

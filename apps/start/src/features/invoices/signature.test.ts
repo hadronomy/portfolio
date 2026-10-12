@@ -36,4 +36,10 @@ describe('a drawn signature', () => {
     ]);
     expect(Schema.is(Signature)(svg)).toBe(true);
   });
+
+  it('exports the visible signature when the pointer crosses a pad edge', () => {
+    const drawn = stroke('edge', 0, 90, false);
+    drawn.points.push({ x: -20, y: 280, p: -1, t: 1600 });
+    expect(Schema.is(Signature)(signatureToSvg([drawn]))).toBe(true);
+  });
 });

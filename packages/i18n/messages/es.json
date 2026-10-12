@@ -831,6 +831,7 @@
     }
   ],
   "quote_as_text": "Leerlo como texto",
+  "quote_text_loading": "Cargando el texto del presupuesto…",
   "quote_review": "Revisar y firmar",
   "quote_answer": "Ver la respuesta",
   "quote_back": "Volver al presupuesto",

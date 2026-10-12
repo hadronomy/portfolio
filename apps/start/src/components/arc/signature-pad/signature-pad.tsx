@@ -39,6 +39,7 @@ export interface OutlineOptions {
 
 /** Pad coordinates. Strokes are stored in this space and scale with the pad. */
 export const PAD_WIDTH = 600, PAD_HEIGHT = 260;
+const bound = (value: number, limit: number) => Math.max(0, Math.min(limit, value));
 
 const INK: Record<InkColor, { label: string; export: string }> = {
   black: { label: "Black ink", export: "#17171a" },
@@ -197,9 +198,12 @@ function inkBounds(strokes: InkStroke[]) {
 /** A standalone SVG of the signature, cropped to the ink, with print ink colors. */
 export function signatureToSvg(strokes: InkStroke[]) {
   if (!strokes.length) return "";
-  const box = inkBounds(strokes);
+  const bounded = strokes.map(stroke => ({ ...stroke, points: stroke.points.map(point => ({
+    ...point, x: bound(point.x, PAD_WIDTH), y: bound(point.y, PAD_HEIGHT),
+  })) }));
+  const box = inkBounds(bounded);
   // A stroke too short to outline draws nothing, so it leaves no empty path behind.
-  const paths = strokes.map(stroke => [strokePath(stroke), INK[stroke.color].export] as const).filter(([d]) => d)
+  const paths = bounded.map(stroke => [strokePath(stroke), INK[stroke.color].export] as const).filter(([d]) => d)
     .map(([d, fill]) => `<path d="${d}" fill="${fill}"/>`).join("");
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${box.x} ${box.y} ${box.width} ${box.height}" width="${box.width}" height="${box.height}">${paths}</svg>`;
 }
@@ -334,7 +338,7 @@ export function SignaturePad({ signer, hint = "Sign here", defaultColor = "black
 
   function toPad(event: { clientX: number; clientY: number }) {
     const box = padRef.current!.getBoundingClientRect();
-    return { x: (event.clientX - box.left) / box.width * PAD_WIDTH, y: (event.clientY - box.top) / box.height * PAD_HEIGHT };
+    return { x: bound((event.clientX - box.left) / box.width * PAD_WIDTH, PAD_WIDTH), y: bound((event.clientY - box.top) / box.height * PAD_HEIGHT, PAD_HEIGHT) };
   }
 
   function onPointerDown(event: ReactPointerEvent<HTMLDivElement>) {

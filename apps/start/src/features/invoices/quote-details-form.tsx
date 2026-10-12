@@ -20,7 +20,7 @@ import {
   tidyDetails,
 } from '@portfolio/invoices/quote-details';
 import { useRouter } from '@tanstack/react-router';
-import { type InputHTMLAttributes, useId, useState } from 'react';
+import { type InputHTMLAttributes, useId, useMemo, useState } from 'react';
 import { useT } from '../../lib/i18n';
 import { CollectionNotice } from '../privacy/collection-notice';
 import { confirmQuoteLinkDetails } from './api';
@@ -86,10 +86,17 @@ export function QuoteDetailsForm({
   const { address } = customer;
   const country = address.country;
   const required = requiredFields(country);
-  const countryNames = new Intl.DisplayNames([t.locale], { type: 'region' });
-  const countryOptions = countries
-    .map(({ code }) => ({ code, name: countryNames.of(code) ?? code }))
-    .sort((a, b) => a.name.localeCompare(b.name, t.locale));
+  const countryOptions = useMemo(() => {
+    const names = new Intl.DisplayNames([t.locale], { type: 'region' });
+    return countries
+      .map(({ code }) => ({ code, name: names.of(code) ?? code }))
+      .sort((a, b) => a.name.localeCompare(b.name, t.locale))
+      .map(({ code, name }) => (
+        <option key={code} value={code}>
+          {name}
+        </option>
+      ));
+  }, [t.locale]);
   const issues = [...detailsIssues(tidyDetails(details)), ...serverIssues];
   const words = {
     required: m.quote_details_required,
@@ -305,11 +312,7 @@ export function QuoteDetailsForm({
                   })
                 }
               >
-                {countryOptions.map(({ code, name }) => (
-                  <option key={code} value={code}>
-                    {name}
-                  </option>
-                ))}
+                {countryOptions}
               </select>
             </div>
             {addressLayout(country).map((row) => (

@@ -831,6 +831,7 @@
     }
   ],
   "quote_as_text": "Read it as text",
+  "quote_text_loading": "Loading the quote text…",
   "quote_review": "Review and sign",
   "quote_answer": "See the answer",
   "quote_back": "Back to the quote",
