@@ -252,8 +252,15 @@ const signedCopy = (id: InvoiceId) =>
     const response = view.response;
     if (response?.outcome !== 'accepted') return null;
     const bytes = yield* unavailable(
-      Documents.use((documents) => documents.signed(view.quote, response)),
+      Documents.use((documents) => documents.signed(view.quote, response)).pipe(
+        Effect.catchTag('AcceptedPdfMismatch', () => Effect.succeed(null)),
+      ),
     );
+    if (!bytes)
+      return yield* new Refused({
+        status: 409,
+        message: 'The stored PDF does not match the accepted digest.',
+      });
     return { quote: view.quote, response, bytes };
   });
 

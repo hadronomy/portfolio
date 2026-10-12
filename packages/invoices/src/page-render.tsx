@@ -697,7 +697,7 @@ function signatureSize(svg: string) {
  * the notices are set. It names the fingerprint of the PDF they read, so
  * the copy carries the proof of which document the signature belongs to.
  */
-function Acceptance({
+export function Acceptance({
   data,
   acceptance,
   language,
@@ -714,7 +714,10 @@ function Acceptance({
   const value: CSSProperties = { ...body, color: ink };
   return (
     <section
-      style={{ breakBefore: 'page', display: 'flex', flexDirection: 'column' }}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+      }}
     >
       <Title
         title={t(m.accept_title)}
@@ -833,14 +836,11 @@ export function QuoteAppendix({
   quote,
   number,
   language,
-  acceptance,
 }: {
   data: InvoiceData;
   quote: QuoteTerms;
   number: string | null;
   language: Language;
-  /** The customer's acceptance, for the signed copy. */
-  acceptance?: QuoteResponse | undefined;
 }) {
   const t = translate(language);
   const reference = [data.title, number ?? t(m.doc_draft)]
@@ -857,9 +857,6 @@ export function QuoteAppendix({
       <Notices data={data} quote={quote} language={language} />
       {printsWithdrawalForm(data) && (
         <WithdrawalForm data={data} reference={reference} language={language} />
-      )}
-      {acceptance && (
-        <Acceptance data={data} acceptance={acceptance} language={language} />
       )}
     </>
   );
