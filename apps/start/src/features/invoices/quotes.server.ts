@@ -375,6 +375,7 @@ export const quotePageImage = Effect.fn('QuotesServer.pageImage')(function* (
   language: Language,
   digest: string,
   page: number,
+  compact = false,
 ) {
   const id = yield* byLink(token);
   if (Option.isNone(id))
@@ -382,7 +383,7 @@ export const quotePageImage = Effect.fn('QuotesServer.pageImage')(function* (
   const pdf = yield* pdfOf(id.value, language);
   const image =
     pdf.digest === digest
-      ? yield* PageImages.use((images) => images.page(pdf, page - 1))
+      ? yield* PageImages.use((images) => images.page(pdf, page - 1, compact))
       : null;
   if (!image)
     return yield* new Refused({ status: 404, message: 'No such page.' });

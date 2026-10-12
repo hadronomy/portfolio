@@ -193,9 +193,14 @@ function Sheets({
   return (
     <ol className="iv-quote-sheets">
       {Array.from({ length: sheets.count }, (_, index) => (
-        <li key={`${sheets.digest}-${index}`}>
+        <li
+          key={`${sheets.digest}-${index}`}
+          style={{ aspectRatio: `${width} / ${height}` }}
+        >
           <img
             src={`/invoices/quote/${token}/pages/${index + 1}?lang=${language}&v=${sheets.digest}`}
+            srcSet={`/invoices/quote/${token}/pages/${index + 1}?lang=${language}&v=${sheets.digest}&size=compact ${Math.min(width, 1080)}w, /invoices/quote/${token}/pages/${index + 1}?lang=${language}&v=${sheets.digest} ${width}w`}
+            sizes="(max-width: 899px) calc(100vw - 20px), (max-width: 1152px) calc(100vw - 472px), 680px"
             width={width}
             height={height}
             alt={t(m.quote_page_of, { page: index + 1, pages: sheets.count })}
