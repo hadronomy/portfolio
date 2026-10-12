@@ -2,6 +2,7 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { ConfigProvider, Layer } from 'effect';
+import { McpProtocol } from 'effect/ai';
 import { HttpRouter } from 'effect/http';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { appLayer } from '../../server/runtime.server';
@@ -16,7 +17,10 @@ const origin = 'http://127.0.0.1:4321';
 let directory: string;
 let handler: (request: Request) => Promise<Response>;
 let dispose: () => Promise<void>;
-let session = '';
+let app: Layer.Layer<
+  Layer.Success<typeof appLayer>,
+  Layer.Error<typeof appLayer>
+>;
 let next = 1;
 
 /** One JSON-RPC call; its reply, from JSON or from the event stream around it. */
@@ -29,12 +33,17 @@ async function rpc(method: string, params: unknown = {}) {
         'content-type': 'application/json',
         accept: 'application/json, text/event-stream',
         'mcp-protocol-version': '2025-06-18',
-        ...(session && { 'mcp-session-id': session }),
       },
-      body: JSON.stringify({ jsonrpc: '2.0', id, method, params }),
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        ...(method.startsWith('notifications/') ? {} : { id }),
+        method,
+        params,
+      }),
     }),
   );
-  session ||= response.headers.get('mcp-session-id') ?? '';
+  expect([200, 202]).toContain(response.status);
+  expect(response.headers.has('mcp-session-id')).toBe(false);
   const text = await response.text();
   // A stream may carry notifications before the reply; the reply has our id.
   const messages = text.startsWith('{')
@@ -69,7 +78,7 @@ async function call(name: string, args: Record<string, unknown>) {
 
 beforeAll(async () => {
   directory = await mkdtemp(join(tmpdir(), 'invoices-mcp-'));
-  const app = appLayer.pipe(
+  app = appLayer.pipe(
     Layer.provide(
       ConfigProvider.layer(
         ConfigProvider.fromUnknown({
@@ -98,6 +107,277 @@ afterAll(async () => {
 });
 
 describe('the MCP server', () => {
+  for (const protocol of [
+    McpProtocol.v2026_07_28,
+    McpProtocol.v2025_11_25,
+    McpProtocol.v2025_06_18,
+  ]) {
+    it(`${protocol.protocolVersion} works across cold handlers`, async () => {
+      const coldDirectory = await mkdtemp(join(tmpdir(), 'invoices-mcp-cold-'));
+      const coldApp = appLayer.pipe(
+        Layer.provide(
+          ConfigProvider.layer(
+            ConfigProvider.fromUnknown({
+              INVOICE_DATA_DIRECTORY: coldDirectory,
+              NODE_ENV: 'development',
+            }),
+          ),
+        ),
+      );
+      const first = HttpRouter.toWebHandler(
+        agentServer.pipe(Layer.provide(coldApp)),
+        {
+          disableLogger: true,
+        },
+      );
+      let second: typeof first | undefined;
+      const modern = protocol.protocolVersion === '2026-07-28';
+      const send = async (
+        target: typeof first,
+        method: string,
+        params: Record<string, unknown> = {},
+        id: number | null = next++,
+      ) => {
+        const response = await target.handler(
+          new Request(`${origin}/invoices/mcp`, {
+            method: 'POST',
+            headers: {
+              'content-type': 'application/json',
+              accept: 'application/json, text/event-stream',
+              'mcp-protocol-version': protocol.protocolVersion,
+              ...(modern && {
+                'mcp-method': method,
+                ...(typeof params.name === 'string' && {
+                  'mcp-name': params.name,
+                }),
+              }),
+            },
+            body: JSON.stringify({
+              jsonrpc: '2.0',
+              ...(id === null ? {} : { id }),
+              method,
+              params: {
+                ...params,
+                ...(modern && {
+                  _meta: {
+                    'io.modelcontextprotocol/protocolVersion':
+                      protocol.protocolVersion,
+                    'io.modelcontextprotocol/clientCapabilities': {},
+                  },
+                }),
+              },
+            }),
+          }),
+        );
+        expect(response.headers.has('mcp-session-id')).toBe(false);
+        return response;
+      };
+      try {
+        // MCP 2026 removed initialize; discovery carries its server capabilities.
+        const initialized = await send(
+          first,
+          modern ? 'server/discover' : 'initialize',
+          modern
+            ? {}
+            : {
+                protocolVersion: protocol.protocolVersion,
+                capabilities: { roots: {}, sampling: {} },
+                clientInfo: { name: 'cold-client', version: '1' },
+              },
+        );
+        expect(initialized.status).toBe(200);
+        const initialization = await initialized.json();
+        expect(initialization.result.capabilities.tools.listChanged).toBe(
+          false,
+        );
+        expect(initialization.result.capabilities.resources.subscribe).toBe(
+          false,
+        );
+        expect(initialization.result.capabilities.logging).toBeUndefined();
+        if (!modern) {
+          expect(initialization.result.protocolVersion).toBe(
+            protocol.protocolVersion,
+          );
+        }
+        // Close the first runtime before the client reaches another instance.
+        await first.dispose();
+        second = HttpRouter.toWebHandler(
+          agentServer.pipe(Layer.provide(coldApp)),
+          {
+            disableLogger: true,
+          },
+        );
+        if (!modern) {
+          const notified = await send(
+            second,
+            'notifications/initialized',
+            {},
+            null,
+          );
+          expect(notified.status).toBe(202);
+          expect(await notified.text()).toBe('');
+        }
+        const listed = await send(second, 'tools/list');
+        expect(listed.status).toBe(200);
+        expect(
+          (await listed.json()).result.tools
+            .map((tool: { name: string }) => tool.name)
+            .sort(),
+        ).toEqual(Object.keys(InvoiceTools.tools).sort());
+        const called = await send(second, 'tools/call', {
+          name: 'list_documents',
+          arguments: {},
+        });
+        expect(called.status).toBe(200);
+        expect((await called.json()).result).toMatchObject({
+          structuredContent: { documents: [], more: 0 },
+        });
+        const get = await second.handler(
+          new Request(`${origin}/invoices/mcp`, {
+            headers: {
+              accept: 'text/event-stream',
+              'mcp-protocol-version': protocol.protocolVersion,
+            },
+          }),
+        );
+        expect(get.status).toBe(405);
+        expect(get.headers.get('allow')).toBe('POST');
+        await get.text();
+        const logLevel = await send(second, 'logging/setLevel', {
+          level: 'debug',
+        });
+        expect((await logLevel.json()).error.code).toBe(-32601);
+        if (modern) {
+          const subscriptions = await send(second, 'subscriptions/listen', {});
+          expect((await subscriptions.json()).error.code).toBe(-32601);
+        } else {
+          const subscribed = await send(second, 'resources/subscribe', {
+            uri: 'invoices://documents/test/en.pdf',
+          });
+          expect((await subscribed.json()).error.code).toBe(-32601);
+        }
+      } finally {
+        await first.dispose();
+        await second?.dispose();
+        await rm(coldDirectory, { recursive: true, force: true });
+      }
+    }, 60_000);
+  }
+
+  it.each([
+    [{ origin: 'https://untrusted.test' }, 403],
+    [{ accept: 'application/json' }, 406],
+    [{ 'content-type': 'text/plain' }, 415],
+    [{ 'mcp-protocol-version': '1999-01-01' }, 400],
+    [{ 'mcp-protocol-version': '' }, 400],
+    [{ 'mcp-session-id': 'unknown' }, 404],
+    [{ accept: 'application/json, text/event-stream;q=0' }, 406],
+    [{ 'content-type': 'application/json;q=0' }, 415],
+  ])('preserves transport validation for %j', async (overrides, status) => {
+    for (const method of [
+      'tools/list',
+      'logging/setLevel',
+      'subscriptions/listen',
+    ]) {
+      const response = await handler(
+        new Request(`${origin}/invoices/mcp`, {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            accept: 'application/json, text/event-stream',
+            'mcp-protocol-version': '2025-06-18',
+            ...overrides,
+          },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: next++,
+            method,
+            params: { level: 'debug' },
+          }),
+        }),
+      );
+      expect(response.status).toBe(status);
+      expect(response.headers.has('mcp-session-id')).toBe(false);
+      await response.text();
+    }
+  });
+
+  it('keeps modern header validation before persistent-operation refusals', async () => {
+    const response = await handler(
+      new Request(`${origin}/invoices/mcp`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          accept: 'application/json, text/event-stream',
+          'mcp-protocol-version': '2026-07-28',
+          'mcp-method': 'tools/list',
+        },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: next++,
+          method: 'subscriptions/listen',
+          params: {
+            _meta: {
+              'io.modelcontextprotocol/protocolVersion': '2026-07-28',
+              'io.modelcontextprotocol/clientCapabilities': {},
+            },
+          },
+        }),
+      }),
+    );
+    expect(response.status).toBe(400);
+    expect((await response.json()).error.message).toMatch(/Mcp-Method/);
+  });
+
+  it.each([
+    [{}, {}, 404],
+    [{ origin: 'https://untrusted.test' }, {}, 403],
+    [{ accept: 'application/json' }, {}, 406],
+    [{ 'content-type': 'text/plain' }, {}, 415],
+    [{ 'mcp-method': '' }, {}, 400],
+    [{ 'mcp-protocol-version': '2025-11-25' }, {}, 400],
+    [{}, { 'io.modelcontextprotocol/protocolVersion': null }, 400],
+    [{}, { 'io.modelcontextprotocol/clientCapabilities': null }, 400],
+  ])('keeps modern refusal checks for %j and %j', async (headers, metadata, status) => {
+    for (const method of ['logging/setLevel', 'subscriptions/listen']) {
+      const response = await handler(
+        new Request(`${origin}/invoices/mcp`, {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            accept: 'application/json, text/event-stream',
+            'mcp-protocol-version': '2026-07-28',
+            'mcp-method': method,
+            ...headers,
+          },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: next++,
+            method,
+            params: {
+              level: 'debug',
+              _meta: {
+                'io.modelcontextprotocol/protocolVersion': '2026-07-28',
+                'io.modelcontextprotocol/clientCapabilities': {},
+                ...metadata,
+              },
+            },
+          }),
+        }),
+      );
+      expect(response.status).toBe(status);
+      expect(response.headers.has('mcp-session-id')).toBe(false);
+      if (status === 404) {
+        expect((await response.json()).error).toEqual({
+          code: -32601,
+          message: `Method not found: ${method}`,
+        });
+      } else {
+        await response.text();
+      }
+    }
+  });
+
   it('lists every tool, with the hints a client shows the owner', async () => {
     const reply = await rpc('tools/list');
     const tools = reply.result?.tools as {
