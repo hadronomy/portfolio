@@ -1,4 +1,12 @@
-import { Config, Context, Effect, Layer, Redacted, Schema } from 'effect';
+import {
+  Config,
+  ConfigProvider,
+  Context,
+  Effect,
+  Layer,
+  Redacted,
+  Schema,
+} from 'effect';
 import Stripe from 'stripe';
 import { call } from './call';
 import { StripeEvent, type StripeFailure } from './schema';
@@ -43,17 +51,25 @@ export const StripeWebhookConfig = Config.Redacted('STRIPE_WEBHOOK_SECRET');
 export const stripeWebhooksLayer = Layer.effect(
   StripeWebhooks,
   Effect.gen(function* () {
-    const secret = yield* StripeWebhookConfig;
+    // The secret is read per delivery, through the provider the layer was
+    // built with. Alchemy builds the Worker at deploy time to learn its
+    // bindings, before Stripe has minted the endpoint the secret belongs to.
+    // A Worker without it is misdeployed, so a missing secret is a defect:
+    // Stripe hears 500 and delivers again once it is bound.
+    const provider = yield* ConfigProvider.ConfigProvider;
+    const secret = StripeWebhookConfig.parse(provider).pipe(Effect.orDie);
     const crypto = Stripe.createSubtleCryptoProvider();
     return StripeWebhooks.of({
       verify: (payload, signature) =>
-        call('verify', StripeEvent, () =>
-          Stripe.webhooks.constructEventAsync(
-            payload,
-            signature,
-            Redacted.value(secret),
-            undefined,
-            crypto,
+        Effect.flatMap(secret, (key) =>
+          call('verify', StripeEvent, () =>
+            Stripe.webhooks.constructEventAsync(
+              payload,
+              signature,
+              Redacted.value(key),
+              undefined,
+              crypto,
+            ),
           ),
         ).pipe(
           Effect.catchIf(

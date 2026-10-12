@@ -130,4 +130,13 @@ describe('the Stripe webhook', () => {
     );
     expect(response.status).toBe(404);
   });
+
+  it('builds before Stripe has minted the signing secret', async () => {
+    // Alchemy builds the Worker at deploy time, before the endpoint exists.
+    const built = Layer.build(stripeWebhooksLayer).pipe(
+      Effect.scoped,
+      Effect.provide(ConfigProvider.layer(ConfigProvider.fromUnknown({}))),
+    );
+    await expect(Effect.runPromise(built)).resolves.toBeDefined();
+  });
 });
