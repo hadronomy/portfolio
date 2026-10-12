@@ -27,7 +27,11 @@ export interface Sheets {
 export interface PageImagesApi {
   readonly sheets: (pdf: Pdf) => Effect.Effect<Sheets>;
   /** Page `index`, counted from 0, as WebP. Null past the last page. */
-  readonly page: (pdf: Pdf, index: number) => Effect.Effect<Uint8Array | null>;
+  readonly page: (
+    pdf: Pdf,
+    index: number,
+    compact?: boolean,
+  ) => Effect.Effect<Uint8Array | null>;
 }
 
 export class PageImages extends Context.Service<PageImages, PageImagesApi>()(
@@ -103,16 +107,20 @@ export const pageImagesLayer = Layer.effect(
     const page = Effect.fn('PageImages.page')(function* (
       pdf: Pdf,
       index: number,
+      compact = false,
     ) {
       if (!Number.isInteger(index) || index < 0) return null;
-      const key = `${pdf.digest}:${index}`;
+      const key = `${pdf.digest}:${index}:${compact ? 'compact' : 'full'}`;
       const cached = pages.get(key);
       if (cached !== undefined) return cached;
       const result = yield* opened(pdf, async (pdfium, document) => {
         const page = document.pages[index];
         if (!page) return null;
-        const width = Math.ceil(page.size.width * scale);
-        const height = Math.ceil(page.size.height * scale);
+        const factor = compact
+          ? Math.min(scale, 1080 / page.size.width)
+          : scale;
+        const width = Math.ceil(page.size.width * factor);
+        const height = Math.ceil(page.size.height * factor);
         // Reject oversized pages before PDFium allocates their pixel buffer.
         if (
           !Number.isFinite(width * height) ||
@@ -122,7 +130,7 @@ export const pageImagesLayer = Layer.effect(
         )
           throw new Error('PDF page exceeds the page renderer pixel limit.');
         const image = await pdfium
-          .renderPageRaw(document, page, { scaleFactor: scale })
+          .renderPageRaw(document, page, { scaleFactor: factor })
           .toPromise();
         const pixels = Buffer.from(
           image.data.buffer,
@@ -146,8 +154,10 @@ export const pageImagesLayer = Layer.effect(
     return PageImages.of({
       sheets: (pdf) =>
         renders.withPermits(1)(Effect.uninterruptible(sheet(pdf))),
-      page: (pdf, index) =>
-        renders.withPermits(1)(Effect.uninterruptible(page(pdf, index))),
+      page: (pdf, index, compact) =>
+        renders.withPermits(1)(
+          Effect.uninterruptible(page(pdf, index, compact)),
+        ),
     });
   }),
 );

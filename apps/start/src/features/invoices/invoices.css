@@ -5302,16 +5302,20 @@ body:has(.iv-dock) .iv-toast-region {
   padding: 0;
   list-style: none;
 }
-.iv-quote-sheets img {
-  display: block;
-  width: 100%;
-  height: auto;
+.iv-quote-sheets > li {
+  content-visibility: auto;
   border-radius: 3px;
   background: #fff;
   box-shadow:
     0 0 0 1px rgb(20 20 20 / 0.05),
     0 1px 1px rgb(20 20 20 / 0.05),
     0 14px 30px -16px rgb(20 20 20 / 0.4);
+}
+.iv-quote-sheets img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: inherit;
 }
 
 /* The same quote as text: for a screen reader, or a phone held at arm's
@@ -5595,7 +5599,8 @@ body:has(.iv-dock) .iv-toast-region {
     left: 6px;
     z-index: 20;
     grid-template-rows: auto minmax(0, 1fr);
-    max-height: calc(100dvh - 32px);
+    max-height: calc(100svh - 32px);
+    filter: drop-shadow(0 3px 12px rgb(20 20 20 / 0.16));
     transform: translateY(calc(100% - var(--face, 0px)));
     transition: transform 460ms var(--drawer);
   }

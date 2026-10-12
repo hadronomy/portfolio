@@ -8,6 +8,7 @@ import { serve } from '../server/runtime.server';
 const Query = Schema.Struct({
   lang: Language,
   v: Schema.String.check(Schema.isPattern(/^[0-9a-f]{64}$/)),
+  size: Schema.Literals(['full', 'compact']),
   page: Schema.NumberFromString.check(
     Schema.isInt(),
     Schema.isBetween({ minimum: 1, maximum: 999 }),
@@ -23,13 +24,14 @@ export const Route = createFileRoute('/invoices_/quote/$token_/pages/$page')({
           Schema.decodeUnknownEffect(Query)({
             lang: search.get('lang'),
             v: search.get('v'),
+            size: search.get('size') ?? 'full',
             page: params.page,
           }).pipe(
             Effect.mapError(
               () => new Refused({ status: 404, message: 'No such page.' }),
             ),
-            Effect.flatMap(({ lang, v, page }) =>
-              quotePageImage(params.token, lang, v, page),
+            Effect.flatMap(({ lang, v, page, size }) =>
+              quotePageImage(params.token, lang, v, page, size === 'compact'),
             ),
           ),
           request,
