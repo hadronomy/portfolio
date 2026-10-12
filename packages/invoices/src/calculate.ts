@@ -208,5 +208,8 @@ export function formatMoney(
   return new Intl.NumberFormat(language, {
     style: 'currency',
     currency,
+    // Spanish leaves four-digit amounts ungrouped by default, so 2500,00 €
+    // would sit beside a written 2.500,00 €. Money always groups.
+    useGrouping: 'always',
   }).format(Number(amount));
 }
