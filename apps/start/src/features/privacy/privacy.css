@@ -1,0 +1,189 @@
+.iv-collection-notice {
+  margin: 12px 0 0;
+  color: var(--iv-ink-2);
+  font-size: 12px;
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+/* Under a full-width button the fine print centres on it, as a caption. */
+.iv-pay-form > .iv-collection-notice,
+.iv-quote-answer > .iv-collection-notice {
+  margin: 0;
+  text-align: center;
+}
+.iv-collection-notice a {
+  color: var(--iv-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.iv-collection-notice a:hover {
+  color: var(--iv-ink-2);
+}
+.iv-collection-notice a:focus-visible,
+.iv-privacy a:focus-visible {
+  outline: 2px solid var(--iv-ink);
+  outline-offset: 4px;
+  border-radius: 3px;
+}
+.iv-privacy {
+  justify-content: flex-start;
+  font-variant-numeric: tabular-nums;
+  padding: 32px 24px 64px;
+}
+.iv-privacy > .iv-backdrop {
+  position: fixed;
+}
+.iv-privacy-sheet {
+  width: min(1040px, 100%);
+  padding: 28px 48px 56px;
+  border-radius: 24px;
+  background: var(--iv-surface);
+  box-shadow: var(--iv-float);
+}
+.iv-privacy-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 48px;
+}
+.iv-privacy-back,
+.iv-privacy-contact,
+.iv-privacy-language {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.iv-privacy-back {
+  color: var(--iv-ink-2);
+}
+.iv-privacy-language {
+  gap: 16px;
+}
+.iv-privacy-language a {
+  padding: 8px 0;
+  color: var(--iv-ink-2);
+}
+.iv-privacy-language a[aria-current] {
+  color: var(--iv-ink);
+  font-weight: 600;
+}
+.iv-privacy-intro {
+  max-width: 680px;
+  margin-bottom: 36px;
+}
+.iv-privacy-intro h1 {
+  margin: 0 0 20px;
+  font-size: clamp(30px, 4vw, 44px);
+  font-weight: 550;
+  line-height: 1.12;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+.iv-privacy-intro p {
+  color: var(--iv-ink-2);
+  font-size: 16px;
+  line-height: 1.65;
+}
+.iv-privacy-controller {
+  padding: 24px;
+  border-radius: 16px;
+  background: var(--iv-canvas);
+  margin-bottom: 40px;
+}
+.iv-privacy-controller address {
+  display: grid;
+  gap: 6px;
+  margin-top: 18px;
+  font-style: normal;
+  overflow-wrap: anywhere;
+}
+.iv-privacy-controller p {
+  max-width: 680px;
+}
+.iv-privacy-reading {
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr);
+  gap: 40px;
+  align-items: start;
+}
+.iv-privacy-contents {
+  display: grid;
+  gap: 14px;
+  position: sticky;
+  top: 32px;
+  color: var(--iv-ink-2);
+  line-height: 1.5;
+}
+.iv-privacy-contents a:hover,
+.iv-privacy-back:hover {
+  color: var(--iv-ink);
+}
+.iv-privacy-body {
+  min-width: 0;
+  max-width: 72ch;
+  font-size: 15px;
+}
+.iv-privacy-body section + section {
+  margin-top: 36px;
+}
+.iv-privacy h2 {
+  margin: 0 0 14px;
+  font-size: 21px;
+  line-height: 1.25;
+  font-weight: 550;
+  text-wrap: balance;
+  scroll-margin-top: 28px;
+}
+.iv-privacy h3 {
+  margin: 24px 0 10px;
+  font-size: 15px;
+  font-weight: 600;
+}
+.iv-privacy-body p,
+.iv-privacy-body li,
+.iv-privacy-controller p {
+  color: var(--iv-ink-2);
+  font-size: 15px;
+  line-height: 1.75;
+  text-wrap: pretty;
+}
+.iv-privacy-body p + p {
+  margin-top: 14px;
+}
+.iv-privacy-body ul {
+  display: grid;
+  gap: 14px;
+  margin: 18px 0;
+  padding-left: 18px;
+  list-style: disc;
+}
+.iv-privacy-contact {
+  margin-top: 20px;
+  font-weight: 500;
+}
+@media (max-width: 900px) {
+  .iv-privacy {
+    padding: 16px 12px 32px;
+  }
+  .iv-privacy-sheet {
+    padding: 20px 20px 32px;
+    border-radius: 20px;
+  }
+  .iv-privacy-header {
+    margin-bottom: 32px;
+  }
+  .iv-privacy-controller {
+    padding: 18px;
+    border-radius: 12px;
+  }
+  .iv-privacy-reading {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 32px;
+  }
+  .iv-privacy-contents {
+    position: static;
+    gap: 12px;
+  }
+}

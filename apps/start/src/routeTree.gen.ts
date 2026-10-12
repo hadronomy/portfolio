@@ -20,6 +20,7 @@ import { Route as InvoicesSettingsRouteImport } from './routes/invoices.settings
 import { Route as InvoicesAccountRouteImport } from './routes/invoices_.account'
 import { Route as InvoicesConnectRouteImport } from './routes/invoices_.connect'
 import { Route as InvoicesMcpRouteImport } from './routes/invoices_.mcp'
+import { Route as InvoicesPrivacyRouteImport } from './routes/invoices_.privacy'
 import { Route as InvoicesAccountInvoiceIdRouteImport } from './routes/invoices_.account_.$invoiceId'
 import { Route as InvoicesAuthSplatRouteImport } from './routes/invoices_.auth.$'
 import { Route as InvoicesConnectConsentRouteImport } from './routes/invoices_.connect_.consent'
@@ -84,6 +85,11 @@ const InvoicesConnectRoute = InvoicesConnectRouteImport.update({
 const InvoicesMcpRoute = InvoicesMcpRouteImport.update({
   id: '/invoices_/mcp',
   path: '/invoices/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InvoicesPrivacyRoute = InvoicesPrivacyRouteImport.update({
+  id: '/invoices_/privacy',
+  path: '/invoices/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InvoicesAccountInvoiceIdRoute =
@@ -151,6 +157,7 @@ export interface FileRoutesByFullPath {
   '/invoices/account': typeof InvoicesAccountRoute
   '/invoices/connect': typeof InvoicesConnectRoute
   '/invoices/mcp': typeof InvoicesMcpRoute
+  '/invoices/privacy': typeof InvoicesPrivacyRoute
   '/invoices/': typeof InvoicesIndexRoute
   '/invoices/account/$invoiceId': typeof InvoicesAccountInvoiceIdRoute
   '/invoices/auth/$': typeof InvoicesAuthSplatRoute
@@ -173,6 +180,7 @@ export interface FileRoutesByTo {
   '/invoices/account': typeof InvoicesAccountRoute
   '/invoices/connect': typeof InvoicesConnectRoute
   '/invoices/mcp': typeof InvoicesMcpRoute
+  '/invoices/privacy': typeof InvoicesPrivacyRoute
   '/invoices': typeof InvoicesIndexRoute
   '/invoices/account/$invoiceId': typeof InvoicesAccountInvoiceIdRoute
   '/invoices/auth/$': typeof InvoicesAuthSplatRoute
@@ -197,6 +205,7 @@ export interface FileRoutesById {
   '/invoices_/account': typeof InvoicesAccountRoute
   '/invoices_/connect': typeof InvoicesConnectRoute
   '/invoices_/mcp': typeof InvoicesMcpRoute
+  '/invoices_/privacy': typeof InvoicesPrivacyRoute
   '/invoices/': typeof InvoicesIndexRoute
   '/invoices_/account_/$invoiceId': typeof InvoicesAccountInvoiceIdRoute
   '/invoices_/auth/$': typeof InvoicesAuthSplatRoute
@@ -222,6 +231,7 @@ export interface FileRouteTypes {
     | '/invoices/account'
     | '/invoices/connect'
     | '/invoices/mcp'
+    | '/invoices/privacy'
     | '/invoices/'
     | '/invoices/account/$invoiceId'
     | '/invoices/auth/$'
@@ -244,6 +254,7 @@ export interface FileRouteTypes {
     | '/invoices/account'
     | '/invoices/connect'
     | '/invoices/mcp'
+    | '/invoices/privacy'
     | '/invoices'
     | '/invoices/account/$invoiceId'
     | '/invoices/auth/$'
@@ -267,6 +278,7 @@ export interface FileRouteTypes {
     | '/invoices_/account'
     | '/invoices_/connect'
     | '/invoices_/mcp'
+    | '/invoices_/privacy'
     | '/invoices/'
     | '/invoices_/account_/$invoiceId'
     | '/invoices_/auth/$'
@@ -287,6 +299,7 @@ export interface RootRouteChildren {
   InvoicesAccountRoute: typeof InvoicesAccountRoute
   InvoicesConnectRoute: typeof InvoicesConnectRoute
   InvoicesMcpRoute: typeof InvoicesMcpRoute
+  InvoicesPrivacyRoute: typeof InvoicesPrivacyRoute
   InvoicesAccountInvoiceIdRoute: typeof InvoicesAccountInvoiceIdRoute
   InvoicesAuthSplatRoute: typeof InvoicesAuthSplatRoute
   InvoicesConnectConsentRoute: typeof InvoicesConnectConsentRoute
@@ -376,6 +389,13 @@ declare module '@tanstack/react-router' {
       path: '/invoices/mcp'
       fullPath: '/invoices/mcp'
       preLoaderRoute: typeof InvoicesMcpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/invoices_/privacy': {
+      id: '/invoices_/privacy'
+      path: '/invoices/privacy'
+      fullPath: '/invoices/privacy'
+      preLoaderRoute: typeof InvoicesPrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/invoices_/account_/$invoiceId': {
@@ -478,6 +498,7 @@ const rootRouteChildren: RootRouteChildren = {
   InvoicesAccountRoute: InvoicesAccountRoute,
   InvoicesConnectRoute: InvoicesConnectRoute,
   InvoicesMcpRoute: InvoicesMcpRoute,
+  InvoicesPrivacyRoute: InvoicesPrivacyRoute,
   InvoicesAccountInvoiceIdRoute: InvoicesAccountInvoiceIdRoute,
   InvoicesAuthSplatRoute: InvoicesAuthSplatRoute,
   InvoicesConnectConsentRoute: InvoicesConnectConsentRoute,

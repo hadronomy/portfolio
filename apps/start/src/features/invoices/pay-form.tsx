@@ -29,6 +29,7 @@ import {
   useState,
 } from 'react';
 import { useT } from '../../lib/i18n';
+import { CollectionNotice } from '../privacy/collection-notice';
 import { type Access, beginPayment } from './api';
 import { currencySymbol } from './choices';
 import { decimalMark, fromCents, moneyOf, readAmount, toCents } from './money';
@@ -160,6 +161,7 @@ function firstPick(options: Options): number {
 
 export function PayStub(props: PayStubProps) {
   const { invoice, publishableKey } = props;
+  const router = useRouter();
   const first = props.plan.options.choices[firstPick(props.plan.options)];
   // Deferred mode: the form draws before a PaymentIntent exists, so the
   // amount can change under it. The intent is made on submit, for the
@@ -170,15 +172,14 @@ export function PayStub(props: PayStubProps) {
       amount: toCents(first?.amount ?? invoice.remaining),
       currency: invoice.currency.toLowerCase(),
       appearance,
-      locale: invoice.language,
-      // Stripe's iframe loads its own fonts; Google serves Geist with the
-      // cross-origin headers that requires.
       fonts: [
         {
-          cssSrc:
-            'https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap',
+          family: 'Geist',
+          src: `url(${new URL('/fonts/geist-latin-wght-normal.woff2', router.origin).href})`,
+          weight: '400 600',
         },
       ],
+      locale: invoice.language,
     }),
     // The options are read once, at mount; later amounts go through
     // elements.update, which keeps what the customer has typed.
@@ -547,6 +548,7 @@ function PayForm({
               })}
         </MorphText>
       </Button>
+      <CollectionNotice purpose="payment" controller={invoice.issuer} />
     </form>
   );
 }

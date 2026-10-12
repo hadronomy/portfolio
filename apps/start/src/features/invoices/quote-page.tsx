@@ -30,6 +30,7 @@ import {
   signatureToSvg,
 } from '../../components/arc/signature-pad/signature-pad';
 import { Speak, useT } from '../../lib/i18n';
+import { CollectionNotice } from '../privacy/collection-notice';
 import { answerQuoteLink } from './api';
 import { ClosedLink } from './closed-link';
 import { coverArt } from './covers';
@@ -405,12 +406,11 @@ function Answer({
           {t(pending === 'accepted' ? m.quote_accepting : m.quote_accept)}
         </MorphText>
       </Button>
-      <p className="iv-quote-fine">
-        {t(m.quote_signature)}{' '}
-        <span className="iv-num" title={digest}>
-          {t(m.quote_fingerprint)} {digest.slice(0, 12)}
-        </span>
-      </p>
+      <CollectionNotice
+        purpose="quote"
+        controller={d.issuer.name}
+        digest={digest}
+      />
       {declining ? (
         <fieldset className="iv-quote-decline">
           <legend>

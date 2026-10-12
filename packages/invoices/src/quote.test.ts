@@ -43,6 +43,32 @@ describe('quote pages', () => {
 });
 
 describe('quote notices', () => {
+  it.each([
+    'es',
+    'en',
+  ] as const)('names the controller, processors and transfers in %s', (language) => {
+    const data = quoteSpecimen(language).data;
+    if (!data.quote) throw new Error('The specimen must be a quote.');
+    const notice = quoteNotices(data, data.quote, language).find(
+      ({ id }) => id === 'privacy',
+    );
+    for (const text of [
+      data.issuer.name,
+      data.issuer.taxId,
+      data.issuer.email,
+      'Vercel',
+      'Cloudflare',
+      'Neon/Databricks',
+      'Resend',
+      'Stripe',
+      'Photon/komoot',
+      'MCP',
+      'SHA-256',
+      'https://hadronomy.com/invoices/privacy',
+    ])
+      expect(notice?.body).toContain(text);
+  });
+
   it('tell a consumer about withdrawal, taxes and complaints', () => {
     expect(ids(quoteSpecimen().data)).toEqual([
       'validity',
