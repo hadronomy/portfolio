@@ -11,6 +11,7 @@
     "lint": "bun biome lint --apply .",
     "lint:ws": "bunx sherif@latest",
     "ci": "node scripts/deploy/ci.mjs",
+    "build:vercel": "node scripts/deploy/vercel-build.mjs",
     "update:plan": "bun taze",
     "update:write": "bun taze --write",
     "dev": "bun run --cwd apps/astro dev",
