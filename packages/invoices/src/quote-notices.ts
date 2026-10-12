@@ -85,7 +85,7 @@ export function quoteNotices(
       email,
     }),
     source:
-      'Reglamento (UE) 2016/679, arts. 6.1.b y 13; Ley Orgánica 3/2018, art. 11',
+      'Reglamento (UE) 2016/679, arts. 6, 13, 14 y 44–46; Ley Orgánica 3/2018, art. 11',
   });
   return notices;
 }

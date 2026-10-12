@@ -27,7 +27,13 @@ import '../invoices/invoices.css';
 // own page, where it is paid as its plan allows. It wears the same paper and backdrop as the
 // payment page, since it is the same customer looking at the same invoices.
 
-function SignIn({ available }: { available: boolean }) {
+function SignIn({
+  available,
+  controller,
+}: {
+  available: boolean;
+  controller: string;
+}) {
   const t = useT();
   const router = useRouter();
   return (
@@ -45,7 +51,10 @@ function SignIn({ available }: { available: boolean }) {
         <h1>{t(m.account_title)}</h1>
         <p>{t(available ? m.account_intro : m.account_unavailable)}</p>
         {available && (
-          <CodeSignIn onSignedIn={() => void router.invalidate()} />
+          <CodeSignIn
+            controller={controller}
+            onSignedIn={() => void router.invalidate()}
+          />
         )}
       </main>
     </div>
@@ -345,7 +354,7 @@ export function AccountScreen({ page }: { page: AccountPage }) {
     case 'SignedOut':
       return (
         <Speak locale={page.language}>
-          <SignIn available={page.available} />
+          <SignIn controller={page.controller} available={page.available} />
         </Speak>
       );
     case 'SignedIn':

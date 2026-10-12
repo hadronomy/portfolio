@@ -30,6 +30,7 @@ import {
   signatureToSvg,
 } from '../../components/arc/signature-pad/signature-pad';
 import { Speak, useT } from '../../lib/i18n';
+import { CollectionNotice } from '../privacy/collection-notice';
 import { answerQuoteLink } from './api';
 import { ClosedLink } from './closed-link';
 import { coverArt } from './covers';
@@ -336,6 +337,7 @@ function Answer({
         if (named && signed && agreed) void send('accepted');
       }}
     >
+      <CollectionNotice purpose="quote" controller={d.issuer.name} />
       <Plans quote={quote} plans={plans} chosen={plan} onChoose={setPlan} />
       <label className="iv-quote-name" htmlFor={nameId}>
         <span>{t(m.quote_name)}</span>

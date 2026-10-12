@@ -29,6 +29,7 @@ import {
   useState,
 } from 'react';
 import { useT } from '../../lib/i18n';
+import { CollectionNotice } from '../privacy/collection-notice';
 import { type Access, beginPayment } from './api';
 import { currencySymbol } from './choices';
 import { decimalMark, fromCents, moneyOf, readAmount, toCents } from './money';
@@ -73,7 +74,7 @@ const appearance: Appearance = {
     colorDanger: '#b4312a',
     colorIconTab: '#5d5d61',
     colorIconTabSelected: '#141414',
-    fontFamily: 'Geist, system-ui, sans-serif',
+    fontFamily: 'system-ui, sans-serif',
     fontSizeBase: '14px',
     fontWeightNormal: '400',
     fontWeightMedium: '500',
@@ -171,14 +172,6 @@ export function PayStub(props: PayStubProps) {
       currency: invoice.currency.toLowerCase(),
       appearance,
       locale: invoice.language,
-      // Stripe's iframe loads its own fonts; Google serves Geist with the
-      // cross-origin headers that requires.
-      fonts: [
-        {
-          cssSrc:
-            'https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap',
-        },
-      ],
     }),
     // The options are read once, at mount; later amounts go through
     // elements.update, which keeps what the customer has typed.
@@ -506,6 +499,7 @@ function PayForm({
           )}
         </fieldset>
       )}
+      <CollectionNotice purpose="payment" controller={invoice.issuer} />
       <div className="iv-pay-element" data-loaded={loaded || undefined}>
         <PaymentElement
           options={{

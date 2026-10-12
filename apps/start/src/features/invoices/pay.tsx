@@ -293,6 +293,7 @@ function Keep({
       </div>
       <CodeSignIn
         email={invoice.customerEmail}
+        controller={invoice.issuer}
         emphasis="secondary"
         onSignedIn={() => void router.invalidate()}
       />

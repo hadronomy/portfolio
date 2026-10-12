@@ -13,6 +13,7 @@ import { useT } from '../../lib/i18n';
 import { authClient } from '../auth/client';
 import { SuccessCheck } from '../invoices/toast';
 import { Button, MorphText } from '../invoices/ui';
+import { CollectionNotice } from '../privacy/collection-notice';
 import { CodeField, type CodeState, codeLength } from './code-field';
 
 // Sign-in by a code sent to an inbox, in two steps on one form: the address,
@@ -68,11 +69,13 @@ function useCountdown(until: number) {
 
 export function CodeSignIn({
   email: fixed,
+  controller,
   emphasis = 'primary',
   onSignedIn,
 }: {
   /** The only address this form signs in, when the page already knows it. */
   email?: string;
+  controller: string;
   /** Secondary where another action owns the page, such as paying. */
   emphasis?: 'primary' | 'secondary';
   onSignedIn: () => void;
@@ -286,6 +289,7 @@ export function CodeSignIn({
           </div>
         </div>
       )}
+      <CollectionNotice purpose="signin" controller={controller} />
     </form>
   );
 }

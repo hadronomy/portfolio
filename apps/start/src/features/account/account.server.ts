@@ -5,6 +5,7 @@ import {
   customerEmail,
 } from '@portfolio/invoices/customer-access';
 import type { InvoiceId, Language } from '@portfolio/invoices/model';
+import { privacyController } from '@portfolio/invoices/privacy';
 import { Effect, Option } from 'effect';
 import { requireCustomer, viewer } from '../../server/auth.server';
 import { customerAccounts } from '../../server/config.server';
@@ -21,6 +22,7 @@ import { pdfResponse, unavailable } from '../invoices/operations.server';
 export type AccountPage =
   | {
       readonly _tag: 'SignedOut';
+      readonly controller: string;
       readonly language: Language;
       /** Whether codes can be sent here at all. */
       readonly available: boolean;
@@ -42,6 +44,7 @@ export const accountPage = Effect.fn('Account.page')(function* () {
   if (current?._tag !== 'Customer')
     return {
       _tag: 'SignedOut',
+      controller: (yield* unavailable(privacyController()))?.name ?? '',
       language,
       available: yield* customerAccounts,
     } satisfies AccountPage;

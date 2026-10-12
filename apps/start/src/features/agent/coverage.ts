@@ -62,6 +62,7 @@ export const serverFunctions: Record<
   getQuoteEmails: ['get_document'],
   getQuotePage: { notForAgents: 'The customer’s quote page.' },
   answerQuoteLink: { notForAgents: 'The customer answers a quote.' },
+  getPrivacyNotice: { notForAgents: 'Public customer privacy information.' },
   getAccountPage: { notForAgents: 'The customer’s account.' },
   getAccountInvoice: { notForAgents: 'The customer’s account.' },
   fingerprint: { notForAgents: 'Browser plumbing.' },
