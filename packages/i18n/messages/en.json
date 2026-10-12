@@ -1471,5 +1471,31 @@
   "privacy_contact_action": "Contact the controller",
   "privacy_language": "Notice language",
   "privacy_language_es": "Español",
-  "privacy_language_en": "English"
+  "privacy_language_en": "English",
+  "mail_delivery_heading": "Email delivery",
+  "mail_delivery_kind": [
+    {
+      "declarations": ["input kind"],
+      "selectors": ["kind"],
+      "match": {
+        "kind=quote-invitation": "Quote invitation",
+        "kind=quote-copy": "Your quote copy",
+        "kind=quote-answer": "Customer confirmation",
+        "kind=quote-answered": "Your answer notice",
+        "kind=sign-in-code": "Sign-in code",
+        "kind=*": "Email"
+      }
+    }
+  ],
+  "mail_delivery_pending": "Automatic retry is queued",
+  "mail_delivery_failed": "Email could not be sent",
+  "mail_delivery_retry": "Retry",
+  "mail_delivery_retrying": "Retrying…",
+  "mail_delivery_retry_refused": "This email could not be retried. Check its delivery record or Resend before sending it again.",
+  "mail_invitation_queued": "Email queued for {to}. Delivery will retry automatically.",
+  "mail_invitation_problem": "The email request did not finish. Check the delivery record before sending it again.",
+  "mail_invitation_queued_button": "Queued",
+  "mail_invitation_sent": "Sent to {to}.",
+  "mail_invitation_failed": "Email could not be sent to {to}. Open the delivery record to retry.",
+  "mail_invitation_failed_button": "Needs review"
 }

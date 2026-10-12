@@ -248,6 +248,7 @@
     "packages/invoices": {
       "name": "@portfolio/invoices",
       "dependencies": {
+        "@embedpdf/pdfium": "2.15.0",
         "@portfolio/database": "workspace:*",
         "@portfolio/i18n": "workspace:*",
         "@tiptap/core": "3.31.4",
@@ -263,6 +264,7 @@
         "takumi-pdf": "0.14.3",
       },
       "devDependencies": {
+        "@embedpdf/engines": "2.15.0",
         "@types/node": "catalog:types",
         "@types/react": "catalog:types",
         "drizzle-kit": "1.0.0-rc.5-5935859",

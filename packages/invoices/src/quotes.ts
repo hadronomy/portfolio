@@ -5,6 +5,7 @@ import { billData, bills } from './billing';
 import { InvoiceDatabase } from './database';
 import { Documents } from './documents';
 import {
+  createLink,
   type LinkInvalid,
   mintLink,
   openLinks,
@@ -18,6 +19,8 @@ import {
   newInvoice,
   type OwnerDid,
 } from './model';
+import { enqueueMail } from './outbox';
+import type { MailKind } from './outbox-model';
 import { PaymentPlan } from './plan';
 import {
   type Answer,
@@ -72,6 +75,26 @@ export interface QuoteView {
 export type QuoteError = StoreError | QuoteClosed;
 
 export interface QuotesApi {
+  /** Creates the customer's link and queues each recipient in the same transaction. */
+  readonly invite: (
+    id: InvoiceId,
+    actor: OwnerDid,
+    request: {
+      readonly base: string;
+      readonly to: string;
+      readonly note: string;
+      readonly copy: boolean;
+    },
+  ) => Effect.Effect<
+    {
+      readonly expiresAt: string;
+      readonly emails: readonly {
+        readonly id: string;
+        readonly kind: MailKind;
+      }[];
+    },
+    QuoteError
+  >;
   /** Mints a link to an open quote for its customer. */
   readonly share: (
     id: InvoiceId,
@@ -101,9 +124,8 @@ export interface QuotesApi {
     id: InvoiceId,
     answer: Answer,
     evidence: Evidence,
+    mail: { readonly url: string; readonly workspaceUrl: string },
   ) => Effect.Effect<QuoteResponse, QuoteError>;
-  /** Notes that the confirmation email went out. */
-  readonly confirmed: (id: InvoiceId) => Effect.Effect<void, StoreError>;
   /**
    * Drafts the invoice for `payment` of an accepted quote's plan: its
    * share of every quoted line, due on the payment's date. Asking again
@@ -114,15 +136,6 @@ export interface QuotesApi {
     payment: number,
     actor: OwnerDid,
   ) => Effect.Effect<Invoice, QuoteError>;
-  /**
-   * Records that the quote went to `to` by email, with the link minted for
-   * it. The owner's panel and agents read it back from `emails`.
-   */
-  readonly emailed: (
-    id: InvoiceId,
-    actor: OwnerDid,
-    email: QuoteEmail,
-  ) => Effect.Effect<void, StoreError>;
   /** Every time the quote was emailed, newest first. */
   readonly emails: (
     id: InvoiceId,
@@ -225,6 +238,61 @@ export const makeQuotes = Effect.gen(function* () {
   });
 
   const api: QuotesApi = {
+    invite: Effect.fn('Quotes.invite')(function* (id, actor, request) {
+      const current = yield* view(id);
+      if (current.state === 'draft')
+        return yield* new QuoteClosed({ reason: 'draft' });
+      if (current.state === 'expired')
+        return yield* new QuoteClosed({ reason: 'expired' });
+      if (current.state !== 'open')
+        return yield* new QuoteClosed({ reason: 'answered' });
+      return yield* stored(
+        db.transaction((tx) =>
+          Effect.gen(function* () {
+            const link = yield* createLink(tx, id, actor, 'quote-link-created');
+            const expiresAt = new Date(
+              Math.min(
+                Date.parse(link.expiresAt),
+                Date.parse(
+                  `${current.quote.data.quote?.validUntil ?? current.quote.data.dueDate}T23:59:59.999Z`,
+                ),
+              ),
+            ).toISOString();
+            const payload = {
+              _tag: 'Invitation' as const,
+              url: `${request.base}/invoices/quote/${link.token}`,
+              note: request.note,
+              expiresAt,
+              actor,
+            };
+            const key = `quote-invitation/${crypto.randomUUID()}`;
+            const emails = yield* enqueueMail(tx, [
+              {
+                invoiceId: id,
+                kind: 'quote-invitation',
+                recipient: request.to,
+                payload,
+                key: `${key}/customer`,
+                expiresAt,
+              },
+              ...(request.copy && current.quote.data.issuer.email
+                ? [
+                    {
+                      invoiceId: id,
+                      kind: 'quote-copy' as const,
+                      recipient: current.quote.data.issuer.email,
+                      payload,
+                      key: `${key}/owner`,
+                      expiresAt,
+                    },
+                  ]
+                : []),
+            ]);
+            return { expiresAt, emails };
+          }),
+        ),
+      );
+    }),
     share: Effect.fn('Quotes.share')(function* (id, actor) {
       const { state } = yield* view(id);
       if (state === 'draft') return yield* new QuoteClosed({ reason: 'draft' });
@@ -240,19 +308,6 @@ export const makeQuotes = Effect.gen(function* () {
     ),
 
     links: Effect.fn('Quotes.links')((id) => openLinks(db, id)),
-
-    emailed: Effect.fn('Quotes.emailed')(function* (id, actor, email) {
-      yield* stored(
-        db.insert(tables.audit).values({
-          id: crypto.randomUUID(),
-          invoiceId: id,
-          operation: 'quote-emailed',
-          actor,
-          payload: email,
-          createdAt: email.sentAt,
-        }),
-      );
-    }),
 
     emails: Effect.fn('Quotes.emails')(function* (id) {
       const rows = yield* stored(
@@ -278,95 +333,108 @@ export const makeQuotes = Effect.gen(function* () {
 
     view,
 
-    respond: Effect.fn('Quotes.respond')(function* (id, answer, evidence) {
-      const current = yield* view(id);
-      if (current.response) {
-        if (current.response.outcome === answer.outcome)
-          return current.response;
-        return yield* new QuoteClosed({ reason: 'answered' });
-      }
-      if (current.state === 'draft')
-        return yield* new QuoteClosed({ reason: 'draft' });
-      if (current.state === 'expired')
-        return yield* new QuoteClosed({ reason: 'expired' });
-      // The answer covers the PDF the customer read. A digest that no longer
-      // matches means the page is out of date, never a different document.
-      if (current.digests[answer.language] !== answer.digest)
-        return yield* new QuoteClosed({ reason: 'stale-document' });
-      const consumer = current.quote.data.customerType === 'consumer';
-      // The customer accepts under one of the plans the quote offers; with
-      // one plan, that one. A declined quote keeps none.
-      const { plans } = yield* store.offer(id);
-      const plan =
-        answer.outcome === 'declined'
-          ? null
-          : answer.plan === null
-            ? plans.length === 1
-              ? plans[0]
-              : undefined
-            : plans.find((item) => item.id === answer.plan);
-      if (plan === undefined)
-        return yield* new QuoteClosed({ reason: 'no-such-plan' });
-      if (answer.outcome === 'accepted' && !answer.signature)
-        return yield* new QuoteClosed({ reason: 'unsigned' });
-      const saved: QuoteResponse = {
-        quoteId: id,
-        outcome: answer.outcome,
-        name: answer.name.trim(),
-        email: current.quote.data.customer.email,
-        earlyStart:
-          consumer && answer.outcome === 'accepted' && answer.earlyStart,
-        language: answer.language,
-        digest: answer.digest,
-        address: evidence.address,
-        agent: evidence.agent.slice(0, 500),
-        decidedAt: new Date().toISOString(),
-        confirmedAt: null,
-        signature: answer.outcome === 'accepted' ? answer.signature : null,
-        plan,
-        billed: [],
-      };
-      yield* stored(
-        db.transaction((tx) =>
-          Effect.gen(function* () {
-            // Two answers racing to one quote: the primary key keeps the first.
-            const { billed: _none, ...row } = saved;
-            const inserted = yield* tx
-              .insert(tables.responses)
-              .values(row)
-              .onConflictDoNothing()
-              .returning();
-            if (!inserted.length) return;
-            yield* tx.insert(tables.audit).values({
-              id: crypto.randomUUID(),
-              invoiceId: id,
-              operation: `quote-${answer.outcome}`,
-              actor: 'customer',
-              payload: {
-                name: saved.name,
-                digest: saved.digest,
-                earlyStart: saved.earlyStart,
-                plan: saved.plan?.id ?? null,
-              },
-              createdAt: saved.decidedAt,
-            });
-          }),
-        ),
-      );
-      const kept = yield* response(id);
-      if (!kept || kept.outcome !== answer.outcome)
-        return yield* new QuoteClosed({ reason: 'answered' });
-      return kept;
-    }),
-
-    confirmed: Effect.fn('Quotes.confirmed')(function* (id) {
-      yield* stored(
-        db
-          .update(tables.responses)
-          .set({ confirmedAt: new Date().toISOString() })
-          .where(eq(tables.responses.quoteId, id)),
-      );
-    }),
+    respond: Effect.fn('Quotes.respond')(
+      function* (id, answer, evidence, mail) {
+        const current = yield* view(id);
+        if (current.response) {
+          if (current.response.outcome === answer.outcome)
+            return current.response;
+          return yield* new QuoteClosed({ reason: 'answered' });
+        }
+        if (current.state === 'draft')
+          return yield* new QuoteClosed({ reason: 'draft' });
+        if (current.state === 'expired')
+          return yield* new QuoteClosed({ reason: 'expired' });
+        // The answer covers the PDF the customer read. A digest that no longer
+        // matches means the page is out of date, never a different document.
+        if (current.digests[answer.language] !== answer.digest)
+          return yield* new QuoteClosed({ reason: 'stale-document' });
+        const consumer = current.quote.data.customerType === 'consumer';
+        // The customer accepts under one of the plans the quote offers; with
+        // one plan, that one. A declined quote keeps none.
+        const { plans } = yield* store.offer(id);
+        const plan =
+          answer.outcome === 'declined'
+            ? null
+            : answer.plan === null
+              ? plans.length === 1
+                ? plans[0]
+                : undefined
+              : plans.find((item) => item.id === answer.plan);
+        if (plan === undefined)
+          return yield* new QuoteClosed({ reason: 'no-such-plan' });
+        if (answer.outcome === 'accepted' && !answer.signature)
+          return yield* new QuoteClosed({ reason: 'unsigned' });
+        const saved: QuoteResponse = {
+          quoteId: id,
+          outcome: answer.outcome,
+          name: answer.name.trim(),
+          email: current.quote.data.customer.email,
+          earlyStart:
+            consumer && answer.outcome === 'accepted' && answer.earlyStart,
+          language: answer.language,
+          digest: answer.digest,
+          address: evidence.address,
+          agent: evidence.agent.slice(0, 500),
+          decidedAt: new Date().toISOString(),
+          confirmedAt: null,
+          signature: answer.outcome === 'accepted' ? answer.signature : null,
+          plan,
+          billed: [],
+        };
+        yield* stored(
+          db.transaction((tx) =>
+            Effect.gen(function* () {
+              // Two answers racing to one quote: the primary key keeps the first.
+              const { billed: _none, ...row } = saved;
+              const inserted = yield* tx
+                .insert(tables.responses)
+                .values(row)
+                .onConflictDoNothing()
+                .returning();
+              if (!inserted.length) return;
+              yield* enqueueMail(tx, [
+                {
+                  invoiceId: id,
+                  kind: 'quote-answer',
+                  recipient: saved.email,
+                  payload: { _tag: 'Answer', ...mail },
+                  key: `quote-answer/${id}/customer`,
+                },
+                ...(current.quote.data.issuer.email
+                  ? [
+                      {
+                        invoiceId: id,
+                        kind: 'quote-answered' as const,
+                        recipient: current.quote.data.issuer.email,
+                        payload: { _tag: 'Answer' as const, ...mail },
+                        key: `quote-answer/${id}/owner`,
+                      },
+                    ]
+                  : []),
+              ]);
+              yield* tx.insert(tables.audit).values({
+                id: crypto.randomUUID(),
+                invoiceId: id,
+                operation: `quote-${answer.outcome}`,
+                actor: 'customer',
+                payload: {
+                  name: saved.name,
+                  digest: saved.digest,
+                  earlyStart: saved.earlyStart,
+                  plan: saved.plan?.id ?? null,
+                },
+                createdAt: saved.decidedAt,
+              });
+            }),
+          ),
+        );
+        const kept = yield* response(id);
+        if (!kept || kept.outcome !== answer.outcome)
+          return yield* new QuoteClosed({ reason: 'answered' });
+        return kept;
+      },
+    ),
 
     bill: Effect.fn('Quotes.bill')(function* (id, payment, actor) {
       const source = yield* quote(id);

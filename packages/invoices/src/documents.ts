@@ -1,9 +1,10 @@
 import { createHash } from 'node:crypto';
-import { Context, Effect, Layer } from 'effect';
+import { Context, Effect, Layer, Schema } from 'effect';
 import { calculate } from './calculate';
 import { InvoiceDatabase } from './database';
 import type { Invoice, InvoiceId, Language } from './model';
-import { renderInvoice } from './pdf';
+import { renderAcceptance, renderInvoice } from './pdf';
+import { appendPdf } from './pdf-append';
 import { defaultsFor, noOffer } from './plan';
 import type { QuoteResponse } from './quote-model';
 import { stored } from './storage';
@@ -33,8 +34,14 @@ export interface DocumentsApi {
   readonly signed: (
     quote: Invoice,
     acceptance: QuoteResponse,
-  ) => Effect.Effect<Uint8Array, StoreError>;
+  ) => Effect.Effect<Uint8Array, StoreError | AcceptedPdfMismatch>;
 }
+
+/** The stored PDF no longer matches the bytes named by the acceptance. */
+export class AcceptedPdfMismatch extends Schema.TaggedError<AcceptedPdfMismatch>()(
+  'AcceptedPdfMismatch',
+  { id: Schema.String },
+) {}
 
 export class Documents extends Context.Service<Documents, DocumentsApi>()(
   'Documents',
@@ -60,12 +67,9 @@ export const makeDocuments = Effect.gen(function* () {
   const render = Effect.fnUntraced(function* (
     invoice: Invoice,
     language: Language,
-    acceptance?: QuoteResponse,
   ) {
     const plans = yield* plansOf(invoice);
-    return yield* Effect.promise(() =>
-      renderInvoice(invoice, language, plans, acceptance),
-    );
+    return yield* Effect.promise(() => renderInvoice(invoice, language, plans));
   });
 
   /** Bytes kept under `key`, or rendered by `make` and kept for next time. */
@@ -95,6 +99,13 @@ export const makeDocuments = Effect.gen(function* () {
           })
           .onConflictDoNothing(),
       );
+    // The winning insert is authoritative even for two concurrent first renders.
+    if (keep) {
+      const saved = yield* stored(
+        db.query.artifacts.findFirst({ where: { key } }),
+      );
+      if (saved) return Buffer.from(saved.bytes, 'base64') as Uint8Array;
+    }
     return bytes;
   });
 
@@ -124,11 +135,32 @@ export const makeDocuments = Effect.gen(function* () {
       );
     }),
     signed: Effect.fn('Documents.signed')(function* (quote, acceptance) {
+      const original = yield* stored(
+        db.query.artifacts.findFirst({
+          where: {
+            key: `${quote.id}:${quote.revision}:${acceptance.language}`,
+          },
+        }),
+      );
+      if (
+        !original ||
+        acceptance.quoteId !== quote.id ||
+        acceptance.outcome !== 'accepted'
+      )
+        return yield* new AcceptedPdfMismatch({ id: quote.id });
+      const bytes = Buffer.from(original.bytes, 'base64');
+      if (
+        original.digest !== acceptance.digest ||
+        createHash('sha256').update(bytes).digest('hex') !== acceptance.digest
+      )
+        return yield* new AcceptedPdfMismatch({ id: quote.id });
       return yield* kept(
-        `${quote.id}:${quote.revision}:${acceptance.language}:signed`,
+        `${quote.id}:${quote.revision}:${acceptance.language}:signed:${acceptance.digest}`,
         quote,
         acceptance.language,
-        render(quote, acceptance.language, acceptance),
+        Effect.promise(async () =>
+          appendPdf(bytes, await renderAcceptance(quote, acceptance)),
+        ),
         true,
       );
     }),

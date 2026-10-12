@@ -1,6 +1,7 @@
 import { translate } from '@portfolio/i18n';
 import { m } from '@portfolio/i18n/messages';
 import type { InvoiceData, InvoiceId } from '@portfolio/invoices/model';
+import type { MailDelivery } from '@portfolio/invoices/outbox-model';
 import * as Dialog from '@radix-ui/react-dialog';
 import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query';
 import { Check, CornerDownLeft, FileText, Reply, X } from 'lucide-react';
@@ -84,7 +85,7 @@ const refusals: Record<string, string> = {
   draft: 'Issue the quote before you send it.',
   expired: 'This quote has expired. Revise it to send a new version.',
   answered: 'The customer has already answered this quote.',
-  mail: 'The email did not go out, and nothing was recorded. Try again in a moment.',
+  mail: translate('en')(m.mail_invitation_problem),
 };
 
 export function QuoteEmailDialog({
@@ -100,7 +101,7 @@ export function QuoteEmailDialog({
   number: string | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSent: (to: string) => void;
+  onSent: (to: string, state: MailDelivery['state']) => void;
 }) {
   const toId = useId();
   const noteId = useId();
@@ -135,10 +136,9 @@ export function QuoteEmailDialog({
         setProblem(refusals[result.reason] ?? 'The quote cannot be sent.');
         return;
       }
-      // The button says Sent for a beat before the dialog lets go.
       window.setTimeout(() => {
         onOpenChange(false);
-        onSent(result.to);
+        onSent(result.to, result.delivery?.state ?? 'pending');
       }, 700);
     },
     onError: () => setProblem(refusals.mail ?? null),
@@ -301,9 +301,21 @@ export function QuoteEmailDialog({
                 disabled={send.isPending}
                 data-sent={sent || undefined}
               >
-                {sent && <Check size={14} aria-hidden />}
+                {sent &&
+                  send.data?.ok &&
+                  send.data.delivery?.state !== 'failed' && (
+                    <Check size={14} aria-hidden />
+                  )}
                 <MorphText>
-                  {sent ? 'Sent' : send.isPending ? 'Sending…' : 'Send'}
+                  {sent
+                    ? send.data?.ok && send.data.delivery?.state === 'failed'
+                      ? translate('en')(m.mail_invitation_failed_button)
+                      : send.data?.ok && send.data.sentAt
+                        ? 'Sent'
+                        : translate('en')(m.mail_invitation_queued_button)
+                    : send.isPending
+                      ? 'Sending…'
+                      : 'Send'}
                 </MorphText>
                 {!sent && !send.isPending && (
                   <kbd aria-hidden>

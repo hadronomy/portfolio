@@ -179,6 +179,8 @@ Stripe's webhook and the schedules run on a Cloudflare Worker, `apps/payments`, 
 
 Deploy from `apps/payments` with Node 24: run the database migrations (`bun run db:migrate`), then `bun run deploy` with `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `STRIPE_API_KEY` (creates the endpoint), `STRIPE_SECRET_KEY`, and `DATABASE_URL`. `bun run dev` runs it in workerd against a reachable `DATABASE_URL`; `stripe listen --forward-to localhost:1337/stripe/webhook` forwards deliveries and prints the `STRIPE_WEBHOOK_SECRET` to set.
 
+The Worker also needs `INVOICE_ORIGIN` and `INVOICE_MAIL_RETRY_SECRET`, described under [Mail](#mail).
+
 The flow was checked against a local stand-in for the Stripe API, with Stripe's real Payment Element drawn in the browser. A run with the Invoicing sandbox's own keys is still needed: it confirms how Stripe reports `tax_amounts` totals and a real card payment end to end.
 
 ## Quotes
@@ -250,7 +252,25 @@ Invoice and customer data stay in the private database. Do not publish them into
 
 ## Mail
 
-Resend sends the invoice mail: the customer's sign-in code, a quote sent by email, the confirmation of an answer to a quote (Ley 34/2002, art. 28), and the owner's notice of it. A quote email carries a new link, the PDF and the owner's note, shows no price (the customer reads it on the quote, with its terms), and replies go to the owner; the owner composes it beside a live preview, and each send is kept in the audit log, which the quote panel and agents (`email_quote`, `get_document`) read back. Each email is a React Email component in `apps/start/src/emails`, rendered to HTML and plain text, and speaks the messages in `packages/i18n`: the customer's in the language they read, the owner's in English. The drawn signature travels as an inline PNG, because mail clients do not show SVG. Answers send with an idempotency key, so a retry never doubles them. `bun run --cwd apps/start emails` opens the React Email preview of every template.
+Resend sends quote invitations, customer confirmations, owner notices, owner copies, and sign-in codes. The confirmation records the quote answer, as Ley 34/2002, art. 28 requires. Each recipient has a separate row in `invoices.mail_outbox`. The row records its kind, document reference, recipient, state, attempts, next attempt, safe error text, provider ID, and stable idempotency key.
+
+Quote answers queue their confirmation and owner notice in the transaction that records the answer. Invitations create their link and queue both recipients in one transaction. Sign-in codes enter the outbox through Better Auth's mail callback, after Better Auth stores the verification. That callback boundary cannot make code creation and mail enqueue atomic. It needs a change to the auth adapter. Codes expire after ten minutes, and expired codes are never sent. The outbox clears their code and prepared body after sending or final failure.
+
+The request tries delivery before it returns. A failure leaves the row pending with backoff: one minute, five minutes, fifteen minutes, thirty minutes, then one, two, and four hours. Eight failed attempts leave it failed for review. Owner retries keep the full attempt count. A claimed row has a two-minute lease and a unique claim token. `FOR UPDATE SKIP LOCKED` separates concurrent senders. A sender that loses its lease cannot start delivery or overwrite the next sender's result. Provider requests have a twenty-second timeout and an abort signal.
+
+The prepared message stays in the row until delivery succeeds. Retries send the same content and key, even after a template change. Resend keeps keys for [24 hours](https://resend.com/docs/dashboard/emails/idempotency-keys). Automatic delivery stops after 23 hours from the first provider attempt. An uncertain send past that window cannot be retried by the owner. Check Resend before sending a new message. A definite rejection can start another safe retry window. `sent` means Resend accepted the email; it does not prove receipt in the inbox.
+
+The existing payments Worker cron calls `POST /invoices/internal/mail/retry` every fifteen minutes. It awaits the response, so all delivery work runs inside the web request. This uses no Vercel cron and adds no Cloudflare cron trigger. Cloudflare's free plan permits [five triggers per account](https://developers.cloudflare.com/workers/platform/limits/). Each pass sends at most ten due rows and stops claiming work after thirty-five seconds. The next pass handles the rest. The cron can arrive after a sign-in code expires; the customer then requests a new code.
+
+Set `INVOICE_MAIL_RETRY_SECRET` to the same random secret, at least 32 characters, in the web app and payments Worker. Set the Worker's `INVOICE_ORIGIN` to the public HTTPS origin. The Worker binds both through `apps/payments/alchemy.run.ts`; AppConfig reads the web secret. Requests carry an HMAC-SHA256 over the method, endpoint, and timestamp. The server uses a constant-time comparison and accepts timestamps up to five minutes old or thirty seconds ahead. Requests contain no message data.
+
+The quote panel shows pending and failed deliveries with a Retry action. Agents use `retry_email` with a document number or ID and a delivery ID from `get_document`. Both entry points call the same owner-authorized operation. Retrying a sent row returns it unchanged. A pending invitation cannot be sent after its link is closed or the quote is answered. A successful invitation also writes the existing email audit record.
+
+Each React Email template renders HTML and plain text from `packages/i18n/messages`. Customer confirmations use the answer's language; owner notices use English. Replies to invitations reach the issuer. The drawn signature travels as an inline PNG. Attachments, their Base64 line folding, body text, and header allowance must fit below Resend's [40 MB encoded limit](https://resend.com/docs/api-reference/emails/send-email). An oversized message fails as a whole. Development without Resend writes mail and attachments to `<data directory>/mail`, with the row ID as its file identity. `bun run --cwd apps/start emails` opens the template preview.
+
+An accepted quote's signed copy reads the stored PDF artifact and checks its SHA-256 against the accepted digest. PDFium imports the acceptance page and saves an incremental update. The signed file starts with the exact accepted bytes. The quote is never rendered again for this copy. A missing or changed artifact returns `AcceptedPdfMismatch`. The resulting signed copy stays as an artifact. Tests compare the accepted bytes, digest, page count, text, and every original page's rendered pixels.
+
+Resend bounce and complaint webhooks are not part of this implementation. They need event deduplication and recipient suppression before Retry can handle them safely. Delivery records cover provider acceptance and send failures. Check Resend's delivery logs for inbox failures and suppress bounced recipients before sending again.
 
 ## PDF pipeline and viewer
 

@@ -18,7 +18,7 @@ import regular from './fonts/Geist-Regular.ttf?inline';
 import semibold from './fonts/Geist-SemiBold.ttf?inline';
 import semiboldItalic from './fonts/Geist-SemiBoldItalic.ttf?inline';
 import type { Cover, Invoice, Language, Party } from './model';
-import { QuoteAppendix } from './page-render';
+import { Acceptance, QuoteAppendix } from './page-render';
 import { partyLines } from './party-lines';
 import { faint, ink, label, rule, ruleStrong, side, soft } from './pdf-style';
 import type { PaymentPlan } from './plan';
@@ -120,14 +120,11 @@ export function InvoiceDocument({
   invoice,
   language = invoice.data.language,
   plans = [],
-  acceptance,
 }: {
   invoice: Invoice;
   language?: Language;
   /** A quote's payment plans, printed as part of what the customer accepts. */
   plans?: readonly PaymentPlan[];
-  /** A quote's acceptance, which makes this its signed copy. */
-  acceptance?: QuoteResponse | undefined;
 }) {
   const d = invoice.data;
   const t = translate(language);
@@ -479,7 +476,6 @@ export function InvoiceDocument({
           quote={d.quote}
           number={invoice.status === 'draft' ? null : invoice.number}
           language={language}
-          acceptance={acceptance}
         />
       )}
     </main>
@@ -491,7 +487,6 @@ export async function renderInvoice(
   invoice: Invoice,
   language: Language = invoice.data.language,
   plans: readonly PaymentPlan[] = [],
-  acceptance?: QuoteResponse,
 ): Promise<Uint8Array> {
   const t = translate(language);
   const fonts = [
@@ -507,12 +502,7 @@ export async function renderInvoice(
     style: font.style,
   }));
   return render(
-    <InvoiceDocument
-      invoice={invoice}
-      language={language}
-      plans={plans}
-      acceptance={acceptance}
-    />,
+    <InvoiceDocument invoice={invoice} language={language} plans={plans} />,
     {
       size: 'a4',
       margin: { top: 40, right: side, bottom: 52, left: side },
@@ -553,6 +543,39 @@ export async function renderInvoice(
           </span>
         </div>
       ),
+    },
+  );
+}
+
+/** Renders only the acceptance record. The accepted pages come from their stored artifact. */
+export async function renderAcceptance(
+  quote: Invoice,
+  acceptance: QuoteResponse,
+): Promise<Uint8Array> {
+  return render(
+    <main style={{ fontFamily: 'Geist' }}>
+      <Acceptance
+        data={quote.data}
+        acceptance={acceptance}
+        language={acceptance.language}
+      />
+    </main>,
+    {
+      size: 'a4',
+      margin: { top: 40, right: side, bottom: 52, left: side },
+      fonts: [
+        { url: regular, weight: 400, style: 'normal' },
+        { url: italic, weight: 400, style: 'italic' },
+        { url: medium, weight: 500, style: 'normal' },
+        { url: semibold, weight: 600, style: 'normal' },
+      ].map((font) => ({
+        name: 'Geist',
+        data: Buffer.from(font.url.slice(font.url.indexOf(',') + 1), 'base64'),
+        weight: font.weight,
+        style: font.style,
+      })),
+      css: 'p, h1, h2, h3 { margin: 0 }',
+      lang: acceptance.language,
     },
   );
 }

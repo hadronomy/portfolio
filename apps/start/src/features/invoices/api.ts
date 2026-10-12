@@ -33,10 +33,12 @@ import { mutate, preview, workspace } from './operations.server';
 import {
   answerQuote,
   emailQuote,
+  quoteDeliveries,
   quoteEmailPreview,
   quoteEmails,
   quoteLinks,
   quotePage,
+  retryQuoteEmail,
   revokeQuote,
   shareQuote,
 } from './quotes.server';
@@ -285,6 +287,20 @@ export const previewQuoteEmail = createServerFn({ method: 'POST' })
 export const getQuoteEmails = createServerFn({ method: 'GET' })
   .validator((input: unknown) => decodeInvoiceRef(input))
   .handler(({ data }) => serve(quoteEmails(data.id)));
+export const getQuoteDeliveries = createServerFn({ method: 'GET' })
+  .validator((input: unknown) => decodeInvoiceRef(input))
+  .handler(({ data }) => serve(quoteDeliveries(data.id)));
+export const retryEmail = createServerFn({ method: 'POST' })
+  .validator((input: unknown) =>
+    decodeWith(
+      Schema.Struct({
+        id: InvoiceId,
+        email: Schema.String.check(Schema.isUUID()),
+      }),
+      'Invalid email request.',
+    )(input),
+  )
+  .handler(({ data }) => serve(retryQuoteEmail(data.id, data.email)));
 export const getQuoteLinks = createServerFn({ method: 'GET' })
   .validator((input: unknown) => decodeInvoiceRef(input))
   .handler(({ data }) => serve(quoteLinks(data.id)));

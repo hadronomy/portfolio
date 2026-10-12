@@ -12,6 +12,7 @@ import {
   type OwnerDid,
   RecordId,
 } from '@portfolio/invoices/model';
+import { Outbox } from '@portfolio/invoices/outbox';
 import { pagesFromMarkdown, pagesToMarkdown } from '@portfolio/invoices/pages';
 import { noOffer } from '@portfolio/invoices/plan';
 import type { QuoteResponse } from '@portfolio/invoices/quote-model';
@@ -24,7 +25,7 @@ import { InvoiceStore, type Workspace } from '@portfolio/invoices/store';
 import { issueErrors } from '@portfolio/invoices/validate';
 import { Effect, Match, Result } from 'effect';
 import { AppConfig } from '../../server/config.server';
-import type { Mailer } from '../../server/mail.server';
+import { Mailer } from '../../server/mail.server';
 import { agentOrigin } from '../../server/origin.server';
 import type { Payments } from '../../server/payments.server';
 import { ownerDid } from '../auth/options';
@@ -222,6 +223,8 @@ export const invoiceToolsLayer = InvoiceTools.toLayer(
   Effect.gen(function* () {
     const store = yield* InvoiceStore;
     const quotes = yield* Quotes;
+    const outbox = yield* Outbox;
+    const mailer = yield* Mailer;
     const settings = yield* AppConfig;
     // Online payments may be off; the link operations answer for that.
     const online = yield* Effect.context<Payments>();
@@ -316,6 +319,7 @@ export const invoiceToolsLayer = InvoiceTools.toLayer(
               data.kind === 'quote'
                 ? yield* explained(quotes.emails(invoice.id))
                 : [],
+            deliveries: yield* explained(outbox.deliveries(invoice.id)),
           };
         }).pipe(Effect.provide(online)),
 
@@ -590,16 +594,27 @@ export const invoiceToolsLayer = InvoiceTools.toLayer(
           }).pipe(Effect.catchTag('Refused', ({ message }) => fail(message)));
           if (!result.ok)
             return yield* fail(
-              result.reason === 'mail'
-                ? 'The email did not go out. Nothing was recorded; try again, or send_quote for a link to send yourself.'
-                : (closed[result.reason] ?? 'The quote cannot be sent.'),
+              closed[result.reason] ?? 'The quote cannot be sent.',
             );
           return {
             to: result.to,
             sentAt: result.sentAt,
             expiresAt: result.expiresAt,
+            delivery: result.delivery,
           };
         }).pipe(provide, Effect.provide(mail)),
+
+      retry_email: ({ document, email }) =>
+        Effect.gen(function* () {
+          const invoice = yield* find(yield* snapshot, document);
+          return yield* mailer.retry(invoice.id, email, actor).pipe(
+            Effect.catchTags({
+              MailRetryRefused: ({ message }) => fail(message),
+              StorageFailure: () =>
+                fail('Email delivery is unavailable. Try again shortly.'),
+            }),
+          );
+        }),
 
       close_quote_links: ({ document }) =>
         Effect.gen(function* () {

@@ -7,6 +7,7 @@ import * as Cloudflare from 'alchemy/Cloudflare';
 import { Effect, Layer, Stream } from 'effect';
 import { HttpRouter } from 'effect/http';
 import { invoiceDatabase } from './database';
+import { retryMail } from './mail-retry';
 import { failedQueueName, queueLayer, SettlementQueue } from './queue';
 import { decode, Settlements } from './settlements';
 import { webhookRoute } from './webhook';
@@ -80,7 +81,9 @@ export default class PaymentsWorker extends Cloudflare.Worker<PaymentsWorker>()(
         Stream.runForEach(messages, (message) => consume(message.body)),
     );
     yield* Cloudflare.Workers.cron(reconcileEvery, () =>
-      reconcile.pipe(
+      retryMail.pipe(
+        Effect.catch((error) => Effect.logError('Mail retry failed', error)),
+        Effect.andThen(reconcile),
         Effect.provide(settlements),
         Effect.tapCause((cause) =>
           Effect.logError('Reconciliation failed', cause),

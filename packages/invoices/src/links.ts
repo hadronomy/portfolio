@@ -9,7 +9,7 @@ import * as tables from './tables';
 // Links that open one document for its customer: a payment link for an
 // invoice, an acceptance link for a quote. The kind of document decides
 // which page a link opens; the link itself only proves who may see it.
-// Only a SHA-256 hash of each token is stored.
+// The link table stores each token's SHA-256 hash.
 
 /** A link's opaque token, as the customer's URL carries it. */
 export const LinkToken = Schema.String.check(
@@ -30,6 +30,34 @@ const hash = (token: string) =>
   createHash('sha256').update(token).digest('hex');
 
 type Database = InvoiceDatabase['Service'];
+type Transaction = Parameters<Parameters<Database['transaction']>[0]>[0];
+
+/** Inserts the link and audit entry into the caller's transaction. */
+export const createLink = Effect.fnUntraced(function* (
+  tx: Transaction,
+  id: InvoiceId,
+  actor: OwnerDid,
+  operation: string,
+) {
+  const token = LinkToken.make(randomBytes(32).toString('base64url'));
+  const now = new Date();
+  const expiresAt = new Date(now.getTime() + linkLifetime).toISOString();
+  yield* tx.insert(tables.links).values({
+    tokenHash: hash(token),
+    invoiceId: id,
+    expiresAt,
+    createdAt: now.toISOString(),
+  });
+  yield* tx.insert(tables.audit).values({
+    id: crypto.randomUUID(),
+    invoiceId: id,
+    operation,
+    actor,
+    payload: { expiresAt },
+    createdAt: now.toISOString(),
+  });
+  return { token, expiresAt };
+});
 
 /** Mints a link to the document and records who made it as `operation`. */
 export const mintLink = Effect.fnUntraced(function* (
@@ -38,30 +66,9 @@ export const mintLink = Effect.fnUntraced(function* (
   actor: OwnerDid,
   operation: string,
 ) {
-  const token = LinkToken.make(randomBytes(32).toString('base64url'));
-  const now = new Date();
-  const expiresAt = new Date(now.getTime() + linkLifetime).toISOString();
-  yield* stored(
-    db.transaction((tx) =>
-      Effect.gen(function* () {
-        yield* tx.insert(tables.links).values({
-          tokenHash: hash(token),
-          invoiceId: id,
-          expiresAt,
-          createdAt: now.toISOString(),
-        });
-        yield* tx.insert(tables.audit).values({
-          id: crypto.randomUUID(),
-          invoiceId: id,
-          operation,
-          actor,
-          payload: { expiresAt },
-          createdAt: now.toISOString(),
-        });
-      }),
-    ),
+  return yield* stored(
+    db.transaction((tx) => createLink(tx, id, actor, operation)),
   );
-  return { token, expiresAt };
 });
 
 /** Closes every open link to the document and returns how many there were. */
