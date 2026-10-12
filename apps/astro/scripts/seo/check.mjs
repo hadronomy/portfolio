@@ -42,6 +42,7 @@ async function localResource(href) {
 const indexable = new Set();
 const titles = new Set();
 const descriptions = new Set();
+let start;
 const pages = await htmlFiles(directory);
 
 for (const file of pages) {
@@ -179,9 +180,21 @@ for (const file of pages) {
     if (!href || !href.startsWith('/') || href.startsWith('//')) continue;
     const url = new URL(href, origin);
     const target = path.join(directory, decodeURIComponent(url.pathname));
-    await stat(
-      url.pathname.endsWith('/') ? path.join(target, 'index.html') : target,
-    );
+    try {
+      await stat(
+        url.pathname.endsWith('/') ? path.join(target, 'index.html') : target,
+      );
+    } catch (error) {
+      if (error.code !== 'ENOENT') throw error;
+      start ??= (await import('../../../start/dist/server/server.js')).default;
+      const response = await start.fetch(new Request(url));
+      assert.ok(response.ok, `${file}: unreachable Start route: ${href}`);
+      await response.text();
+      assert.ok(
+        !response.headers.has('x-portfolio-route-owner'),
+        `${file}: missing Astro resource: ${href}`,
+      );
+    }
   }
 }
 

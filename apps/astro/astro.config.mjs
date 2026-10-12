@@ -2,7 +2,6 @@ import { unified } from '@astrojs/markdown-remark';
 import mdx from '@astrojs/mdx';
 import node from '@astrojs/node';
 import react from '@astrojs/react';
-import vercel from '@astrojs/vercel';
 import { rendererRich, transformerTwoslash } from '@shikijs/twoslash';
 import tailwindcss from '@tailwindcss/vite';
 import { wgslVitePlugin } from '@vgpu/wgsl/loader-vite';
@@ -18,6 +17,7 @@ import remarkGemoji from 'remark-gemoji';
 import remarkMath from 'remark-math';
 import preserveDirectives from 'rollup-preserve-directives';
 import startIntegration from './integrations/start.mjs';
+import vercel from './integrations/vercel.mjs';
 
 import { rehypeMarkCodeBlocks } from './plugins/rehype-mark-code-blocks.mjs';
 import { seoSitemap } from './plugins/seo-sitemap.mjs';
@@ -26,7 +26,7 @@ import { defaultLocale, locales } from './src/i18n/locales';
 
 export default defineConfig({
   site: SITE_URL,
-  trailingSlash: 'always',
+  trailingSlash: 'ignore',
   i18n: {
     defaultLocale,
     locales: [...locales],

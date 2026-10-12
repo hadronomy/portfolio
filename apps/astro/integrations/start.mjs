@@ -1,7 +1,7 @@
 import { spawn } from 'node:child_process';
 import { cp, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { fileURLToPath } from 'node:url';
 
 const startRoot = new URL('../../start/', import.meta.url);
 const endpoint = new URL('./start-endpoint.ts', import.meta.url);
@@ -113,9 +113,8 @@ export default function startIntegration() {
         if (previous !== json) await writeFile(routeFile, json);
       },
       'astro:server:setup': async ({ logger, server }) => {
-        const { createServer } = await import(
-          pathToFileURL(startRequire.resolve('vite')).href
-        );
+        // This hook outlives Astro's config runner. Load Start's Vite through Node.
+        const { createServer } = startRequire('vite');
         startServer = await createServer({
           root: fileURLToPath(startRoot),
           server: {

@@ -1,6 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "trailingSlash": true,
   "redirects": [
     {
       "source": "/work/stacks/",
@@ -8,10 +7,16 @@
       "permanent": true
     },
     {
-      "source": "/:path*",
-      "has": [{ "type": "host", "value": "www.hadronomy.com" }],
+      "source": "/:path((?!(?:invoices|_apps|\\.well-known)(?:/|$)).*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.hadronomy.com"
+        }
+      ],
       "destination": "https://hadronomy.com/:path*",
       "permanent": true
     }
-  ]
+  ],
+  "regions": ["fra1"]
 }
