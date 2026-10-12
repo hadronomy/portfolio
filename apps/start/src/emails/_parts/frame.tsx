@@ -3,6 +3,7 @@ import type { CSSProperties, ReactNode } from 'react';
 import {
   Body,
   Container,
+  Font,
   Head,
   Html,
   Link,
@@ -58,9 +59,17 @@ export function Frame({
         {/* The card is light paper whatever the client's theme. */}
         <meta name="color-scheme" content="light only" />
         <meta name="supported-color-schemes" content="light" />
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap"
+        {/* From the site itself, not a font service: a client that loads it
+            then tells no third party who opened the mail. */}
+        <Font
+          fontFamily="Geist"
+          fallbackFontFamily={['Helvetica', 'sans-serif']}
+          webFont={{
+            url: 'https://hadronomy.com/fonts/geist-latin-wght-normal.woff2',
+            format: 'woff2',
+          }}
+          fontWeight="400 600"
+          fontStyle="normal"
         />
       </Head>
       <Preview>{preview}</Preview>

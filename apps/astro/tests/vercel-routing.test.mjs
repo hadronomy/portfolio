@@ -106,3 +106,13 @@ test('the gallery redirect keeps its destination', () => {
     location: '/#work',
   });
 });
+
+// Stripe's fields and mail clients read the font from other origins.
+test('the self-hosted font may be read across origins', () => {
+  const route = routes.find(
+    ({ src, headers }) =>
+      new RegExp(src).test('/fonts/geist-latin-wght-normal.woff2') &&
+      headers?.['Access-Control-Allow-Origin'],
+  );
+  expect(route?.headers['Access-Control-Allow-Origin']).toBe('*');
+});

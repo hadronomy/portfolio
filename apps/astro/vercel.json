@@ -34,5 +34,16 @@
       "permanent": true
     }
   ],
-  "regions": ["fra1"]
+  "regions": ["fra1"],
+  "headers": [
+    {
+      "source": "/fonts/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        }
+      ]
+    }
+  ]
 }

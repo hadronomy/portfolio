@@ -18,10 +18,10 @@ const htmlPolicy = [
   "object-src 'none'",
   "frame-ancestors 'none'",
   "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://js.stripe.com https://*.js.stripe.com https://hcaptcha.com https://*.hcaptcha.com",
-  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://hcaptcha.com https://*.hcaptcha.com",
-  "font-src 'self' https://fonts.gstatic.com data:",
+  "style-src 'self' 'unsafe-inline' https://hcaptcha.com https://*.hcaptcha.com",
+  "font-src 'self' data:",
   "img-src 'self' data: blob: https:",
-  "connect-src 'self' blob: https://api.stripe.com https://js.stripe.com https://*.js.stripe.com https://link.com https://*.link.com https://hcaptcha.com https://*.hcaptcha.com https://fonts.googleapis.com https://fonts.gstatic.com",
+  "connect-src 'self' blob: https://api.stripe.com https://js.stripe.com https://*.js.stripe.com https://link.com https://*.link.com https://hcaptcha.com https://*.hcaptcha.com",
   "frame-src 'self' blob: https://js.stripe.com https://*.js.stripe.com https://hooks.stripe.com https://link.com https://*.link.com https://hcaptcha.com https://*.hcaptcha.com",
   "worker-src 'self' blob:",
 ].join('; ');
