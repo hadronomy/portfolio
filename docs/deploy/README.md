@@ -46,7 +46,7 @@ Select **Production** for production values.
 | `NODE_ENV`                                                   | `production`. Vercel normally sets this for the production build.                                                            |
 | `DATABASE_URL`                                               | Neon Connect dialog → connection pooling enabled. Copy the URL with TLS.                                                     |
 | `DATABASE_URL_UNPOOLED`                                      | Same Neon branch and database, with connection pooling disabled. Use `sslmode=require`. Only the build script uses this URL. |
-| `INVOICE_SECRET`                                             | Run `openssl rand -base64 32`. Store the result in 1Password and Vercel. All instances need the same value.                  |
+| `INVOICE_SECRET`                                             | Run `openssl rand -base64 32`. Store the result in your password manager and Vercel. All instances need the same value.      |
 | `INVOICE_ATPROTO_KEYS`                                       | Run `bun run --cwd apps/start atproto-key`. Store the JSON array of private ES256 JWKs. Newest key comes first.              |
 | `INVOICE_ORIGIN`                                             | `https://hadronomy.com`. This origin controls auth callbacks, MCP, and customer links.                                       |
 | `RESEND_API_KEY`                                             | Resend → API Keys → sending access for the verified transactional domain. Required for customer codes and quote mail.        |
@@ -67,7 +67,7 @@ Node listener variables (`HOST`, `PORT`, `SERVER_CERT_PATH`, `SERVER_KEY_PATH`, 
 
 ### Payments Worker and Alchemy
 
-Supply deployment variables through a private environment file or `op run`.
+Supply deployment variables through a private environment file or your password manager.
 Do not commit that file.
 The deploy script runs Alchemy on Node and fixes the stage to `production`.
 The installed `alchemy@2.0.0-beta.80` CLI supports `--stage production`.
@@ -107,7 +107,7 @@ Create secrets in each environment. The CI workflow receives none of them.
 | `R2_BUCKET`             | Both                 | Name of a private R2 Standard bucket reserved for these backups.                                                                            |
 | `R2_ACCESS_KEY_ID`      | Both                 | Create an R2 token scoped to this bucket. Use Object Read & Write for backups and Object Read Only for drills.                              |
 | `R2_SECRET_ACCESS_KEY`  | Both                 | Matching R2 S3 secret. GitHub maps it to `AWS_SECRET_ACCESS_KEY`.                                                                           |
-| `BACKUP_AGE_IDENTITY`   | `restore-drill` only | Temporary private identity from the 1Password Code item **Portfolio database backup age**. Delete this GitHub secret after each drill.      |
+| `BACKUP_AGE_IDENTITY`   | `restore-drill` only | Temporary private identity from your password manager. Delete this GitHub secret after each drill.                                          |
 
 Set repository variable `POSTGRES_MAJOR` to Neon’s server major.
 Run `SHOW server_version` in the Neon SQL editor to obtain it.
@@ -131,8 +131,13 @@ Do not use an ordinary `bun run build` as the production command.
 The wrapper refuses missing system variables and mismatched pooled and direct database URLs.
 It builds first. Then, only when `VERCEL_ENV=production`, it runs root `bun run db:migrate` against the direct URL.
 That command applies both invoice and auth migrations.
-The wrapper holds a PostgreSQL advisory lock until both commands finish.
-A failed build or migration prevents the new deployment from becoming ready.
+After both migrations, the wrapper initializes the app’s real better-auth instance against the direct URL.
+It awaits the auth context to seed the MCP OAuth resource row once, with the configured production origin.
+The wrapper holds the same PostgreSQL advisory lock through migrations and the seed.
+Concurrent cold instances can then find the resource row without a duplicate-insert race.
+The provider’s insert-only seed leaves an existing row unchanged on repeat builds.
+A failed build, migration, or seed prevents the new deployment from becoming ready.
+Migration output streams to the build log. Database URLs and passwords are redacted from output and errors.
 Migrations run outside Turbo, so a cache hit cannot skip them.
 An application process never migrates hosted Postgres.
 [Vercel build commands](https://vercel.com/docs/builds/configure-a-build), [system variables](https://vercel.com/docs/environment-variables/system-environment-variables).
@@ -154,16 +159,16 @@ Avoid manual promotion of an old preview artifact. It did not run the production
 1. Resolve the Vercel Hobby commercial-use gap.
 2. Create a Neon Free project in Frankfurt.
 3. Create the pooled and direct connection URLs for the same database.
-4. Store the invoice secret, AT Protocol keys, and provider keys in 1Password.
+4. Store the invoice secret, AT Protocol keys, and provider keys in your password manager.
 5. Verify the Resend transactional domain with its current SPF and DKIM records.
 6. Add DMARC and select Ireland for sending.
 7. Create the private R2 Standard backup bucket and scoped S3 tokens.
-8. Preserve an offline copy of the age identity from 1Password.
+8. Preserve an offline copy of the age identity from your password manager.
 9. Create GitHub environments, secrets, and `POSTGRES_MAJOR`.
 10. Enable Actions and require the CI check before merging.
 11. Configure Vercel’s production variables, build wrapper, Node version, and Frankfurt region.
 12. Connect the Git repository with `main` as the production branch.
-13. Complete the first Vercel build and inspect the migration completion message.
+13. Complete the first Vercel build and inspect the migration and auth seed completion message.
 14. Run the nightly backup workflow manually.
 15. Run the restore drill with the temporary private identity.
 16. Delete `BACKUP_AGE_IDENTITY` from GitHub after the drill.
@@ -179,7 +184,7 @@ Avoid manual promotion of an old preview artifact. It did not run the production
 Run `bun install --frozen-lockfile` and `bun run ci` before merging.
 Review generated migrations for additive safety.
 Merge to `main` only after CI passes.
-Vercel builds, migrates, and releases once for that push.
+Vercel builds, migrates, seeds auth, and releases once for that push.
 After a Worker change, run its production `plan` and `deploy` scripts.
 Deploy additive database changes through Vercel before a Worker that needs them.
 Inspect invoice routes, sign-in, PDF output, and payment reconciliation after the switch.
@@ -204,7 +209,7 @@ Each encrypted archive contains a custom-format dump and a manifest.
 The dump includes `invoices`, `auth`, and `drizzle`, including PDFs and acceptance evidence.
 The manifest contains table counts, column definitions, and both migration ledgers from the same exported PostgreSQL snapshot.
 Compression runs before age encryption. Plaintext temporary files use owner-only permissions and are deleted at exit.
-Subprocess errors stay private because PostgreSQL can include row data in errors.
+Backup and restore subprocess errors stay private because PostgreSQL can include row data in errors.
 
 The script keeps 30 daily copies and the first successful snapshot of each month.
 Monthly copies never expire automatically.
@@ -259,7 +264,7 @@ docker stop portfolio-restore
 ```
 
 Supply R2 variables from the table. Alternatively, set `BACKUP_FILE` to a downloaded encrypted archive.
-Retrieve the identity from `op://Code/Portfolio database backup age/private identity` into a file with mode `0600`.
+Retrieve the identity from your password manager into a file with mode `0600`.
 Delete the temporary identity after the drill.
 Run a drill monthly and after a PostgreSQL major upgrade or key rotation.
 
@@ -267,7 +272,7 @@ For disaster recovery, stop new writes and take a final backup if possible.
 Restore into the scratch database first.
 Compare the manifest and inspect the recovery point.
 Create a new Neon Free database, then restore the checked dump with the matching `pg_restore` client.
-Apply newer additive migrations before any application uses that database.
+Apply newer additive migrations and run the locked auth seed before any application uses that database.
 Update both Vercel URLs and the Worker’s direct URL together.
 Deploy the Worker and web app, then repeat the provider checks.
 Retain the old database until the owner approves the restored records.
@@ -276,7 +281,7 @@ Retain the old database until the owner approves the restored records.
 
 ### `INVOICE_SECRET`
 
-Preserve the current secret in 1Password with its dates.
+Preserve the current secret in your password manager with its dates.
 Take a backup before rotation.
 Generate 32 new bytes and replace the Vercel production value.
 Redeploy all instances. Existing sessions and pending OAuth state can become invalid.
@@ -311,7 +316,7 @@ Update Vercel and any Worker mail retry binding, then redeploy.
 Exercise a customer code and a quote email before revoking the previous key.
 Keep the sender domain and authentication records unchanged during API key rotation.
 
-For age rotation, create a new private identity in 1Password and preserve an offline copy.
+For age rotation, create a new private identity in your password manager and preserve an offline copy.
 Commit its public recipient in `backup-recipients.txt`.
 Keep every old identity until all archives encrypted for it expire or are re-encrypted and checked.
 Run a backup and restore drill before retiring a key.

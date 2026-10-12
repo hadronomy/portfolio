@@ -1,2 +1,2 @@
-# Private identity: 1Password Code vault, Portfolio database backup age.
+# Private identity: your password manager.
 age14cl2u68wxz3h6dgzzpcsug9mjeh23fgsqfk424cwnrj2zfkfmpvqnq5ktx
