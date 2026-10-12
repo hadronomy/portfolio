@@ -6781,6 +6781,317 @@ body:has(.iv-dock) .iv-toast-region {
   outline-offset: 1px;
 }
 
+/* The two ways out, as rows a hand finds without reading: what it does,
+   where it goes, and a chevron for the step after. */
+.iv-share {
+  max-height: var(--radix-popover-content-available-height, 480px);
+}
+.iv-share-ways {
+  display: grid;
+  margin: 0 -6px;
+}
+.iv-share-way {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) 15px;
+  align-items: center;
+  gap: 11px;
+  min-height: 48px;
+  padding: 7px 8px;
+  border-radius: 10px;
+  color: var(--iv-ink);
+  text-align: left;
+}
+.iv-share-way > span {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+.iv-share-way strong {
+  font-weight: 500;
+}
+.iv-share-way small {
+  overflow: hidden;
+  color: var(--iv-ink-3);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.iv-share-way > svg:last-child {
+  color: var(--iv-ink-3);
+}
+@media (hover: hover) and (pointer: fine) {
+  .iv-share-way:hover:not(:disabled) {
+    background: var(--iv-hover);
+  }
+  .iv-share-way:hover:not(:disabled) > svg:last-child {
+    color: var(--iv-ink);
+  }
+}
+.iv-share-way:active:not(:disabled) {
+  background: var(--iv-press);
+}
+.iv-share-way:disabled {
+  cursor: default;
+}
+
+/* Where the quote went by email, under its send button. A send made just
+   now carries a warm tint that settles away; the line itself is there
+   from the first frame. */
+.iv-quote-emailed {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 -8px;
+  padding: 5px 8px;
+  border-radius: 8px;
+  color: var(--iv-ink-2);
+  font-size: 12px;
+}
+.iv-quote-emailed strong {
+  color: var(--iv-ink);
+  font-weight: 500;
+}
+.iv-quote-emailed > svg {
+  flex: none;
+  color: var(--iv-ink-3);
+}
+.iv-quote-emailed[data-fresh] {
+  animation: iv-fresh 2.4s var(--iv-ease) both;
+}
+@keyframes iv-fresh {
+  from {
+    background: rgb(37 107 60 / 0.1);
+  }
+  to {
+    background: rgb(37 107 60 / 0);
+  }
+}
+
+/* ---------------------------------------------------------------- Compose */
+
+/* Emailing a quote: the form on the left, the email itself on the right
+   on the workspace canvas, as the customer will open it. The preview is
+   the larger half, because it is what is being decided. */
+.iv-compose {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  z-index: 51;
+  display: grid;
+  grid-template-columns: 340px minmax(0, 1fr);
+  width: min(1000px, calc(100vw - 48px));
+  height: min(760px, calc(100dvh - 48px));
+  overflow: hidden;
+  border-radius: var(--iv-r-panel);
+  background: var(--iv-surface);
+  box-shadow: var(--iv-float);
+  translate: -50% -50%;
+  animation: iv-modal-in var(--iv-fast) var(--iv-ease);
+}
+.iv-compose[data-state='closed'] {
+  animation: iv-modal-out var(--iv-quick) var(--iv-ease) forwards;
+}
+.iv-compose-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 22px 24px 20px;
+}
+.iv-compose-who {
+  color: var(--iv-ink-3);
+  font-size: 12px;
+}
+.iv-compose-optional {
+  margin-left: 4px;
+  color: var(--iv-ink-3);
+  font-weight: 400;
+}
+.iv-compose-note.iv-input {
+  min-height: 116px;
+  max-height: 260px;
+  line-height: 21px;
+}
+.iv-compose-hint {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--iv-ink-3);
+  font-size: 12px;
+  line-height: 17px;
+}
+.iv-compose-hint [data-tone='late'] {
+  color: var(--iv-danger);
+}
+.iv-compose-facts {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 14px 0 0;
+  list-style: none;
+  box-shadow: inset 0 1px 0 var(--iv-line);
+  color: var(--iv-ink-2);
+  font-size: 12px;
+}
+.iv-compose-facts li {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.iv-compose-facts svg {
+  flex: none;
+  color: var(--iv-ink-3);
+}
+.iv-compose-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 8px;
+}
+.iv-compose-problem {
+  flex-basis: 100%;
+  color: var(--iv-danger);
+  font-size: 12px;
+  line-height: 17px;
+}
+.iv-compose-send.iv-btn {
+  min-width: 96px;
+}
+/* The shortcut, in the button's own ink at a whisper. */
+.iv-compose-send kbd {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  margin-left: 2px;
+  font: inherit;
+  font-size: 11px;
+  opacity: 0.55;
+}
+.iv-compose-send[data-sent] {
+  background: linear-gradient(180deg, #2f7a47, #256b3c);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.16), 0 0 0 1px #1f5a33;
+}
+
+.iv-compose-preview {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  background: var(--iv-canvas);
+  box-shadow: inset 1px 0 0 var(--iv-line);
+}
+/* The envelope: what the inbox shows before the email is opened. */
+.iv-compose-envelope {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 18px 24px 14px;
+  box-shadow: inset 0 -1px 0 var(--iv-line);
+  font-size: 12px;
+}
+.iv-compose-envelope > div {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+}
+.iv-compose-envelope dt {
+  color: var(--iv-ink-3);
+}
+.iv-compose-envelope dd {
+  overflow: hidden;
+  margin: 0;
+  color: var(--iv-ink);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.iv-compose-paper {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+.iv-compose-frames {
+  position: relative;
+}
+.iv-compose-frames iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+.iv-compose-frames iframe[data-front] {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* On a phone the dialog is the screen and one scroll: the fields, the
+   email under them, and the actions pinned to the foot of the screen
+   throughout. The form steps aside so its parts join the dialog's grid. */
+@media (max-width: 760px) {
+  .iv-compose {
+    inset: 0;
+    grid-template-columns: minmax(0, 1fr);
+    /* Rows take their content's height: the dialog scrolls, not the email. */
+    grid-auto-rows: max-content;
+    align-content: start;
+    gap: 18px;
+    width: auto;
+    height: auto;
+    overflow-y: auto;
+    padding-top: max(18px, env(safe-area-inset-top));
+    border-radius: 0;
+    translate: none;
+    animation-name: iv-sheet-in;
+  }
+  .iv-compose-form {
+    display: contents;
+  }
+  .iv-compose-form > * {
+    margin-inline: 20px;
+  }
+  .iv-compose-preview {
+    order: 2;
+    margin-top: 4px;
+    box-shadow: inset 0 1px 0 var(--iv-line);
+  }
+  .iv-compose-paper {
+    flex: none;
+    overflow: visible;
+  }
+  .iv-compose-actions {
+    order: 3;
+    position: sticky;
+    bottom: 0;
+    z-index: 1;
+    margin: -18px 0 0;
+    padding: 12px 20px max(14px, env(safe-area-inset-bottom));
+    background: rgb(255 255 255 / 0.94);
+    backdrop-filter: blur(12px);
+    box-shadow: inset 0 1px 0 var(--iv-line);
+  }
+  .iv-compose-send kbd {
+    display: none;
+  }
+}
+@keyframes iv-sheet-in {
+  from {
+    transform: translateY(24px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .iv-compose {
+    animation: none;
+  }
+  .iv-quote-emailed[data-fresh] {
+    animation: none;
+  }
+}
+
 /* ---------------------------------------------------------------- Narrow */
 
 @media (max-width: 1100px) {

@@ -248,7 +248,7 @@ Invoice and customer data stay in the private database. Do not publish them into
 
 ## Mail
 
-Resend sends the invoice mail: the customer's sign-in code, the confirmation of an answer to a quote (Ley 34/2002, art. 28), and the owner's notice of it. Each email is a React Email component in `apps/start/src/emails`, rendered to HTML and plain text, and speaks the messages in `packages/i18n`: the customer's in the language they read, the owner's in English. The drawn signature travels as an inline PNG, because mail clients do not show SVG. Answers send with an idempotency key, so a retry never doubles them. `bun run --cwd apps/start emails` opens the React Email preview of every template.
+Resend sends the invoice mail: the customer's sign-in code, a quote sent by email, the confirmation of an answer to a quote (Ley 34/2002, art. 28), and the owner's notice of it. A quote email carries a new link, the PDF and the owner's note, shows no price (the customer reads it on the quote, with its terms), and replies go to the owner; the owner composes it beside a live preview, and each send is kept in the audit log, which the quote panel and agents (`email_quote`, `get_document`) read back. Each email is a React Email component in `apps/start/src/emails`, rendered to HTML and plain text, and speaks the messages in `packages/i18n`: the customer's in the language they read, the owner's in English. The drawn signature travels as an inline PNG, because mail clients do not show SVG. Answers send with an idempotency key, so a retry never doubles them. `bun run --cwd apps/start emails` opens the React Email preview of every template.
 
 ## PDF pipeline and viewer
 

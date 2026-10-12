@@ -15,7 +15,11 @@ import {
   RecordId,
 } from '@portfolio/invoices/model';
 import { Offer, PaymentPlan, PlanLibrary } from '@portfolio/invoices/plan';
-import { QuoteResponse } from '@portfolio/invoices/quote-model';
+import {
+  EmailAddress,
+  QuoteEmail,
+  QuoteResponse,
+} from '@portfolio/invoices/quote-model';
 import { Schema } from 'effect';
 import { Tool, Toolkit } from 'effect/ai';
 
@@ -197,6 +201,10 @@ export const DocumentDetail = Schema.Struct({
   openLinks: described(
     Schema.Number,
     'How many links to this document are open: payment links on an invoice, answer links on a quote.',
+  ),
+  emails: described(
+    Schema.Array(QuoteEmail),
+    'Every time a quote was emailed to its customer, newest first. Empty for an invoice.',
   ),
 });
 
@@ -592,6 +600,31 @@ export const SendQuote = write(
   }),
 );
 
+export const EmailQuote = write(
+  Tool.make('email_quote', {
+    description:
+      'Emails an issued, open quote to its customer: the total, the date it stands until, a new link to read and sign it, and its PDF attached. Replies reach the owner. Use it instead of send_quote when the customer should get the quote by email. It cannot be unsent; returns where it went and until when the link opens.',
+    parameters: Schema.Struct({
+      document: DocumentRef,
+      to: described(
+        Schema.optional(EmailAddress),
+        'Where to send it. Defaults to the customer’s address on the quote.',
+      ),
+      note: described(
+        Schema.optional(Schema.String.check(Schema.isMaxLength(1000))),
+        'A few words from the owner, shown above the link, in the quote’s language.',
+      ),
+      copy: described(
+        Schema.optional(Schema.Boolean),
+        'Whether the owner gets a copy.',
+      ),
+    }),
+    success: QuoteEmail,
+    failure: ToolFailure,
+  }),
+  { destructive: true },
+);
+
 export const CloseQuoteLinks = write(
   Tool.make('close_quote_links', {
     description: 'Closes every open link to a quote.',
@@ -630,6 +663,7 @@ export const InvoiceTools = Toolkit.make(
   SharePaymentLink,
   ClosePaymentLinks,
   SendQuote,
+  EmailQuote,
   CloseQuoteLinks,
 );
 

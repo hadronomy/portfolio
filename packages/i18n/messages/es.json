@@ -1356,5 +1356,58 @@
     }
   ],
   "quote_pdf_signed": "Copia firmada",
-  "quote_pdf_signed_label": "Descargar la copia firmada en PDF"
+  "quote_pdf_signed_label": "Descargar la copia firmada en PDF",
+  "invite_subject": [
+    {
+      "declarations": ["input issuer", "input number"],
+      "selectors": [],
+      "match": {
+        "*": "{issuer} te ha enviado el presupuesto {number}"
+      }
+    }
+  ],
+  "invite_preview": [
+    {
+      "declarations": [
+        "input date",
+        "local d = date: datetime dateStyle=long timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "Puedes revisar y firmar el presupuesto en línea hasta el {d}."
+      }
+    }
+  ],
+  "invite_lead": "Puedes revisar el presupuesto, elegir la forma de pago y firmarlo en su página desde cualquier dispositivo.",
+  "invite_attached": "Se adjunta el PDF para que lo guardes.",
+  "invite_link": [
+    {
+      "declarations": [
+        "input date",
+        "local d = date: datetime dateStyle=long timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "Este enlace es personal y permite consultar el presupuesto hasta el {d}."
+      }
+    }
+  ],
+  "invite_why": [
+    {
+      "declarations": ["input issuer"],
+      "selectors": [],
+      "match": {
+        "*": "{issuer} te ha enviado este presupuesto. Responde a este correo para escribirle."
+      }
+    }
+  ],
+  "invite_note_placeholder": [
+    {
+      "declarations": ["input name"],
+      "selectors": [],
+      "match": {
+        "*": "Hola, {name}:\nTe envío el presupuesto del que hablamos."
+      }
+    }
+  ]
 }

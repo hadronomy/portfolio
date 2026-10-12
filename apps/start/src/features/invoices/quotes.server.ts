@@ -14,7 +14,7 @@ import { InvoiceStore } from '@portfolio/invoices/store';
 import { getRequestIP } from '@tanstack/react-start/server';
 import { Effect, Option } from 'effect';
 import { requireOwner } from '../../server/auth.server';
-import { Mailer } from '../../server/mail.server';
+import { invitationEmail, Mailer } from '../../server/mail.server';
 import { PageImages } from '../../server/page-images.server';
 import {
   CurrentRequest,
@@ -63,6 +63,100 @@ export const shareQuote = Effect.fn('QuotesServer.share')(function* (
   yield* sameOrigin;
   const actor = yield* requireOwner;
   return yield* sendQuote(id, actor, yield* origin);
+});
+
+/** What the owner asks for when emailing a quote. */
+export interface QuoteEmailRequest {
+  readonly to: string;
+  /** A few words of their own, or empty. */
+  readonly note: string;
+  /** Whether they get a copy themselves. */
+  readonly copy: boolean;
+}
+
+/**
+ * Emails an open quote to `to` with a link minted for it and its PDF
+ * attached, then records that it went. The owner's pages and agents both
+ * send through here. A mail failure leaves nothing recorded; the link it
+ * minted was never seen, so it opens for no one.
+ */
+export const emailQuoteTo = Effect.fn('QuotesServer.emailTo')(function* (
+  id: InvoiceId,
+  actor: OwnerDid,
+  base: string,
+  request: QuoteEmailRequest,
+) {
+  const shared = yield* sendQuote(id, actor, base);
+  if (!shared.ok) return shared;
+  const view = yield* viewOf(id);
+  const { bytes } = yield* pdfOf(id, view.quote.data.language);
+  const sent = yield* Mailer.use((mailer) =>
+    mailer.quoteInvitation({
+      quote: view.quote,
+      to: request.to,
+      note: request.note,
+      url: shared.url,
+      copy: request.copy ? view.quote.data.issuer.email || null : null,
+      pdf: bytes,
+    }),
+  ).pipe(
+    Effect.as(true),
+    Effect.catchTag('MailFailure', (failure) =>
+      Effect.logWarning('Quote email not sent', failure.message).pipe(
+        Effect.as(false),
+      ),
+    ),
+  );
+  if (!sent) return { ok: false as const, reason: 'mail' as const };
+  const email = {
+    to: request.to,
+    sentAt: new Date().toISOString(),
+    expiresAt: shared.expiresAt,
+  };
+  yield* unavailable(Quotes.use((quotes) => quotes.emailed(id, actor, email)));
+  return { ok: true as const, ...email };
+});
+
+/** The owner's request to email a quote: from the invoice pages only. */
+export const emailQuote = Effect.fn('QuotesServer.email')(function* (
+  id: InvoiceId,
+  request: QuoteEmailRequest,
+) {
+  yield* sameOrigin;
+  const actor = yield* requireOwner;
+  return yield* emailQuoteTo(id, actor, yield* origin, request);
+});
+
+/**
+ * The email the owner is about to send, exactly as it will go out, for
+ * the compose dialog. Its link is a stand-in: no link is minted until the
+ * owner sends.
+ */
+export const quoteEmailPreview = Effect.fn('QuotesServer.emailPreview')(
+  function* (id: InvoiceId, note: string) {
+    yield* requireOwner;
+    const view = yield* viewOf(id);
+    const base = yield* origin;
+    const email = yield* invitationEmail({
+      quote: view.quote,
+      to: view.quote.data.customer.email,
+      note,
+      url: `${base}/invoices/quote/preview`,
+    });
+    return {
+      subject: email.subject,
+      html: email.html,
+      language: view.quote.data.language,
+    };
+  },
+);
+
+/** Every time the quote was emailed, newest first. */
+export const quoteEmails = Effect.fn('QuotesServer.emails')(function* (
+  id: InvoiceId,
+) {
+  yield* requireOwner;
+  return yield* unavailable(Quotes.use((quotes) => quotes.emails(id)));
 });
 
 /** Closes every link to the quote. */

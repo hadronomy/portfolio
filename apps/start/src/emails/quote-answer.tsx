@@ -52,8 +52,7 @@ export function QuoteAnswer(props: QuoteAnswerProps) {
           <Face
             kicker={`${props.issuer} · ${t(m.quote_quote)} ${props.number}`}
             title={props.title}
-            totalLabel={t(m.quote_total)}
-            total={props.total}
+            total={{ label: t(m.quote_total), value: props.total }}
             status={t(accepted ? m.quote_accepted_on : m.quote_declined_on, {
               date: day,
             })}

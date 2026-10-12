@@ -17,10 +17,26 @@ import { quoteNotices } from '@portfolio/invoices/quote-notices';
 import * as Popover from '@radix-ui/react-popover';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
-import { Check, ChevronDown, Copy, FilePen, Link2, X } from 'lucide-react';
+import {
+  Check,
+  ChevronDown,
+  ChevronRight,
+  Copy,
+  FilePen,
+  Link2,
+  Mail,
+  Send,
+  X,
+} from 'lucide-react';
 import { type CSSProperties, useState } from 'react';
-import { getQuoteLinks, revokeQuoteLinks, shareQuoteLink } from './api';
+import {
+  getQuoteEmails,
+  getQuoteLinks,
+  revokeQuoteLinks,
+  shareQuoteLink,
+} from './api';
 import { pagesMorph } from './pages-studio';
+import { QuoteEmailDialog } from './quote-email';
 import { type DocumentStatus, documentStatus } from './status';
 import { useToast } from './toast';
 import { Button, cn, layer, MorphText, StatusChip } from './ui';
@@ -56,8 +72,20 @@ const refusals: Record<string, string> = {
   answered: 'The customer has already answered this quote.',
 };
 
-/** The send button and its menu: make a link, copy it once, close the open ones. */
-function QuoteLinkMenu({ id }: { id: InvoiceId }) {
+/**
+ * The send button and its menu: email the quote, or make a link to copy
+ * once; and close the open ones. Emailing opens the compose dialog, which
+ * shows the email as it will go out.
+ */
+function QuoteLinkMenu({
+  id,
+  data,
+  number,
+}: {
+  id: InvoiceId;
+  data: InvoiceData;
+  number: string | null;
+}) {
   const toast = useToast();
   const client = useQueryClient();
   const key = ['quote-links', id];
@@ -66,6 +94,7 @@ function QuoteLinkMenu({ id }: { id: InvoiceId }) {
     queryFn: () => getQuoteLinks({ data: { id } }),
   });
   const [open, setOpen] = useState(false);
+  const [composing, setComposing] = useState(false);
   const [made, setMade] = useState<{ url: string; copied: boolean } | null>(
     null,
   );
@@ -96,102 +125,167 @@ function QuoteLinkMenu({ id }: { id: InvoiceId }) {
     onError: () => toast('The links could not be closed. Try again.', 'error'),
   });
   const count = links.data ?? 0;
+  const who = data.customer.name.trim().split(/\s+/)[0] || 'the customer';
   return (
-    <Popover.Root
-      open={open}
-      onOpenChange={(next) => {
-        setOpen(next);
-        if (!next) setMade(null);
-      }}
-    >
-      <Popover.Trigger asChild>
-        <Button size="sm" variant={count ? 'secondary' : 'primary'}>
-          <Link2 size={14} />
-          <MorphText>
-            {count === 0
-              ? 'Send for an answer'
-              : count === 1
-                ? '1 link open'
-                : `${count} links open`}
-          </MorphText>
-        </Button>
-      </Popover.Trigger>
-      <Popover.Portal>
-        <Popover.Content
-          align="start"
-          sideOffset={6}
-          className={cn(layer, 'iv-menu', 'iv-share')}
-        >
-          {made ? (
-            <>
-              <p className="iv-share-title">
-                {made.copied ? 'Link copied' : 'Copy the link'}
-              </p>
-              <div className="iv-share-link">
-                <input
-                  readOnly
-                  value={made.url}
-                  aria-label="Quote link"
-                  onFocus={(event) => event.currentTarget.select()}
-                />
-                <Button
-                  size="sm"
-                  variant={made.copied ? 'ghost' : 'primary'}
-                  onClick={async () => {
-                    await navigator.clipboard.writeText(made.url);
-                    setMade({ ...made, copied: true });
-                  }}
-                >
-                  {made.copied ? <Check size={14} /> : <Copy size={14} />}
-                  <MorphText>{made.copied ? 'Copied' : 'Copy'}</MorphText>
-                </Button>
-              </div>
-              <p className="iv-share-note">
-                It opens until the quote expires. This is the only time it is
-                shown.
-              </p>
-            </>
-          ) : (
-            <>
-              {count > 0 && (
-                <div className="iv-share-open">
-                  <p>
-                    {count === 1
-                      ? '1 link is open.'
-                      : `${count} links are open.`}
-                  </p>
+    <>
+      <Popover.Root
+        open={open}
+        onOpenChange={(next) => {
+          setOpen(next);
+          if (!next) setMade(null);
+        }}
+      >
+        <Popover.Trigger asChild>
+          <Button size="sm" variant={count ? 'secondary' : 'primary'}>
+            <Send size={14} />
+            <MorphText>
+              {count === 0
+                ? 'Send for an answer'
+                : count === 1
+                  ? '1 link open'
+                  : `${count} links open`}
+            </MorphText>
+          </Button>
+        </Popover.Trigger>
+        <Popover.Portal>
+          <Popover.Content
+            align="start"
+            sideOffset={6}
+            className={cn(layer, 'iv-menu', 'iv-share')}
+          >
+            {made ? (
+              <>
+                <p className="iv-share-title">
+                  {made.copied ? 'Link copied' : 'Copy the link'}
+                </p>
+                <div className="iv-share-link">
+                  <input
+                    readOnly
+                    value={made.url}
+                    aria-label="Quote link"
+                    onFocus={(event) => event.currentTarget.select()}
+                  />
                   <Button
                     size="sm"
-                    variant="ghost"
-                    disabled={revoke.isPending}
-                    onClick={() => revoke.mutate()}
+                    variant={made.copied ? 'ghost' : 'primary'}
+                    onClick={async () => {
+                      await navigator.clipboard.writeText(made.url);
+                      setMade({ ...made, copied: true });
+                    }}
                   >
-                    {count === 1 ? 'Close it' : 'Close them'}
+                    {made.copied ? <Check size={14} /> : <Copy size={14} />}
+                    <MorphText>{made.copied ? 'Copied' : 'Copy'}</MorphText>
                   </Button>
                 </div>
-              )}
-              <p className="iv-share-title">New link</p>
-              <p className="iv-share-note">
-                The customer reads the quote, its pages and conditions, then
-                accepts it with their name, or declines. You both get the
-                confirmation by email.
-              </p>
-              <Button
-                variant="primary"
-                size="sm"
-                className="iv-share-go"
-                disabled={share.isPending}
-                onClick={() => share.mutate()}
-              >
-                <MorphText>
-                  {share.isPending ? 'Preparing…' : 'Create link'}
-                </MorphText>
-              </Button>
-            </>
-          )}
-        </Popover.Content>
-      </Popover.Portal>
-    </Popover.Root>
+                <p className="iv-share-note">
+                  It opens until the quote expires. This is the only time it is
+                  shown.
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="iv-share-title">Send {number ?? 'the quote'}</p>
+                <div className="iv-share-ways">
+                  <button
+                    type="button"
+                    className="iv-share-way"
+                    onClick={() => {
+                      setOpen(false);
+                      setComposing(true);
+                    }}
+                  >
+                    <Mail size={16} aria-hidden />
+                    <span>
+                      <strong>Email it to {who}</strong>
+                      <small>
+                        {data.customer.email ||
+                          'With its PDF and a link to sign'}
+                      </small>
+                    </span>
+                    <ChevronRight size={15} aria-hidden />
+                  </button>
+                  <button
+                    type="button"
+                    className="iv-share-way"
+                    disabled={share.isPending}
+                    onClick={() => share.mutate()}
+                  >
+                    <Link2 size={16} aria-hidden />
+                    <span>
+                      <strong>
+                        <MorphText>
+                          {share.isPending ? 'Preparing…' : 'Copy a link'}
+                        </MorphText>
+                      </strong>
+                      <small>To send it yourself, any way you like</small>
+                    </span>
+                    <ChevronRight size={15} aria-hidden />
+                  </button>
+                </div>
+                <p className="iv-share-note">
+                  The customer reads the quote, its pages and conditions, then
+                  signs it or declines. You both get the confirmation by email.
+                </p>
+                {count > 0 && (
+                  <div className="iv-share-open">
+                    <p>
+                      {count === 1
+                        ? '1 link is open.'
+                        : `${count} links are open.`}
+                    </p>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      disabled={revoke.isPending}
+                      onClick={() => revoke.mutate()}
+                    >
+                      {count === 1 ? 'Close it' : 'Close them'}
+                    </Button>
+                  </div>
+                )}
+              </>
+            )}
+          </Popover.Content>
+        </Popover.Portal>
+      </Popover.Root>
+      <QuoteEmailDialog
+        id={id}
+        data={data}
+        number={number}
+        open={composing}
+        onOpenChange={setComposing}
+        onSent={(to) => {
+          toast(`Sent to ${to}.`);
+          void client.invalidateQueries({ queryKey: key });
+          void client.invalidateQueries({ queryKey: ['quote-emails', id] });
+        }}
+      />
+    </>
+  );
+}
+
+/** Where the quote went by email: the latest send, and how many before it. */
+function EmailedLine({ id }: { id: InvoiceId }) {
+  const emails = useQuery({
+    queryKey: ['quote-emails', id],
+    queryFn: () => getQuoteEmails({ data: { id } }),
+  });
+  const [latest, ...earlier] = emails.data ?? [];
+  // A send made just now is marked for a moment; one from before is not.
+  const [seen] = useState(() => new Date().toISOString());
+  if (!latest) return null;
+  return (
+    <p
+      className="iv-quote-emailed"
+      data-fresh={latest.sentAt > seen || undefined}
+    >
+      <Mail size={13} aria-hidden />
+      <span>
+        Emailed to <strong>{latest.to}</strong> · {moment(latest.sentAt)}
+        {earlier.length > 0 &&
+          ` · ${earlier.length === 1 ? 'once' : `${earlier.length} times`} before`}
+      </span>
+    </p>
   );
 }
 
@@ -494,7 +588,9 @@ export function QuotePanel({
         <p className="iv-muted">Issue the quote to send it for an answer.</p>
       ) : (
         <div className="iv-inline">
-          {status === 'open' && <QuoteLinkMenu id={id} />}
+          {status === 'open' && (
+            <QuoteLinkMenu id={id} data={data} number={number} />
+          )}
           {(status === 'open' ||
             status === 'expired' ||
             status === 'declined') && (
@@ -509,6 +605,7 @@ export function QuotePanel({
           )}
         </div>
       )}
+      {issued && <EmailedLine id={id} />}
     </div>
   );
 }

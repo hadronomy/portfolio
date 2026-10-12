@@ -1,5 +1,6 @@
 import { calculate } from '@portfolio/invoices/calculate';
 import { clauses } from '@portfolio/invoices/clauses';
+import type { Documents } from '@portfolio/invoices/documents';
 import {
   asQuote,
   type Invoice,
@@ -23,6 +24,7 @@ import { InvoiceStore, type Workspace } from '@portfolio/invoices/store';
 import { issueErrors } from '@portfolio/invoices/validate';
 import { Effect, Match, Result } from 'effect';
 import { AppConfig } from '../../server/config.server';
+import type { Mailer } from '../../server/mail.server';
 import { agentOrigin } from '../../server/origin.server';
 import type { Payments } from '../../server/payments.server';
 import { ownerDid } from '../auth/options';
@@ -33,7 +35,7 @@ import {
   shareLink,
 } from '../invoices/collection.server';
 import { perform } from '../invoices/operations.server';
-import { sendQuote } from '../invoices/quotes.server';
+import { emailQuoteTo, sendQuote } from '../invoices/quotes.server';
 import { shareFailureMessage } from '../invoices/share-words';
 import { documentStatus } from '../invoices/status';
 import {
@@ -223,6 +225,8 @@ export const invoiceToolsLayer = InvoiceTools.toLayer(
     const settings = yield* AppConfig;
     // Online payments may be off; the link operations answer for that.
     const online = yield* Effect.context<Payments>();
+    // Emailing a quote attaches its PDF and goes out through the mailer.
+    const mail = yield* Effect.context<Documents | Mailer>();
     // An agent acts for the owner, and only the owner's grant reaches here.
     const actor = ownerDid as OwnerDid;
     const base = agentOrigin({
@@ -308,6 +312,10 @@ export const invoiceToolsLayer = InvoiceTools.toLayer(
             answer: answerFor(workspace.responses[invoice.id]),
             pdf: `invoices://documents/${invoice.id}/${data.language}.pdf`,
             openLinks,
+            emails:
+              data.kind === 'quote'
+                ? yield* explained(quotes.emails(invoice.id))
+                : [],
           };
         }).pipe(Effect.provide(online)),
 
@@ -566,6 +574,32 @@ export const invoiceToolsLayer = InvoiceTools.toLayer(
             );
           return { url: result.url, expiresAt: result.expiresAt };
         }).pipe(provide),
+
+      email_quote: ({ document, to, note, copy }) =>
+        Effect.gen(function* () {
+          const invoice = yield* find(yield* snapshot, document);
+          const address = to ?? invoice.data.customer.email;
+          if (!address)
+            return yield* fail(
+              'The quote has no customer email. Pass `to`, or add one to the customer with update_draft.',
+            );
+          const result = yield* emailQuoteTo(invoice.id, actor, base, {
+            to: address,
+            note: note ?? '',
+            copy: copy ?? false,
+          }).pipe(Effect.catchTag('Refused', ({ message }) => fail(message)));
+          if (!result.ok)
+            return yield* fail(
+              result.reason === 'mail'
+                ? 'The email did not go out. Nothing was recorded; try again, or send_quote for a link to send yourself.'
+                : (closed[result.reason] ?? 'The quote cannot be sent.'),
+            );
+          return {
+            to: result.to,
+            sentAt: result.sentAt,
+            expiresAt: result.expiresAt,
+          };
+        }).pipe(provide, Effect.provide(mail)),
 
       close_quote_links: ({ document }) =>
         Effect.gen(function* () {

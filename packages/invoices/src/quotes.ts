@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { and, eq } from 'drizzle-orm';
+import { and, desc, eq } from 'drizzle-orm';
 import { Context, Effect, Layer, Schema } from 'effect';
 import { billData, bills } from './billing';
 import { InvoiceDatabase } from './database';
@@ -21,6 +21,7 @@ import {
 import { PaymentPlan } from './plan';
 import {
   type Answer,
+  QuoteEmail,
   QuoteResponse,
   type QuoteState,
   quoteState,
@@ -113,6 +114,19 @@ export interface QuotesApi {
     payment: number,
     actor: OwnerDid,
   ) => Effect.Effect<Invoice, QuoteError>;
+  /**
+   * Records that the quote went to `to` by email, with the link minted for
+   * it. The owner's panel and agents read it back from `emails`.
+   */
+  readonly emailed: (
+    id: InvoiceId,
+    actor: OwnerDid,
+    email: QuoteEmail,
+  ) => Effect.Effect<void, StoreError>;
+  /** Every time the quote was emailed, newest first. */
+  readonly emails: (
+    id: InvoiceId,
+  ) => Effect.Effect<readonly QuoteEmail[], StoreError>;
   /** Starts a new draft quote from an issued one, valid for another 30 days. */
   readonly revise: (
     id: InvoiceId,
@@ -129,6 +143,7 @@ type Transaction = Parameters<
 
 const decodeResponse = decodeStored(QuoteResponse);
 const decodePlan = decodeStored(PaymentPlan);
+const decodeEmail = decodeStored(QuoteEmail);
 const today = () => new Date().toISOString().slice(0, 10);
 const digestOf = (bytes: Uint8Array) =>
   createHash('sha256').update(bytes).digest('hex');
@@ -225,6 +240,35 @@ export const makeQuotes = Effect.gen(function* () {
     ),
 
     links: Effect.fn('Quotes.links')((id) => openLinks(db, id)),
+
+    emailed: Effect.fn('Quotes.emailed')(function* (id, actor, email) {
+      yield* stored(
+        db.insert(tables.audit).values({
+          id: crypto.randomUUID(),
+          invoiceId: id,
+          operation: 'quote-emailed',
+          actor,
+          payload: email,
+          createdAt: email.sentAt,
+        }),
+      );
+    }),
+
+    emails: Effect.fn('Quotes.emails')(function* (id) {
+      const rows = yield* stored(
+        db
+          .select({ payload: tables.audit.payload })
+          .from(tables.audit)
+          .where(
+            and(
+              eq(tables.audit.invoiceId, id),
+              eq(tables.audit.operation, 'quote-emailed'),
+            ),
+          )
+          .orderBy(desc(tables.audit.createdAt)),
+      );
+      return yield* Effect.forEach(rows, (row) => decodeEmail(row.payload));
+    }),
 
     resolve: Effect.fn('Quotes.resolve')(function* (token) {
       const id = yield* resolveLink(db, token);

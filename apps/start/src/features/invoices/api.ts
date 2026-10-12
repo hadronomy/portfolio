@@ -11,7 +11,7 @@ import {
   RecordId,
 } from '@portfolio/invoices/model';
 import { Offer, PlanLibrary } from '@portfolio/invoices/plan';
-import { Answer } from '@portfolio/invoices/quote-model';
+import { Answer, EmailAddress } from '@portfolio/invoices/quote-model';
 import { createServerFn } from '@tanstack/react-start';
 import { Effect, Result, Schema } from 'effect';
 import { Auth, requireOwner, viewer } from '../../server/auth.server';
@@ -32,6 +32,9 @@ import {
 import { mutate, preview, workspace } from './operations.server';
 import {
   answerQuote,
+  emailQuote,
+  quoteEmailPreview,
+  quoteEmails,
   quoteLinks,
   quotePage,
   revokeQuote,
@@ -255,6 +258,33 @@ export const shareQuoteLink = createServerFn({ method: 'POST' })
 export const revokeQuoteLinks = createServerFn({ method: 'POST' })
   .validator((input: unknown) => decodeInvoiceRef(input))
   .handler(({ data }) => serve(revokeQuote(data.id)));
+/** The owner's words in a quote email are kept short: a greeting and a line or two. */
+export const quoteNoteLimit = 1000;
+const decodeQuoteEmail = decodeWith(
+  Schema.Struct({
+    id: InvoiceId,
+    to: EmailAddress,
+    note: Schema.String.check(Schema.isMaxLength(quoteNoteLimit)),
+    copy: Schema.Boolean,
+  }),
+  'Enter a valid email address.',
+);
+const decodeQuoteNote = decodeWith(
+  Schema.Struct({
+    id: InvoiceId,
+    note: Schema.String.check(Schema.isMaxLength(quoteNoteLimit)),
+  }),
+  'Invalid note.',
+);
+export const emailQuoteLink = createServerFn({ method: 'POST' })
+  .validator((input: unknown) => decodeQuoteEmail(input))
+  .handler(({ data: { id, ...request } }) => serve(emailQuote(id, request)));
+export const previewQuoteEmail = createServerFn({ method: 'POST' })
+  .validator((input: unknown) => decodeQuoteNote(input))
+  .handler(({ data }) => serve(quoteEmailPreview(data.id, data.note)));
+export const getQuoteEmails = createServerFn({ method: 'GET' })
+  .validator((input: unknown) => decodeInvoiceRef(input))
+  .handler(({ data }) => serve(quoteEmails(data.id)));
 export const getQuoteLinks = createServerFn({ method: 'GET' })
   .validator((input: unknown) => decodeInvoiceRef(input))
   .handler(({ data }) => serve(quoteLinks(data.id)));

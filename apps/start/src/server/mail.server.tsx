@@ -13,6 +13,7 @@ import { Resend } from 'resend';
 import sharp from 'sharp';
 import { QuoteAnswer } from '../emails/quote-answer';
 import { QuoteAnswered } from '../emails/quote-answered';
+import { QuoteInvitation } from '../emails/quote-invitation';
 import { SignInCode } from '../emails/sign-in-code';
 import { AppConfig } from './config.server';
 
@@ -40,6 +41,52 @@ export interface QuoteAnswerMail {
   readonly signedCopy: Uint8Array | null;
 }
 
+/** A quote sent to its customer by email. */
+export interface QuoteInvitationMail {
+  readonly quote: Invoice;
+  readonly to: string;
+  /** The owner's own words, or empty. */
+  readonly note: string;
+  /** The customer's link, minted for this email. */
+  readonly url: string;
+  /** The owner's address, when they asked for a copy. */
+  readonly copy: string | null;
+  /** The quote's PDF in its own language, attached. */
+  readonly pdf: Uint8Array;
+}
+
+/**
+ * The invitation's subject and body, without sending it: what the owner's
+ * compose dialog previews is exactly what goes out.
+ */
+export const invitationEmail = (
+  message: Omit<QuoteInvitationMail, 'copy' | 'pdf'>,
+) => {
+  const { quote } = message;
+  const { language } = quote.data;
+  const t = translate(language);
+  const number = quote.number ?? '';
+  return compose(
+    <QuoteInvitation
+      locale={language}
+      issuer={quote.data.issuer.name}
+      number={number}
+      title={quote.data.title}
+      validUntil={quote.data.quote?.validUntil ?? quote.data.dueDate}
+      note={message.note}
+      url={message.url}
+    />,
+  ).pipe(
+    Effect.map((body) => ({
+      ...body,
+      subject: t(m.invite_subject, {
+        issuer: quote.data.issuer.name,
+        number,
+      }),
+    })),
+  );
+};
+
 export interface MailerApi {
   readonly signInCode: (message: {
     readonly to: string;
@@ -55,6 +102,10 @@ export interface MailerApi {
   readonly quoteAnswer: (
     message: QuoteAnswerMail,
   ) => Effect.Effect<void, MailFailure>;
+  /** Sends a quote to its customer, replying to the owner. */
+  readonly quoteInvitation: (
+    message: QuoteInvitationMail,
+  ) => Effect.Effect<void, MailFailure>;
 }
 
 /** Sends the invoice server's mail. */
@@ -66,6 +117,10 @@ export const codeLifetime = 600;
 /** One email, ready to go. */
 interface Email {
   readonly to: string;
+  /** A blind copy, for the owner's own records. */
+  readonly bcc?: string | undefined;
+  /** Where the reader's reply goes. */
+  readonly replyTo?: string | undefined;
   readonly subject: string;
   readonly html: string;
   readonly text: string;
@@ -136,6 +191,25 @@ const readout = (
 });
 
 const makeMailer = (deliver: Deliver): MailerApi => ({
+  quoteInvitation: Effect.fn('Mailer.quoteInvitation')(function* (message) {
+    const { quote } = message;
+    const email = yield* invitationEmail(message);
+    yield* deliver({
+      ...email,
+      to: message.to,
+      bcc: message.copy ?? undefined,
+      replyTo: quote.data.issuer.email || undefined,
+      attachments: [
+        {
+          filename: `${quote.number ?? 'quote'}.pdf`,
+          content: Buffer.from(message.pdf),
+          contentType: 'application/pdf',
+        },
+      ],
+      kind: 'quote-invitation',
+    });
+  }),
+
   signInCode: Effect.fn('Mailer.signInCode')(function* ({
     to,
     code,
@@ -259,6 +333,8 @@ const resendDeliver = (apiKey: string, from: string): Deliver => {
         {
           from,
           to: email.to,
+          ...(email.bcc ? { bcc: email.bcc } : {}),
+          ...(email.replyTo ? { replyTo: email.replyTo } : {}),
           subject: email.subject,
           html: email.html,
           text: email.text,
@@ -324,6 +400,8 @@ export const mailerLayer = Layer.effect(
     return Mailer.of({
       signInCode: () => Effect.void,
       quoteAnswer: () =>
+        Effect.fail(new MailFailure({ message: 'Mail is not configured.' })),
+      quoteInvitation: () =>
         Effect.fail(new MailFailure({ message: 'Mail is not configured.' })),
     });
   }),

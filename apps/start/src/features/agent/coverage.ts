@@ -54,6 +54,12 @@ export const serverFunctions: Record<
   shareQuoteLink: ['send_quote'],
   revokeQuoteLinks: ['close_quote_links'],
   getQuoteLinks: ['get_document'],
+  emailQuoteLink: ['email_quote'],
+  previewQuoteEmail: {
+    notForAgents:
+      'How the email looks, for the owner’s compose dialog; email_quote returns what went out.',
+  },
+  getQuoteEmails: ['get_document'],
   getQuotePage: { notForAgents: 'The customer’s quote page.' },
   answerQuoteLink: { notForAgents: 'The customer answers a quote.' },
   getAccountPage: { notForAgents: 'The customer’s account.' },

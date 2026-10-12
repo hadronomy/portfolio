@@ -189,4 +189,72 @@ describe('the MCP server', () => {
     });
     expect(quote.error).toMatch(/pages cannot be read/);
   });
+
+  it('emails an issued quote to its customer, and refuses a draft', async () => {
+    const settings = (await call('get_settings', {})).value as {
+      preferences: Record<string, unknown> & { issuer: object };
+    };
+    const address = {
+      lines: 'Calle Mayor, 1',
+      dependentLocality: '',
+      locality: 'Santa Cruz de Tenerife',
+      region: 'Santa Cruz de Tenerife',
+      postalCode: '38001',
+      sortingCode: '',
+      country: 'ES',
+    };
+    await call('save_settings', {
+      preferences: {
+        ...settings.preferences,
+        issuer: {
+          ...settings.preferences.issuer,
+          name: 'Estudio Ejemplo',
+          taxId: '12345678Z',
+          email: 'hola@estudio.test',
+          address,
+        },
+      },
+    });
+    const saved = await call('save_customer', {
+      customer: {
+        name: 'Lucía Martín',
+        taxId: '87654321X',
+        email: 'lucia@example.test',
+        address,
+        type: 'consumer',
+        territory: 'canary-islands',
+        language: 'es',
+      },
+    });
+    const customer = (saved.value as { customer: { id: string } }).customer;
+    const created = await call('create_draft', {
+      kind: 'quote',
+      changes: {
+        title: 'Rediseño',
+        customer: customer.id,
+        lines: [{ description: 'Diseño', unitPrice: '850.00' }],
+      },
+    });
+    const draft = (created.value as { document: { id: string } }).document;
+
+    const refused = await call('email_quote', { document: draft.id });
+    expect(refused.error).toMatch(/Issue the quote first/);
+
+    const read = await call('get_document', { document: draft.id });
+    const issued = await call('issue_document', {
+      document: draft.id,
+      revision: (read.value as { revision: number }).revision,
+    });
+    expect(issued.error).toBeUndefined();
+    const sent = await call('email_quote', {
+      document: draft.id,
+      note: 'Hola, Lucía: aquí tienes el presupuesto.',
+    });
+    expect(sent.value).toMatchObject({ to: 'lucia@example.test' });
+    const after = await call('get_document', { document: draft.id });
+    expect(after.value).toMatchObject({
+      openLinks: 1,
+      emails: [{ to: 'lucia@example.test' }],
+    });
+  });
 });

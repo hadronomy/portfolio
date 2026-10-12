@@ -59,19 +59,21 @@ export function Ticket({ face, slip }: { face: ReactNode; slip: ReactNode }) {
   );
 }
 
-/** The ticket's face: what the quote is, what it costs, where it stands. */
+/**
+ * The ticket's face: what the quote is, where it stands, and what it costs
+ * when the email is about money. Without a total, the title is the face's
+ * large line instead.
+ */
 export function Face({
   kicker,
   title,
-  totalLabel,
   total,
   status,
   done,
 }: {
   kicker: string;
   title: string;
-  totalLabel: string;
-  total: string;
+  total: { readonly label: string; readonly value: string } | null;
   status: string;
   /** Accepted: the status takes the paid green. */
   done: boolean;
@@ -81,36 +83,51 @@ export function Face({
       <Text style={text.small}>{kicker}</Text>
       {title && (
         <Text
-          style={{
-            margin: '2px 0 0',
-            fontSize: 16,
-            lineHeight: '22px',
-            fontWeight: 600,
-            letterSpacing: '-0.01em',
-            color: tone.ink,
-          }}
+          style={
+            total
+              ? {
+                  margin: '2px 0 0',
+                  fontSize: 16,
+                  lineHeight: '22px',
+                  fontWeight: 600,
+                  letterSpacing: '-0.01em',
+                  color: tone.ink,
+                }
+              : {
+                  margin: '10px 0 0',
+                  fontSize: 26,
+                  lineHeight: '32px',
+                  fontWeight: 600,
+                  letterSpacing: '-0.022em',
+                  color: tone.ink,
+                }
+          }
         >
           {title}
         </Text>
       )}
-      <Text style={{ ...text.small, marginTop: 20 }}>{totalLabel}</Text>
-      <Text
-        style={{
-          margin: '2px 0 0',
-          fontSize: 34,
-          lineHeight: '40px',
-          fontWeight: 600,
-          letterSpacing: '-0.025em',
-          fontVariantNumeric: 'tabular-nums',
-          color: tone.ink,
-        }}
-      >
-        {total}
-      </Text>
+      {total && (
+        <>
+          <Text style={{ ...text.small, marginTop: 20 }}>{total.label}</Text>
+          <Text
+            style={{
+              margin: '2px 0 0',
+              fontSize: 34,
+              lineHeight: '40px',
+              fontWeight: 600,
+              letterSpacing: '-0.025em',
+              fontVariantNumeric: 'tabular-nums',
+              color: tone.ink,
+            }}
+          >
+            {total.value}
+          </Text>
+        </>
+      )}
       <Text
         style={{
           ...text.small,
-          marginTop: 4,
+          marginTop: total ? 4 : 10,
           color: done ? tone.done : tone.ink2,
         }}
       >

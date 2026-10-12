@@ -261,6 +261,20 @@ describe('quotes', () => {
     expect((await run(store.offer(issued.id))).plans).toHaveLength(1);
   });
 
+  it('remember every time a quote went out by email, newest first', async () => {
+    const quote = await issuedQuote();
+    expect(await run(quotes.emails(quote.id))).toEqual([]);
+    const first = {
+      to: 'lucy@example.test',
+      sentAt: '2026-10-12T09:00:00.000Z',
+      expiresAt: '2026-11-11T09:00:00.000Z',
+    };
+    const again = { ...first, sentAt: '2026-10-13T09:00:00.000Z' };
+    await run(quotes.emailed(quote.id, owner, first));
+    await run(quotes.emailed(quote.id, owner, again));
+    expect(await run(quotes.emails(quote.id))).toEqual([again, first]);
+  });
+
   it('revise an issued quote into a new draft', async () => {
     const quote = await issuedQuote();
     const revision = await run(quotes.revise(quote.id, owner));

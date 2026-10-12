@@ -1356,5 +1356,58 @@
     }
   ],
   "quote_pdf_signed": "Signed copy",
-  "quote_pdf_signed_label": "Download the signed copy as a PDF"
+  "quote_pdf_signed_label": "Download the signed copy as a PDF",
+  "invite_subject": [
+    {
+      "declarations": ["input issuer", "input number"],
+      "selectors": [],
+      "match": {
+        "*": "{issuer} sent you quote {number}"
+      }
+    }
+  ],
+  "invite_preview": [
+    {
+      "declarations": [
+        "input date",
+        "local d = date: datetime dateStyle=long timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "Read it and sign it online, until {d}."
+      }
+    }
+  ],
+  "invite_lead": "Read it, choose how to pay and sign it on its page, from any device.",
+  "invite_attached": "The PDF is attached, for your records.",
+  "invite_link": [
+    {
+      "declarations": [
+        "input date",
+        "local d = date: datetime dateStyle=long timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "The link is yours alone and opens the quote until {d}."
+      }
+    }
+  ],
+  "invite_why": [
+    {
+      "declarations": ["input issuer"],
+      "selectors": [],
+      "match": {
+        "*": "{issuer} sent you this quote. Reply to this email to write to them."
+      }
+    }
+  ],
+  "invite_note_placeholder": [
+    {
+      "declarations": ["input name"],
+      "selectors": [],
+      "match": {
+        "*": "Hi {name},\nHere is the quote we talked about."
+      }
+    }
+  ]
 }

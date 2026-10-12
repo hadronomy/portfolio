@@ -20,7 +20,7 @@ Documents are invoices, rectifying invoices and quotes (presupuestos). Each is a
 The usual flow for a project:
 1. create_draft with kind "quote": the customer, the lines, the validity date, and the proposal pages in Markdown, placing clauses from list_clauses.
 2. set_payment_plans if the work is paid in parts, such as a deposit and the rest on delivery.
-3. issue_document, then send_quote. The customer reads the quote, chooses a plan, and accepts with their name.
+3. issue_document, then email_quote to send it to the customer, or send_quote for a link to pass on yourself. The customer reads the quote, chooses a plan, and accepts with their name and a drawn signature.
 4. Once accepted, bill_quote_payment drafts the invoice for each payment as it falls due; Spanish law asks for one invoice per payment. issue_document each one, and share_payment_link to be paid online, or record_payment for a bank transfer.
 
 Never correct an issued invoice: start a rectifying invoice with rectify_invoice. Never change an issued quote: revise_quote starts a new version. Amounts are decimal strings in the document's currency, dates are YYYY-MM-DD. When a tool fails, its message says what to do next.`;

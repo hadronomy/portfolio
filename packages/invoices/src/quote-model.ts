@@ -23,6 +23,21 @@ export const Signature = Schema.String.check(
 export const signatureSource = (svg: string) =>
   `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 
+/** An address a quote can be emailed to. */
+export const EmailAddress = Schema.String.check(
+  Schema.isMaxLength(254),
+  Schema.isPattern(/^[^\s@]+@[^\s@]+\.[^\s@]+$/),
+);
+
+/** A quote emailed to its customer: to whom, and when. */
+export const QuoteEmail = Schema.Struct({
+  to: Schema.String,
+  sentAt: Schema.String,
+  /** When the link the email carries stops opening. */
+  expiresAt: Schema.String,
+});
+export interface QuoteEmail extends Schema.Schema.Type<typeof QuoteEmail> {}
+
 /** What the customer sends back from the quote page. */
 export const Answer = Schema.Struct({
   outcome: Schema.Literals(['accepted', 'declined']),
