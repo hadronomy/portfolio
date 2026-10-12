@@ -1,8 +1,8 @@
 diff --git a/dist/cjs/generator.cjs b/dist/cjs/generator.cjs
-index 0219459ae5fd112c074446412e9696bf36d0fb71..0cb3cfb455fe9844ea60628cc327661785a5e800 100644
+index 195aa7a842ba6f0796abfc46dcbb54665256c7cd..bfc80d8c5a37b8c994a5e19c98f71001719f80ce 100644
 --- a/dist/cjs/generator.cjs
 +++ b/dist/cjs/generator.cjs
-@@ -696,7 +696,7 @@ ${acc.routeTree.map((child) => `${child.variableName}Route: typeof ${require_uti
+@@ -699,7 +699,7 @@ ${acc.routeTree.map((child) => `${child.variableName}Route: typeof ${require_uti
  			if (explicitParent) parentRoute = explicitParent;
  			else if (node._virtualParentRoutePath === `/__root`) parentRoute = null;
  		}
@@ -12,10 +12,10 @@ index 0219459ae5fd112c074446412e9696bf36d0fb71..0cb3cfb455fe9844ea60628cc3276617
  		const trimmedPath = require_utils.trimPathLeft(node.path ?? "");
  		const originalPath = node.originalRoutePath && node.parent?.originalRoutePath ? node.originalRoutePath.replace(node.parent.originalRoutePath, "") || "/" : node.originalRoutePath;
 diff --git a/dist/esm/generator.js b/dist/esm/generator.js
-index 4644813cfaf2440f27e789a62b1ecfdfbfbef6dd..acf3d19843b9d1fe88b5bc1aea61f70e98bbd00d 100644
+index 1d7b84cfabd4019e767059019888d43e63b13ebb..f431e730cbdbfe7d016c96b586990eaff231e8b9 100644
 --- a/dist/esm/generator.js
 +++ b/dist/esm/generator.js
-@@ -692,7 +692,7 @@ ${acc.routeTree.map((child) => `${child.variableName}Route: typeof ${getResolved
+@@ -695,7 +695,7 @@ ${acc.routeTree.map((child) => `${child.variableName}Route: typeof ${getResolved
  			if (explicitParent) parentRoute = explicitParent;
  			else if (node._virtualParentRoutePath === `/__root`) parentRoute = null;
  		}

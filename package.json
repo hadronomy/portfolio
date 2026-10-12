@@ -143,6 +143,6 @@
     }
   },
   "patchedDependencies": {
-    "@tanstack/router-generator@1.167.34": "patches/@tanstack%2Frouter-generator@1.167.34.patch"
+    "@tanstack/router-generator@1.167.41": "patches/@tanstack%2Frouter-generator@1.167.41.patch"
   }
 }
