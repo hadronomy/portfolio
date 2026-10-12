@@ -9,9 +9,9 @@
     "check": "tsc --noEmit",
     "test": "vitest run",
     "dev": "alchemy dev",
-    "plan": "env -u npm_execpath -u npm_config_user_agent node node_modules/alchemy/bin/cli.js plan --stage production",
-    "deploy": "env -u npm_execpath -u npm_config_user_agent node node_modules/alchemy/bin/cli.js deploy --stage production",
-    "destroy": "env -u npm_execpath -u npm_config_user_agent node node_modules/alchemy/bin/cli.js destroy --stage production"
+    "plan": "node scripts/alchemy.mjs plan",
+    "deploy": "node scripts/alchemy.mjs deploy",
+    "destroy": "node scripts/alchemy.mjs destroy"
   },
   "dependencies": {
     "@effect/sql-pg": "4.0.0",
