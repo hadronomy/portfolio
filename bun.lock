@@ -187,6 +187,7 @@
         "@vitejs/plugin-react": "6.1.1",
         "drizzle-kit": "1.0.0-rc.5-5935859",
         "tailwindcss": "catalog:style",
+        "tsx": "4.19.2",
         "typescript": "catalog:dev",
         "vite": "8.2.2",
         "vitest": "catalog:test",

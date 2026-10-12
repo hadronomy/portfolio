@@ -9,9 +9,9 @@
     "check": "tsc --noEmit",
     "test": "vitest run",
     "dev": "alchemy dev",
-    "plan": "alchemy plan",
-    "deploy": "alchemy deploy",
-    "destroy": "alchemy destroy"
+    "plan": "node scripts/alchemy.mjs plan",
+    "deploy": "node scripts/alchemy.mjs deploy",
+    "destroy": "node scripts/alchemy.mjs destroy"
   },
   "dependencies": {
     "@effect/sql-pg": "4.0.0",

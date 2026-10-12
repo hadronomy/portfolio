@@ -23,15 +23,20 @@
     "@portfolio/astro#build": {
       "inputs": [
         "$TURBO_DEFAULT$",
-        "$TURBO_ROOT$/apps/start/src/**",
-        "$TURBO_ROOT$/apps/start/package.json",
-        "$TURBO_ROOT$/apps/start/vite.config.ts",
-        "$TURBO_ROOT$/apps/start/tsconfig.json",
-        "$TURBO_ROOT$/packages/site-routing/src/**",
-        "$TURBO_ROOT$/packages/invoices/**",
-        "!$TURBO_ROOT$/packages/invoices/node_modules/**",
+        "$TURBO_ROOT$/apps/start/**",
+        "!$TURBO_ROOT$/apps/start/node_modules/**",
+        "!$TURBO_ROOT$/apps/start/dist/**",
+        "!$TURBO_ROOT$/apps/start/.invoice-data/**",
         "!$TURBO_ROOT$/apps/start/src/astro-routes.gen.json",
-        "!$TURBO_ROOT$/apps/start/src/routeTree.gen.ts"
+        "!$TURBO_ROOT$/apps/start/src/routeTree.gen.ts",
+        "$TURBO_ROOT$/packages/**",
+        "!$TURBO_ROOT$/packages/*/node_modules/**",
+        "!$TURBO_ROOT$/packages/*/dist/**",
+        "!$TURBO_ROOT$/packages/i18n/src/paraglide/**",
+        "$TURBO_ROOT$/tooling/**",
+        "!$TURBO_ROOT$/tooling/*/node_modules/**",
+        "$TURBO_ROOT$/package.json",
+        "$TURBO_ROOT$/bun.lock"
       ],
       "dependsOn": ["^build"],
       "outputs": [
@@ -40,8 +45,37 @@
         ".vercel/output/**",
         "$TURBO_ROOT$/apps/start/dist/**",
         "$TURBO_ROOT$/apps/start/src/astro-routes.gen.json",
-        "$TURBO_ROOT$/apps/start/src/routeTree.gen.ts"
+        "$TURBO_ROOT$/apps/start/src/routeTree.gen.ts",
+        "$TURBO_ROOT$/packages/i18n/src/paraglide/**"
+      ],
+      "env": [
+        "CERTIFICATE_P12",
+        "CERTIFICATE_PASSWORD",
+        "VERCEL_ENV",
+        "VERCEL_DEPLOYMENT_ID",
+        "VERCEL_SKEW_PROTECTION_ENABLED",
+        "INVOICE_*",
+        "DATABASE_URL",
+        "RESEND_API_KEY",
+        "STRIPE_*",
+        "BETTER_AUTH_*",
+        "AUTH_SECRET"
       ]
+    },
+    "check": {
+      "dependsOn": ["^build"],
+      "cache": false
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "cache": false
+    },
+    "db:check": {
+      "cache": false
+    },
+    "@portfolio/i18n#build": {
+      "inputs": ["$TURBO_DEFAULT$", "!src/paraglide/**"],
+      "outputs": ["src/paraglide/**"]
     }
   }
 }
