@@ -9,12 +9,13 @@ export function CollectionNotice({
 }: {
   controller: string;
 } & (
-  | { purpose: 'signin' | 'payment'; digest?: never }
+  | { purpose: 'signin' | 'payment' | 'quote-details'; digest?: never }
   | { purpose: 'quote'; digest: string }
 )) {
   const t = useT();
   const message = {
     signin: m.privacy_signin_short,
+    'quote-details': m.quote_details_privacy,
     payment: m.privacy_payment_short,
     quote: m.quote_signature,
   }[purpose];

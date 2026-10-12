@@ -13,15 +13,29 @@ import {
   revokeLinks,
 } from './links';
 import {
-  type Invoice,
+  type Customer,
+  Invoice,
   InvoiceId,
   Language,
+  MissingInvoice,
   newInvoice,
   type OwnerDid,
+  RecordId,
 } from './model';
 import { enqueueMail } from './outbox';
 import type { MailKind } from './outbox-model';
 import { PaymentPlan } from './plan';
+import {
+  type CustomerDetails,
+  DetailsConfirmation,
+  type DetailsState,
+  detailsChanges,
+  detailsIssues,
+  detailsState,
+  InvalidDetails,
+  territoryOf,
+  tidyDetails,
+} from './quote-details';
 import {
   type Answer,
   QuoteEmail,
@@ -33,11 +47,8 @@ import { decodeStored, stored } from './storage';
 import { InvoiceStore, type StoreError } from './store';
 import * as tables from './tables';
 
-// A quote after it is issued: the link that sends it, the customer's
-// answer, and the invoices an accepted quote is billed in, one for each
-// payment of the plan the customer accepted. An issued quote never
-// changes; a revision is a new quote, so an acceptance always names the
-// exact document it covers.
+// Customer confirmation creates a revision of the same quote. The answer
+// binds to that revision's PDF. An owner's revision creates a new quote.
 
 /** Why a quote cannot take the step asked of it. */
 export class QuoteClosed extends Schema.TaggedError<QuoteClosed>()(
@@ -53,6 +64,8 @@ export class QuoteClosed extends Schema.TaggedError<QuoteClosed>()(
       'no-such-plan',
       'no-such-payment',
       'unsigned',
+      'details-unconfirmed',
+      'needs-revision',
     ]),
   },
 ) {}
@@ -68,6 +81,7 @@ export interface QuoteView {
   readonly quote: Invoice;
   readonly response: QuoteResponse | null;
   readonly state: QuoteState;
+  readonly details: DetailsState;
   /** SHA-256 of the PDF in each language, as the page shows and the answer names. */
   readonly digests: Readonly<Record<Language, string>>;
 }
@@ -116,6 +130,14 @@ export interface QuotesApi {
   ) => Effect.Effect<InvoiceId, QuoteError | LinkInvalid>;
   /** The quote with its answer and state. */
   readonly view: (id: InvoiceId) => Effect.Effect<QuoteView, QuoteError>;
+  /** The latest confirmation state, without rendering PDFs. */
+  readonly details: (id: InvoiceId) => Effect.Effect<DetailsState, StoreError>;
+  /** Confirms identity, revises the PDF, and updates the directory in one transaction. */
+  readonly confirmDetails: (
+    id: InvoiceId,
+    details: CustomerDetails,
+    evidence: Evidence,
+  ) => Effect.Effect<DetailsState, QuoteError | InvalidDetails>;
   /**
    * Records the customer's answer once. Answering again with the same
    * outcome returns the first answer; the other outcome is refused.
@@ -196,6 +218,54 @@ export const makeQuotes = Effect.gen(function* () {
     return found;
   });
 
+  const confirmation = Effect.fnUntraced(function* (
+    id: InvoiceId,
+    source: InvoiceDatabase['Service'] | Transaction = db,
+  ) {
+    const [row] = yield* stored(
+      source
+        .select()
+        .from(tables.audit)
+        .where(
+          and(
+            eq(tables.audit.invoiceId, id),
+            eq(tables.audit.operation, 'quote-details-confirmed'),
+          ),
+        )
+        .orderBy(desc(tables.audit.createdAt))
+        .limit(1),
+    );
+    return row ? yield* decodeStored(DetailsConfirmation)(row.payload) : null;
+  });
+  const details = Effect.fn('Quotes.details')(function* (id: InvoiceId) {
+    return detailsState(yield* confirmation(id));
+  });
+
+  const openQuote = Effect.fnUntraced(function* (
+    tx: Transaction,
+    id: InvoiceId,
+  ) {
+    const [row] = yield* tx
+      .select()
+      .from(tables.invoices)
+      .where(eq(tables.invoices.id, id))
+      .for('update');
+    if (!row) return yield* new MissingInvoice({ id });
+    const current = yield* decodeStored(Invoice)(row.payload);
+    if (current.data.kind !== 'quote')
+      return yield* new QuoteClosed({ reason: 'not-a-quote' });
+    if (current.status === 'draft')
+      return yield* new QuoteClosed({ reason: 'draft' });
+    if ((current.data.quote?.validUntil ?? current.data.dueDate) < today())
+      return yield* new QuoteClosed({ reason: 'expired' });
+    const [answer] = yield* tx
+      .select()
+      .from(tables.responses)
+      .where(eq(tables.responses.quoteId, id));
+    if (answer) return yield* new QuoteClosed({ reason: 'answered' });
+    return current;
+  });
+
   const view = Effect.fn('Quotes.view')(function* (id: InvoiceId) {
     const found = yield* quote(id);
     const answer = yield* response(id);
@@ -210,6 +280,7 @@ export const makeQuotes = Effect.gen(function* () {
       response: answer,
       state: quoteState(found, answer, today()),
       digests,
+      details: yield* details(id),
     };
   });
 
@@ -332,6 +403,101 @@ export const makeQuotes = Effect.gen(function* () {
     }),
 
     view,
+    details,
+    confirmDetails: Effect.fn('Quotes.confirmDetails')(
+      function* (id, supplied, evidence) {
+        const confirmed = tidyDetails(supplied);
+        const issues = detailsIssues(confirmed);
+        if (issues.length) return yield* new InvalidDetails({ issues });
+        return yield* stored(
+          db.transaction((tx) =>
+            Effect.gen(function* () {
+              const current = yield* openQuote(tx, id);
+              const prior = yield* confirmation(id, tx);
+              const original = prior?.original ?? current;
+              const territory = territoryOf(confirmed.customer.address);
+              const territoryChanged =
+                territory !== original.data.customerTerritory;
+              const typeChanged =
+                confirmed.customerType !== original.data.customerType;
+              const reason =
+                territoryChanged && typeChanged
+                  ? ('territory-and-type' as const)
+                  : territoryChanged
+                    ? ('territory' as const)
+                    : typeChanged
+                      ? ('customer-type' as const)
+                      : null;
+              const confirmedAt = new Date().toISOString();
+              const customerId =
+                current.data.customerId ?? RecordId.make(crypto.randomUUID());
+              const customer: Customer = {
+                id: customerId,
+                ...confirmed.customer,
+                type: confirmed.customerType,
+                territory,
+                language: current.data.language,
+              };
+              // Keyed exactly as the directory keys it, so the saved customer is
+              // updated in place rather than listed twice.
+              yield* tx
+                .insert(tables.records)
+                .values({
+                  key: customerId,
+                  kind: 'customer',
+                  payload: customer,
+                })
+                .onConflictDoUpdate({
+                  target: tables.records.key,
+                  set: { payload: customer },
+                });
+              const next: Invoice = {
+                ...current,
+                revision: current.revision + 1,
+                updatedAt: confirmedAt,
+                // The customer's identity only. Their type and territory decide the
+                // taxes and the legal notices the quote prints, which stay the
+                // owner's until the owner revises it.
+                data: {
+                  ...current.data,
+                  customer: confirmed.customer,
+                  customerId,
+                },
+              };
+              yield* tx
+                .update(tables.invoices)
+                .set({
+                  payload: next,
+                  revision: next.revision,
+                  updatedAt: confirmedAt,
+                })
+                .where(eq(tables.invoices.id, id));
+              const saved: DetailsConfirmation = {
+                confirmedAt,
+                reason,
+                territory,
+                customerType: confirmed.customerType,
+                changes: detailsChanges(original, confirmed),
+                before: current,
+                original,
+                revision: next.revision,
+                address: evidence.address,
+                agent: evidence.agent.slice(0, 500),
+              };
+              yield* tx.insert(tables.audit).values({
+                id: crypto.randomUUID(),
+                invoiceId: id,
+                operation: 'quote-details-confirmed',
+                actor: 'customer',
+                payload: saved,
+                createdAt: confirmedAt,
+              });
+              return detailsState(saved);
+            }),
+          ),
+        );
+      },
+    ),
 
     respond: Effect.fn('Quotes.respond')(
       function* (id, answer, evidence, mail) {
@@ -345,6 +511,10 @@ export const makeQuotes = Effect.gen(function* () {
           return yield* new QuoteClosed({ reason: 'draft' });
         if (current.state === 'expired')
           return yield* new QuoteClosed({ reason: 'expired' });
+        if (current.details.state === 'waiting')
+          return yield* new QuoteClosed({ reason: 'details-unconfirmed' });
+        if (current.details.state === 'needs-revision')
+          return yield* new QuoteClosed({ reason: 'needs-revision' });
         // The answer covers the PDF the customer read. A digest that no longer
         // matches means the page is out of date, never a different document.
         if (current.digests[answer.language] !== answer.digest)
@@ -385,7 +555,28 @@ export const makeQuotes = Effect.gen(function* () {
         yield* stored(
           db.transaction((tx) =>
             Effect.gen(function* () {
-              // Two answers racing to one quote: the primary key keeps the first.
+              // Confirmation and answers share this lock, so the digest and
+              // recipient cannot change between validation and acceptance.
+              const [locked] = yield* tx
+                .select()
+                .from(tables.invoices)
+                .where(eq(tables.invoices.id, id))
+                .for('update');
+              const [previous] = yield* tx
+                .select()
+                .from(tables.responses)
+                .where(eq(tables.responses.quoteId, id));
+              if (previous) return;
+              if (!locked || locked.revision !== current.quote.revision)
+                return yield* new QuoteClosed({ reason: 'stale-document' });
+              yield* openQuote(tx, id);
+              const state = detailsState(yield* confirmation(id, tx));
+              if (state.state === 'waiting')
+                return yield* new QuoteClosed({
+                  reason: 'details-unconfirmed',
+                });
+              if (state.state === 'needs-revision')
+                return yield* new QuoteClosed({ reason: 'needs-revision' });
               const { billed: _none, ...row } = saved;
               const inserted = yield* tx
                 .insert(tables.responses)
@@ -493,12 +684,19 @@ export const makeQuotes = Effect.gen(function* () {
       const source = yield* quote(id);
       if (source.status === 'draft')
         return yield* new QuoteClosed({ reason: 'draft' });
+      const confirmed = yield* details(id);
       const draft = newInvoice();
       const issueDate = draft.data.issueDate;
       const next: Invoice = {
         ...draft,
         data: {
           ...source.data,
+          // A revision adopts what the customer confirmed, which may change
+          // its taxes and notices: that is why it is the owner's step.
+          ...(confirmed.state !== 'waiting' && {
+            customerTerritory: confirmed.territory,
+            customerType: confirmed.customerType,
+          }),
           issueDate,
           supplyDate:
             source.data.supplyDate < issueDate

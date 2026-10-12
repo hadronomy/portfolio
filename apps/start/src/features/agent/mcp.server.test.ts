@@ -582,6 +582,16 @@ describe('the MCP server', () => {
         owner,
       ),
     );
+    await Effect.runPromise(
+      mailQuotes.confirmDetails(
+        quote.id,
+        {
+          customer: quote.data.customer,
+          customerType: quote.data.customerType,
+        },
+        { address: '', agent: 'test' },
+      ),
+    );
     const view = await Effect.runPromise(mailQuotes.view(quote.id));
     await Effect.runPromise(
       mailQuotes.respond(

@@ -1,12 +1,12 @@
 import { type Address, regionOfPostalCode } from '@portfolio/invoices/address';
 import { countryOf } from '@portfolio/invoices/countries';
+import { checkTaxId } from '@portfolio/invoices/tax-id';
 import type { ClipboardEvent, KeyboardEvent, ReactNode } from 'react';
 import { useState } from 'react';
 import { type Territory, territories, territoryNames } from './choices';
 import {
   checkEmail,
   checkIban,
-  checkTaxId,
   completeEmail,
   correctEmail,
   formatIban,

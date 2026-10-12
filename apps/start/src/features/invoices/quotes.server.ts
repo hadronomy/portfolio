@@ -9,6 +9,7 @@ import {
   type OwnerDid,
 } from '@portfolio/invoices/model';
 import { Outbox } from '@portfolio/invoices/outbox';
+import type { CustomerDetails } from '@portfolio/invoices/quote-details';
 import type { Answer } from '@portfolio/invoices/quote-model';
 import { type QuoteError, Quotes } from '@portfolio/invoices/quotes';
 import { InvoiceStore } from '@portfolio/invoices/store';
@@ -156,6 +157,14 @@ export const quoteEmails = Effect.fn('QuotesServer.emails')(function* (
   return yield* unavailable(Quotes.use((quotes) => quotes.emails(id)));
 });
 
+/** Confirmation state for the owner's quote panel. */
+export const quoteDetails = Effect.fn('QuotesServer.details')(function* (
+  id: InvoiceId,
+) {
+  yield* requireOwner;
+  return yield* unavailable(Quotes.use((quotes) => quotes.details(id)));
+});
+
 /** Delivery records for the owner's quote panel. */
 export const quoteDeliveries = Effect.fn('QuotesServer.deliveries')(function* (
   id: InvoiceId,
@@ -248,6 +257,7 @@ export const quotePage = Effect.fn('QuotesServer.page')(function* (
     quote: view.quote,
     response: view.response,
     state: view.state,
+    details: view.details,
     digests: view.digests,
     plans,
     sheets: { ...sheets, digest: pdf.digest },
@@ -266,6 +276,36 @@ const evidence = Effect.gen(function* () {
     agent: request.headers.get('user-agent') ?? '',
   };
 });
+
+/** Only the customer holding the link confirms their identity. */
+export const confirmQuoteDetails = Effect.fn('QuotesServer.confirmDetails')(
+  function* (token: string, details: CustomerDetails) {
+    yield* sameOrigin;
+    const id = yield* byLink(token);
+    if (Option.isNone(id))
+      return yield* new Refused({
+        status: 404,
+        message: 'This link is closed.',
+      });
+    const seen = yield* evidence;
+    return yield* Quotes.use((quotes) =>
+      quotes.confirmDetails(id.value, details, seen),
+    ).pipe(
+      Effect.map((value) => ({ ok: true as const, value })),
+      Effect.catchTag('InvalidDetails', ({ issues }) =>
+        Effect.succeed({
+          ok: false as const,
+          reason: 'invalid-details' as const,
+          issues,
+        }),
+      ),
+      Effect.catchTag('QuoteClosed', ({ reason }) =>
+        Effect.succeed({ ok: false as const, reason, issues: [] }),
+      ),
+      unavailable,
+    );
+  },
+);
 
 /**
  * An accepted quote's signed copy: the PDF the customer accepted, with the

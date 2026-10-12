@@ -22,7 +22,8 @@ const aliases: Partial<Record<CountryCode, string[]>> = {
   CI: ['Ivory Coast'],
 };
 
-const fold = (text: string) =>
+/** Text folded for country and region name matching. */
+export const fold = (text: string) =>
   text
     .normalize('NFD')
     .replace(/\p{Diacritic}/gu, '')

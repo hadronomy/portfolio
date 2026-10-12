@@ -67,6 +67,10 @@ const closed: Record<QuoteClosed['reason'], string> = {
   'no-such-plan': 'The quote does not offer that payment plan.',
   'no-such-payment':
     'The accepted plan has no payment at that place. Read the plan in get_document; payments count from 0.',
+  'details-unconfirmed':
+    'The customer must confirm their details on the quote page before answering.',
+  'needs-revision':
+    'The confirmed territory or customer type changes the tax basis or legal conditions. Use revise_quote, review the taxes and conditions, and issue the new quote.',
   unsigned:
     'An acceptance needs the signature the customer draws on the quote page.',
 };
@@ -319,6 +323,10 @@ export const invoiceToolsLayer = InvoiceTools.toLayer(
               data.kind === 'quote'
                 ? yield* explained(quotes.emails(invoice.id))
                 : [],
+            details:
+              data.kind === 'quote'
+                ? yield* explained(quotes.details(invoice.id))
+                : null,
             deliveries: yield* explained(outbox.deliveries(invoice.id)),
           };
         }).pipe(Effect.provide(online)),

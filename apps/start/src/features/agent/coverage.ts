@@ -62,6 +62,11 @@ export const serverFunctions: Record<
   getQuoteEmails: ['get_document'],
   getQuoteDeliveries: ['get_document'],
   retryEmail: ['retry_email'],
+  getQuoteDetails: ['get_document'],
+  confirmQuoteLinkDetails: {
+    notForAgents:
+      'The customer confirms their own details through their quote link.',
+  },
   getQuotePage: { notForAgents: 'The customer’s quote page.' },
   answerQuoteLink: { notForAgents: 'The customer answers a quote.' },
   getPrivacyNotice: { notForAgents: 'Public customer privacy information.' },

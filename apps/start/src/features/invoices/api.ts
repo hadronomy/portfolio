@@ -11,6 +11,7 @@ import {
   RecordId,
 } from '@portfolio/invoices/model';
 import { Offer, PlanLibrary } from '@portfolio/invoices/plan';
+import { CustomerDetails } from '@portfolio/invoices/quote-details';
 import { Answer, EmailAddress } from '@portfolio/invoices/quote-model';
 import { createServerFn } from '@tanstack/react-start';
 import { Effect, Result, Schema } from 'effect';
@@ -32,8 +33,10 @@ import {
 import { mutate, preview, workspace } from './operations.server';
 import {
   answerQuote,
+  confirmQuoteDetails,
   emailQuote,
   quoteDeliveries,
+  quoteDetails,
   quoteEmailPreview,
   quoteEmails,
   quoteLinks,
@@ -316,6 +319,17 @@ export const getQuotePage = createServerFn({ method: 'GET' })
       }),
     ),
   );
+export const getQuoteDetails = createServerFn({ method: 'GET' })
+  .validator((input: unknown) => decodeInvoiceRef(input))
+  .handler(({ data }) => serve(quoteDetails(data.id)));
+export const confirmQuoteLinkDetails = createServerFn({ method: 'POST' })
+  .validator((input: unknown) =>
+    decodeWith(
+      Schema.Struct({ token: Schema.String, details: CustomerDetails }),
+      'Invalid customer details.',
+    )(input),
+  )
+  .handler(({ data }) => serve(confirmQuoteDetails(data.token, data.details)));
 export const answerQuoteLink = createServerFn({ method: 'POST' })
   .validator((input: unknown) => decodeQuoteAnswer(input))
   .handler(({ data }) => serve(answerQuote(data.token, data.answer)));

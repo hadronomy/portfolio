@@ -1,7 +1,7 @@
+import { checkTaxId } from '@portfolio/invoices/tax-id';
 import { expect, test } from 'vitest';
 import {
   checkIban,
-  checkTaxId,
   completeEmail,
   correctEmail,
   formatIban,

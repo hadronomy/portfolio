@@ -47,6 +47,17 @@ async function issuedQuote(
 }
 
 async function answer(quote: Invoice, change: Partial<Answer> = {}) {
+  if ((await run(quotes.details(quote.id))).state === 'waiting')
+    await run(
+      quotes.confirmDetails(
+        quote.id,
+        {
+          customer: quote.data.customer,
+          customerType: quote.data.customerType,
+        },
+        evidence,
+      ),
+    );
   const { digests } = await run(quotes.view(quote.id));
   return run(
     quotes.respond(
@@ -92,6 +103,16 @@ describe('quotes', () => {
 
   it('record an acceptance once, against the PDF the customer read', async () => {
     const quote = await issuedQuote();
+    await run(
+      quotes.confirmDetails(
+        quote.id,
+        {
+          customer: quote.data.customer,
+          customerType: quote.data.customerType,
+        },
+        evidence,
+      ),
+    );
     expect(
       await fail(
         quotes.respond(
@@ -145,6 +166,16 @@ describe('quotes', () => {
 
   it('refuse an acceptance without a drawn signature', async () => {
     const quote = await issuedQuote();
+    await run(
+      quotes.confirmDetails(
+        quote.id,
+        {
+          customer: quote.data.customer,
+          customerType: quote.data.customerType,
+        },
+        evidence,
+      ),
+    );
     expect(
       await fail(
         quotes.respond(
@@ -224,6 +255,16 @@ describe('quotes', () => {
       store.issue(
         { id: draft.id, revision: draft.revision, key: crypto.randomUUID() },
         owner,
+      ),
+    );
+    await run(
+      quotes.confirmDetails(
+        quote.id,
+        {
+          customer: quote.data.customer,
+          customerType: quote.data.customerType,
+        },
+        evidence,
       ),
     );
     expect(

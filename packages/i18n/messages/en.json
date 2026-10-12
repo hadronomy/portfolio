@@ -1497,5 +1497,105 @@
   "mail_invitation_queued_button": "Queued",
   "mail_invitation_sent": "Sent to {to}.",
   "mail_invitation_failed": "Email could not be sent to {to}. Open the delivery record to retry.",
-  "mail_invitation_failed_button": "Needs review"
+  "mail_invitation_failed_button": "Needs review",
+  "quote_details_title": "Your details",
+  "quote_details_intro": "Before you read the quote from {issuer}, check your details. We will save them in your profile and the quote.",
+  "quote_details_name": "Legal name or company name",
+  "quote_details_tax_id": "Tax ID (NIF, NIE or CIF)",
+  "quote_details_email": "Email",
+  "quote_details_country": "Country",
+  "quote_details_extra": "Extra address line (optional)",
+  "quote_details_type": "You contract as",
+  "quote_details_business": "A business or professional",
+  "quote_details_consumer": "A private individual",
+  "quote_details_continue": "Confirm and read the quote",
+  "quote_details_saving": "Saving your details…",
+  "quote_details_change": "Change",
+  "quote_details_signing": "You sign as {name}, tax ID {taxId}",
+  "quote_details_required": "Complete this field.",
+  "quote_details_invalid_tax": "Check the number and control character on your tax document.",
+  "quote_details_invalid_email": "Enter a valid email address.",
+  "quote_details_invalid_postal": "Check the postal code format for this country.",
+  "quote_details_invalid_region": "Choose a province or region from the list.",
+  "quote_details_postal_region": "The province or region does not match the postal code.",
+  "quote_details_failed": "We could not save your details. Try again.",
+  "quote_details_closed": "This quote no longer accepts changes. Reload the page to see its state.",
+  "quote_details_review_title": "The quote needs a revision",
+  "quote_details_review": "These details change the taxes or conditions of this quote. {issuer} will send you an updated version.",
+  "quote_details_privacy": "{controller} uses your details to prepare the quote and manage the contract. We keep the date, network address, and browser as evidence of your confirmation.",
+  "quote_details_waiting": "Waiting for the customer’s details",
+  "quote_details_owner_confirmed": [
+    {
+      "declarations": [
+        "input date",
+        "local d = date: datetime day=numeric month=short year=numeric timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "Details confirmed on {d}"
+      }
+    }
+  ],
+  "quote_details_owner_review": "Review the taxes and conditions before you send a new version.",
+  "quote_details_changes": "Changes from the details you entered",
+  "quote_details_unchanged": "The customer confirmed the same details.",
+  "quote_details_not_entered": "Not entered",
+  "quote_details_territory": "Tax territory",
+  "quote_details_owner_reason": [
+    {
+      "declarations": ["input reason"],
+      "selectors": ["reason"],
+      "match": {
+        "reason=territory": "The tax territory changed.",
+        "reason=customer-type": "The customer type changed.",
+        "reason=*": "The tax territory and customer type changed."
+      }
+    }
+  ],
+  "quote_details_territory_name": [
+    {
+      "declarations": ["input territory"],
+      "selectors": ["territory"],
+      "match": {
+        "territory=canary-islands": "Canary Islands",
+        "territory=mainland-spain": "Rest of Spain",
+        "territory=eu": "European Union",
+        "territory=*": "Outside the European Union"
+      }
+    }
+  ],
+  "quote_details_address_label": [
+    {
+      "declarations": ["input label"],
+      "selectors": ["label"],
+      "match": {
+        "label=Street address": "Street address",
+        "label=Postal code": "Postal code",
+        "label=ZIP code": "ZIP code",
+        "label=PIN code": "PIN code",
+        "label=Eircode": "Eircode",
+        "label=Town or city": "Town or city",
+        "label=Locality": "Locality",
+        "label=Post town": "Post town",
+        "label=District": "District",
+        "label=Suburb": "Suburb",
+        "label=Region": "Region",
+        "label=Area": "Area",
+        "label=County": "County",
+        "label=Department": "Department",
+        "label=Province": "Province",
+        "label=Emirate": "Emirate",
+        "label=Island": "Island",
+        "label=Oblast": "Oblast",
+        "label=Parish": "Parish",
+        "label=Prefecture": "Prefecture",
+        "label=State": "State",
+        "label=Neighbourhood": "Neighborhood",
+        "label=Townland": "Townland",
+        "label=Village or township": "Village or township",
+        "label=Sorting code": "Sorting code",
+        "label=*": "Address"
+      }
+    }
+  ]
 }

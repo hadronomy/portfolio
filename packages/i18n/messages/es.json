@@ -1497,5 +1497,105 @@
   "mail_invitation_queued_button": "En cola",
   "mail_invitation_sent": "Enviado a {to}.",
   "mail_invitation_failed": "No se pudo enviar el correo a {to}. Abre el registro de entrega para reintentarlo.",
-  "mail_invitation_failed_button": "Necesita revisión"
+  "mail_invitation_failed_button": "Necesita revisión",
+  "quote_details_title": "Tus datos",
+  "quote_details_intro": "Antes de ver el presupuesto de {issuer}, revisa tus datos. Los guardaremos en tu perfil y en el presupuesto.",
+  "quote_details_name": "Nombre legal o razón social",
+  "quote_details_tax_id": "NIF, NIE o CIF",
+  "quote_details_email": "Correo electrónico",
+  "quote_details_country": "País",
+  "quote_details_extra": "Línea adicional (opcional)",
+  "quote_details_type": "Contratas como",
+  "quote_details_business": "Empresa o profesional",
+  "quote_details_consumer": "Particular",
+  "quote_details_continue": "Confirmar y ver el presupuesto",
+  "quote_details_saving": "Guardando tus datos…",
+  "quote_details_change": "Cambiar",
+  "quote_details_signing": "Firmas como {name}, NIF {taxId}",
+  "quote_details_required": "Completa este campo.",
+  "quote_details_invalid_tax": "Revisa el número y la letra de tu documento fiscal.",
+  "quote_details_invalid_email": "Escribe una dirección de correo válida.",
+  "quote_details_invalid_postal": "Revisa el formato del código postal de este país.",
+  "quote_details_invalid_region": "Elige una provincia o región de la lista.",
+  "quote_details_postal_region": "La provincia o región no coincide con el código postal.",
+  "quote_details_failed": "No pudimos guardar tus datos. Inténtalo de nuevo.",
+  "quote_details_closed": "Este presupuesto ya no admite cambios. Actualiza la página para ver su estado.",
+  "quote_details_review_title": "El presupuesto necesita una revisión",
+  "quote_details_review": "Con estos datos, los impuestos o las condiciones de este presupuesto cambian. {issuer} te enviará una versión actualizada.",
+  "quote_details_privacy": "{controller} usa tus datos para preparar el presupuesto y gestionar el contrato. Guardamos la fecha, la dirección de red y el navegador como prueba de tu confirmación.",
+  "quote_details_waiting": "Pendiente de los datos del cliente",
+  "quote_details_owner_confirmed": [
+    {
+      "declarations": [
+        "input date",
+        "local d = date: datetime day=numeric month=short year=numeric timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "Datos confirmados el {d}"
+      }
+    }
+  ],
+  "quote_details_owner_review": "Revisa los impuestos y las condiciones antes de enviar una nueva versión.",
+  "quote_details_changes": "Cambios respecto a tus datos",
+  "quote_details_unchanged": "El cliente confirmó los mismos datos.",
+  "quote_details_not_entered": "Sin completar",
+  "quote_details_territory": "Territorio fiscal",
+  "quote_details_owner_reason": [
+    {
+      "declarations": ["input reason"],
+      "selectors": ["reason"],
+      "match": {
+        "reason=territory": "El territorio fiscal cambió.",
+        "reason=customer-type": "El tipo de cliente cambió.",
+        "reason=*": "El territorio fiscal y el tipo de cliente cambiaron."
+      }
+    }
+  ],
+  "quote_details_territory_name": [
+    {
+      "declarations": ["input territory"],
+      "selectors": ["territory"],
+      "match": {
+        "territory=canary-islands": "Canarias",
+        "territory=mainland-spain": "Resto de España",
+        "territory=eu": "Unión Europea",
+        "territory=*": "Fuera de la Unión Europea"
+      }
+    }
+  ],
+  "quote_details_address_label": [
+    {
+      "declarations": ["input label"],
+      "selectors": ["label"],
+      "match": {
+        "label=Street address": "Dirección",
+        "label=Postal code": "Código postal",
+        "label=ZIP code": "Código ZIP",
+        "label=PIN code": "Código PIN",
+        "label=Eircode": "Eircode",
+        "label=Town or city": "Ciudad o localidad",
+        "label=Locality": "Localidad",
+        "label=Post town": "Localidad postal",
+        "label=District": "Distrito",
+        "label=Suburb": "Barrio",
+        "label=Region": "Región",
+        "label=Area": "Área",
+        "label=County": "Condado",
+        "label=Department": "Departamento",
+        "label=Province": "Provincia",
+        "label=Emirate": "Emirato",
+        "label=Island": "Isla",
+        "label=Oblast": "Óblast",
+        "label=Parish": "Parroquia",
+        "label=Prefecture": "Prefectura",
+        "label=State": "Estado",
+        "label=Neighbourhood": "Barrio",
+        "label=Townland": "División territorial",
+        "label=Village or township": "Pueblo o municipio",
+        "label=Sorting code": "Código de clasificación",
+        "label=*": "Dirección"
+      }
+    }
+  ]
 }

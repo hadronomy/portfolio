@@ -93,13 +93,21 @@ function PartyBlock({
   extra?: string[];
 }) {
   const lines = partyLines(party, { home, language, taxLabel, extra });
+  if (!party.name.trim() && !lines.length)
+    return <div style={{ width: '36%' }} />;
   return (
     <div style={{ width: '36%', paddingRight: 20 }}>
       <Labelled title={title}>
-        <p style={{ fontSize: 12.5, fontWeight: 600, color: ink }}>
-          {party.name || '—'}
-        </p>
-        <p style={{ ...detail, whiteSpace: 'pre-wrap' }}>{lines.join('\n')}</p>
+        {party.name.trim() && (
+          <p style={{ fontSize: 12.5, fontWeight: 600, color: ink }}>
+            {party.name}
+          </p>
+        )}
+        {lines.length > 0 && (
+          <p style={{ ...detail, whiteSpace: 'pre-wrap' }}>
+            {lines.join('\n')}
+          </p>
+        )}
       </Labelled>
     </div>
   );

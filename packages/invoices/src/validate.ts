@@ -19,6 +19,7 @@ export function issueErrors(data: InvoiceData): readonly Issue[] {
   const add = (path: string, message: string) => errors.push({ path, message });
   const words = { name: 'name', taxId: 'tax ID' } as const;
   (['issuer', 'customer'] as const).forEach((role) => {
+    if (role === 'customer' && data.kind === 'quote') return;
     const party = data[role];
     (Object.keys(words) as (keyof typeof words)[]).forEach((field) => {
       if (!party[field].trim())
@@ -243,11 +244,7 @@ export function issueErrors(data: InvoiceData): readonly Issue[] {
   return errors;
 }
 
-/**
- * What a quote needs before it goes to the customer. The customer accepts
- * it online and may withdraw by email, so both parties need an address;
- * and a consumer cannot be offered terms the law voids against them.
- */
+/** Quote validity, issuer contact, and clauses that fit the customer type. */
 function quoteErrors(data: InvoiceData, quote: QuoteTerms): readonly Issue[] {
   const errors: Issue[] = [];
   const add = (path: string, message: string) => errors.push({ path, message });
@@ -257,11 +254,6 @@ function quoteErrors(data: InvoiceData, quote: QuoteTerms): readonly Issue[] {
     add(
       'quote.validUntil',
       'The quote must stay valid until at least its issue date.',
-    );
-  if (!data.customer.email.trim())
-    add(
-      'customer.email',
-      'Enter the customer email: the quote is accepted online.',
     );
   if (!data.issuer.email.trim())
     add(

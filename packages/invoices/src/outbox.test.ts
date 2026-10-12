@@ -50,6 +50,18 @@ async function issued() {
   );
 }
 async function answer(id: Parameters<Quotes['Service']['respond']>[0]) {
+  const initial = await run(store.read(id));
+  if ((await run(quotes.details(id))).state === 'waiting')
+    await run(
+      quotes.confirmDetails(
+        id,
+        {
+          customer: initial.data.customer,
+          customerType: initial.data.customerType,
+        },
+        { address: '', agent: 'test' },
+      ),
+    );
   const view = await run(quotes.view(id));
   return run(
     quotes.respond(

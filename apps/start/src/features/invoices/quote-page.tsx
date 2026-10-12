@@ -5,6 +5,7 @@ import { calculate, formatMoney } from '@portfolio/invoices/calculate';
 import type { Invoice, Language } from '@portfolio/invoices/model';
 import { hasPages } from '@portfolio/invoices/pages';
 import type { PaymentPlan } from '@portfolio/invoices/plan';
+import type { DetailsState } from '@portfolio/invoices/quote-details';
 import {
   type QuoteResponse,
   type QuoteState,
@@ -35,6 +36,7 @@ import { answerQuoteLink } from './api';
 import { ClosedLink } from './closed-link';
 import { coverArt } from './covers';
 import { PageView } from './page-view';
+import { QuoteDetailsForm } from './quote-details-form';
 import { Button, MorphText } from './ui';
 import './invoices.css';
 
@@ -290,7 +292,9 @@ function Answer({
   const [earlyStart, setEarlyStart] = useState(false);
   const [declining, setDeclining] = useState(false);
   const [pending, setPending] = useState<'accepted' | 'declined' | null>(null);
-  const [problem, setProblem] = useState<'stale' | 'failed' | null>(null);
+  const [problem, setProblem] = useState<
+    'stale' | 'failed' | 'details' | 'revision' | null
+  >(null);
   const [plan, setPlan] = useState<PaymentPlan['id'] | null>(
     plans[0]?.id ?? null,
   );
@@ -317,7 +321,15 @@ function Answer({
         },
       });
       if (!result.ok) {
-        setProblem(result.reason === 'stale-document' ? 'stale' : 'failed');
+        setProblem(
+          result.reason === 'stale-document'
+            ? 'stale'
+            : result.reason === 'details-unconfirmed'
+              ? 'details'
+              : result.reason === 'needs-revision'
+                ? 'revision'
+                : 'failed',
+        );
         return;
       }
       onAnswered();
@@ -387,9 +399,18 @@ function Answer({
       {problem && (
         <Note
           icon={<Hourglass size={16} />}
-          title={t(problem === 'stale' ? m.quote_stale : m.quote_failed)}
+          title={t(
+            problem === 'revision'
+              ? m.quote_details_review_title
+              : problem === 'stale' || problem === 'details'
+                ? m.quote_stale
+                : m.quote_failed,
+          )}
         >
-          {problem === 'stale' && (
+          {problem === 'revision' && (
+            <p>{t(m.quote_details_review, { issuer: d.issuer.name })}</p>
+          )}
+          {(problem === 'stale' || problem === 'details') && (
             <Button size="sm" onClick={() => router.invalidate()}>
               {t(m.quote_reload)}
             </Button>
@@ -642,6 +663,7 @@ interface QuotePageProps {
   quote: Invoice;
   response: QuoteResponse | null;
   state: QuoteState;
+  details: DetailsState;
   digests: Readonly<Record<'en' | 'es', string>>;
   plans: readonly PaymentPlan[];
   sheets: {
@@ -653,9 +675,25 @@ interface QuotePageProps {
 }
 
 export function QuotePage(props: QuotePageProps) {
+  const [editing, setEditing] = useState(false);
+  const needsDetails =
+    !props.response &&
+    props.state === 'open' &&
+    (props.details.state === 'waiting' || editing);
   return (
     <Speak locale={props.quote.data.language} remember>
-      <QuoteRoom {...props} />
+      {needsDetails ? (
+        <QuoteDetailsForm
+          token={props.token}
+          quote={props.quote}
+          onConfirmed={() => setEditing(false)}
+          {...(props.details.state !== 'waiting'
+            ? { onCancel: () => setEditing(false) }
+            : {})}
+        />
+      ) : (
+        <QuoteRoom {...props} onChangeDetails={() => setEditing(true)} />
+      )}
     </Speak>
   );
 }
@@ -668,7 +706,9 @@ function QuoteRoom({
   digests,
   plans,
   sheets,
-}: QuotePageProps) {
+  details,
+  onChangeDetails,
+}: QuotePageProps & { onChangeDetails: () => void }) {
   const t = useT();
   const d = quote.data;
   const money = (value: string) => formatMoney(value, d.language, d.currency);
@@ -763,6 +803,21 @@ function QuoteRoom({
               </span>
             )}
           </div>
+          {details.state !== 'waiting' && (
+            <div className="iv-quote-identity">
+              <p>
+                {t(m.quote_details_signing, {
+                  name: d.customer.name,
+                  taxId: d.customer.taxId,
+                })}
+              </p>
+              {!response && state === 'open' && (
+                <button type="button" onClick={onChangeDetails}>
+                  {t(m.quote_details_change)}
+                </button>
+              )}
+            </div>
+          )}
           {docked && (
             <Button
               variant={
@@ -813,6 +868,13 @@ function QuoteRoom({
                   <span>{t(m.quote_write, { email: d.issuer.email })}</span>
                 </a>
               )}
+            </Note>
+          ) : details.state === 'needs-revision' ? (
+            <Note
+              icon={<Hourglass size={16} />}
+              title={t(m.quote_details_review_title)}
+            >
+              <p>{t(m.quote_details_review, { issuer: d.issuer.name })}</p>
             </Note>
           ) : (
             <Answer

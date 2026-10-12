@@ -11,6 +11,10 @@ import {
   readPages,
 } from '@portfolio/invoices/pages';
 import {
+  type DetailsField,
+  detailsLabel,
+} from '@portfolio/invoices/quote-details';
+import {
   acceptedOn,
   type QuoteResponse,
   signatureSource,
@@ -34,6 +38,7 @@ import { type CSSProperties, useEffect, useState } from 'react';
 import { Speak, useT } from '../../lib/i18n';
 import {
   getQuoteDeliveries,
+  getQuoteDetails,
   getQuoteEmails,
   getQuoteLinks,
   retryEmail,
@@ -384,6 +389,96 @@ function DeliveryRows({ id }: { id: InvoiceId }) {
   );
 }
 
+function DetailsStatus({ id, data }: { id: InvoiceId; data: InvoiceData }) {
+  const t = useT();
+  const { data: details } = useQuery({
+    queryKey: ['quote-details', id],
+    queryFn: () => getQuoteDetails({ data: { id } }),
+    refetchInterval: 15_000,
+  });
+  if (!details) return null;
+  const labels = {
+    name: m.quote_details_name,
+    taxId: m.quote_details_tax_id,
+    email: m.quote_details_email,
+    'address.country': m.quote_details_country,
+    customerType: m.quote_details_type,
+  };
+  const label = (field: DetailsField) =>
+    field in labels
+      ? t(labels[field as keyof typeof labels])
+      : t(m.quote_details_address_label, {
+          label: detailsLabel(field, data.customer.address.country),
+        });
+  const value = (field: DetailsField, text: string) =>
+    !text
+      ? t(m.quote_details_not_entered)
+      : field === 'customerType'
+        ? t(
+            text === 'business'
+              ? m.quote_details_business
+              : m.quote_details_consumer,
+          )
+        : field === 'address.country'
+          ? (new Intl.DisplayNames([t.locale], { type: 'region' }).of(text) ??
+            text)
+          : text;
+  return (
+    <section
+      className="iv-details-status"
+      data-state={details.state}
+      aria-label={t(m.quote_details_title)}
+    >
+      <strong>
+        {details.state === 'waiting'
+          ? t(m.quote_details_waiting)
+          : t(m.quote_details_owner_confirmed, {
+              date: details.confirmedAt,
+            })}
+      </strong>
+      {details.state === 'needs-revision' && (
+        <>
+          <strong>
+            {t(m.quote_details_owner_reason, { reason: details.reason })}
+          </strong>
+          {details.reason !== 'customer-type' && (
+            <p>
+              {t(m.quote_details_territory)}:{' '}
+              {t(m.quote_details_territory_name, {
+                territory: data.customerTerritory,
+              })}{' '}
+              →{' '}
+              {t(m.quote_details_territory_name, {
+                territory: details.territory,
+              })}
+            </p>
+          )}
+          <p>{t(m.quote_details_owner_review)}</p>
+        </>
+      )}
+      {details.state !== 'waiting' &&
+        (details.changes.length ? (
+          <details>
+            <summary>{t(m.quote_details_changes)}</summary>
+            <dl className="iv-details-changes">
+              {details.changes.map((change) => (
+                <div key={change.field}>
+                  <dt>{label(change.field)}</dt>
+                  <dd>
+                    <span>{value(change.field, change.before)}</span> →{' '}
+                    {value(change.field, change.after)}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </details>
+        ) : (
+          <p>{t(m.quote_details_unchanged)}</p>
+        ))}
+    </section>
+  );
+}
+
 /** Words in a node, counted in each block on its own, as the studio counts them. */
 function wordsIn(node: PageNode): number {
   if (node.text !== undefined)
@@ -669,6 +764,11 @@ export function QuotePanel({
         <p className="iv-quote-notices">
           Also printed: {notices.map((notice) => notice.title).join(' · ')}.
         </p>
+      )}
+      {issued && (
+        <Speak locale="en">
+          <DetailsStatus id={id} data={data} />
+        </Speak>
       )}
       {response && <AnswerCard response={response} />}
       {response?.outcome === 'accepted' && response.plan && (

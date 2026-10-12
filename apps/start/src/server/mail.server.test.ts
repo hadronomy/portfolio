@@ -346,6 +346,16 @@ describe('durable email delivery', () => {
     const { quote } = await invitation();
     fetchMail.mockImplementation(async () => accepted());
     await run(mailer.quote(quote.id));
+    await run(
+      quotes.confirmDetails(
+        quote.id,
+        {
+          customer: quote.data.customer,
+          customerType: quote.data.customerType,
+        },
+        { address: '', agent: 'test' },
+      ),
+    );
     const view = await run(quotes.view(quote.id));
     await run(
       quotes.respond(

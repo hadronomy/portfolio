@@ -16,6 +16,7 @@ import {
 } from '@portfolio/invoices/model';
 import { MailDelivery } from '@portfolio/invoices/outbox-model';
 import { Offer, PaymentPlan, PlanLibrary } from '@portfolio/invoices/plan';
+import { DetailsState } from '@portfolio/invoices/quote-details';
 import {
   EmailAddress,
   QuoteEmail,
@@ -207,6 +208,10 @@ export const DocumentDetail = Schema.Struct({
     Schema.Array(QuoteEmail),
     'Every time a quote was emailed to its customer, newest first. Empty for an invoice.',
   ),
+  details: described(
+    Schema.NullOr(DetailsState),
+    'Quote customer details: waiting, confirmed with date and changes, or needs-revision with the territory or type reason. Null for invoices.',
+  ),
   deliveries: described(
     Schema.Array(MailDelivery),
     'Email delivery records, one per recipient. Pending emails retry automatically. Sent means the provider accepted the message. Use retry_email with a delivery ID to retry it now.',
@@ -284,7 +289,7 @@ export const ListDocuments = read(
 export const GetDocument = read(
   Tool.make('get_document', {
     description:
-      'Reads one invoice or quote in full: its data and totals, what blocks issuing a draft, payments, payment plans, a quote’s pages and its customer’s answer, and how many links are open.',
+      'Reads one invoice or quote in full: its data and totals, what blocks issuing a draft, payments, payment plans, a quote’s pages and its customer’s answer, its customer details state and any required owner revision, and how many links are open.',
     parameters: Schema.Struct({ document: DocumentRef }),
     success: DocumentDetail,
     failure: ToolFailure,
