@@ -180,6 +180,58 @@ export function InvoiceDocument({
   const legends = [
     ...new Set(d.lines.map((line) => line.tax.reason).filter(Boolean)),
   ];
+  const last = d.lines.at(-1);
+  const hidden: CSSProperties = { padding: 0, height: 0, border: 0 };
+  const row = (line: (typeof d.lines)[number], index: number) =>
+    line.kind === 'note' ? (
+      <tr key={line.id}>
+        <td
+          colSpan={4}
+          style={{ ...cell, color: soft, whiteSpace: 'pre-wrap' }}
+        >
+          {line.description}
+        </td>
+      </tr>
+    ) : (
+      <tr key={line.id} style={{ breakInside: 'avoid' }}>
+        <td style={{ ...cell, paddingRight: 24 }}>
+          <p style={{ fontSize: 11.5, whiteSpace: 'pre-wrap' }}>
+            {line.description || '—'}
+          </p>
+          <p style={{ fontSize: 9.5, color: faint, marginTop: 3 }}>
+            {[
+              line.unit === 'unit' ? '' : line.unit,
+              t(m.doc_line_tax, {
+                treatment: line.tax.treatment,
+                rate: line.tax.rate,
+              }),
+              line.discount.value === '0'
+                ? ''
+                : t(m.doc_line_discount, {
+                    value:
+                      line.discount.kind === 'percent'
+                        ? t(m.percent, {
+                            value: Number(line.discount.value),
+                          })
+                        : money(line.discount.value),
+                  }),
+            ]
+              .filter(Boolean)
+              .join(' · ')}
+          </p>
+        </td>
+        <td style={{ ...figure, fontSize: 11.5, color: soft }}>
+          {quantity.format(Number(line.quantity))}
+        </td>
+        <td style={{ ...figure, fontSize: 11.5, color: soft }}>
+          {money(line.unitPrice)}
+        </td>
+        <td style={{ ...figure, fontSize: 11.5, fontWeight: 500 }}>
+          {money(lineNet(totals.lines, index, line.id))}
+        </td>
+      </tr>
+    );
+
   return (
     <main
       style={{
@@ -322,98 +374,92 @@ export function InvoiceDocument({
           </tr>
         </thead>
         <tbody>
-          {d.lines.map((line, index) =>
-            line.kind === 'note' ? (
-              <tr key={line.id}>
-                <td
-                  colSpan={4}
-                  style={{ ...cell, color: soft, whiteSpace: 'pre-wrap' }}
+          {d.lines.slice(0, -1).map((line, index) => row(line, index))}
+          {/* The last line and the totals are one row that cannot break: a
+              page never opens on totals alone, and when they move to the next
+              page the table's header repeats above them, as on any page it
+              runs onto. */}
+          <tr style={{ breakInside: 'avoid' }}>
+            <td colSpan={4} style={{ padding: 0 }}>
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  breakInside: 'avoid',
+                }}
+              >
+                {last && (
+                  <table
+                    style={{
+                      width: '100%',
+                      borderCollapse: 'collapse',
+                      tableLayout: 'fixed',
+                    }}
+                  >
+                    {/* The renderer takes column widths from header cells
+                        only: an empty header row keeps these columns on the
+                        outer table's. */}
+                    <thead>
+                      <tr>
+                        <th style={{ ...hidden, width: '52%' }} />
+                        <th style={hidden} />
+                        <th style={hidden} />
+                        <th style={hidden} />
+                      </tr>
+                    </thead>
+                    <tbody>{row(last, d.lines.length - 1)}</tbody>
+                  </table>
+                )}
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    marginTop: 18,
+                  }}
                 >
-                  {line.description}
-                </td>
-              </tr>
-            ) : (
-              <tr key={line.id} style={{ breakInside: 'avoid' }}>
-                <td style={{ ...cell, paddingRight: 24 }}>
-                  <p style={{ fontSize: 11.5, whiteSpace: 'pre-wrap' }}>
-                    {line.description || '—'}
-                  </p>
-                  <p style={{ fontSize: 9.5, color: faint, marginTop: 3 }}>
-                    {[
-                      line.unit === 'unit' ? '' : line.unit,
-                      t(m.doc_line_tax, {
-                        treatment: line.tax.treatment,
-                        rate: line.tax.rate,
-                      }),
-                      line.discount.value === '0'
-                        ? ''
-                        : t(m.doc_line_discount, {
-                            value:
-                              line.discount.kind === 'percent'
-                                ? t(m.percent, {
-                                    value: Number(line.discount.value),
-                                  })
-                                : money(line.discount.value),
-                          }),
-                    ]
-                      .filter(Boolean)
-                      .join(' · ')}
-                  </p>
-                </td>
-                <td style={{ ...figure, fontSize: 11.5, color: soft }}>
-                  {quantity.format(Number(line.quantity))}
-                </td>
-                <td style={{ ...figure, fontSize: 11.5, color: soft }}>
-                  {money(line.unitPrice)}
-                </td>
-                <td style={{ ...figure, fontSize: 11.5, fontWeight: 500 }}>
-                  {money(lineNet(totals.lines, index, line.id))}
-                </td>
-              </tr>
-            ),
-          )}
+                  <div
+                    style={{
+                      width: '42%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                    }}
+                  >
+                    {summary.map((row, index) => (
+                      <div
+                        key={`${index}-${row.title}`}
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          gap: 16,
+                          padding: '4px 0',
+                          fontSize: 11.5,
+                        }}
+                      >
+                        <span style={{ color: soft }}>{row.title}</span>
+                        <span>{money(row.value)}</span>
+                      </div>
+                    ))}
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        borderTop: `1px solid ${ruleStrong}`,
+                        marginTop: 10,
+                        paddingTop: 12,
+                        fontSize: 13,
+                        fontWeight: 600,
+                      }}
+                    >
+                      <span>{t(m.doc_total)}</span>
+                      <span>{money(totals.total)}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
         </tbody>
       </table>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'flex-end',
-          marginTop: 18,
-          breakInside: 'avoid',
-        }}
-      >
-        <div style={{ width: '42%', display: 'flex', flexDirection: 'column' }}>
-          {summary.map((row, index) => (
-            <div
-              key={`${index}-${row.title}`}
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                gap: 16,
-                padding: '4px 0',
-                fontSize: 11.5,
-              }}
-            >
-              <span style={{ color: soft }}>{row.title}</span>
-              <span>{money(row.value)}</span>
-            </div>
-          ))}
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              borderTop: `1px solid ${ruleStrong}`,
-              marginTop: 10,
-              paddingTop: 12,
-              fontSize: 13,
-              fontWeight: 600,
-            }}
-          >
-            <span>{t(m.doc_total)}</span>
-            <span>{money(totals.total)}</span>
-          </div>
-        </div>
-      </div>
       <div
         style={{
           display: 'flex',

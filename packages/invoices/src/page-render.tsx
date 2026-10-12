@@ -93,13 +93,21 @@ function Numbered({
 
 function List({ node, renderElement, ordered }: Props & { ordered: boolean }) {
   const start = Number(node.attrs?.start ?? 1);
+  // A list split to keep its first items with their heading prints as one:
+  // the head has no space below, the tail only the gap between items.
+  const split = node.attrs?.split;
   return (
     <div
       style={{
         display: 'flex',
         flexDirection: 'column',
         gap: 5,
-        margin: '2px 0 12px',
+        margin:
+          split === 'head'
+            ? '2px 0 0'
+            : split === 'tail'
+              ? '5px 0 12px'
+              : '2px 0 12px',
       }}
     >
       {(node.content ?? []).map((item, index) => (
@@ -230,6 +238,11 @@ function mappings(
     text: ({ node }) => node.text ?? '',
     hardBreak: () => '\n',
     paragraph: (props) => {
+      // An amount or a quantity in a table reads as one token: "288,00 €"
+      // must not leave its sign on the next line.
+      const figure =
+        inside(props, 'tableCell', 'tableHeader') &&
+        isFigure(inlineText(props.node as JSONContent));
       const tight =
         options.tight ||
         inside(props, 'listItem', 'tableCell', 'tableHeader', 'blockquote');
@@ -244,6 +257,9 @@ function mappings(
               ? { fontSize: 'inherit', color: 'inherit' }
               : {}),
             ...(inside(props, 'tableCell') ? { fontSize: 11.5 } : {}),
+            ...(figure
+              ? { whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }
+              : {}),
             ...(inside(props, 'blockquote') ? { color: soft } : {}),
             ...(options.lede
               ? { fontSize: 'inherit', lineHeight: 'inherit', color: 'inherit' }
@@ -409,13 +425,19 @@ interface Section {
   readonly blocks: JSONContent[];
 }
 
+type Part =
+  | { readonly kind: 'part'; readonly title: JSONContent }
+  | ({ readonly kind: 'section' } & Section)
+  | { readonly kind: 'break' };
+
 /**
- * The pages as a title, its lede, and sections. A level-1 heading is the
- * title, the paragraph straight after it the lede, and each level-2
- * heading opens a section; a page break ends one. Clauses are numbered
- * within their section.
+ * The pages as a title, its lede, and parts. The first level-1 heading is
+ * the title and the paragraph straight after it the lede; a later level-1
+ * heading opens a part, each level-2 heading a section, and a page break
+ * ends one. Clauses are numbered through the whole document, the way a
+ * contract counts its articles.
  */
-function layout(doc: JSONContent) {
+export function layout(doc: JSONContent) {
   const nodes = doc.content ?? [];
   let index = 0;
   let title: JSONContent | null = null;
@@ -428,23 +450,28 @@ function layout(doc: JSONContent) {
       index = 2;
     }
   }
-  const parts: (Section | 'break')[] = [];
-  let current: Section | null = null;
+  const parts: Part[] = [];
+  let current: (Section & { kind: 'section' }) | null = null;
   let clause = 0;
   for (const node of nodes.slice(index)) {
     if (node.type === 'pageBreak') {
-      parts.push('break');
+      parts.push({ kind: 'break' });
       current = null;
       continue;
     }
-    if (node.type === 'heading' && Number(node.attrs?.level) <= 2) {
-      current = { heading: node, blocks: [] };
+    const level = Number(node.attrs?.level);
+    if (node.type === 'heading' && level === 1) {
+      parts.push({ kind: 'part', title: node });
+      current = null;
+      continue;
+    }
+    if (node.type === 'heading' && level === 2) {
+      current = { kind: 'section', heading: node, blocks: [] };
       parts.push(current);
-      clause = 0;
       continue;
     }
     if (!current) {
-      current = { heading: null, blocks: [] };
+      current = { kind: 'section', heading: null, blocks: [] };
       parts.push(current);
     }
     current.blocks.push(
@@ -459,6 +486,148 @@ function layout(doc: JSONContent) {
 const inlineText = (node: JSONContent): string =>
   node.text ?? (node.content ?? []).map(inlineText).join('');
 
+/** An amount, a quantity or a percentage: digits with their separators and sign. */
+export const isFigure = (value: string) =>
+  /^[-−+]?[\d.,\s\u00a0]*\d[\d.,\s\u00a0]*\s?(€|\$|%|£)?$/.test(value.trim());
+
+// The margin column holds about two lines of a heading. A run of sections
+// where any heading needs more sets every heading of the run over its
+// text instead, so the run reads one way down the page.
+const marginHeading = 36;
+
+/** "S01 · Discovery": a short code the margin can hold, and the name. */
+const coded = (heading: string) =>
+  /^(\S{1,6})\s+[·•\-–—:]\s+(.+)$/.exec(heading);
+
+/** One short paragraph: a run of these is a list, and sits closer. */
+const isShort = (section: Section) =>
+  section.blocks.length === 1 &&
+  section.blocks[0]?.type === 'paragraph' &&
+  inlineText(section.blocks[0]).length < 400;
+
+/**
+ * The first block of a section and the rest. The first block travels with
+ * the heading, so a heading never ends a page alone: a paragraph whole,
+ * a list by its first two items. A table breaks between its own rows.
+ */
+export function lead(
+  blocks: readonly JSONContent[],
+): [JSONContent[], JSONContent[]] {
+  const [first, ...rest] = blocks;
+  if (!first || first.type === 'table') return [[], [...blocks]];
+  const items = first.content ?? [];
+  if (
+    (first.type === 'bulletList' || first.type === 'orderedList') &&
+    items.length > 2
+  ) {
+    const start = Number(first.attrs?.start ?? 1);
+    return [
+      [
+        {
+          ...first,
+          attrs: { ...first.attrs, split: 'head' },
+          content: items.slice(0, 2),
+        },
+      ],
+      [
+        {
+          ...first,
+          attrs: { ...first.attrs, split: 'tail', start: start + 2 },
+          content: items.slice(2),
+        },
+        ...rest,
+      ],
+    ];
+  }
+  return [[first], rest];
+}
+
+/**
+ * The end of a section's text, split off when it would otherwise strand:
+ * a short closing paragraph keeps the last two items of the list before
+ * it, so a page never opens on two lines under a finished list.
+ */
+export function tail(
+  blocks: readonly JSONContent[],
+): [JSONContent[], JSONContent[]] {
+  const last = blocks.at(-1);
+  const before = blocks.at(-2);
+  const items = before?.content ?? [];
+  if (
+    last?.type !== 'paragraph' ||
+    inlineText(last).length > 320 ||
+    (before?.type !== 'bulletList' && before?.type !== 'orderedList') ||
+    items.length < 3
+  )
+    return [[...blocks], []];
+  const start = Number(before.attrs?.start ?? 1);
+  // A list already split from its head keeps its own spacing above.
+  const split = before.attrs?.split === 'tail' ? 'tail' : 'head';
+  return [
+    [
+      ...blocks.slice(0, -2),
+      {
+        ...before,
+        attrs: { ...before.attrs, split },
+        content: items.slice(0, -2),
+      },
+    ],
+    [
+      {
+        ...before,
+        attrs: {
+          ...before.attrs,
+          split: 'tail',
+          start: start + items.length - 2,
+        },
+        content: items.slice(-2),
+      },
+      last,
+    ],
+  ];
+}
+
+/**
+ * Where a section's heading prints: in the margin, or, in a run whose
+ * headings are too long for it, over its text with any code in the margin.
+ */
+function headingParts(
+  heading: string,
+  stacked: boolean,
+): { aside: ReactNode; over: ReactNode } {
+  if (!heading) return { aside: null, over: null };
+  if (!stacked)
+    return { aside: <h2 style={asideHeading}>{heading}</h2>, over: null };
+  const code = coded(heading);
+  return {
+    aside: code && (
+      <span
+        style={{
+          ...asideHeading,
+          color: soft,
+          fontVariantNumeric: 'tabular-nums',
+        }}
+      >
+        {code[1]}
+      </span>
+    ),
+    over: (
+      <h2 style={{ ...asideHeading, marginBottom: 3 }}>
+        {code ? code[2] : heading}
+      </h2>
+    ),
+  };
+}
+
+/** A part's title, on the text column like the document's own. */
+const partTitle: CSSProperties = {
+  fontSize: 18,
+  lineHeight: 1.2,
+  letterSpacing: '-0.015em',
+  fontWeight: 600,
+  color: ink,
+};
+
 function PagesBody({
   pages,
   language,
@@ -467,7 +636,134 @@ function PagesBody({
   language: Language;
 }) {
   const { title, lede, parts } = layout(pages);
-  let first = true;
+  // Each run of sections between parts and breaks sets its headings one way.
+  const stacked = new Set<number>();
+  let run: number[] = [];
+  const close = () => {
+    if (
+      run.some((at) => {
+        const part = parts[at];
+        return (
+          part?.kind === 'section' &&
+          part.heading &&
+          inlineText(part.heading).length > marginHeading
+        );
+      })
+    )
+      for (const at of run) stacked.add(at);
+    run = [];
+  };
+  parts.forEach((part, at) => {
+    if (part.kind === 'section') run.push(at);
+    else close();
+  });
+  close();
+
+  const units: ReactNode[] = [];
+  // Whether the next row opens a page or a part: it then sits flush.
+  let flush = !title;
+  let pendingTitle: ReactNode = null;
+  parts.forEach((part, at) => {
+    if (part.kind === 'break') {
+      // biome-ignore lint/suspicious/noArrayIndexKey: printed sections never reorder.
+      units.push(<div key={at} style={{ breakAfter: 'page' }} />);
+      flush = true;
+      return;
+    }
+    if (part.kind === 'part') {
+      pendingTitle = (
+        <h2
+          style={{
+            ...partTitle,
+            marginLeft: grid.aside + grid.gutter,
+            width: grid.text,
+            margin: `${flush ? 0 : 40}px 0 18px ${grid.aside + grid.gutter}px`,
+          }}
+        >
+          {inlineText(part.title)}
+        </h2>
+      );
+      flush = true;
+      return;
+    }
+    const previous = parts[at - 1];
+    const tight =
+      !flush &&
+      isShort(part) &&
+      previous?.kind === 'section' &&
+      isShort(previous);
+    const spacing: CSSProperties = flush
+      ? {}
+      : {
+          marginTop: tight ? 10 : 22,
+          paddingTop: tight ? 12 : 16,
+          borderTop: `1px solid ${rule}`,
+        };
+    const heading = part.heading ? inlineText(part.heading) : '';
+    const { aside, over } = headingParts(heading, stacked.has(at));
+    const [head, rest] = lead(part.blocks);
+    const [body, end] = tail(rest);
+    units.push(
+      // biome-ignore lint/suspicious/noArrayIndexKey: printed sections never reorder.
+      <div key={at} style={{ display: 'flex', flexDirection: 'column' }}>
+        {/* The title of a part travels with its first row, the heading of a
+            row with its first lines: neither ends a page alone. */}
+        <div
+          style={{
+            breakInside: 'avoid',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          {pendingTitle}
+          <div style={{ display: 'flex', gap: grid.gutter, ...spacing }}>
+            <div style={{ width: grid.aside, flexShrink: 0 }}>{aside}</div>
+            <div
+              style={{
+                width: grid.text,
+                display: 'flex',
+                flexDirection: 'column',
+              }}
+            >
+              {over}
+              {head.length > 0 &&
+                pagesBody({ type: 'doc', content: head }, language)}
+            </div>
+          </div>
+        </div>
+        {[body, end].map(
+          (blocks, piece) =>
+            blocks.length > 0 && (
+              <div
+                // biome-ignore lint/suspicious/noArrayIndexKey: the body and the end of one section, always in this order.
+                key={piece}
+                style={{
+                  display: 'flex',
+                  gap: grid.gutter,
+                  ...(piece === 1 && { breakInside: 'avoid' }),
+                }}
+              >
+                <div style={{ width: grid.aside, flexShrink: 0 }} />
+                <div
+                  style={{
+                    width: grid.text,
+                    display: 'flex',
+                    flexDirection: 'column',
+                  }}
+                >
+                  {pagesBody({ type: 'doc', content: blocks }, language)}
+                </div>
+              </div>
+            ),
+        )}
+      </div>,
+    );
+    pendingTitle = null;
+    flush = false;
+  });
+  // A part with nothing after it still prints its title.
+  if (pendingTitle) units.push(<div key="last-title">{pendingTitle}</div>);
+
   return (
     <section
       style={{ breakBefore: 'page', display: 'flex', flexDirection: 'column' }}
@@ -503,29 +799,7 @@ function PagesBody({
           )}
         </div>
       )}
-      {parts.map((part, index) => {
-        if (part === 'break') {
-          first = true;
-          // biome-ignore lint/suspicious/noArrayIndexKey: printed sections never reorder.
-          return <div key={index} style={{ breakAfter: 'page' }} />;
-        }
-        const row = (
-          <Row
-            // biome-ignore lint/suspicious/noArrayIndexKey: printed sections never reorder.
-            key={index}
-            first={first && !title}
-            aside={
-              part.heading && (
-                <h2 style={asideHeading}>{inlineText(part.heading)}</h2>
-              )
-            }
-          >
-            {pagesBody({ type: 'doc', content: part.blocks }, language)}
-          </Row>
-        );
-        first = false;
-        return row;
-      })}
+      {units}
     </section>
   );
 }
