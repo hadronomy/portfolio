@@ -85,3 +85,19 @@ test('HEAD keeps Start status and omits the response body', async () => {
   expect(response.status).toBe(200);
   expect(await response.text()).toBe('');
 });
+
+// Stripe's fields load this file from their own origin; vercel.json grants
+// that cross-origin read on the deployed site.
+test('the site serves the self-hosted Geist font and its licence', async () => {
+  const response = await fetch(
+    `${origin}/fonts/geist-latin-wght-normal.woff2`,
+  );
+  expect(response.status).toBe(200);
+  expect(response.headers.get('content-type')).toBe('font/woff2');
+  const font = Buffer.from(await response.arrayBuffer());
+  expect(font.subarray(0, 4).toString()).toBe('wOF2');
+  expect(font.length).toBeGreaterThan(10_000);
+  const licence = await fetch(`${origin}/fonts/OFL.txt`);
+  expect(licence.status).toBe(200);
+  expect(await licence.text()).toContain('SIL OPEN FONT LICENSE');
+});

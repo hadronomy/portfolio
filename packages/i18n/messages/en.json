@@ -795,7 +795,7 @@
   ],
   "quote_decline_yes": "Decline",
   "quote_decline_no": "Keep it",
-  "quote_signature": "Simple electronic signature (eIDAS). You can download the document and evidence of your acceptance.",
+  "quote_signature": "{controller} uses your name and signature for the contract and keeps acceptance evidence under a legitimate interest. We record UTC time, IP address, browser user agent, and the PDF’s SHA-256 fingerprint as evidence of this simple electronic signature (eIDAS).",
   "quote_sign": "Your signature",
   "quote_sign_hint": "Sign here",
   "quote_signed_by": [
@@ -1461,7 +1461,6 @@
   "privacy_cookies": "We use a cookie to maintain your session. Another cookie remembers the language of the document you request. On the payment page, Stripe uses cookies and storage to process payments and prevent fraud. These include __stripe_mid (one year), __stripe_sid (thirty minutes), and m (up to two years). We do not use advertising or audience measurement storage on these pages. This necessary use does not require a consent banner. If you block this storage, access or payment can fail.",
   "privacy_signin_short": "{controller} uses your email for invoice access and session security, based on the contract and a legitimate interest in security.",
   "privacy_payment_short": "{controller} uses your data to manage payment and meet tax duties. Stripe collects your card details and performs fraud checks.",
-  "privacy_quote_short": "{controller} uses your name and simple electronic signature (eIDAS) for the contract and acceptance evidence under a legitimate interest. We record your signature, UTC time, IP address, browser user agent, and SHA-256 of the accepted PDF.",
   "privacy_controller_unknown": "Your invoice issuer",
   "privacy_back": "Back to your invoices",
   "privacy_contents": "On this page",

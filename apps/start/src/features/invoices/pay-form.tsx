@@ -74,7 +74,7 @@ const appearance: Appearance = {
     colorDanger: '#b4312a',
     colorIconTab: '#5d5d61',
     colorIconTabSelected: '#141414',
-    fontFamily: 'system-ui, sans-serif',
+    fontFamily: 'Geist, system-ui, sans-serif',
     fontSizeBase: '14px',
     fontWeightNormal: '400',
     fontWeightMedium: '500',
@@ -161,6 +161,7 @@ function firstPick(options: Options): number {
 
 export function PayStub(props: PayStubProps) {
   const { invoice, publishableKey } = props;
+  const router = useRouter();
   const first = props.plan.options.choices[firstPick(props.plan.options)];
   // Deferred mode: the form draws before a PaymentIntent exists, so the
   // amount can change under it. The intent is made on submit, for the
@@ -171,6 +172,13 @@ export function PayStub(props: PayStubProps) {
       amount: toCents(first?.amount ?? invoice.remaining),
       currency: invoice.currency.toLowerCase(),
       appearance,
+      fonts: [
+        {
+          family: 'Geist',
+          src: `url(${new URL('/fonts/geist-latin-wght-normal.woff2', router.origin).href})`,
+          weight: '400 600',
+        },
+      ],
       locale: invoice.language,
     }),
     // The options are read once, at mount; later amounts go through
@@ -499,7 +507,6 @@ function PayForm({
           )}
         </fieldset>
       )}
-      <CollectionNotice purpose="payment" controller={invoice.issuer} />
       <div className="iv-pay-element" data-loaded={loaded || undefined}>
         <PaymentElement
           options={{
@@ -541,6 +548,7 @@ function PayForm({
               })}
         </MorphText>
       </Button>
+      <CollectionNotice purpose="payment" controller={invoice.issuer} />
     </form>
   );
 }

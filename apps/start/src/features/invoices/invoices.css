@@ -5176,11 +5176,6 @@ body:has(.iv-dock) .iv-toast-region {
   height: 44px;
   border-radius: 999px;
 }
-.iv-quote-fine {
-  color: var(--iv-ink-3);
-  font-size: 12px;
-  text-align: center;
-}
 .iv-quote-decline-open {
   justify-self: center;
   padding: 4px 10px;

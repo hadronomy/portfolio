@@ -795,7 +795,7 @@
   ],
   "quote_decline_yes": "Rechazar",
   "quote_decline_no": "No rechazar",
-  "quote_signature": "Firma electrónica simple (eIDAS). Puedes descargar el documento y la prueba de tu aceptación.",
+  "quote_signature": "{controller} trata tu nombre y firma para formalizar el contrato y conservar la prueba de aceptación por interés legítimo. Registramos la hora UTC, la IP, el agente de usuario y la huella SHA-256 del PDF como prueba de esta firma electrónica simple (eIDAS).",
   "quote_sign": "Tu firma",
   "quote_sign_hint": "Firma aquí",
   "quote_signed_by": [
@@ -1461,7 +1461,6 @@
   "privacy_cookies": "Usamos una cookie para mantener tu sesión. Otra cookie recuerda el idioma del documento que solicitas. En la página de pago, Stripe usa cookies y almacenamiento para tramitar el pago y prevenir el fraude, como __stripe_mid (un año), __stripe_sid (treinta minutos) y m (hasta dos años). No usamos almacenamiento de publicidad o medición de audiencia en estas páginas. Este uso necesario no exige un banner de consentimiento. Si bloqueas ese almacenamiento, el acceso o el pago pueden fallar.",
   "privacy_signin_short": "{controller} usa tu correo para darte acceso a tus facturas y proteger la sesión, conforme al contrato y a su interés legítimo en la seguridad.",
   "privacy_payment_short": "{controller} trata tus datos para gestionar el pago y cumplir las obligaciones fiscales. Stripe recoge la tarjeta y aplica controles de fraude.",
-  "privacy_quote_short": "{controller} trata tu nombre y tu firma electrónica simple (eIDAS) para formalizar el contrato y conservar prueba por interés legítimo. Registramos la firma, la hora UTC, la IP, el agente de usuario y la huella SHA-256 del PDF aceptado.",
   "privacy_controller_unknown": "El emisor de tus facturas",
   "privacy_back": "Volver a tus facturas",
   "privacy_contents": "En esta página",

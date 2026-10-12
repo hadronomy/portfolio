@@ -72,8 +72,10 @@ describe('customer privacy information', () => {
       createElement(Speak, {
         locale: 'en',
         children: createElement(CollectionNotice, {
-          purpose,
           controller: controller.name,
+          ...(purpose === 'quote'
+            ? { purpose, digest: 'abcdef1234567890' }
+            : { purpose }),
         }),
       }),
     );
@@ -88,5 +90,9 @@ describe('customer privacy information', () => {
         'SHA-256',
       ])
         expect(html).toContain(word);
+    if (purpose === 'quote') {
+      expect(html).toContain('abcdef123456');
+      expect(html).toContain('title="abcdef1234567890"');
+    }
   });
 });
