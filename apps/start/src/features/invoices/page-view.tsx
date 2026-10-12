@@ -1,8 +1,8 @@
 import { clauseVersion } from '@portfolio/invoices/clauses';
 import type { Language } from '@portfolio/invoices/model';
+import { markdownToJSON } from '@portfolio/invoices/page-markdown';
 import { pageExtensions } from '@portfolio/invoices/page-schema';
 import {
-  markdownToJSON,
   type Pages,
   readPages,
   toJSONContent,

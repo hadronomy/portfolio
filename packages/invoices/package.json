@@ -7,6 +7,12 @@
     "./pdf": "./src/pdf.tsx",
     "./covers/*": "./src/covers/*"
   },
+  "imports": {
+    "#page-check": {
+      "browser": "./src/page-check.browser.ts",
+      "default": "./src/page-check.ts"
+    }
+  },
   "scripts": {
     "check": "tsc --noEmit",
     "test": "vitest run",

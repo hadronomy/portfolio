@@ -21,6 +21,11 @@ export default defineConfig({
     ],
   },
   base: '/_apps/',
+  // Two lazy chunks pass Vite's 500 kB default, and both earn it: the PDFium
+  // worker the PDF preview runs, and TipTap, which only the quote page, the
+  // editor and the preview load. The entry stays near 400 kB, so a heavy
+  // module that leaks into it still trips this limit.
+  build: { chunkSizeWarningLimit: 700 },
   // The `@/` alias is shadcn's: the bklit charts in src/components import
   // each other through it.
   resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },

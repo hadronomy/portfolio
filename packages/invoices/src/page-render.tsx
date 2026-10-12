@@ -10,7 +10,8 @@ import type { CSSProperties, ReactNode } from 'react';
 import { planTerms } from './billing';
 import { clauseVersion } from './clauses';
 import type { InvoiceData, Language, QuoteTerms } from './model';
-import { hasPages, markdownToJSON, readPages, toJSONContent } from './pages';
+import { markdownToJSON } from './page-markdown';
+import { hasPages, readPages, toJSONContent } from './pages';
 import { partyLines } from './party-lines';
 import {
   faint,

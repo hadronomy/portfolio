@@ -1,8 +1,8 @@
 import type { JSONContent } from '@tiptap/core';
-import { MarkdownManager } from '@tiptap/markdown';
 import { Result, Schema } from 'effect';
+import { schemaIssue } from '#page-check';
 import { clauseVersion } from './clauses';
-import { linkable, pageExtensions, pageSchema } from './page-schema';
+import { linkable } from './page-links';
 
 // A quote's pages: the long-form writing that follows the priced lines.
 // They are stored and sent as ProseMirror JSON text. A flat string crosses
@@ -88,11 +88,8 @@ function documentIssue(text: string): string | undefined {
   if (Result.isFailure(decoded)) return 'Pages are not a document.';
   const doc = decoded.success;
   if (doc.type !== 'doc') return 'Pages start with a document node.';
-  try {
-    pageSchema.nodeFromJSON(toJSONContent(doc)).check();
-  } catch (error) {
-    return error instanceof Error ? error.message : 'Invalid page content.';
-  }
+  const invalid = schemaIssue(toJSONContent(doc));
+  if (invalid) return invalid;
   // The editor only offers these targets, but Markdown and the wire can
   // carry anything; a `javascript:` link must never reach a PDF.
   for (const href of linkTargets(doc))
@@ -133,30 +130,6 @@ export function pagesFrom(content: JSONContent): Result.Result<Pages, string> {
 export const blankPages = Pages.make(
   JSON.stringify({ type: 'doc', content: [{ type: 'paragraph' }] }),
 );
-
-const markdown = new MarkdownManager({ extensions: pageExtensions });
-
-/**
- * Markdown as a document tree, unvalidated. Page breaks are `::page-break`
- * and clauses `::clause[id@version]`, each on its own line.
- */
-export function markdownToJSON(source: string): JSONContent {
-  // The parser leaves `undefined` on keys it did not fill, which a strict
-  // decode reads as a wrong type; a JSON round trip drops them.
-  return JSON.parse(JSON.stringify(markdown.parse(source)));
-}
-
-/** Markdown as pages, the form an agent writes them in, or why it cannot be. */
-export function pagesFromMarkdown(
-  source: string,
-): Result.Result<Pages, string> {
-  return pagesFrom(markdownToJSON(source));
-}
-
-/** Pages as Markdown, the form an agent reads them in. */
-export function pagesToMarkdown(pages: Pages): string {
-  return markdown.serialize(toJSONContent(readPages(pages)));
-}
 
 /** The text of a node and its descendants, without marks. */
 export function nodeText(node: PageNode): string {

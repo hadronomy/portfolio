@@ -7,13 +7,10 @@ import {
   latestVersion,
 } from '@portfolio/invoices/clauses';
 import type { Language } from '@portfolio/invoices/model';
+import { linkable } from '@portfolio/invoices/page-links';
+import { markdownToJSON } from '@portfolio/invoices/page-markdown';
+import { ClauseBlock, pageExtensions } from '@portfolio/invoices/page-schema';
 import {
-  ClauseBlock,
-  linkable,
-  pageExtensions,
-} from '@portfolio/invoices/page-schema';
-import {
-  markdownToJSON,
   type Pages,
   pagesFrom,
   readPages,

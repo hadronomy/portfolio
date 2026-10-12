@@ -1,13 +1,7 @@
 import { Result } from 'effect';
 import { describe, expect, it } from 'vitest';
-import {
-  clausesIn,
-  outline,
-  pagesFrom,
-  pagesFromMarkdown,
-  pagesToMarkdown,
-  readPages,
-} from './pages';
+import { pagesFromMarkdown, pagesToMarkdown } from './page-markdown';
+import { clausesIn, outline, pagesFrom, readPages } from './pages';
 
 const proposal = `# Proposal
 

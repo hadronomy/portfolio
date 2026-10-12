@@ -13,7 +13,10 @@ import {
   RecordId,
 } from '@portfolio/invoices/model';
 import { Outbox } from '@portfolio/invoices/outbox';
-import { pagesFromMarkdown, pagesToMarkdown } from '@portfolio/invoices/pages';
+import {
+  pagesFromMarkdown,
+  pagesToMarkdown,
+} from '@portfolio/invoices/page-markdown';
 import { noOffer } from '@portfolio/invoices/plan';
 import type { QuoteResponse } from '@portfolio/invoices/quote-model';
 import {

@@ -1,6 +1,6 @@
 import { Result } from 'effect';
 import { type Invoice, type Language, newInvoice, newLine } from './model';
-import { pagesFromMarkdown } from './pages';
+import { pagesFromMarkdown } from './page-markdown';
 /** Synthetic records for renderer and calculation tests; they never enter the owner's database. */
 export function specimen(language: Language = 'en', count = 3): Invoice {
   const draft = newInvoice(undefined, new Date('2026-09-09T12:00:00Z'));

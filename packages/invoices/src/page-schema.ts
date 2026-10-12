@@ -1,15 +1,13 @@
 import { getSchema, mergeAttributes, Node } from '@tiptap/core';
 import { TableKit } from '@tiptap/extension-table';
 import StarterKit from '@tiptap/starter-kit';
+import { linkable } from './page-links';
 
 // What a quote's pages may hold, as one Tiptap extension list. The editor,
 // the server's validation, the Markdown an agent reads and writes, and the
 // PDF renderer all build on this list, so they agree on every node. Add a
 // node here and it needs a PDF mapping in page-render.tsx and a Markdown
 // form, or the renderer and the agent tools refuse documents that use it.
-
-/** Link targets the PDF can open: the web, email, and phone. */
-export const linkable = /^(https?:\/\/|mailto:|tel:)/i;
 
 /** A forced page break. Markdown writes it as `::page-break` on its own line. */
 export const PageBreak = Node.create({
