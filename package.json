@@ -10,7 +10,7 @@
     "format": "bun biome format --write .; bun prettier --write .",
     "lint": "bun biome lint --apply .",
     "lint:ws": "bunx sherif@latest",
-    "ci": "bun biome check --write --no-errors-on-unmatched",
+    "ci": "node scripts/deploy/ci.mjs",
     "update:plan": "bun taze",
     "update:write": "bun taze --write",
     "dev": "bun run --cwd apps/astro dev",
