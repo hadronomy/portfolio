@@ -1,52 +1,108 @@
+import { readFileSync } from 'node:fs';
+import { getTransformedRoutes } from '@vercel/routing-utils';
 import { expect, test } from 'vitest';
-import { portfolioSlashRoutes } from '../integrations/vercel.mjs';
 
-const pages = [
-  '/',
-  '/blog/',
+const configuration = JSON.parse(
+  readFileSync(new URL('../vercel.json', import.meta.url), 'utf8'),
+);
+const { routes, error } = getTransformedRoutes(configuration);
+
+function redirectFor(path, method, host = 'hadronomy.com') {
+  const route = routes.find(
+    ({ src, status, headers, methods, has = [] }) =>
+      status >= 300 &&
+      status < 400 &&
+      headers?.Location &&
+      new RegExp(src).test(path) &&
+      (!methods || methods.includes(method)) &&
+      has.every(
+        (condition) => condition.type === 'host' && condition.value === host,
+      ),
+  );
+  if (!route) return undefined;
+  return {
+    status: route.status,
+    location: path.replace(new RegExp(route.src), route.headers.Location),
+  };
+}
+
+test('Vercel accepts the deployment routing configuration', () => {
+  expect(error).toBeNull();
+});
+
+const portfolioPaths = [
+  '/blog',
   '/blog/a-post',
+  '/experiments',
+  '/experiments/text',
   '/work/inari',
-  '/experiments/',
-  '/cv.pdf',
-  '/invoices',
+  '/work/vrpt-swts',
+  '/es/blog',
+  '/archive.v1/post',
+  '/invoices-preview',
+  '/_apps-preview',
+  '/.well-known-preview/page',
+  // An unknown path can redirect to its slashed URL before its 404 response.
+  '/nope',
+];
+const protectedPaths = [
+  ...['/invoices', '/_apps', '/.well-known'].flatMap((prefix) => [
+    prefix,
+    `${prefix}/`,
+    `${prefix}/child`,
+    `${prefix}/child/`,
+    `${prefix}/child/deep`,
+    `${prefix}/file.json`,
+  ]),
   '/invoices/mcp',
   '/invoices/auth/token',
+  '/invoices/auth/oauth2/token',
+  '/invoices/auth/atproto/callback',
   '/invoices/auth/atproto/client-metadata.json',
   '/_apps/functions/example',
   '/.well-known/oauth-authorization-server/invoices/auth',
   '/.well-known/oauth-protected-resource/invoices/mcp',
-].map((pathname) => ({ pathname }));
-const routes = portfolioSlashRoutes(pages);
+];
+const unchangedPaths = [
+  '/',
+  '/cv.pdf',
+  '/rss.xml',
+  '/_astro/x.js',
+  '/favicon.ico',
+  '/work/project.json',
+  ...portfolioPaths.map((path) => `${path}/`),
+  ...protectedPaths,
+];
 
-for (const path of ['/blog', '/blog/a-post', '/work/inari', '/experiments']) {
-  test(`${path} redirects to its canonical portfolio URL`, () => {
-    const route = routes.find(({ src }) => new RegExp(src).test(path));
-    expect(route?.status).toBe(308);
-    expect(route?.headers.Location).toBe(`${path}/`);
-  });
-}
-
-for (const { pathname } of pages) {
-  if (
-    ['/blog/', '/blog/a-post', '/work/inari', '/experiments/'].includes(
-      pathname,
-    )
-  )
-    continue;
-  test(`${pathname} bypasses slash redirects for every request method`, () => {
-    expect(routes.some(({ src }) => new RegExp(src).test(pathname))).toBe(
-      false,
-    );
-  });
-}
-
-test('canonical portfolio URLs do not redirect again', () => {
-  for (const path of [
-    '/blog/',
-    '/blog/a-post/',
-    '/work/inari/',
-    '/experiments/',
-  ]) {
-    expect(routes.some(({ src }) => new RegExp(src).test(path))).toBe(false);
+for (const method of ['GET', 'POST']) {
+  for (const path of portfolioPaths) {
+    test(`${method} ${path} receives a portfolio slash redirect`, () => {
+      expect(redirectFor(path, method)).toEqual({
+        status: 308,
+        location: `${path}/`,
+      });
+    });
   }
+
+  for (const path of unchangedPaths) {
+    test(`${method} ${path} bypasses redirects on the apex host`, () => {
+      expect(redirectFor(path, method)).toBeUndefined();
+    });
+  }
+
+  for (const path of [...portfolioPaths, ...unchangedPaths, '/work/stacks/']) {
+    test(`${method} www${path} redirects to the apex host`, () => {
+      expect(redirectFor(path, method, 'www.hadronomy.com')).toEqual({
+        status: 308,
+        location: `https://hadronomy.com${path}`,
+      });
+    });
+  }
+}
+
+test('the gallery redirect keeps its destination', () => {
+  expect(redirectFor('/work/stacks/', 'GET')).toEqual({
+    status: 308,
+    location: '/#work',
+  });
 });

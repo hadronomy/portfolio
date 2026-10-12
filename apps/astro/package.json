@@ -65,6 +65,7 @@
     "@tailwindcss/vite": "catalog:build",
     "@types/react": "catalog:types",
     "@types/react-dom": "catalog:types",
+    "@vercel/routing-utils": "6.5.0",
     "@vgpu/wgsl": "catalog:prod",
     "@webgpu/types": "catalog:types",
     "prettier": "catalog:lint",
