@@ -60,6 +60,8 @@ export const serverFunctions: Record<
       'How the email looks, for the owner’s compose dialog; email_quote returns what went out.',
   },
   getQuoteEmails: ['get_document'],
+  getQuoteDeliveries: ['get_document'],
+  retryEmail: ['retry_email'],
   getQuotePage: { notForAgents: 'The customer’s quote page.' },
   answerQuoteLink: { notForAgents: 'The customer answers a quote.' },
   getAccountPage: { notForAgents: 'The customer’s account.' },

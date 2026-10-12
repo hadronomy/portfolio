@@ -62,6 +62,10 @@ async function answer(quote: Invoice, change: Partial<Answer> = {}) {
         ...change,
       },
       evidence,
+      {
+        url: 'https://example.test/quote',
+        workspaceUrl: 'https://example.test/invoices',
+      },
     ),
   );
 }
@@ -102,6 +106,10 @@ describe('quotes', () => {
             signature: ink,
           },
           evidence,
+          {
+            url: 'https://example.test/quote',
+            workspaceUrl: 'https://example.test/invoices',
+          },
         ),
       ),
     ).toMatchObject({ reason: 'stale-document' });
@@ -120,6 +128,10 @@ describe('quotes', () => {
           quote.id,
           { ...first, outcome: 'declined', plan: null },
           evidence,
+          {
+            url: 'https://example.test/quote',
+            workspaceUrl: 'https://example.test/invoices',
+          },
         ),
       ),
     ).toMatchObject({
@@ -147,6 +159,10 @@ describe('quotes', () => {
             signature: null,
           },
           evidence,
+          {
+            url: 'https://example.test/quote',
+            workspaceUrl: 'https://example.test/invoices',
+          },
         ),
       ),
     ).toMatchObject({ reason: 'unsigned' });
@@ -227,6 +243,10 @@ describe('quotes', () => {
             signature: ink,
           },
           evidence,
+          {
+            url: 'https://example.test/quote',
+            workspaceUrl: 'https://example.test/invoices',
+          },
         ),
       ),
     ).toMatchObject({ reason: 'no-such-plan' });
@@ -259,20 +279,6 @@ describe('quotes', () => {
       ),
     );
     expect((await run(store.offer(issued.id))).plans).toHaveLength(1);
-  });
-
-  it('remember every time a quote went out by email, newest first', async () => {
-    const quote = await issuedQuote();
-    expect(await run(quotes.emails(quote.id))).toEqual([]);
-    const first = {
-      to: 'lucy@example.test',
-      sentAt: '2026-10-12T09:00:00.000Z',
-      expiresAt: '2026-11-11T09:00:00.000Z',
-    };
-    const again = { ...first, sentAt: '2026-10-13T09:00:00.000Z' };
-    await run(quotes.emailed(quote.id, owner, first));
-    await run(quotes.emailed(quote.id, owner, again));
-    expect(await run(quotes.emails(quote.id))).toEqual([again, first]);
   });
 
   it('revise an issued quote into a new draft', async () => {

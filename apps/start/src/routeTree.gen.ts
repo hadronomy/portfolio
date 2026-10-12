@@ -27,6 +27,7 @@ import { Route as InvoicesPayTokenRouteImport } from './routes/invoices_.pay.$to
 import { Route as InvoicesPdfInvoiceIdRouteImport } from './routes/invoices_.pdf.$invoiceId'
 import { Route as InvoicesQuoteTokenRouteImport } from './routes/invoices_.quote.$token'
 import { Route as InvoicesAccountPdfInvoiceIdRouteImport } from './routes/invoices_.account_.pdf.$invoiceId'
+import { Route as InvoicesInternalMailRetryRouteImport } from './routes/invoices_.internal.mail.retry'
 import { Route as InvoicesPayTokenPdfRouteImport } from './routes/invoices_.pay.$token_.pdf'
 import { Route as InvoicesQuoteTokenPdfRouteImport } from './routes/invoices_.quote.$token_.pdf'
 import { Route as InvoicesQuoteTokenPagesPageRouteImport } from './routes/invoices_.quote.$token_.pages.$page'
@@ -123,6 +124,12 @@ const InvoicesAccountPdfInvoiceIdRoute =
     path: '/invoices/account/pdf/$invoiceId',
     getParentRoute: () => rootRouteImport,
   } as any)
+const InvoicesInternalMailRetryRoute =
+  InvoicesInternalMailRetryRouteImport.update({
+    id: '/invoices_/internal/mail/retry',
+    path: '/invoices/internal/mail/retry',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const InvoicesPayTokenPdfRoute = InvoicesPayTokenPdfRouteImport.update({
   id: '/invoices_/pay/$token_/pdf',
   path: '/invoices/pay/$token/pdf',
@@ -159,6 +166,7 @@ export interface FileRoutesByFullPath {
   '/invoices/pdf/$invoiceId': typeof InvoicesPdfInvoiceIdRoute
   '/invoices/quote/$token': typeof InvoicesQuoteTokenRoute
   '/invoices/account/pdf/$invoiceId': typeof InvoicesAccountPdfInvoiceIdRoute
+  '/invoices/internal/mail/retry': typeof InvoicesInternalMailRetryRoute
   '/invoices/pay/$token/pdf': typeof InvoicesPayTokenPdfRoute
   '/invoices/quote/$token/pdf': typeof InvoicesQuoteTokenPdfRoute
   '/invoices/quote/$token/pages/$page': typeof InvoicesQuoteTokenPagesPageRoute
@@ -181,6 +189,7 @@ export interface FileRoutesByTo {
   '/invoices/pdf/$invoiceId': typeof InvoicesPdfInvoiceIdRoute
   '/invoices/quote/$token': typeof InvoicesQuoteTokenRoute
   '/invoices/account/pdf/$invoiceId': typeof InvoicesAccountPdfInvoiceIdRoute
+  '/invoices/internal/mail/retry': typeof InvoicesInternalMailRetryRoute
   '/invoices/pay/$token/pdf': typeof InvoicesPayTokenPdfRoute
   '/invoices/quote/$token/pdf': typeof InvoicesQuoteTokenPdfRoute
   '/invoices/quote/$token/pages/$page': typeof InvoicesQuoteTokenPagesPageRoute
@@ -205,6 +214,7 @@ export interface FileRoutesById {
   '/invoices_/pdf/$invoiceId': typeof InvoicesPdfInvoiceIdRoute
   '/invoices_/quote/$token': typeof InvoicesQuoteTokenRoute
   '/invoices_/account_/pdf/$invoiceId': typeof InvoicesAccountPdfInvoiceIdRoute
+  '/invoices_/internal/mail/retry': typeof InvoicesInternalMailRetryRoute
   '/invoices_/pay/$token_/pdf': typeof InvoicesPayTokenPdfRoute
   '/invoices_/quote/$token_/pdf': typeof InvoicesQuoteTokenPdfRoute
   '/invoices_/quote/$token_/pages/$page': typeof InvoicesQuoteTokenPagesPageRoute
@@ -230,6 +240,7 @@ export interface FileRouteTypes {
     | '/invoices/pdf/$invoiceId'
     | '/invoices/quote/$token'
     | '/invoices/account/pdf/$invoiceId'
+    | '/invoices/internal/mail/retry'
     | '/invoices/pay/$token/pdf'
     | '/invoices/quote/$token/pdf'
     | '/invoices/quote/$token/pages/$page'
@@ -252,6 +263,7 @@ export interface FileRouteTypes {
     | '/invoices/pdf/$invoiceId'
     | '/invoices/quote/$token'
     | '/invoices/account/pdf/$invoiceId'
+    | '/invoices/internal/mail/retry'
     | '/invoices/pay/$token/pdf'
     | '/invoices/quote/$token/pdf'
     | '/invoices/quote/$token/pages/$page'
@@ -275,6 +287,7 @@ export interface FileRouteTypes {
     | '/invoices_/pdf/$invoiceId'
     | '/invoices_/quote/$token'
     | '/invoices_/account_/pdf/$invoiceId'
+    | '/invoices_/internal/mail/retry'
     | '/invoices_/pay/$token_/pdf'
     | '/invoices_/quote/$token_/pdf'
     | '/invoices_/quote/$token_/pages/$page'
@@ -294,6 +307,7 @@ export interface RootRouteChildren {
   InvoicesPdfInvoiceIdRoute: typeof InvoicesPdfInvoiceIdRoute
   InvoicesQuoteTokenRoute: typeof InvoicesQuoteTokenRoute
   InvoicesAccountPdfInvoiceIdRoute: typeof InvoicesAccountPdfInvoiceIdRoute
+  InvoicesInternalMailRetryRoute: typeof InvoicesInternalMailRetryRoute
   InvoicesPayTokenPdfRoute: typeof InvoicesPayTokenPdfRoute
   InvoicesQuoteTokenPdfRoute: typeof InvoicesQuoteTokenPdfRoute
   InvoicesQuoteTokenPagesPageRoute: typeof InvoicesQuoteTokenPagesPageRoute
@@ -427,6 +441,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InvoicesAccountPdfInvoiceIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/invoices_/internal/mail/retry': {
+      id: '/invoices_/internal/mail/retry'
+      path: '/invoices/internal/mail/retry'
+      fullPath: '/invoices/internal/mail/retry'
+      preLoaderRoute: typeof InvoicesInternalMailRetryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/invoices_/pay/$token_/pdf': {
       id: '/invoices_/pay/$token_/pdf'
       path: '/invoices/pay/$token/pdf'
@@ -485,6 +506,7 @@ const rootRouteChildren: RootRouteChildren = {
   InvoicesPdfInvoiceIdRoute: InvoicesPdfInvoiceIdRoute,
   InvoicesQuoteTokenRoute: InvoicesQuoteTokenRoute,
   InvoicesAccountPdfInvoiceIdRoute: InvoicesAccountPdfInvoiceIdRoute,
+  InvoicesInternalMailRetryRoute: InvoicesInternalMailRetryRoute,
   InvoicesPayTokenPdfRoute: InvoicesPayTokenPdfRoute,
   InvoicesQuoteTokenPdfRoute: InvoicesQuoteTokenPdfRoute,
   InvoicesQuoteTokenPagesPageRoute: InvoicesQuoteTokenPagesPageRoute,

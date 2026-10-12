@@ -194,3 +194,46 @@ export const billed = namespace.table(
   },
   (table) => [primaryKey({ columns: [table.quoteId, table.payment] })],
 );
+
+/** One message to one recipient. A lease fences concurrent senders without holding a transaction over the network. */
+export const outbox = namespace.table(
+  'mail_outbox',
+  {
+    id: uuid().primaryKey(),
+    invoiceId: uuid('invoice_id').references(() => invoices.id),
+    kind: text({
+      enum: [
+        'quote-invitation',
+        'quote-copy',
+        'quote-answer',
+        'quote-answered',
+        'sign-in-code',
+      ],
+    }).notNull(),
+    recipient: text().notNull(),
+    payload: jsonb().notNull(),
+    prepared: jsonb(),
+    state: text({ enum: ['pending', 'sent', 'failed'] }).notNull(),
+    attempts: integer().notNull().default(0),
+    nextAttemptAt: at('next_attempt_at').notNull(),
+    firstAttemptAt: at('first_attempt_at'),
+    lockedUntil: at('locked_until'),
+    claimToken: uuid('claim_token'),
+    uncertain: boolean().notNull().default(false),
+    lastError: text('last_error'),
+    messageId: text('message_id').unique(),
+    idempotencyKey: text('idempotency_key').notNull().unique(),
+    expiresAt: at('expires_at'),
+    createdAt: at('created_at').notNull(),
+    sentAt: at('sent_at'),
+  },
+  (table) => [
+    index('mail_outbox_due').on(table.state, table.nextAttemptAt),
+    index('mail_outbox_invoice').on(table.invoiceId, table.createdAt),
+    check(
+      'mail_outbox_state_known',
+      sql`${table.state} in ('pending', 'sent', 'failed')`,
+    ),
+    check('mail_outbox_attempts_positive', sql`${table.attempts} >= 0`),
+  ],
+);

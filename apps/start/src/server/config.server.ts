@@ -4,7 +4,7 @@ import {
   Effect,
   Layer,
   Option,
-  type Redacted,
+  Redacted,
   Schema,
 } from 'effect';
 
@@ -33,6 +33,8 @@ export interface AppConfigApi {
   readonly stripePublishableKey: string | undefined;
   /** Private JWKs that sign AT Protocol token requests, newest first. HTTPS deployments need one. */
   readonly atprotoKeys: readonly string[];
+  /** Shared HMAC key for the payments Worker's mail retry requests. */
+  readonly mailRetrySecret?: Redacted.Redacted<string> | undefined;
   /**
    * The Resend API key and sender for the invoice mail. Without it,
    * development writes each email to a file and production offers no
@@ -88,6 +90,12 @@ export const appConfigLayer = Layer.effect(
       ),
       stripePublishableKey: stripe?.publishableKey,
       atprotoKeys: atprotoKeys.map((jwk) => JSON.stringify(jwk)),
+      mailRetrySecret: yield* optional(
+        Config.schema(
+          Schema.String.check(Schema.isMinLength(32)),
+          'INVOICE_MAIL_RETRY_SECRET',
+        ).pipe(Config.map(Redacted.make)),
+      ),
       mail: yield* optional(
         Config.all({
           apiKey: Config.Redacted('RESEND_API_KEY'),

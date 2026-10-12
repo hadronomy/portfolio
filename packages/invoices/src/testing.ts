@@ -4,6 +4,7 @@ import { customerAccessLayer } from './customer-access';
 import { databaseLayer } from './database';
 import { documentsLayer } from './documents';
 import { migrations } from './migrations';
+import { outboxLayer } from './outbox';
 import { quotesLayer } from './quotes';
 import { storeLayer } from './store';
 
@@ -14,7 +15,7 @@ import { storeLayer } from './store';
 export const testLayer = quotesLayer.pipe(
   Layer.provideMerge(documentsLayer),
   Layer.provideMerge(Layer.mergeAll(storeLayer, customerAccessLayer)),
-  Layer.provideMerge(databaseLayer),
+  Layer.provideMerge(outboxLayer.pipe(Layer.provideMerge(databaseLayer))),
   Layer.provideMerge(PostgresLocal.layer({ migrations: [migrations] })),
 );
 

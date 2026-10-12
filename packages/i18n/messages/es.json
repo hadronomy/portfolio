@@ -1409,5 +1409,31 @@
         "*": "Hola, {name}:\nTe envío el presupuesto del que hablamos."
       }
     }
-  ]
+  ],
+  "mail_delivery_heading": "Envío de correo",
+  "mail_delivery_kind": [
+    {
+      "declarations": ["input kind"],
+      "selectors": ["kind"],
+      "match": {
+        "kind=quote-invitation": "Invitación al presupuesto",
+        "kind=quote-copy": "Tu copia del presupuesto",
+        "kind=quote-answer": "Confirmación al cliente",
+        "kind=quote-answered": "Tu aviso de respuesta",
+        "kind=sign-in-code": "Código de acceso",
+        "kind=*": "Correo"
+      }
+    }
+  ],
+  "mail_delivery_pending": "Reintento automático en cola",
+  "mail_delivery_failed": "No se pudo enviar el correo",
+  "mail_delivery_retry": "Reintentar",
+  "mail_delivery_retrying": "Reintentando…",
+  "mail_delivery_retry_refused": "No se pudo reintentar este correo. Consulta el registro de envío o Resend antes de enviarlo de nuevo.",
+  "mail_invitation_queued": "Correo en cola para {to}. El envío se reintentará automáticamente.",
+  "mail_invitation_problem": "La solicitud de correo no terminó. Consulta el registro de envío antes de enviarlo de nuevo.",
+  "mail_invitation_queued_button": "En cola",
+  "mail_invitation_sent": "Enviado a {to}.",
+  "mail_invitation_failed": "No se pudo enviar el correo a {to}. Abre el registro de entrega para reintentarlo.",
+  "mail_invitation_failed_button": "Necesita revisión"
 }

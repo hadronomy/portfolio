@@ -14,6 +14,7 @@ import {
   Preferences,
   RecordId,
 } from '@portfolio/invoices/model';
+import { MailDelivery } from '@portfolio/invoices/outbox-model';
 import { Offer, PaymentPlan, PlanLibrary } from '@portfolio/invoices/plan';
 import {
   EmailAddress,
@@ -205,6 +206,10 @@ export const DocumentDetail = Schema.Struct({
   emails: described(
     Schema.Array(QuoteEmail),
     'Every time a quote was emailed to its customer, newest first. Empty for an invoice.',
+  ),
+  deliveries: described(
+    Schema.Array(MailDelivery),
+    'Email delivery records, one per recipient. Pending emails retry automatically. Sent means the provider accepted the message. Use retry_email with a delivery ID to retry it now.',
   ),
 });
 
@@ -603,7 +608,7 @@ export const SendQuote = write(
 export const EmailQuote = write(
   Tool.make('email_quote', {
     description:
-      'Emails an issued, open quote to its customer: the total, the date it stands until, a new link to read and sign it, and its PDF attached. Replies reach the owner. Use it instead of send_quote when the customer should get the quote by email. It cannot be unsent; returns where it went and until when the link opens.',
+      'Queues an issued, open quote for its customer and tries delivery now. The email contains a link to read and sign it, with the PDF attached. Replies reach the owner. Use it when the customer needs an email invitation. Returns the recipient, link expiry and delivery state. Pending email retries automatically. Use retry_email to retry its delivery ID.',
     parameters: Schema.Struct({
       document: DocumentRef,
       to: described(
@@ -619,7 +624,12 @@ export const EmailQuote = write(
         'Whether the owner gets a copy.',
       ),
     }),
-    success: QuoteEmail,
+    success: Schema.Struct({
+      to: Schema.String,
+      sentAt: Schema.NullOr(Schema.String),
+      expiresAt: Schema.String,
+      delivery: Schema.NullOr(MailDelivery),
+    }),
     failure: ToolFailure,
   }),
   { destructive: true },
@@ -635,8 +645,23 @@ export const CloseQuoteLinks = write(
   { destructive: true, idempotent: true },
 );
 
+export const RetryEmail = write(
+  Tool.make('retry_email', {
+    description:
+      'Retries a queued or failed document email now. Read deliveries in get_document and pass its email ID. Sends through the same operation as the owner panel. Returns its state, attempts, last error and provider message ID. A sent email is returned unchanged. An active send or an uncertain delivery beyond the safe retry window is refused.',
+    parameters: Schema.Struct({
+      document: DocumentRef,
+      email: Schema.String.check(Schema.isUUID()),
+    }),
+    success: MailDelivery,
+    failure: ToolFailure,
+  }),
+  { destructive: true, idempotent: true },
+);
+
 /** Every tool an agent has. */
 export const InvoiceTools = Toolkit.make(
+  RetryEmail,
   ListDocuments,
   GetDocument,
   ListCustomers,

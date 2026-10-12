@@ -4839,6 +4839,43 @@ body:has(.iv-dock) .iv-toast-region {
   display: grid;
   gap: 12px;
 }
+
+.iv-mail-deliveries {
+  display: grid;
+  gap: 8px;
+}
+.iv-mail-delivery {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--iv-r-card);
+  background: var(--iv-sunken);
+  color: var(--iv-ink-2);
+  font-size: 12.5px;
+}
+.iv-mail-delivery > div {
+  min-width: 0;
+}
+.iv-mail-delivery strong {
+  font-weight: 500;
+}
+.iv-mail-delivery-state {
+  color: var(--iv-ink-2);
+}
+.iv-mail-delivery-recipient {
+  overflow-wrap: anywhere;
+  color: var(--iv-ink-2);
+  font-size: 12px;
+}
+.iv-mail-delivery[data-state='failed'] .iv-mail-delivery-state {
+  color: var(--iv-danger);
+}
+.iv-mail-delivery-error {
+  color: var(--iv-ink-2);
+  font-size: 12px;
+}
 .iv-quote-validity {
   color: var(--iv-ink-2);
 }

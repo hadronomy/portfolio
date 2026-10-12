@@ -8,12 +8,14 @@ import {
   MissingInvoice,
   type OwnerDid,
 } from '@portfolio/invoices/model';
+import { Outbox } from '@portfolio/invoices/outbox';
 import type { Answer } from '@portfolio/invoices/quote-model';
 import { type QuoteError, Quotes } from '@portfolio/invoices/quotes';
 import { InvoiceStore } from '@portfolio/invoices/store';
 import { getRequestIP } from '@tanstack/react-start/server';
 import { Effect, Option } from 'effect';
 import { requireOwner } from '../../server/auth.server';
+import { AppConfig } from '../../server/config.server';
 import { invitationEmail, Mailer } from '../../server/mail.server';
 import { PageImages } from '../../server/page-images.server';
 import {
@@ -74,47 +76,30 @@ export interface QuoteEmailRequest {
   readonly copy: boolean;
 }
 
-/**
- * Emails an open quote to `to` with a link minted for it and its PDF
- * attached, then records that it went. The owner's pages and agents both
- * send through here. A mail failure leaves nothing recorded; the link it
- * minted was never seen, so it opens for no one.
- */
+/** Queues each recipient with the invitation link, then tries delivery before returning. */
 export const emailQuoteTo = Effect.fn('QuotesServer.emailTo')(function* (
   id: InvoiceId,
   actor: OwnerDid,
   base: string,
   request: QuoteEmailRequest,
 ) {
-  const shared = yield* sendQuote(id, actor, base);
-  if (!shared.ok) return shared;
-  const view = yield* viewOf(id);
-  const { bytes } = yield* pdfOf(id, view.quote.data.language);
-  const sent = yield* Mailer.use((mailer) =>
-    mailer.quoteInvitation({
-      quote: view.quote,
-      to: request.to,
-      note: request.note,
-      url: shared.url,
-      copy: request.copy ? view.quote.data.issuer.email || null : null,
-      pdf: bytes,
-    }),
-  ).pipe(
-    Effect.as(true),
-    Effect.catchTag('MailFailure', (failure) =>
-      Effect.logWarning('Quote email not sent', failure.message).pipe(
-        Effect.as(false),
-      ),
+  const result = yield* answered(
+    Quotes.use((quotes) => quotes.invite(id, actor, { ...request, base })),
+  );
+  if (!result.ok) return result;
+  const deliveries = yield* unavailable(
+    Mailer.use((mailer) =>
+      Effect.forEach(result.value.emails, (email) => mailer.send(email.id)),
     ),
   );
-  if (!sent) return { ok: false as const, reason: 'mail' as const };
-  const email = {
+  const latest = deliveries.find((mail) => mail?.kind === 'quote-invitation');
+  return {
+    ok: true as const,
     to: request.to,
-    sentAt: new Date().toISOString(),
-    expiresAt: shared.expiresAt,
+    sentAt: latest?.sentAt ?? null,
+    expiresAt: result.value.expiresAt,
+    delivery: latest ?? null,
   };
-  yield* unavailable(Quotes.use((quotes) => quotes.emailed(id, actor, email)));
-  return { ok: true as const, ...email };
 });
 
 /** The owner's request to email a quote: from the invoice pages only. */
@@ -142,7 +127,16 @@ export const quoteEmailPreview = Effect.fn('QuotesServer.emailPreview')(
       to: view.quote.data.customer.email,
       note,
       url: `${base}/invoices/quote/preview`,
-    });
+    }).pipe(
+      Effect.catchTag('MailFailure', () =>
+        Effect.fail(
+          new Refused({
+            status: 503,
+            message: 'The email preview could not be prepared.',
+          }),
+        ),
+      ),
+    );
     return {
       subject: email.subject,
       html: email.html,
@@ -157,6 +151,36 @@ export const quoteEmails = Effect.fn('QuotesServer.emails')(function* (
 ) {
   yield* requireOwner;
   return yield* unavailable(Quotes.use((quotes) => quotes.emails(id)));
+});
+
+/** Delivery records for the owner's quote panel. */
+export const quoteDeliveries = Effect.fn('QuotesServer.deliveries')(function* (
+  id: InvoiceId,
+) {
+  yield* requireOwner;
+  return yield* unavailable(Outbox.use((outbox) => outbox.deliveries(id)));
+});
+
+/** Both owner entry points retry the same row, under the same authority. */
+export const retryQuoteEmail = Effect.fn('QuotesServer.retryEmail')(function* (
+  id: InvoiceId,
+  email: string,
+) {
+  yield* sameOrigin;
+  const actor = yield* requireOwner;
+  return yield* Mailer.use((mailer) => mailer.retry(id, email, actor)).pipe(
+    Effect.catchTags({
+      MailRetryRefused: ({ message }) =>
+        Effect.fail(new Refused({ status: 409, message })),
+      StorageFailure: () =>
+        Effect.fail(
+          new Refused({
+            status: 503,
+            message: 'Email delivery is unavailable.',
+          }),
+        ),
+    }),
+  );
 });
 
 /** Closes every link to the quote. */
@@ -264,52 +288,38 @@ const signedCopy = (id: InvoiceId) =>
     return { quote: view.quote, response, bytes };
   });
 
-/**
- * Records the customer's answer, then mails them the confirmation and the
- * owner a notice, with the signed copy on an acceptance. A mail failure
- * leaves the answer standing, unconfirmed, for the owner to follow up.
- */
+/** Records the answer and its mail together, then attempts the queued recipients. */
 export const answerQuote = Effect.fn('QuotesServer.answer')(function* (
   token: string,
   answer: Answer,
 ) {
   yield* sameOrigin;
+  const settings = yield* AppConfig;
+  if (settings.production && (!settings.mail || !settings.mailRetrySecret))
+    return yield* new Refused({
+      status: 503,
+      message: 'Quote confirmation email is not configured.',
+    });
   const id = yield* byLink(token);
   if (Option.isNone(id))
     return yield* new Refused({ status: 404, message: 'This link is closed.' });
+  const base = yield* origin;
   const result = yield* answered(
     Quotes.use((quotes) =>
       Effect.flatMap(evidence, (seen) =>
-        quotes.respond(id.value, answer, seen),
+        quotes.respond(id.value, answer, seen, {
+          url: `${base}/invoices/quote/${token}`,
+          workspaceUrl: `${base}/invoices/${id.value}`,
+        }),
       ),
     ),
   );
   if (!result.ok) return result;
-  const response = result.value;
-  if (!response.confirmedAt) {
-    const view = yield* viewOf(id.value);
-    const base = yield* origin;
-    const signed = yield* signedCopy(id.value);
-    const sent = yield* Mailer.use((mailer) =>
-      mailer.quoteAnswer({
-        quote: view.quote,
-        response,
-        url: `${base}/invoices/quote/${token}`,
-        workspaceUrl: `${base}/invoices/${id.value}`,
-        signedCopy: signed?.bytes ?? null,
-      }),
-    ).pipe(
-      Effect.as(true),
-      Effect.catchTag('MailFailure', (failure) =>
-        Effect.logWarning('Quote confirmation not sent', failure.message).pipe(
-          Effect.as(false),
-        ),
-      ),
-    );
-    if (sent)
-      yield* unavailable(Quotes.use((quotes) => quotes.confirmed(id.value)));
-  }
-  return { ok: true as const, response };
+  yield* unavailable(Mailer.use((mailer) => mailer.quote(id.value)));
+  return {
+    ok: true as const,
+    response: (yield* viewOf(id.value)).response ?? result.value,
+  };
 });
 
 /**

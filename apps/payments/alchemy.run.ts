@@ -17,6 +17,8 @@ import PaymentsWorker from './src/worker';
 //                       webhook endpoint write access is enough)
 //   STRIPE_SECRET_KEY   what the Worker calls Stripe with
 //   DATABASE_URL        the invoice database, already migrated
+//   INVOICE_ORIGIN      the public web app origin for mail retries
+//   INVOICE_MAIL_RETRY_SECRET   the web app's shared HMAC key
 //
 // `bun run dev` runs the Worker locally instead, against DATABASE_URL, which
 // must be a database this machine reaches. Stripe cannot reach the Worker,
@@ -53,6 +55,14 @@ export default Alchemy.Stack(
         })).secret;
     yield* worker.bind('stripe-webhook', {
       env: { STRIPE_WEBHOOK_SECRET: secret },
+    });
+    yield* worker.bind('mail-retry', {
+      env: {
+        INVOICE_ORIGIN: yield* Config.String('INVOICE_ORIGIN'),
+        INVOICE_MAIL_RETRY_SECRET: yield* Config.Redacted(
+          'INVOICE_MAIL_RETRY_SECRET',
+        ),
+      },
     });
     return { url: worker.url };
   }),

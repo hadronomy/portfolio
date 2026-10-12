@@ -1,3 +1,5 @@
+import { translate } from '@portfolio/i18n';
+import { m } from '@portfolio/i18n/messages';
 import { bills } from '@portfolio/invoices/billing';
 import { formatMoney } from '@portfolio/invoices/calculate';
 import type { InvoiceData, InvoiceId } from '@portfolio/invoices/model';
@@ -29,9 +31,12 @@ import {
   X,
 } from 'lucide-react';
 import { type CSSProperties, useState } from 'react';
+import { Speak, useT } from '../../lib/i18n';
 import {
+  getQuoteDeliveries,
   getQuoteEmails,
   getQuoteLinks,
+  retryEmail,
   revokeQuoteLinks,
   shareQuoteLink,
 } from './api';
@@ -254,10 +259,20 @@ function QuoteLinkMenu({
         number={number}
         open={composing}
         onOpenChange={setComposing}
-        onSent={(to) => {
-          toast(`Sent to ${to}.`);
+        onSent={(to, state) => {
+          toast(
+            translate('en')(
+              state === 'sent'
+                ? m.mail_invitation_sent
+                : state === 'failed'
+                  ? m.mail_invitation_failed
+                  : m.mail_invitation_queued,
+              { to },
+            ),
+          );
           void client.invalidateQueries({ queryKey: key });
           void client.invalidateQueries({ queryKey: ['quote-emails', id] });
+          void client.invalidateQueries({ queryKey: ['quote-deliveries', id] });
         }}
       />
     </>
@@ -286,6 +301,75 @@ function EmailedLine({ id }: { id: InvoiceId }) {
           ` · ${earlier.length === 1 ? 'once' : `${earlier.length} times`} before`}
       </span>
     </p>
+  );
+}
+
+function DeliveryRows({ id }: { id: InvoiceId }) {
+  const t = useT();
+  const query = useQueryClient();
+  const deliveries = useQuery({
+    queryKey: ['quote-deliveries', id],
+    queryFn: () => getQuoteDeliveries({ data: { id } }),
+    refetchInterval: (query) =>
+      query.state.data?.some((mail) => mail.state === 'pending')
+        ? 15_000
+        : false,
+  });
+  const retry = useMutation({
+    mutationFn: (email: string) => retryEmail({ data: { id, email } }),
+    onSuccess: () => {
+      void query.invalidateQueries({ queryKey: ['quote-deliveries', id] });
+      void query.invalidateQueries({ queryKey: ['quote-emails', id] });
+      void query.invalidateQueries({ queryKey: ['workspace'] });
+    },
+  });
+  const rows = deliveries.data?.filter((mail) => mail.state !== 'sent') ?? [];
+  if (!rows.length) return null;
+  return (
+    <section
+      className="iv-mail-deliveries"
+      aria-label={t(m.mail_delivery_heading)}
+    >
+      {rows.map((mail) => (
+        <div key={mail.id} className="iv-mail-delivery" data-state={mail.state}>
+          <Mail size={14} aria-hidden />
+          <div>
+            <p>
+              <strong>{t(m.mail_delivery_kind, { kind: mail.kind })}</strong>
+            </p>
+            <p className="iv-mail-delivery-state">
+              <MorphText>
+                {t(
+                  mail.state === 'failed'
+                    ? m.mail_delivery_failed
+                    : m.mail_delivery_pending,
+                )}
+              </MorphText>
+            </p>
+            <p className="iv-mail-delivery-recipient">{mail.recipient}</p>
+          </div>
+          <Button
+            size="sm"
+            variant="ghost"
+            disabled={retry.isPending}
+            onClick={() => retry.mutate(mail.id)}
+          >
+            <MorphText>
+              {t(
+                retry.isPending && retry.variables === mail.id
+                  ? m.mail_delivery_retrying
+                  : m.mail_delivery_retry,
+              )}
+            </MorphText>
+          </Button>
+        </div>
+      ))}
+      {retry.isError && (
+        <output className="iv-mail-delivery-error">
+          {t(m.mail_delivery_retry_refused)}
+        </output>
+      )}
+    </section>
   );
 }
 
@@ -605,7 +689,14 @@ export function QuotePanel({
           )}
         </div>
       )}
-      {issued && <EmailedLine id={id} />}
+      {issued && (
+        <>
+          <EmailedLine id={id} />
+          <Speak locale="en">
+            <DeliveryRows id={id} />
+          </Speak>
+        </>
+      )}
     </div>
   );
 }

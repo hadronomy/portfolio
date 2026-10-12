@@ -5,6 +5,7 @@ import { customerAccessLayer } from '@portfolio/invoices/customer-access';
 import { databaseLayer } from '@portfolio/invoices/database';
 import { documentsLayer } from '@portfolio/invoices/documents';
 import { migrations as invoiceMigrations } from '@portfolio/invoices/migrations';
+import { outboxLayer } from '@portfolio/invoices/outbox';
 import { quotesLayer } from '@portfolio/invoices/quotes';
 import { storeLayer } from '@portfolio/invoices/store';
 import { getRequest } from '@tanstack/react-start/server';
@@ -52,7 +53,7 @@ const postgresLayer = Layer.unwrap(
 const invoicesLayer = quotesLayer.pipe(
   Layer.provideMerge(documentsLayer),
   Layer.provideMerge(Layer.mergeAll(storeLayer, customerAccessLayer)),
-  Layer.provideMerge(databaseLayer),
+  Layer.provideMerge(outboxLayer.pipe(Layer.provideMerge(databaseLayer))),
 );
 
 /** Every service a request may use, over one database connection. */
@@ -63,7 +64,9 @@ export const appLayer = Layer.mergeAll(
   pageImagesLayer,
 ).pipe(
   Layer.provideMerge(
-    Layer.mergeAll(invoicesLayer, mailerLayer, appSecretLayer),
+    mailerLayer.pipe(
+      Layer.provideMerge(Layer.mergeAll(invoicesLayer, appSecretLayer)),
+    ),
   ),
   Layer.provideMerge(postgresLayer),
   Layer.provideMerge(appConfigLayer),

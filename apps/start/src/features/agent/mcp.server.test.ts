@@ -1,7 +1,12 @@
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { ConfigProvider, Layer } from 'effect';
+import { quoteSpecimen } from '@portfolio/invoices/fixtures';
+import { OwnerDid } from '@portfolio/invoices/model';
+import { Outbox } from '@portfolio/invoices/outbox';
+import { Quotes } from '@portfolio/invoices/quotes';
+import { InvoiceStore } from '@portfolio/invoices/store';
+import { ConfigProvider, Effect, Layer } from 'effect';
 import { HttpRouter } from 'effect/http';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { appLayer } from '../../server/runtime.server';
@@ -18,6 +23,9 @@ let handler: (request: Request) => Promise<Response>;
 let dispose: () => Promise<void>;
 let session = '';
 let next = 1;
+let mailStore: InvoiceStore['Service'];
+let mailQuotes: Quotes['Service'];
+let mailOutbox: Outbox['Service'];
 
 /** One JSON-RPC call; its reply, from JSON or from the event stream around it. */
 async function rpc(method: string, params: unknown = {}) {
@@ -79,9 +87,19 @@ beforeAll(async () => {
       ),
     ),
   );
-  const web = HttpRouter.toWebHandler(agentServer.pipe(Layer.provide(app)), {
-    disableLogger: true,
-  });
+  const fixtures = Layer.effectDiscard(
+    Effect.gen(function* () {
+      mailStore = yield* InvoiceStore;
+      mailQuotes = yield* Quotes;
+      mailOutbox = yield* Outbox;
+    }),
+  ).pipe(Layer.provideMerge(app));
+  const web = HttpRouter.toWebHandler(
+    agentServer.pipe(Layer.provide(fixtures)),
+    {
+      disableLogger: true,
+    },
+  );
   handler = web.handler;
   dispose = web.dispose;
   await rpc('initialize', {
@@ -256,5 +274,89 @@ describe('the MCP server', () => {
       openLinks: 1,
       emails: [{ to: 'lucia@example.test' }],
     });
+  });
+  it('retries a queued email and refuses an email from another document', async () => {
+    const owner = OwnerDid.make('owner');
+    const specimen = quoteSpecimen();
+    const workspace = await Effect.runPromise(mailStore.workspace());
+    const draft = await Effect.runPromise(
+      mailStore.save(
+        {
+          ...specimen,
+          data: {
+            ...specimen.data,
+            issuer: workspace.preferences.issuer,
+            issueDate: new Date().toISOString().slice(0, 10),
+            quote: specimen.data.quote && {
+              ...specimen.data.quote,
+              validUntil: '2099-12-31',
+            },
+          },
+        },
+        owner,
+      ),
+    );
+    const quote = await Effect.runPromise(
+      mailStore.issue(
+        { id: draft.id, revision: draft.revision, key: crypto.randomUUID() },
+        owner,
+      ),
+    );
+    const view = await Effect.runPromise(mailQuotes.view(quote.id));
+    await Effect.runPromise(
+      mailQuotes.respond(
+        quote.id,
+        {
+          outcome: 'declined',
+          name: 'Lucy Martin',
+          earlyStart: false,
+          language: 'en',
+          digest: view.digests.en,
+          plan: null,
+          signature: null,
+        },
+        { address: '', agent: 'test' },
+        {
+          url: `${origin}/invoices/quote/test`,
+          workspaceUrl: `${origin}/invoices/${quote.id}`,
+        },
+      ),
+    );
+    const email = (
+      await Effect.runPromise(mailOutbox.deliveries(quote.id))
+    ).find((mail) => mail.kind === 'quote-answer');
+    if (!email) throw new Error('No confirmation email');
+    const read = await call('get_document', { document: quote.id });
+    expect(read.value?.deliveries).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: email.id, state: 'pending' }),
+      ]),
+    );
+    const sent = await call('retry_email', {
+      document: quote.number,
+      email: email.id,
+    });
+    expect(sent.value).toMatchObject({
+      id: email.id,
+      state: 'sent',
+      attempts: 1,
+    });
+    const other = await Effect.runPromise(
+      mailStore.save(quoteSpecimen(), owner),
+    );
+    const refused = await call('retry_email', {
+      document: other.id,
+      email: email.id,
+    });
+    expect(refused.error).toMatch(/No such email for this document/);
+    const listed = await rpc('tools/list');
+    const tools = listed.result?.tools as {
+      name: string;
+      annotations?: { destructiveHint?: boolean };
+    }[];
+    expect(
+      tools.find((tool) => tool.name === 'retry_email')?.annotations
+        ?.destructiveHint,
+    ).toBe(true);
   });
 });
