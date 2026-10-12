@@ -1,6 +1,8 @@
 import type { RouteOwner } from '@portfolio/site-routing';
 import {
   createRootRouteWithContext,
+  ErrorComponent,
+  type ErrorComponentProps,
   HeadContent,
   Outlet,
   redirect,
@@ -10,6 +12,7 @@ import {
 // A plain import, not ?url: Start links it on the server for the first
 // paint and Vite hot-updates it in development.
 import '../styles.css';
+import { InvoiceError } from './-invoice-error';
 
 export const Route = createRootRouteWithContext<{
   ownerOf: (pathname: string) => RouteOwner;
@@ -30,6 +33,16 @@ export const Route = createRootRouteWithContext<{
       },
     ],
   }),
+  errorComponent: function RootError(props: ErrorComponentProps) {
+    const invoices = useRouterState({
+      select: (state) => state.location.pathname.startsWith('/invoices'),
+    });
+    return invoices ? (
+      <InvoiceError {...props} />
+    ) : (
+      <ErrorComponent {...props} />
+    );
+  },
   shellComponent: Document,
   component: Outlet,
   notFoundComponent: () => (

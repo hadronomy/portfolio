@@ -4,10 +4,14 @@ import type { ErrorComponentProps } from '@tanstack/react-router';
 import { createFileRoute } from '@tanstack/react-router';
 import { getCheckout } from '../features/invoices/api';
 import { InvalidLinkPage, PaymentPage } from '../features/invoices/pay';
+import { InvoiceError } from './-invoice-error';
+import { invoiceRouteError } from './-invoice-errors';
 
 // The page failed before it knew the invoice, so it cannot know its
 // language either: it says so in Spanish, as every unsure page does.
-function CheckoutError({ reset }: ErrorComponentProps) {
+function CheckoutError(props: ErrorComponentProps) {
+  const { reset } = props;
+  if (import.meta.env.PROD) return <InvoiceError {...props} />;
   const t = translate(baseLocale);
   return (
     <div className="iv-pay" lang={baseLocale}>
@@ -50,6 +54,7 @@ export const Route = createFileRoute('/invoices_/pay/$token')({
       ],
     };
   },
+  onError: invoiceRouteError,
   errorComponent: CheckoutError,
   component: function Checkout() {
     const data = Route.useLoaderData();

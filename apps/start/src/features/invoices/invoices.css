@@ -5794,6 +5794,25 @@ body:has(.iv-dock) .iv-toast-region {
 }
 /* The other door, for customers: below a rule, so it reads as a footnote to
    the card rather than a second action competing with the first. */
+/* A failed page: the reference sits between the advice and the action,
+   quiet, in figures, so it can be read out or copied without a hunt. */
+.iv-signin-card.iv-error > p {
+  margin-bottom: 0;
+}
+.iv-signin-card.iv-error > p + p {
+  margin-top: 6px;
+}
+.iv-signin-card.iv-error .iv-btn {
+  margin-top: 24px;
+}
+.iv-error-reference {
+  color: var(--iv-ink-3);
+  font-size: 12.5px;
+}
+.iv-error-reference .iv-num {
+  color: var(--iv-ink-2);
+  user-select: all;
+}
 .iv-signin-card > .iv-signin-error {
   margin: 12px 0 0;
   color: var(--iv-danger);

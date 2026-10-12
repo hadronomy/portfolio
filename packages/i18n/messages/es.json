@@ -726,6 +726,10 @@
   "pay_unavailable": "El pago no está disponible ahora mismo",
   "pay_unavailable_detail": "Inténtalo de nuevo en un momento.",
   "pay_try_again": "Reintentar",
+  "error_title": "No se ha podido cargar esta página",
+  "error_detail": "Inténtalo de nuevo en un momento.",
+  "error_reference": "Si vuelve a fallar, indica esta referencia:",
+  "error_try_again": "Reintentar",
   "quote_title": [
     {
       "declarations": ["input number", "input issuer"],

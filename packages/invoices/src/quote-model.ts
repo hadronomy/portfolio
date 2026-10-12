@@ -6,14 +6,66 @@ import { PaymentPlan } from './plan';
 // A quote's life after it is issued, as data: the customer's answer, and
 // the invoices an accepted quote is billed in. Safe in the browser.
 
+// The 600 × 260 pad adds 16 points of export padding on each edge.
+// Keep these bounds in sync with signature-pad.tsx's field and inkBounds.
+const signatureBounds = Schema.makeFilter((svg: string) => {
+  const box =
+    /viewBox="(-?\d+) (-?\d+) (\d+) (\d+)" width="(\d+)" height="(\d+)"/.exec(
+      svg,
+    );
+  if (!box) return false;
+  const [x, y, width, height, renderedWidth, renderedHeight] = box
+    .slice(1)
+    .map(Number);
+  if (
+    x === undefined ||
+    y === undefined ||
+    width === undefined ||
+    height === undefined
+  )
+    return false;
+  if (
+    x < -16 ||
+    y < -16 ||
+    width <= 0 ||
+    height <= 0 ||
+    width > 632 ||
+    height > 292 ||
+    x + width > 616 ||
+    y + height > 276 ||
+    renderedWidth !== width ||
+    renderedHeight !== height
+  )
+    return false;
+  const paths = [...svg.matchAll(/<path d="([^"]+)"/g)];
+  if (paths.length > 128) return false;
+  return paths.every((path) => {
+    const d = path[1];
+    if (!d || d.length > 65_536) return false;
+    const coordinates = d.replace(/[MQZ]/g, ' ').trim().split(/ +/);
+    if (coordinates.length < 6 || (coordinates.length - 2) % 4 !== 0)
+      return false;
+    return coordinates.every((token, index) => {
+      const value = Number(token);
+      return (
+        /^-?\d+(?:\.\d+)?$/.test(token) &&
+        Number.isFinite(value) &&
+        value >= -16 &&
+        value <= (index % 2 === 0 ? 616 : 276)
+      );
+    });
+  });
+});
+
 /**
  * A drawn signature, exactly as the pad exports it: one SVG of filled
  * paths, each a closed outline of numbers in one hex colour. Nothing else
  * matches, so no script, link or style can ride in with it, wherever it is
- * shown later. The size bound keeps a page from storing anything else.
+ * shown later. Dimensions and coordinates bound the rasterizer allocation.
  */
 export const Signature = Schema.String.check(
   Schema.isMaxLength(200_000),
+  signatureBounds,
   Schema.isPattern(
     /^<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg" viewBox="-?\d+ -?\d+ \d+ \d+" width="\d+" height="\d+">(?:<path d="M[-\d. ]+Q[-\d. ]+Z" fill="#[0-9a-f]{6}"\/>)+<\/svg>$/,
   ),

@@ -13,6 +13,7 @@ import {
   Effect,
   Exit,
   Layer,
+  Logger,
   ManagedRuntime,
   Option,
   Path,
@@ -21,6 +22,7 @@ import { FetchHttpClient } from 'effect/http';
 import { migrations as authMigrations } from '../features/auth/migrations';
 import { authLayer } from './auth.server';
 import { AppConfig, appConfigLayer } from './config.server';
+import { invoiceLogger, newRequestId, reportedError } from './errors.server';
 import { geocoderLayer } from './geocoder.server';
 import { mailerLayer } from './mail.server';
 import { pageImagesLayer } from './page-images.server';
@@ -94,8 +96,12 @@ export async function serve<A>(
   effect: Effect.Effect<A, Refused, AppServices | CurrentRequest>,
   request: Request = getRequest(),
 ): Promise<A> {
+  const requestId = newRequestId();
+  const logged = import.meta.env.PROD
+    ? effect.pipe(Effect.provide(Logger.layer([invoiceLogger(requestId)])))
+    : effect;
   const exit = await runtime().runPromiseExit(
-    effect.pipe(Effect.provideService(CurrentRequest, request)),
+    logged.pipe(Effect.provideService(CurrentRequest, request)),
   );
   if (Exit.isSuccess(exit)) return exit.value;
   const failure = Cause.findErrorOption(exit.cause);
@@ -103,5 +109,6 @@ export async function serve<A>(
     throw new Response(failure.value.message, {
       status: failure.value.status,
     });
+  if (import.meta.env.PROD) throw reportedError(exit.cause, requestId);
   throw Cause.squash(exit.cause);
 }
