@@ -156,6 +156,18 @@ Avoid manual promotion of an old preview artifact. It did not run the production
 
 ## First deploy
 
+### Quick path
+
+`scripts/deploy/setup.sh` keeps every production value in the 1Password item **Hadronomy invoices production** (vault **Code**). `INVOICE_SECRET`, `INVOICE_ATPROTO_KEYS`, `INVOICE_ORIGIN` and `INVOICE_MAIL_FROM` are already in it.
+
+1. `scripts/deploy/setup.sh neon` creates the Neon Free project in Frankfurt and stores both URLs in the item.
+2. Paste the Resend sending key into `RESEND_API_KEY`, and the Stripe keys if cards go live now.
+3. `scripts/deploy/setup.sh check` lists what is still empty.
+4. `scripts/deploy/setup.sh vercel` logs in, links `apps/astro` to the Vercel project, and sets every production variable.
+5. Merge to `main`. `apps/astro/vercel.json` already sets the install and build commands, and `apps/astro/package.json` pins Node 24, so the dashboard needs only the Root Directory `apps/astro` and system variables exposed.
+
+The full list follows.
+
 1. Resolve the Vercel Hobby commercial-use gap.
 2. Create a Neon Free project in Frankfurt.
 3. Create the pooled and direct connection URLs for the same database.
