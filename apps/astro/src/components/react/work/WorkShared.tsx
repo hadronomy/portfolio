@@ -1,4 +1,5 @@
 import type { WorkProject } from '~/lib/work';
+import ShaderCover from './ShaderCover';
 
 export function Arrow({
   direction = 'out',
@@ -31,16 +32,13 @@ export function Arrow({
   );
 }
 
-export function ProjectCover({
-  project,
-  className = '',
-}: {
-  project: WorkProject;
-  className?: string;
-}) {
+export function ProjectCover({ project }: { project: WorkProject }) {
+  if (project.cover.shader) {
+    return <ShaderCover project={project} shader={project.cover.shader} />;
+  }
   return (
     <img
-      className={`project-cover ${className}`}
+      className="project-cover"
       src={project.cover.src}
       alt={project.cover.alt}
       width={project.cover.width}

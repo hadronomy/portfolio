@@ -1,7 +1,7 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "globalDependencies": ["**/.env*.local", "patches/**"],
-  "globalEnv": ["NODE_ENV", "VERCEL_URL", "PORT", "GITHUB_TOKEN", "VERCEL"],
+  "globalEnv": ["NODE_ENV", "VERCEL_URL", "PORT", "VERCEL"],
   "ui": "tui",
   "globalPassThroughEnv": ["COREPACK_HOME"],
   "tasks": {

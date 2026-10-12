@@ -129,6 +129,25 @@ Restore selection and camera position when visitors return from a project page.
 Keep the contours subordinate to the project captures. Use theme tokens and
 non-scaling strokes. The contour canvas supersedes the original halftone field.
 
+### Project covers
+
+A cover is a capture of the real product or a shader that draws the project's
+own subject. Use no other artwork. Capture a populated interface, not an empty
+one. Reserve a drawn cover for a project with no interface to capture.
+
+Drawn covers are WGSL fragment shaders in `src/shaders`, rendered with vgpu.
+Each one ships a poster rendered from the same shader at a chosen moment.
+The poster is the cover: it is in the markup, it stays opaque under the canvas,
+and it is what a browser without WebGPU, a visitor with reduced motion, and the
+cursor preview all use. WebGPU adds motion over a finished picture.
+
+Draw the project's own subject, and let its state drive the motion. A shader
+that animates on a timer is decoration. Floor stroke radii against the device
+pixel size: a print composed at 1200px wide is shown at about 250.
+
+`docs/work-gallery.md` covers the records, the validation gate, and the poster
+script. Astro's build does not validate WGSL; `bun run shaders:check` does.
+
 ## 3. Motion and interaction
 
 Motion must explain a state change or answer an action. Frequent actions need
@@ -336,7 +355,7 @@ Tool timeouts and screenshot failures do not establish a browser defect.
 This list records known gaps from the review at `dda59d7`. It is not permission
 to retain them in new work.
 
-- Four project captures and four personal photographs remain missing. They block deployment.
+- Four personal photographs remain missing. They block deployment.
 - The sticker row shows 10 of 24 skills. The expanded composition remains unresolved.
 - Page entry starts at zero opacity. It conflicts with the visible-content rule in section 3.
 - The light muted text and dark experience dates fail contrast checks. Heading order also needs correction.

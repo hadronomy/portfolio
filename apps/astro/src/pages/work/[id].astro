@@ -1,0 +1,89 @@
+---
+import Section from '~/components/core/Section.astro';
+import Layout from '~/layouts/Layout.astro';
+import { profile } from '~/lib/profile';
+import { projectDetails } from '~/lib/project-details';
+import { breadcrumbData, pageUrl, person } from '~/lib/seo';
+import { workProjects } from '~/lib/work-projects';
+
+export function getStaticPaths() {
+  return workProjects.map((project) => ({ params: { id: project.id }, props: { project } }));
+}
+
+const { project } = Astro.props;
+const details = projectDetails[project.id];
+const url = pageUrl(project.href);
+const title = `${project.title} — ${details.subtitle} | ${profile.name}`;
+---
+
+<Layout
+  {title}
+  description={details.description}
+  image={project.cover}
+  back="/#work"
+  structuredData={[
+    person,
+    breadcrumbData([
+      { name: 'Home', path: '/' },
+      { name: project.title, path: project.href },
+    ]),
+    {
+      '@type': 'WebPage',
+      '@id': url,
+      url,
+      name: title,
+      description: details.description,
+      inLanguage: 'en',
+      mainEntity: {
+        '@type': 'CreativeWork',
+        name: project.title,
+        description: project.summary,
+        url: project.sourceUrl,
+        image: new URL(project.cover.src, Astro.site).href,
+        creator: { '@id': person['@id'] },
+      },
+    },
+  ]}
+>
+  <article class="flex flex-col gap-10">
+    <Section gap={16}>
+      <nav aria-label="Breadcrumb" class="type-body-sm text-muted-foreground">
+        <a href="/" class="hover:text-foreground">Home</a> / {project.title}
+      </nav>
+      <h1 class="type-h1 text-foreground">{project.title}</h1>
+      <p class="type-h3 text-foreground">{details.subtitle}</p>
+      <p class="type-body text-muted-foreground">{project.summary}</p>
+      <p class="type-body-sm text-muted-foreground">
+        {project.category} · {project.year} · <a href="/" rel="author">{profile.name}</a>
+      </p>
+      <img
+        src={project.cover.src}
+        alt={project.cover.alt}
+        width={project.cover.width}
+        height={project.cover.height}
+        loading="eager"
+        fetchpriority="high"
+        class="mt-2 h-auto w-full rounded-[6px]"
+      />
+    </Section>
+    {
+      details.sections.map((section) => (
+        <Section gap={16}>
+          <h2 class="type-h3 text-foreground">{section.title}</h2>
+          <p class="type-body text-muted-foreground">{section.text}</p>
+        </Section>
+      ))
+    }
+    <Section gap={16}>
+      <a href={project.sourceUrl} class="type-body text-foreground underline underline-offset-4"
+        >{details.sourceLabel} ↗</a
+      >
+      <p class="type-body text-muted-foreground">
+        For web development or product engineering, <a
+          href={`mailto:${profile.email}`}
+          class="text-foreground underline underline-offset-4">contact {profile.name}</a
+        >.
+      </p>
+    </Section>
+  </article>
+</Layout>

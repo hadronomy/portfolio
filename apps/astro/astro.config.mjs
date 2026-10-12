@@ -2,11 +2,11 @@ import { unified } from '@astrojs/markdown-remark';
 import mdx from '@astrojs/mdx';
 import node from '@astrojs/node';
 import react from '@astrojs/react';
-import sitemap from '@astrojs/sitemap';
 import vercel from '@astrojs/vercel';
 import { rendererRich, transformerTwoslash } from '@shikijs/twoslash';
 import tailwindcss from '@tailwindcss/vite';
-import { defineConfig, envField } from 'astro/config';
+import { wgslVitePlugin } from '@vgpu/wgsl/loader-vite';
+import { defineConfig } from 'astro/config';
 import icon from 'astro-icon';
 import {
   rehypeCode,
@@ -20,9 +20,18 @@ import preserveDirectives from 'rollup-preserve-directives';
 import startIntegration from './integrations/start.mjs';
 
 import { rehypeMarkCodeBlocks } from './plugins/rehype-mark-code-blocks.mjs';
+import { seoSitemap } from './plugins/seo-sitemap.mjs';
+import { SITE_URL } from './src/consts';
+import { defaultLocale, locales } from './src/i18n/locales';
 
 export default defineConfig({
-  site: 'https://hadronomy.com',
+  site: SITE_URL,
+  trailingSlash: 'always',
+  i18n: {
+    defaultLocale,
+    locales: [...locales],
+    routing: { prefixDefaultLocale: false },
+  },
   // Every POST this site serves is the Start app's, and it checks origins
   // itself: server functions refuse cross-origin calls and sign-in has its
   // own CSRF checks. Astro's check would also refuse the form-encoded token
@@ -66,27 +75,12 @@ export default defineConfig({
       ],
     }),
   },
-  env: {
-    schema: {
-      GITHUB_TOKEN: envField.string({ context: 'server', access: 'secret' }),
-      CERTIFICATE_P12: envField.string({
-        context: 'server',
-        access: 'secret',
-        optional: true,
-      }),
-      CERTIFICATE_PASSWORD: envField.string({
-        context: 'server',
-        access: 'secret',
-        optional: true,
-      }),
-    },
-  },
   integrations: [
     startIntegration(),
     // MDX probes components by calling them. Let React claim components with hooks first.
     react(),
     mdx(),
-    sitemap(),
+    seoSitemap(),
     // No `include`: astro-icon loads every installed `@iconify-json/*` pack
     // whole unless a collection names a subset, so the dependency list is
     // already the set of collections. Listing them here as `['*']` restates it
@@ -94,13 +88,19 @@ export default defineConfig({
     icon(),
   ],
   vite: {
-    plugins: [tailwindcss(), preserveDirectives()],
+    // Shader covers resolve their WGSL imports before vgpu loads them.
+    plugins: [
+      tailwindcss(),
+      preserveDirectives(),
+      wgslVitePlugin({ minify: true }),
+    ],
+    optimizeDeps: { exclude: ['takumi-pdf', 'takumi-js'] },
     ssr: {
-      // Keep in sync with apps/start/vite.config.ts: native-only modules the
-      // server runtime must not bundle. The built server loads them from
-      // this package, so each is also one of its dependencies.
+      // Start and the CV renderer load these modules at runtime, so this
+      // package declares them as dependencies as well as SSR externals.
       external: [
         'takumi-pdf',
+        'takumi-js',
         '@electric-sql/pglite',
         'pg',
         '@atproto/oauth-client-node',

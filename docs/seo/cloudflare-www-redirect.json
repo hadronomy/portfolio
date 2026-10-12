@@ -1,0 +1,23 @@
+{
+  "name": "Canonical hostname redirects",
+  "kind": "zone",
+  "phase": "http_request_dynamic_redirect",
+  "rules": [
+    {
+      "ref": "www_to_apex",
+      "description": "Redirect www to the canonical portfolio host",
+      "expression": "http.host eq \"www.hadronomy.com\"",
+      "action": "redirect",
+      "action_parameters": {
+        "from_value": {
+          "target_url": {
+            "expression": "concat(\"https://hadronomy.com\", http.request.uri.path)"
+          },
+          "status_code": 301,
+          "preserve_query_string": true
+        }
+      },
+      "enabled": true
+    }
+  ]
+}

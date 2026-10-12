@@ -1,43 +1,64 @@
 ---
 import CopyShortcut from '~/components/core/CopyShortcut.astro';
 import Header from '~/components/core/Header.astro';
+import PrintCV from '~/components/core/PrintCV.astro';
 import ScrollBlur from '~/components/core/ScrollBlur.astro';
 import Signature from '~/components/core/Signature.astro';
 import Metadata from '~/components/Metadata.astro';
 import Cursor from '~/components/react/Cursor';
 import { SITE_DESCRIPTION, SITE_TITLE } from '~/consts';
+import type { StructuredData } from '~/lib/seo';
 
 interface Props {
+  printCV?: boolean;
   title?: string;
   description?: string;
   /** Renders the header as a back link to this path instead of the clock row. */
   back?: string;
   /** Social card image. Defaults to the site-wide one inside Metadata. */
-  image?: string;
+  image?: { src: string; width: number; height: number; alt: string };
   publishedTime?: string;
+  modifiedTime?: string;
   type?: 'website' | 'article';
+  noindex?: boolean;
+  structuredData?: readonly StructuredData[];
 }
 
 const {
+  printCV = false,
   title = SITE_TITLE,
   description = SITE_DESCRIPTION,
   back,
   image,
   publishedTime,
+  modifiedTime,
   type,
+  noindex,
+  structuredData,
 } = Astro.props;
 ---
 
 <html lang="en" class="antialiased">
   <head>
-    <Metadata {title} {description} {image} {publishedTime} {type} />
+    <Metadata
+      {title}
+      {description}
+      {image}
+      {publishedTime}
+      {modifiedTime}
+      {type}
+      {noindex}
+      {structuredData}
+    />
   </head>
 
   <body
     class="min-h-screen bg-background font-sans text-foreground selection:bg-foreground selection:text-background"
   >
-    {/* One centred column, no chrome — navigation lives in the page itself
-        rather than in a bar. */}
+    {
+      /* One centred column, no chrome — navigation lives in the page itself
+        rather than in a bar. */
+    }
     <Header {back} />
 
     <main class="relative isolate z-0 flex w-full flex-col gap-10 pb-8">
@@ -51,7 +72,8 @@ const {
 
     <CopyShortcut />
 
-    {/*
+    {
+      /*
       Decorative, so it waits for an idle moment rather than blocking the first
       paint on react + motion.
 
@@ -61,7 +83,9 @@ const {
       one mounts needing two render passes to undo both. That gap is a frame of
       no custom cursor and a frame of the real one. Persisting also keeps the
       follower's position, so it does not re-enter from wherever it last was.
-    */}
+    */
+    }
     <Cursor client:idle transition:persist />
+    {printCV && <PrintCV />}
   </body>
 </html>

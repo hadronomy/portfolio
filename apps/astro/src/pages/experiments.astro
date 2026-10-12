@@ -1,8 +1,16 @@
 ---
 import Layout from '~/layouts/Layout.astro';
+import { breadcrumbData, pageUrl } from '~/lib/seo';
 ---
 
-<Layout title="Experiments | Pablo Hernández" description="Small apps, utilities, and experiments.">
+<Layout
+  title="Experiments | Pablo Hernández"
+  description="Small apps, utilities, and experiments."
+  structuredData={[
+    { '@type': 'CollectionPage', url: pageUrl('/experiments/'), name: 'Experiments | Pablo Hernández', inLanguage: 'en' },
+    breadcrumbData([{ name: 'Home', path: '/' }, { name: 'Experiments', path: '/experiments/' }]),
+  ]}
+>
   <section class="mx-auto w-full max-w-[var(--content-width)] px-4 py-16">
     <h1 class="type-heading mb-4">Experiments</h1>
     <p class="type-body text-muted-foreground mb-8">Small tools and things I want to try.</p>
