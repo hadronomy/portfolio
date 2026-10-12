@@ -3,7 +3,24 @@ import { Cause, Logger } from 'effect';
 
 export const newRequestId = () => randomBytes(6).toString('hex');
 
-/** Keeps every cause and stack frame, without request values or error messages. */
+/**
+ * The text of an error or log line, with what could identify a person or
+ * open an account taken out. The message is what makes a log line worth
+ * reading, so it stays; the values inside it go.
+ */
+export const scrubbed = (text: string) =>
+  text
+    // Drizzle appends the query's parameters on their own line: customer data.
+    .replace(/\n\s*params:[\s\S]*$/, '')
+    // Postgres details name the offending value: Key (email)=(a@b.c).
+    .replace(/=\([^)]*\)/g, '=(…)')
+    // Before addresses, which would otherwise swallow user:password@host.
+    .replace(/:\/\/[^\s/@]+@/g, '://<credentials>@')
+    .replace(/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/g, '<email>')
+    .replace(/\b[A-Za-z0-9_-]{24,}\b/g, '<token>')
+    .replace(/\d[\d\s-]{6,}\d/g, '<number>');
+
+/** Keeps every cause, stack frame and scrubbed message, without request values. */
 export function errorDiagnostic(
   error: unknown,
   seen = new Set<unknown>(),
@@ -24,9 +41,8 @@ export function errorDiagnostic(
         };
       return { type: 'Interrupt' };
     });
+  if (typeof error === 'string') return scrubbed(error);
   if (!(error instanceof Error)) return { type: typeof error };
-  // SQL and provider messages can contain names, emails, tokens and query
-  // parameters. Record the full cause chain by type, code and stack only.
   const code =
     'code' in error &&
     typeof error.code === 'string' &&
@@ -40,6 +56,7 @@ export function errorDiagnostic(
     .map((line) => line.replace(/\?[^\s)]*/g, ''));
   return {
     type: error.constructor.name,
+    message: scrubbed(error.message),
     code,
     frames,
     ...('cause' in error ? { cause: errorDiagnostic(error.cause, seen) } : {}),
