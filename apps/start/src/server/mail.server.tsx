@@ -33,6 +33,7 @@ import { QuoteAnswer } from '../emails/quote-answer';
 import { QuoteAnswered } from '../emails/quote-answered';
 import { QuoteInvitation } from '../emails/quote-invitation';
 import { SignInCode } from '../emails/sign-in-code';
+import { codeLifetime } from '../features/auth/shared';
 import { AppConfig } from './config.server';
 
 /** Safe to persist: provider error bodies can contain addresses and message content. */
@@ -47,7 +48,6 @@ export class MailFailure extends Schema.TaggedError<MailFailure>()(
 const failure = (message: string, permanent = false, uncertain = false) =>
   new MailFailure({ message, permanent, uncertain });
 
-export const codeLifetime = 600;
 const compose = (element: ReactElement) =>
   Effect.tryPromise({
     try: async () => ({

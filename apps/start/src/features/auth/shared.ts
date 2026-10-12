@@ -17,3 +17,6 @@ export const agentResource = (origin: string) => `${origin}/invoices/mcp`;
 
 /** Who issues agents' tokens: this sign-in, at its own path. */
 export const agentIssuer = (origin: string) => `${origin}${authBasePath}`;
+
+/** How long a customer's sign-in code works, in seconds. Its email states it too. */
+export const codeLifetime = 600;

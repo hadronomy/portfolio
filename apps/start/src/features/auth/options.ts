@@ -10,12 +10,12 @@ import type { BetterAuthOptions, BetterAuthPlugin } from 'better-auth';
 import { jwt } from 'better-auth/plugins';
 import { emailOTP } from 'better-auth/plugins/email-otp';
 import { tanstackStartCookies } from 'better-auth/tanstack-start';
-import { codeLifetime } from '../../server/mail.server';
 import {
   agentIssuer,
   agentResource,
   agentScope,
   authBasePath,
+  codeLifetime,
   ownerHandle,
 } from './shared';
 

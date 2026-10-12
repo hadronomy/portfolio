@@ -24,8 +24,9 @@ import {
   ManagedRuntime,
 } from 'effect';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { codeLifetime } from '../features/auth/shared';
 import { AppConfig } from './config.server';
-import { boundedMail, codeLifetime, Mailer, mailerLayer } from './mail.server';
+import { boundedMail, Mailer, mailerLayer } from './mail.server';
 import { retryDueMail } from './mail-retry.server';
 import { CurrentRequest } from './request.server';
 import { appLayer } from './runtime.server';
