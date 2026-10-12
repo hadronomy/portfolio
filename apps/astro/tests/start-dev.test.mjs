@@ -9,13 +9,11 @@ import {
   unlink,
   writeFile,
 } from 'node:fs/promises';
-import { createRequire } from 'node:module';
 import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { pathToFileURL } from 'node:url';
 import { dev } from 'astro';
-import { afterAll, beforeAll, expect, test, vi } from 'vitest';
+import { afterAll, beforeAll, expect, test } from 'vitest';
 import { signIn } from './owner.mjs';
 
 const root = new URL('../', import.meta.url);
