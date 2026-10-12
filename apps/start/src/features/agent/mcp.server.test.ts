@@ -271,27 +271,35 @@ describe('the MCP server', () => {
     [{ 'mcp-protocol-version': '1999-01-01' }, 400],
     [{ 'mcp-protocol-version': '' }, 400],
     [{ 'mcp-session-id': 'unknown' }, 404],
+    [{ accept: 'application/json, text/event-stream;q=0' }, 406],
+    [{ 'content-type': 'application/json;q=0' }, 415],
   ])('preserves transport validation for %j', async (overrides, status) => {
-    const response = await handler(
-      new Request(`${origin}/invoices/mcp`, {
-        method: 'POST',
-        headers: {
-          'content-type': 'application/json',
-          accept: 'application/json, text/event-stream',
-          'mcp-protocol-version': '2025-06-18',
-          ...overrides,
-        },
-        body: JSON.stringify({
-          jsonrpc: '2.0',
-          id: next++,
-          method: 'tools/list',
-          params: {},
+    for (const method of [
+      'tools/list',
+      'logging/setLevel',
+      'subscriptions/listen',
+    ]) {
+      const response = await handler(
+        new Request(`${origin}/invoices/mcp`, {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            accept: 'application/json, text/event-stream',
+            'mcp-protocol-version': '2025-06-18',
+            ...overrides,
+          },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: next++,
+            method,
+            params: { level: 'debug' },
+          }),
         }),
-      }),
-    );
-    expect(response.status).toBe(status);
-    expect(response.headers.has('mcp-session-id')).toBe(false);
-    await response.text();
+      );
+      expect(response.status).toBe(status);
+      expect(response.headers.has('mcp-session-id')).toBe(false);
+      await response.text();
+    }
   });
 
   it('keeps modern header validation before persistent-operation refusals', async () => {
@@ -319,6 +327,55 @@ describe('the MCP server', () => {
     );
     expect(response.status).toBe(400);
     expect((await response.json()).error.message).toMatch(/Mcp-Method/);
+  });
+
+  it.each([
+    [{}, {}, 404],
+    [{ origin: 'https://untrusted.test' }, {}, 403],
+    [{ accept: 'application/json' }, {}, 406],
+    [{ 'content-type': 'text/plain' }, {}, 415],
+    [{ 'mcp-method': '' }, {}, 400],
+    [{ 'mcp-protocol-version': '2025-11-25' }, {}, 400],
+    [{}, { 'io.modelcontextprotocol/protocolVersion': null }, 400],
+    [{}, { 'io.modelcontextprotocol/clientCapabilities': null }, 400],
+  ])('keeps modern refusal checks for %j and %j', async (headers, metadata, status) => {
+    for (const method of ['logging/setLevel', 'subscriptions/listen']) {
+      const response = await handler(
+        new Request(`${origin}/invoices/mcp`, {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            accept: 'application/json, text/event-stream',
+            'mcp-protocol-version': '2026-07-28',
+            'mcp-method': method,
+            ...headers,
+          },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: next++,
+            method,
+            params: {
+              level: 'debug',
+              _meta: {
+                'io.modelcontextprotocol/protocolVersion': '2026-07-28',
+                'io.modelcontextprotocol/clientCapabilities': {},
+                ...metadata,
+              },
+            },
+          }),
+        }),
+      );
+      expect(response.status).toBe(status);
+      expect(response.headers.has('mcp-session-id')).toBe(false);
+      if (status === 404) {
+        expect((await response.json()).error).toEqual({
+          code: -32601,
+          message: `Method not found: ${method}`,
+        });
+      } else {
+        await response.text();
+      }
+    }
   });
 
   it('lists every tool, with the hints a client shows the owner', async () => {

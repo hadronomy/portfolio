@@ -197,6 +197,8 @@ A quote (presupuesto) is an offer the customer accepts online. It is no tax docu
 
 An agent can do everything the owner can in the invoice pages, through an MCP server at `/invoices/mcp` (`apps/start/src/features/agent`). [Research and sources](../research/quotes-editor-mcp.md#the-agent-surface).
 
+The [serverless transport adapter](../../apps/start/src/features/agent/transport.md) explains the sessionless behavior, unsupported operations, and cost.
+
 - **Transport**: Effect's `McpServer` over Streamable HTTP, on the app's own runtime, so an agent and the owner share the services and the database. It speaks MCP 2026-07-28, 2025-11-25 and 2025-06-18.
 - **Sign-in**: better-auth is the OAuth 2.1 server for agents (`@better-auth/mcp`), with Client ID Metadata Documents (`@better-auth/cimd`). An agent sends the owner to `/invoices/connect`, where they sign in as always and approve it once; its token is bound to the MCP endpoint and the `invoices` scope. The discovery documents answer at their root `/.well-known/...` paths.
 - **Access**: every call checks that the token is the owner's and that the owner still approves the agent. Settings › Agents lists the agents and disconnects one at once; a disconnected agent is told to sign in again.
