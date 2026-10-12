@@ -726,6 +726,10 @@
   "pay_unavailable": "Payment is unavailable right now",
   "pay_unavailable_detail": "Try again in a moment.",
   "pay_try_again": "Try again",
+  "error_title": "This page could not load",
+  "error_detail": "Try again in a moment.",
+  "error_reference": "If it fails again, give this reference:",
+  "error_try_again": "Try again",
   "quote_title": [
     {
       "declarations": ["input number", "input issuer"],
