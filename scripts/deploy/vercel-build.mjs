@@ -1,6 +1,11 @@
-import { spawnSync } from 'node:child_process';
+import { spawn } from 'node:child_process';
 import { createRequire } from 'node:module';
+import { createInterface } from 'node:readline';
 import { fileURLToPath } from 'node:url';
+import { inspect } from 'node:util';
+import { redactDatabase } from './redact.mjs';
+
+const root = fileURLToPath(new URL('../../', import.meta.url));
 
 export function migrationUrl(env) {
   if (
@@ -39,16 +44,41 @@ export function migrationUrl(env) {
   return url.href;
 }
 
-async function main() {
-  const root = fileURLToPath(new URL('../../', import.meta.url));
-  // Migrations run outside Turbo so a build cache hit cannot skip them.
-  const url = migrationUrl(process.env);
-  const build = spawnSync('bun', ['run', 'build'], {
-    cwd: root,
-    stdio: 'inherit',
+export function runDeployCommand(command, args, env, output = process) {
+  return new Promise((resolve, reject) => {
+    const child = spawn(command, args, {
+      cwd: root,
+      env,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    const timeout = setTimeout(() => child.kill('SIGKILL'), 300_000);
+    timeout.unref();
+    // Redact complete lines so a credential split across chunks cannot leak.
+    for (const name of ['stdout', 'stderr']) {
+      const lines = createInterface({
+        input: child[name],
+        crlfDelay: Infinity,
+      });
+      lines.on('line', (line) =>
+        output[name].write(`${redactDatabase(line, env)}\n`),
+      );
+    }
+    child.once('error', (error) => {
+      clearTimeout(timeout);
+      reject(error);
+    });
+    child.once('close', (code, signal) => {
+      clearTimeout(timeout);
+      if (code === 0) resolve();
+      else
+        reject(
+          new Error(`${command} ${args.join(' ')} failed (${signal ?? code}).`),
+        );
+    });
   });
-  if (build.error || build.status !== 0) process.exit(build.status || 1);
-  if (!url) return;
+}
+
+export async function migrateAndSeed(url, env) {
   const require = createRequire(
     new URL('../../apps/start/package.json', import.meta.url),
   );
@@ -60,31 +90,35 @@ async function main() {
   try {
     await client.connect();
     await client.query("SET statement_timeout = '5min'");
-    // Concurrent git builds share this lock until both migration ledgers finish.
+    // Auth must finish its insert-only resource seed before cold instances can start.
     await client.query(
       "SELECT pg_advisory_lock(hashtext('portfolio-production-migrations'))",
     );
-    const migration = spawnSync('bun', ['run', 'db:migrate'], {
-      cwd: root,
-      env: { ...process.env, DATABASE_URL: url },
-      stdio: 'pipe',
-      timeout: 300_000,
-    });
-    if (migration.error || migration.status !== 0)
-      throw new Error(
-        'Migration failed. The deployment must not serve traffic.',
-      );
-    console.log('Invoice and auth migrations are complete.');
+    const directEnv = { ...env, DATABASE_URL: url };
+    await runDeployCommand('bun', ['run', 'db:migrate'], directEnv);
+    await runDeployCommand(
+      'bun',
+      ['run', '--cwd', 'apps/start', 'seed:auth'],
+      directEnv,
+    );
+    console.log(
+      'Invoice and auth migrations and the MCP resource seed are complete.',
+    );
   } finally {
     await client.end();
   }
 }
 
+async function main() {
+  // Migrations run outside Turbo so a build cache hit cannot skip them.
+  const url = migrationUrl(process.env);
+  await runDeployCommand('bun', ['run', 'build'], process.env);
+  if (url) await migrateAndSeed(url, process.env);
+}
+
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  main().catch(() => {
-    console.error(
-      'Production build failed. Check the direct database URL and pending migrations locally.',
-    );
+  main().catch((error) => {
+    console.error(redactDatabase(inspect(error, { depth: 5 }), process.env));
     process.exitCode = 1;
   });
 }

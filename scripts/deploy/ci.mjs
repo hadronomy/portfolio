@@ -6,7 +6,10 @@ const commands = [
   ['bun', ['biome', 'ci', '.']],
   ['bun', ['run', 'build']],
   ['bun', ['turbo', 'run', 'check', 'test', 'db:check']],
-  ['node', ['--test', 'scripts/deploy/ops.test.mjs']],
+  [
+    'node',
+    ['--test', 'scripts/deploy/ops.test.mjs', 'scripts/deploy/redact.test.mjs'],
+  ],
 ];
 for (const [command, args] of commands) {
   const result = spawnSync(command, args, { cwd: root, stdio: 'inherit' });

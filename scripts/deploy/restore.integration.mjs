@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
+import { generateKeyPairSync, randomBytes } from 'node:crypto';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { Client, required, root, scratchUrl } from './ops.mjs';
+import { migrateAndSeed, runDeployCommand } from './vercel-build.mjs';
 
 process.umask(0o077);
 const adminUrl = scratchUrl(required('POSTGRES_TEST_URL'));
@@ -35,14 +37,57 @@ function run(command, args, env = {}) {
 }
 
 try {
+  run('bun', ['run', '--cwd', 'packages/i18n', 'build']);
   await admin.connect();
   await admin.query(`CREATE DATABASE ${sourceName}`);
   createdSource = true;
   await admin.query(`CREATE DATABASE ${targetName}`);
   createdTarget = true;
-  run('bun', ['run', 'db:migrate'], { DATABASE_URL: sourceUrl.href });
-  run('bun', ['run', 'db:migrate'], { DATABASE_URL: sourceUrl.href });
+  const { privateKey } = generateKeyPairSync('ec', { namedCurve: 'P-256' });
+  const seedEnv = {
+    ...process.env,
+    NODE_ENV: 'production',
+    DATABASE_URL: sourceUrl.href,
+    DATABASE_URL_UNPOOLED: sourceUrl.href,
+    INVOICE_ORIGIN: 'https://restore.example.invalid',
+    INVOICE_SECRET: randomBytes(32).toString('base64'),
+    INVOICE_ATPROTO_KEYS: JSON.stringify([
+      {
+        ...privateKey.export({ format: 'jwk' }),
+        kid: 'restore-fixture',
+        alg: 'ES256',
+      },
+    ]),
+  };
+  // Two production gates serialize both migration ledgers and the real auth seed.
+  await Promise.all([
+    migrateAndSeed(sourceUrl.href, seedEnv),
+    migrateAndSeed(sourceUrl.href, seedEnv),
+  ]);
   await source.connect();
+  const resources = () => source.query('SELECT * FROM auth.oauth_resource');
+  const first = (await resources()).rows;
+  assert.equal(first.length, 1);
+  assert.equal(first[0].identifier, `${seedEnv.INVOICE_ORIGIN}/invoices/mcp`);
+  await migrateAndSeed(sourceUrl.href, seedEnv);
+  assert.deepEqual((await resources()).rows, first);
+  // Independent cold auth instances now find the row without an insert race.
+  await Promise.all([
+    runDeployCommand(
+      'bun',
+      ['run', '--cwd', 'apps/start', 'seed:auth'],
+      seedEnv,
+    ),
+    runDeployCommand(
+      'bun',
+      ['run', '--cwd', 'apps/start', 'seed:auth'],
+      seedEnv,
+    ),
+  ]);
+  assert.deepEqual((await resources()).rows, first);
+  console.log(
+    'Concurrent deploy gates passed. The resource seed and repeat run match.',
+  );
   await source.query(
     "INSERT INTO auth.\"user\" (id, name, email) VALUES ('restore-fixture', 'Fixture', 'restore@example.invalid')",
   );
