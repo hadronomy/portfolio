@@ -109,7 +109,14 @@ export const authLayer = Layer.effect(
             CustomerAccess.use((access) => access.admits(customerEmail(email))),
           ),
         sendCode: (message) =>
-          run(Mailer.use((mailer) => mailer.signInCode(message))),
+          run(
+            Mailer.use((mailer) =>
+              mailer.signInCode({
+                ...message,
+                accountUrl: `${origin}/invoices/account`,
+              }),
+            ),
+          ),
         atprotoKeys: settings.atprotoKeys,
       }),
       // Development runs on whichever loopback port the dev server took, so

@@ -1,4 +1,4 @@
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, readdir, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { InvoiceDatabase } from '@portfolio/invoices/database';
@@ -7,7 +7,7 @@ import { OwnerDid } from '@portfolio/invoices/model';
 import { InvoiceStore } from '@portfolio/invoices/store';
 import { links } from '@portfolio/invoices/tables';
 import { ConfigProvider, Effect, Layer, ManagedRuntime } from 'effect';
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { Auth } from './auth.server';
 import { appLayer } from './runtime.server';
 
@@ -18,7 +18,22 @@ const origin = 'http://127.0.0.1:4321';
 let directory: string;
 let handler: (request: Request) => Promise<Response>;
 let dispose: () => Promise<void>;
-const codes = new Map<string, string>();
+/**
+ * The codes sent so far, by address. Development without Resend writes
+ * each email to the data folder, with a text copy that heads it.
+ */
+async function codes() {
+  const folder = join(directory, 'mail');
+  const sent = new Map<string, string>();
+  for (const name of await readdir(folder).catch(() => []))
+    if (name.endsWith('-sign-in-code.txt')) {
+      const mail = await readFile(join(folder, name), 'utf8');
+      const to = /^To: (\S+)$/m.exec(mail)?.[1];
+      const code = /^Subject: (\d{6})/m.exec(mail)?.[1];
+      if (to && code) sent.set(to, code);
+    }
+  return sent;
+}
 
 const post = (path: string, body: unknown, cookie = '') =>
   handler(
@@ -36,11 +51,6 @@ const post = (path: string, body: unknown, cookie = '') =>
 
 beforeAll(async () => {
   directory = await mkdtemp(join(tmpdir(), 'invoices-auth-'));
-  // Development without SMTP prints each code; the test reads it from there.
-  vi.spyOn(console, 'info').mockImplementation((line: string) => {
-    const match = /Sign-in code for (\S+): (\d+)/.exec(line);
-    if (match?.[1] && match[2]) codes.set(match[1], match[2]);
-  });
   // The whole server, as it runs, over settings this test hands it.
   const app = ManagedRuntime.make(
     appLayer.pipe(
@@ -89,7 +99,6 @@ beforeAll(async () => {
 }, 30_000);
 
 afterAll(async () => {
-  vi.restoreAllMocks();
   await dispose();
   await rm(directory, { recursive: true, force: true });
 });
@@ -101,7 +110,7 @@ describe('customer accounts', () => {
       type: 'sign-in',
     });
     expect(sent.status).toBe(200);
-    const code = codes.get('client@acme.test');
+    const code = (await codes()).get('client@acme.test');
     expect(code).toMatch(/^\d{6}$/);
 
     const signedIn = await post('/sign-in/email-otp', {
@@ -127,7 +136,7 @@ describe('customer accounts', () => {
     });
     // The same answer as for a real customer, so nobody learns who is one.
     expect(sent.status).toBe(200);
-    expect(codes.has('stranger@acme.test')).toBe(false);
+    expect((await codes()).has('stranger@acme.test')).toBe(false);
     const guessed = await post('/sign-in/email-otp', {
       email: 'stranger@acme.test',
       otp: '000000',

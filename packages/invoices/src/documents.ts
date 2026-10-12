@@ -5,6 +5,7 @@ import { InvoiceDatabase } from './database';
 import type { Invoice, InvoiceId, Language } from './model';
 import { renderInvoice } from './pdf';
 import { defaultsFor, noOffer } from './plan';
+import type { QuoteResponse } from './quote-model';
 import { stored } from './storage';
 import { InvoiceStore, type StoreError } from './store';
 import * as tables from './tables';
@@ -24,6 +25,15 @@ export interface DocumentsApi {
    * the store, so no caller can change its number or totals by claiming it.
    */
   readonly preview: (invoice: Invoice) => Effect.Effect<Uint8Array, StoreError>;
+  /**
+   * An accepted quote's signed copy: the PDF the customer accepted, in the
+   * language they read it in, with a last page recording the acceptance
+   * and the signature they drew. The answer never changes, so it is kept.
+   */
+  readonly signed: (
+    quote: Invoice,
+    acceptance: QuoteResponse,
+  ) => Effect.Effect<Uint8Array, StoreError>;
 }
 
 export class Documents extends Context.Service<Documents, DocumentsApi>()(
@@ -50,23 +60,26 @@ export const makeDocuments = Effect.gen(function* () {
   const render = Effect.fnUntraced(function* (
     invoice: Invoice,
     language: Language,
+    acceptance?: QuoteResponse,
   ) {
     const plans = yield* plansOf(invoice);
-    return yield* Effect.promise(() => renderInvoice(invoice, language, plans));
+    return yield* Effect.promise(() =>
+      renderInvoice(invoice, language, plans, acceptance),
+    );
   });
 
-  const pdf = Effect.fn('Documents.pdf')(function* (
-    id: InvoiceId,
+  /** Bytes kept under `key`, or rendered by `make` and kept for next time. */
+  const kept = Effect.fnUntraced(function* (
+    key: string,
+    invoice: Invoice,
     language: Language,
+    make: Effect.Effect<Uint8Array, StoreError>,
+    keep: boolean,
   ) {
-    const invoice = yield* store.read(id);
-    const key = `${id}:${invoice.revision}:${language}`;
-    const kept = yield* stored(
-      db.query.artifacts.findFirst({ where: { key } }),
-    );
-    if (kept) return { invoice, bytes: Buffer.from(kept.bytes, 'base64') };
-    const bytes = yield* render(invoice, language);
-    if (invoice.status === 'issued')
+    const row = yield* stored(db.query.artifacts.findFirst({ where: { key } }));
+    if (row) return Buffer.from(row.bytes, 'base64') as Uint8Array;
+    const bytes = yield* make;
+    if (keep)
       // Two first renders of one revision race to one row. The first insert
       // wins, and every download after it serves that row's bytes.
       yield* stored(
@@ -74,7 +87,7 @@ export const makeDocuments = Effect.gen(function* () {
           .insert(tables.artifacts)
           .values({
             key,
-            invoiceId: id,
+            invoiceId: invoice.id,
             language,
             bytes: Buffer.from(bytes).toString('base64'),
             digest: createHash('sha256').update(bytes).digest('hex'),
@@ -82,6 +95,21 @@ export const makeDocuments = Effect.gen(function* () {
           })
           .onConflictDoNothing(),
       );
+    return bytes;
+  });
+
+  const pdf = Effect.fn('Documents.pdf')(function* (
+    id: InvoiceId,
+    language: Language,
+  ) {
+    const invoice = yield* store.read(id);
+    const bytes = yield* kept(
+      `${id}:${invoice.revision}:${language}`,
+      invoice,
+      language,
+      render(invoice, language),
+      invoice.status === 'issued',
+    );
     return { invoice, bytes };
   });
 
@@ -93,6 +121,15 @@ export const makeDocuments = Effect.gen(function* () {
       return yield* render(
         { ...invoice, number: null, issuedAt: null },
         invoice.data.language,
+      );
+    }),
+    signed: Effect.fn('Documents.signed')(function* (quote, acceptance) {
+      return yield* kept(
+        `${quote.id}:${quote.revision}:${acceptance.language}:signed`,
+        quote,
+        acceptance.language,
+        render(quote, acceptance.language, acceptance),
+        true,
       );
     }),
   };

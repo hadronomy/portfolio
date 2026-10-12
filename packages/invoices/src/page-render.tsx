@@ -7,6 +7,7 @@ import {
   renderJSONContentToReactElement,
 } from '@tiptap/static-renderer/json/react';
 import type { CSSProperties, ReactNode } from 'react';
+import { planTerms } from './billing';
 import { clauseVersion } from './clauses';
 import type { InvoiceData, Language, QuoteTerms } from './model';
 import { hasPages, markdownToJSON, readPages, toJSONContent } from './pages';
@@ -21,6 +22,7 @@ import {
   soft,
   text,
 } from './pdf-style';
+import { type QuoteResponse, signatureSource } from './quote-model';
 import { printsWithdrawalForm, quoteNotices } from './quote-notices';
 
 // A quote's pages, notices and withdrawal form as the PDF prints them, set
@@ -682,17 +684,163 @@ function WithdrawalForm({
   );
 }
 
+/** The width and height a signature SVG declares, for its aspect. */
+function signatureSize(svg: string) {
+  const width = Number(svg.match(/ width="(\d+)"/)?.[1] ?? 0);
+  const height = Number(svg.match(/ height="(\d+)"/)?.[1] ?? 0);
+  return width > 0 && height > 0 ? { width, height } : { width: 5, height: 2 };
+}
+
+/**
+ * The signed copy's last page: the signature the customer drew, on its
+ * line over their name, then the record of the acceptance, row by row as
+ * the notices are set. It names the fingerprint of the PDF they read, so
+ * the copy carries the proof of which document the signature belongs to.
+ */
+function Acceptance({
+  data,
+  acceptance,
+  language,
+}: {
+  data: InvoiceData;
+  acceptance: QuoteResponse;
+  language: Language;
+}) {
+  const t = translate(language);
+  const signature = acceptance.signature;
+  // The ink sits at most 300 wide and 92 tall, at its own proportions.
+  const size = signature ? signatureSize(signature) : null;
+  const scale = size ? Math.min(300 / size.width, 92 / size.height) : 1;
+  const value: CSSProperties = { ...body, color: ink };
+  return (
+    <section
+      style={{ breakBefore: 'page', display: 'flex', flexDirection: 'column' }}
+    >
+      <Title
+        title={t(m.accept_title)}
+        lede={t(m.accept_lede, {
+          name: acceptance.name,
+          decidedAt: acceptance.decidedAt,
+        })}
+      />
+      {/* The label sits on the line it names, by the printed name. */}
+      <Row
+        first
+        aside={
+          <h2 style={{ ...asideHeading, paddingTop: 115 }}>
+            {t(m.accept_signature)}
+          </h2>
+        }
+      >
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            width: 320,
+            paddingTop: 8,
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'flex-end',
+              height: 100,
+              paddingLeft: 6,
+              borderBottom: `1px solid ${ruleStrong}`,
+            }}
+          >
+            {signature && size && (
+              <img
+                src={signatureSource(signature)}
+                alt={t(m.quote_signed_by, { name: acceptance.name })}
+                style={{
+                  width: size.width * scale,
+                  height: size.height * scale,
+                  marginBottom: -6,
+                }}
+              />
+            )}
+          </div>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              marginTop: 7,
+            }}
+          >
+            <p style={{ ...value, fontWeight: 600 }}>{acceptance.name}</p>
+            <p style={{ ...body, color: soft }}>
+              {t(m.date_document, { date: acceptance.decidedAt.slice(0, 10) })}
+            </p>
+          </div>
+        </div>
+      </Row>
+      <Row aside={<h2 style={asideHeading}>{t(m.accept_signer)}</h2>}>
+        <p style={value}>{acceptance.name}</p>
+        <p style={{ ...body, color: soft }}>{acceptance.email}</p>
+      </Row>
+      <Row aside={<h2 style={asideHeading}>{t(m.accept_when)}</h2>}>
+        <p style={value}>
+          {t(m.accept_at, { decidedAt: acceptance.decidedAt })}
+        </p>
+      </Row>
+      {acceptance.plan && (
+        <Row aside={<h2 style={asideHeading}>{t(m.doc_plan)}</h2>}>
+          <p style={value}>
+            {acceptance.plan.name && (
+              <span style={{ fontWeight: 600 }}>{acceptance.plan.name}. </span>
+            )}
+            {planTerms(acceptance.plan, language, data.currency)}
+          </p>
+        </Row>
+      )}
+      {data.customerType === 'consumer' && (
+        <Row aside={<h2 style={asideHeading}>{t(m.accept_early)}</h2>}>
+          <p style={value}>
+            {t(acceptance.earlyStart ? m.accept_early_yes : m.accept_early_no)}
+          </p>
+        </Row>
+      )}
+      <Row aside={<h2 style={asideHeading}>{t(m.accept_document)}</h2>}>
+        <p style={{ ...value, letterSpacing: '0.02em' }}>
+          {acceptance.digest.slice(0, 32)}
+        </p>
+        <p style={{ ...value, letterSpacing: '0.02em' }}>
+          {acceptance.digest.slice(32)}
+        </p>
+        <p style={{ ...citation, fontStyle: 'normal', marginTop: 6 }}>
+          {t(m.accept_document_detail)}
+        </p>
+      </Row>
+      <Row aside={<h2 style={asideHeading}>{t(m.accept_evidence)}</h2>}>
+        <p style={{ ...body, fontSize: 11, color: soft }}>
+          {t(m.accept_evidence_detail, {
+            address: acceptance.address || '—',
+            agent: acceptance.agent || '—',
+          })}
+        </p>
+        <p style={citation}>
+          Ley 34/2002, arts. 27 y 28; Reglamento (UE) 910/2014, art. 25.1
+        </p>
+      </Row>
+    </section>
+  );
+}
+
 /** Everything a quote prints after its priced lines. */
 export function QuoteAppendix({
   data,
   quote,
   number,
   language,
+  acceptance,
 }: {
   data: InvoiceData;
   quote: QuoteTerms;
   number: string | null;
   language: Language;
+  /** The customer's acceptance, for the signed copy. */
+  acceptance?: QuoteResponse | undefined;
 }) {
   const t = translate(language);
   const reference = [data.title, number ?? t(m.doc_draft)]
@@ -709,6 +857,9 @@ export function QuoteAppendix({
       <Notices data={data} quote={quote} language={language} />
       {printsWithdrawalForm(data) && (
         <WithdrawalForm data={data} reference={reference} language={language} />
+      )}
+      {acceptance && (
+        <Acceptance data={data} acceptance={acceptance} language={language} />
       )}
     </>
   );

@@ -1208,12 +1208,153 @@
   "mail_answer_early_start": "You asked for the work to start within the 14-day withdrawal period. If you withdraw, you pay for the part already done, and you lose the right once the work is fully done.",
   "mail_answer_document": [
     {
-      "declarations": ["input digest", "input url"],
+      "declarations": ["input digest"],
       "selectors": [],
       "match": {
-        "*": "The document you answered has the SHA-256 fingerprint {digest}. You can read and download it at {url}"
+        "*": "The PDF you answered has the SHA-256 fingerprint {digest}."
       }
     }
   ],
-  "mail_answer_keep": "Keep this email as your copy of the agreement."
+  "mail_answer_keep": [
+    {
+      "declarations": ["input outcome"],
+      "selectors": ["outcome"],
+      "match": {
+        "outcome=accepted": "Keep this email and the attached copy as your record of the agreement.",
+        "outcome=declined": "Keep this email as your record of the answer.",
+        "outcome=*": ""
+      }
+    }
+  ],
+  "accept_title": "Acceptance",
+  "accept_lede": [
+    {
+      "declarations": [
+        "input name",
+        "input decidedAt",
+        "local at = decidedAt: datetime dateStyle=long timeStyle=short timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "{name} accepted this quote online on {at} (UTC). This page is the record of that acceptance."
+      }
+    }
+  ],
+  "accept_signature": "Signature",
+  "accept_signer": "Accepted by",
+  "accept_when": "Date and time",
+  "accept_at": [
+    {
+      "declarations": [
+        "input decidedAt",
+        "local at = decidedAt: datetime dateStyle=long timeStyle=short timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "{at} (UTC)"
+      }
+    }
+  ],
+  "accept_early": "Early start",
+  "accept_early_yes": "The customer asked for the work to start within the withdrawal period.",
+  "accept_early_no": "The work starts once the withdrawal period ends.",
+  "accept_document": "Document",
+  "accept_document_detail": "SHA-256 fingerprint of the PDF the customer read and accepted. Any change to that document changes it.",
+  "accept_evidence": "Record",
+  "accept_evidence_detail": [
+    {
+      "declarations": ["input address", "input agent"],
+      "selectors": [],
+      "match": {
+        "*": "Accepted from the IP address {address}, with the browser {agent}."
+      }
+    }
+  ],
+  "accept_file": [
+    {
+      "declarations": ["input number"],
+      "selectors": [],
+      "match": {
+        "*": "{number}-signed"
+      }
+    }
+  ],
+  "mail_code_title": "Your sign-in code",
+  "mail_code_why": "You get this email because someone asked to sign in with this address.",
+  "mail_answer_preview": [
+    {
+      "declarations": ["input outcome", "input issuer"],
+      "selectors": ["outcome"],
+      "match": {
+        "outcome=accepted": "Your signed copy is attached.",
+        "outcome=declined": "{issuer} knows you declined it.",
+        "outcome=*": ""
+      }
+    }
+  ],
+  "mail_answer_why": [
+    {
+      "declarations": ["input issuer"],
+      "selectors": [],
+      "match": {
+        "*": "This email confirms your answer to a quote from {issuer}, as the law asks for contracts made online."
+      }
+    }
+  ],
+  "mail_answer_attached": "Your signed copy is attached: the whole quote, with a last page that records your acceptance.",
+  "mail_answer_open": "See the quote",
+  "owner_mail_subject": [
+    {
+      "declarations": ["input outcome", "input name", "input number"],
+      "selectors": ["outcome"],
+      "match": {
+        "outcome=accepted": "{name} accepted {number}",
+        "outcome=declined": "{name} declined {number}",
+        "outcome=*": ""
+      }
+    }
+  ],
+  "owner_mail_preview": [
+    {
+      "declarations": ["input outcome"],
+      "selectors": ["outcome"],
+      "match": {
+        "outcome=accepted": "The signed copy is attached.",
+        "outcome=declined": "Nothing to bill this time.",
+        "outcome=*": ""
+      }
+    }
+  ],
+  "owner_mail_why": [
+    {
+      "declarations": ["input email"],
+      "selectors": [],
+      "match": {
+        "*": "You get this because {email} answered a quote you sent."
+      }
+    }
+  ],
+  "owner_mail_next": [
+    {
+      "declarations": ["input outcome"],
+      "selectors": ["outcome"],
+      "match": {
+        "outcome=accepted": "Bill each payment of the plan from the quote when it falls due.",
+        "outcome=declined": "You can revise the quote and send it again.",
+        "outcome=*": ""
+      }
+    }
+  ],
+  "owner_mail_open": "Open the quote",
+  "owner_mail_document": [
+    {
+      "declarations": ["input digest"],
+      "selectors": [],
+      "match": {
+        "*": "The customer answered the PDF with the SHA-256 fingerprint {digest}."
+      }
+    }
+  ],
+  "quote_pdf_signed": "Signed copy",
+  "quote_pdf_signed_label": "Download the signed copy as a PDF"
 }

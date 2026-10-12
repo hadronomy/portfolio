@@ -705,10 +705,12 @@ function QuoteRoom({
             className="iv-pay-pdf"
             href={`/invoices/quote/${token}/pdf?lang=${d.language}`}
             download
-            aria-label={t(m.quote_pdf_label)}
+            aria-label={t(
+              accepted ? m.quote_pdf_signed_label : m.quote_pdf_label,
+            )}
           >
             <Download size={14} aria-hidden />
-            {t(m.quote_pdf)}
+            {t(accepted ? m.quote_pdf_signed : m.quote_pdf)}
           </a>
         </header>
         <Sheets token={token} language={d.language} sheets={sheets} />

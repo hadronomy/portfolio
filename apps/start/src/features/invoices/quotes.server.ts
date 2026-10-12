@@ -1,4 +1,6 @@
 import { createHash } from 'node:crypto';
+import { translate } from '@portfolio/i18n';
+import { m } from '@portfolio/i18n/messages';
 import { Documents } from '@portfolio/invoices/documents';
 import {
   type InvoiceId,
@@ -146,9 +148,25 @@ const evidence = Effect.gen(function* () {
 });
 
 /**
+ * An accepted quote's signed copy: the PDF the customer accepted, with the
+ * page that records their acceptance and signature. None for a quote that
+ * is not accepted.
+ */
+const signedCopy = (id: InvoiceId) =>
+  Effect.gen(function* () {
+    const view = yield* viewOf(id);
+    const response = view.response;
+    if (response?.outcome !== 'accepted') return null;
+    const bytes = yield* unavailable(
+      Documents.use((documents) => documents.signed(view.quote, response)),
+    );
+    return { quote: view.quote, response, bytes };
+  });
+
+/**
  * Records the customer's answer, then mails them the confirmation and the
- * owner a copy. A mail failure leaves the answer standing, unconfirmed, for
- * the owner to follow up.
+ * owner a notice, with the signed copy on an acceptance. A mail failure
+ * leaves the answer standing, unconfirmed, for the owner to follow up.
  */
 export const answerQuote = Effect.fn('QuotesServer.answer')(function* (
   token: string,
@@ -170,19 +188,14 @@ export const answerQuote = Effect.fn('QuotesServer.answer')(function* (
   if (!response.confirmedAt) {
     const view = yield* viewOf(id.value);
     const base = yield* origin;
+    const signed = yield* signedCopy(id.value);
     const sent = yield* Mailer.use((mailer) =>
       mailer.quoteAnswer({
-        to: response.email,
-        copy: view.quote.data.issuer.email,
-        language: response.language,
-        outcome: response.outcome,
-        number: view.quote.number ?? '',
-        issuer: view.quote.data.issuer.name,
-        name: response.name,
-        decidedAt: response.decidedAt,
-        digest: response.digest,
-        earlyStart: response.earlyStart,
+        quote: view.quote,
+        response,
         url: `${base}/invoices/quote/${token}`,
+        workspaceUrl: `${base}/invoices/${id.value}`,
+        signedCopy: signed?.bytes ?? null,
       }),
     ).pipe(
       Effect.as(true),
@@ -229,7 +242,10 @@ export const quotePageImage = Effect.fn('QuotesServer.pageImage')(function* (
   });
 });
 
-/** The quote's PDF for whoever holds its link. */
+/**
+ * The quote's PDF for whoever holds its link. Once accepted, the link
+ * serves the signed copy instead: the same document, signed.
+ */
 export const quotePdf = Effect.fn('QuotesServer.pdf')(function* (
   token: string,
   language: Language,
@@ -237,5 +253,17 @@ export const quotePdf = Effect.fn('QuotesServer.pdf')(function* (
   const id = yield* byLink(token);
   if (Option.isNone(id))
     return yield* new Refused({ status: 404, message: 'This link is closed.' });
-  return yield* pdfResponse(id.value, language);
+  const signed = yield* signedCopy(id.value);
+  if (!signed) return yield* pdfResponse(id.value, language);
+  const name = translate(signed.response.language)(m.accept_file, {
+    number: signed.quote.number ?? '',
+  });
+  return new Response(new Uint8Array(signed.bytes), {
+    headers: {
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="${name}.pdf"`,
+      'Cache-Control': 'private, no-store',
+      'X-Content-Type-Options': 'nosniff',
+    },
+  });
 });

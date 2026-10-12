@@ -34,12 +34,12 @@ export interface AppConfigApi {
   /** Private JWKs that sign AT Protocol token requests, newest first. HTTPS deployments need one. */
   readonly atprotoKeys: readonly string[];
   /**
-   * The SMTP server and sender for customer sign-in codes. Without it,
-   * development prints codes to the server log and production offers no
+   * The Resend API key and sender for the invoice mail. Without it,
+   * development writes each email to a file and production offers no
    * customer accounts.
    */
   readonly mail:
-    | { readonly url: Redacted.Redacted<string>; readonly from: string }
+    | { readonly apiKey: Redacted.Redacted<string>; readonly from: string }
     | undefined;
 }
 
@@ -90,7 +90,7 @@ export const appConfigLayer = Layer.effect(
       atprotoKeys: atprotoKeys.map((jwk) => JSON.stringify(jwk)),
       mail: yield* optional(
         Config.all({
-          url: Config.Redacted('INVOICE_SMTP_URL'),
+          apiKey: Config.Redacted('RESEND_API_KEY'),
           from: Config.String('INVOICE_MAIL_FROM'),
         }),
       ),
@@ -107,7 +107,7 @@ export const appConfigLayer = Layer.effect(
 
 /**
  * Whether customers can have accounts here: they need mail to receive
- * codes, which development fakes in the server log.
+ * codes, which development writes to files instead.
  */
 export const customerAccounts = AppConfig.useSync(
   (settings) => !!settings.mail || !settings.production,

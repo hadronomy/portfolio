@@ -1208,12 +1208,153 @@
   "mail_answer_early_start": "Solicitaste que el trabajo comenzara durante el plazo de desistimiento de 14 días naturales. Si desistes, tendrás que pagar la parte del servicio ya prestada. Pierdes el derecho de desistimiento cuando el servicio se haya prestado por completo.",
   "mail_answer_document": [
     {
-      "declarations": ["input digest", "input url"],
+      "declarations": ["input digest"],
       "selectors": [],
       "match": {
-        "*": "La huella digital SHA-256 del documento al que has respondido es {digest}. Puedes leerlo y descargarlo en {url}"
+        "*": "La huella digital SHA-256 del PDF al que respondiste es {digest}."
       }
     }
   ],
-  "mail_answer_keep": "Guarda este correo como copia del acuerdo."
+  "mail_answer_keep": [
+    {
+      "declarations": ["input outcome"],
+      "selectors": ["outcome"],
+      "match": {
+        "outcome=accepted": "Guarda este correo y la copia adjunta como constancia del acuerdo.",
+        "outcome=declined": "Guarda este correo como constancia de tu respuesta.",
+        "outcome=*": ""
+      }
+    }
+  ],
+  "accept_title": "Aceptación",
+  "accept_lede": [
+    {
+      "declarations": [
+        "input name",
+        "input decidedAt",
+        "local at = decidedAt: datetime dateStyle=long timeStyle=short timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "{name} aceptó este presupuesto en línea el {at} (UTC). Esta página deja constancia de la aceptación."
+      }
+    }
+  ],
+  "accept_signature": "Firma",
+  "accept_signer": "Aceptado por",
+  "accept_when": "Fecha y hora",
+  "accept_at": [
+    {
+      "declarations": [
+        "input decidedAt",
+        "local at = decidedAt: datetime dateStyle=long timeStyle=short timeZone=UTC"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "{at} (UTC)"
+      }
+    }
+  ],
+  "accept_early": "Inicio anticipado",
+  "accept_early_yes": "El cliente solicitó que el trabajo comenzara durante el plazo de desistimiento.",
+  "accept_early_no": "El trabajo comienza cuando termine el plazo de desistimiento.",
+  "accept_document": "Documento",
+  "accept_document_detail": "Huella digital SHA-256 del PDF que el cliente leyó y aceptó. Cualquier cambio en ese documento la altera.",
+  "accept_evidence": "Registro",
+  "accept_evidence_detail": [
+    {
+      "declarations": ["input address", "input agent"],
+      "selectors": [],
+      "match": {
+        "*": "Aceptado desde la dirección IP {address}, con el navegador {agent}."
+      }
+    }
+  ],
+  "accept_file": [
+    {
+      "declarations": ["input number"],
+      "selectors": [],
+      "match": {
+        "*": "{number}-firmado"
+      }
+    }
+  ],
+  "mail_code_title": "Tu código de acceso",
+  "mail_code_why": "Recibes este correo porque alguien ha pedido acceder con esta dirección.",
+  "mail_answer_preview": [
+    {
+      "declarations": ["input outcome", "input issuer"],
+      "selectors": ["outcome"],
+      "match": {
+        "outcome=accepted": "Tu copia firmada va adjunta.",
+        "outcome=declined": "{issuer} ya sabe que lo has rechazado.",
+        "outcome=*": ""
+      }
+    }
+  ],
+  "mail_answer_why": [
+    {
+      "declarations": ["input issuer"],
+      "selectors": [],
+      "match": {
+        "*": "Este correo confirma tu respuesta a un presupuesto de {issuer}, como exige la ley para los contratos en línea."
+      }
+    }
+  ],
+  "mail_answer_attached": "Tu copia firmada va adjunta: el presupuesto completo, con una última página que deja constancia de tu aceptación.",
+  "mail_answer_open": "Ver el presupuesto",
+  "owner_mail_subject": [
+    {
+      "declarations": ["input outcome", "input name", "input number"],
+      "selectors": ["outcome"],
+      "match": {
+        "outcome=accepted": "{name} ha aceptado {number}",
+        "outcome=declined": "{name} ha rechazado {number}",
+        "outcome=*": ""
+      }
+    }
+  ],
+  "owner_mail_preview": [
+    {
+      "declarations": ["input outcome"],
+      "selectors": ["outcome"],
+      "match": {
+        "outcome=accepted": "La copia firmada va adjunta.",
+        "outcome=declined": "Esta vez no hay nada que facturar.",
+        "outcome=*": ""
+      }
+    }
+  ],
+  "owner_mail_why": [
+    {
+      "declarations": ["input email"],
+      "selectors": [],
+      "match": {
+        "*": "Recibes este correo porque {email} ha respondido a un presupuesto que enviaste."
+      }
+    }
+  ],
+  "owner_mail_next": [
+    {
+      "declarations": ["input outcome"],
+      "selectors": ["outcome"],
+      "match": {
+        "outcome=accepted": "Factura cada pago de la forma de pago desde el presupuesto cuando venza.",
+        "outcome=declined": "Puedes revisar el presupuesto y enviarlo de nuevo.",
+        "outcome=*": ""
+      }
+    }
+  ],
+  "owner_mail_open": "Abrir el presupuesto",
+  "owner_mail_document": [
+    {
+      "declarations": ["input digest"],
+      "selectors": [],
+      "match": {
+        "*": "El cliente respondió al PDF con la huella digital SHA-256 {digest}."
+      }
+    }
+  ],
+  "quote_pdf_signed": "Copia firmada",
+  "quote_pdf_signed_label": "Descargar la copia firmada en PDF"
 }

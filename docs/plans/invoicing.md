@@ -190,7 +190,7 @@ A quote (presupuesto) is an offer the customer accepts online. It is no tax docu
 - **Notices** (`quote-notices.ts`): what the quote prints whatever its pages say, by customer type: validity, prices with taxes, how to accept, withdrawal with the annex B form, customer service, and data protection.
 - **The studio** (`features/invoices/pages-studio.tsx`, `pages-editor.tsx`): the pages on a sheet set to the PDF's own measure, with `/` for blocks and clauses, a format bar on a selection, an outline, the clause library, and the notices that will print.
 - **Plans**: a quote offers one to four payment plans, as an invoice does, and prints them as sentences. They count from acceptance ("30 % on acceptance") to the quote's planned delivery ("the rest on delivery"). They are fixed once the quote is issued: they are part of what the customer accepts.
-- **Acceptance** (`quotes.ts`, `features/invoices/quote-page.tsx`): the owner sends a link; the customer reads the quote, chooses a plan, types their full name (a simple electronic signature), and accepts. A consumer can ask for work to start inside the withdrawal period. The answer keeps the network address, the browser and the SHA-256 of the exact PDF read, and is confirmed by email to the customer with a copy to the owner.
+- **Acceptance** (`quotes.ts`, `features/invoices/quote-page.tsx`): the owner sends a link; the customer reads the quote, chooses a plan, types their full name and draws their signature (a simple electronic signature), and accepts. A consumer can ask for work to start inside the withdrawal period. The answer keeps the network address, the browser and the SHA-256 of the exact PDF read, and is confirmed by email to the customer, with a notice of its own to the owner. An acceptance also carries a drawn signature; both emails attach the signed copy, which is the accepted PDF with a last page that records the acceptance, and the customer's link serves that copy from then on.
 - **Billing** (`billing.ts`): every payment of the accepted plan gets an invoice of its own, as Real Decreto 1619/2012 art. 2.1 requires for payments taken before the work is done (the Canary Islands apply it to IGIC through Decreto 268/2011, art. 47 decies). Each invoice carries its share of every quoted line, so tax treatment, withholding and disbursements stay as quoted; the last one takes what is left of each line, so the invoices add up to the quote. IGIC is rounded on each invoice's own base, so the invoices' totals can differ from the quote's by a cent. The accepted plan is kept with the answer, so later edits never move it, and an invoice billed from a quote takes no plan of its own.
 
 ## Agents over MCP
@@ -239,12 +239,16 @@ Structured electronic invoice obligations require a separate applicability check
 | ---------------------- | ------------------------------------------------------------------------------------- |
 | `INVOICE_SECRET`       | 32 random bytes in base64. Signs sessions and encrypts the OAuth flow state           |
 | `INVOICE_ATPROTO_KEYS` | A JSON array of private ES256 JWKs, newest first. `bun run --cwd apps/start atproto-key` prints one |
-| `INVOICE_SMTP_URL`     | An SMTP URL for customer codes, for example `smtps://user:pass@smtp.example.com:465`  |
-| `INVOICE_MAIL_FROM`    | The sender, for example `Hadronomy <invoices@hadronomy.com>`                          |
+| `RESEND_API_KEY`       | A [Resend](https://resend.com) API key with sending access, for the invoice mail      |
+| `INVOICE_MAIL_FROM`    | The sender, on a domain verified in Resend, for example `Hadronomy <invoices@hadronomy.com>` |
 
-Production refuses to start without `INVOICE_ATPROTO_KEYS`. Without SMTP, production offers no customer accounts, and development prints each code to the server log. Sign in at `http://127.0.0.1:<port>`, not `localhost`: the protocol forbids `localhost` in loopback redirects.
+Production refuses to start without `INVOICE_ATPROTO_KEYS`. Without Resend, production offers no customer accounts, and development writes each email to `<data directory>/mail` as an HTML file, a text copy and its attachments, and logs the path. Sign in at `http://127.0.0.1:<port>`, not `localhost`: the protocol forbids `localhost` in loopback redirects.
 
 Invoice and customer data stay in the private database. Do not publish them into the owner's AT Protocol repository.
+
+## Mail
+
+Resend sends the invoice mail: the customer's sign-in code, the confirmation of an answer to a quote (Ley 34/2002, art. 28), and the owner's notice of it. Each email is a React Email component in `apps/start/src/emails`, rendered to HTML and plain text, and speaks the messages in `packages/i18n`: the customer's in the language they read, the owner's in English. The drawn signature travels as an inline PNG, because mail clients do not show SVG. Answers send with an idempotency key, so a retry never doubles them. `bun run --cwd apps/start emails` opens the React Email preview of every template.
 
 ## PDF pipeline and viewer
 

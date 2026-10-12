@@ -22,6 +22,7 @@ import { QuoteAppendix } from './page-render';
 import { partyLines } from './party-lines';
 import { faint, ink, label, rule, ruleStrong, side, soft } from './pdf-style';
 import type { PaymentPlan } from './plan';
+import type { QuoteResponse } from './quote-model';
 
 const covers: Record<Exclude<Cover, 'none'>, string> = {
   ember,
@@ -119,11 +120,14 @@ export function InvoiceDocument({
   invoice,
   language = invoice.data.language,
   plans = [],
+  acceptance,
 }: {
   invoice: Invoice;
   language?: Language;
   /** A quote's payment plans, printed as part of what the customer accepts. */
   plans?: readonly PaymentPlan[];
+  /** A quote's acceptance, which makes this its signed copy. */
+  acceptance?: QuoteResponse | undefined;
 }) {
   const d = invoice.data;
   const t = translate(language);
@@ -475,6 +479,7 @@ export function InvoiceDocument({
           quote={d.quote}
           number={invoice.status === 'draft' ? null : invoice.number}
           language={language}
+          acceptance={acceptance}
         />
       )}
     </main>
@@ -486,6 +491,7 @@ export async function renderInvoice(
   invoice: Invoice,
   language: Language = invoice.data.language,
   plans: readonly PaymentPlan[] = [],
+  acceptance?: QuoteResponse,
 ): Promise<Uint8Array> {
   const t = translate(language);
   const fonts = [
@@ -501,7 +507,12 @@ export async function renderInvoice(
     style: font.style,
   }));
   return render(
-    <InvoiceDocument invoice={invoice} language={language} plans={plans} />,
+    <InvoiceDocument
+      invoice={invoice}
+      language={language}
+      plans={plans}
+      acceptance={acceptance}
+    />,
     {
       size: 'a4',
       margin: { top: 40, right: side, bottom: 52, left: side },
