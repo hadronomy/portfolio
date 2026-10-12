@@ -452,6 +452,8 @@ export const mailerLayer = Layer.effect(
             true,
             mail.uncertain,
           );
+        if (settings.production && !settings.mail)
+          return yield* failure('Mail is not configured.');
         if (mail.payload._tag === 'Invitation') {
           yield* quotes
             .resolve(new URL(mail.payload.url).pathname.split('/').at(-1) ?? '')

@@ -2,9 +2,7 @@
   "version": "8",
   "dialect": "postgres",
   "id": "c8d68516-9944-459d-b99c-513948fe257f",
-  "prevIds": [
-    "7adecb65-fb71-43af-9ce5-3fbc08408bff"
-  ],
+  "prevIds": ["7adecb65-fb71-43af-9ce5-3fbc08408bff"],
   "ddl": [
     {
       "name": "invoices",
@@ -1213,14 +1211,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "invoice_id"
-      ],
+      "columns": ["invoice_id"],
       "schemaTo": "invoices",
       "tableTo": "invoices",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
       "name": "artifacts_invoice_id_invoices_id_fkey",
@@ -1230,14 +1224,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "quote_id"
-      ],
+      "columns": ["quote_id"],
       "schemaTo": "invoices",
       "tableTo": "invoices",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
       "name": "billed_quote_id_invoices_id_fkey",
@@ -1247,14 +1237,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "invoice_id"
-      ],
+      "columns": ["invoice_id"],
       "schemaTo": "invoices",
       "tableTo": "invoices",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
       "name": "billed_invoice_id_invoices_id_fkey",
@@ -1264,14 +1250,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "invoice_id"
-      ],
+      "columns": ["invoice_id"],
       "schemaTo": "invoices",
       "tableTo": "invoices",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
       "name": "collections_invoice_id_invoices_id_fkey",
@@ -1281,14 +1263,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "invoice_id"
-      ],
+      "columns": ["invoice_id"],
       "schemaTo": "invoices",
       "tableTo": "invoices",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
       "name": "links_invoice_id_invoices_id_fkey",
@@ -1298,14 +1276,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "invoice_id"
-      ],
+      "columns": ["invoice_id"],
       "schemaTo": "invoices",
       "tableTo": "invoices",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "offers_invoice_id_invoices_id_fkey",
@@ -1315,14 +1289,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "invoice_id"
-      ],
+      "columns": ["invoice_id"],
       "schemaTo": "invoices",
       "tableTo": "invoices",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
       "name": "mail_outbox_invoice_id_invoices_id_fkey",
@@ -1332,14 +1302,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "quote_id"
-      ],
+      "columns": ["quote_id"],
       "schemaTo": "invoices",
       "tableTo": "invoices",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
       "name": "responses_quote_id_invoices_id_fkey",
@@ -1348,10 +1314,7 @@
       "table": "responses"
     },
     {
-      "columns": [
-        "quote_id",
-        "payment"
-      ],
+      "columns": ["quote_id", "payment"],
       "nameExplicit": false,
       "name": "billed_pkey",
       "entityType": "pks",
@@ -1359,9 +1322,7 @@
       "table": "billed"
     },
     {
-      "columns": [
-        "key"
-      ],
+      "columns": ["key"],
       "nameExplicit": false,
       "name": "artifacts_pkey",
       "schema": "invoices",
@@ -1369,9 +1330,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "audit_pkey",
       "schema": "invoices",
@@ -1379,9 +1338,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "invoice_id"
-      ],
+      "columns": ["invoice_id"],
       "nameExplicit": false,
       "name": "collections_pkey",
       "schema": "invoices",
@@ -1389,9 +1346,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "invoices_pkey",
       "schema": "invoices",
@@ -1399,9 +1354,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "token_hash"
-      ],
+      "columns": ["token_hash"],
       "nameExplicit": false,
       "name": "links_pkey",
       "schema": "invoices",
@@ -1409,9 +1362,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "invoice_id"
-      ],
+      "columns": ["invoice_id"],
       "nameExplicit": false,
       "name": "offers_pkey",
       "schema": "invoices",
@@ -1419,9 +1370,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "mail_outbox_pkey",
       "schema": "invoices",
@@ -1429,9 +1378,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "key"
-      ],
+      "columns": ["key"],
       "nameExplicit": false,
       "name": "records_pkey",
       "schema": "invoices",
@@ -1439,9 +1386,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "quote_id"
-      ],
+      "columns": ["quote_id"],
       "nameExplicit": false,
       "name": "responses_pkey",
       "schema": "invoices",
@@ -1449,9 +1394,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "key"
-      ],
+      "columns": ["key"],
       "nameExplicit": false,
       "name": "sequences_pkey",
       "schema": "invoices",
@@ -1460,9 +1403,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "invoice_id"
-      ],
+      "columns": ["invoice_id"],
       "nullsNotDistinct": false,
       "name": "billed_invoice_id_key",
       "schema": "invoices",
@@ -1471,9 +1412,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "stripe_invoice"
-      ],
+      "columns": ["stripe_invoice"],
       "nullsNotDistinct": false,
       "name": "collections_stripe_invoice_key",
       "schema": "invoices",
@@ -1482,9 +1421,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "number"
-      ],
+      "columns": ["number"],
       "nullsNotDistinct": false,
       "name": "invoices_number_key",
       "schema": "invoices",
@@ -1493,9 +1430,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "issue_key"
-      ],
+      "columns": ["issue_key"],
       "nullsNotDistinct": false,
       "name": "invoices_issue_key_key",
       "schema": "invoices",
@@ -1504,9 +1439,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "message_id"
-      ],
+      "columns": ["message_id"],
       "nullsNotDistinct": false,
       "name": "mail_outbox_message_id_key",
       "schema": "invoices",
@@ -1515,9 +1448,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "idempotency_key"
-      ],
+      "columns": ["idempotency_key"],
       "nullsNotDistinct": false,
       "name": "mail_outbox_idempotency_key_key",
       "schema": "invoices",

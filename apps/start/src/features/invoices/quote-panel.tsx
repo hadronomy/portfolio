@@ -30,7 +30,7 @@ import {
   Send,
   X,
 } from 'lucide-react';
-import { type CSSProperties, useState } from 'react';
+import { type CSSProperties, useEffect, useState } from 'react';
 import { Speak, useT } from '../../lib/i18n';
 import {
   getQuoteDeliveries,
@@ -307,6 +307,7 @@ function EmailedLine({ id }: { id: InvoiceId }) {
 function DeliveryRows({ id }: { id: InvoiceId }) {
   const t = useT();
   const query = useQueryClient();
+  const { refetch: refreshWorkspace } = useWorkspace();
   const deliveries = useQuery({
     queryKey: ['quote-deliveries', id],
     queryFn: () => getQuoteDeliveries({ data: { id } }),
@@ -315,12 +316,22 @@ function DeliveryRows({ id }: { id: InvoiceId }) {
         ? 15_000
         : false,
   });
+  const sent =
+    deliveries.data
+      ?.filter((mail) => mail.state === 'sent')
+      .map((mail) => `${mail.id}:${mail.sentAt}`)
+      .join(',') ?? '';
+  // The Worker can finish delivery while this panel is open.
+  useEffect(() => {
+    if (!sent) return;
+    void query.invalidateQueries({ queryKey: ['quote-emails', id] });
+    void refreshWorkspace();
+  }, [id, query, refreshWorkspace, sent]);
   const retry = useMutation({
     mutationFn: (email: string) => retryEmail({ data: { id, email } }),
     onSuccess: () => {
       void query.invalidateQueries({ queryKey: ['quote-deliveries', id] });
       void query.invalidateQueries({ queryKey: ['quote-emails', id] });
-      void query.invalidateQueries({ queryKey: ['workspace'] });
     },
   });
   const rows = deliveries.data?.filter((mail) => mail.state !== 'sent') ?? [];

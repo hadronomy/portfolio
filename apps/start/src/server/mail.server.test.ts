@@ -24,7 +24,8 @@ import {
   ManagedRuntime,
 } from 'effect';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
-import { boundedMail, codeLifetime, Mailer } from './mail.server';
+import { AppConfig } from './config.server';
+import { boundedMail, codeLifetime, Mailer, mailerLayer } from './mail.server';
 import { retryDueMail } from './mail-retry.server';
 import { CurrentRequest } from './request.server';
 import { appLayer } from './runtime.server';
@@ -113,6 +114,40 @@ const accepted = () =>
   });
 
 describe('durable email delivery', () => {
+  it('keeps unconfigured production mail pending without freezing a development sender', async () => {
+    const { quote, deliveries } = await invitation();
+    const row = deliveries[0];
+    if (!row) throw new Error('No invitation');
+    const settings = await runtime.runPromise(AppConfig);
+    const unconfigured = await runtime.runPromise(
+      Effect.service(Mailer).pipe(
+        Effect.provide(Layer.fresh(mailerLayer)),
+        Effect.provideService(AppConfig, {
+          ...settings,
+          production: true,
+          mail: undefined,
+        }),
+      ),
+    );
+    fetchMail.mockClear();
+    expect(await run(unconfigured.send(row.id))).toMatchObject({
+      state: 'pending',
+      lastError: 'Mail is not configured.',
+    });
+    expect(fetchMail).not.toHaveBeenCalled();
+    expect(
+      await run(db.query.outbox.findFirst({ where: { id: row.id } })),
+    ).toMatchObject({ prepared: null, firstAttemptAt: null });
+    fetchMail.mockImplementation(async () => accepted());
+    expect(await run(mailer.retry(quote.id, row.id, owner))).toMatchObject({
+      state: 'sent',
+      attempts: 2,
+    });
+    expect(JSON.parse(String(fetchMail.mock.calls[0]?.[1]?.body)).from).toBe(
+      'mail@example.test',
+    );
+  });
+
   it('keeps failures pending, redacts provider text and retries each recipient separately', async () => {
     const { quote } = await invitation();
     fetchMail
