@@ -1,0 +1,222 @@
+[
+  {
+    "page": "payment",
+    "language": "es",
+    "width": 1440,
+    "cookies": [
+      {
+        "name": "invoices-language",
+        "domain": "127.0.0.1",
+        "expires": 1826337404.865355
+      },
+      {
+        "name": "m",
+        "domain": "m.stripe.com",
+        "expires": 1826337410.437981
+      },
+      {
+        "name": "__stripe_mid",
+        "domain": "127.0.0.1",
+        "expires": 1823313410
+      },
+      {
+        "name": "__stripe_sid",
+        "domain": "127.0.0.1",
+        "expires": 1791779210
+      }
+    ],
+    "storage": {
+      "local": [],
+      "session": []
+    },
+    "overflow": false,
+    "errors": []
+  },
+  {
+    "page": "privacy",
+    "language": "es",
+    "width": 1440,
+    "overflow": false
+  },
+  {
+    "page": "signin",
+    "language": "es",
+    "width": 1440,
+    "overflow": false
+  },
+  {
+    "page": "quote",
+    "language": "es",
+    "width": 1440,
+    "overflow": false
+  },
+  {
+    "page": "payment",
+    "language": "en",
+    "width": 1440,
+    "cookies": [
+      {
+        "name": "invoices-language",
+        "domain": "127.0.0.1",
+        "expires": 1826337447.50648
+      },
+      {
+        "name": "m",
+        "domain": "m.stripe.com",
+        "expires": 1826337456.143482
+      },
+      {
+        "name": "__stripe_mid",
+        "domain": "127.0.0.1",
+        "expires": 1823313456
+      },
+      {
+        "name": "__stripe_sid",
+        "domain": "127.0.0.1",
+        "expires": 1791779256
+      }
+    ],
+    "storage": {
+      "local": [],
+      "session": []
+    },
+    "overflow": false,
+    "errors": []
+  },
+  {
+    "page": "privacy",
+    "language": "en",
+    "width": 1440,
+    "overflow": false,
+    "readingWidth": 714,
+    "readingMeasure": 71.84905660377359,
+    "maxWidth": "716.04px",
+    "fontSize": "15px",
+    "lineHeight": "21.75px",
+    "figures": "tabular-nums",
+    "contrast": 6.554746973142527,
+    "locale": "en"
+  },
+  {
+    "page": "signin",
+    "language": "en",
+    "width": 1440,
+    "overflow": false
+  },
+  {
+    "page": "quote",
+    "language": "en",
+    "width": 1440,
+    "overflow": false
+  },
+  {
+    "page": "payment",
+    "language": "es",
+    "width": 390,
+    "cookies": [
+      {
+        "name": "invoices-language",
+        "domain": "127.0.0.1",
+        "expires": 1826337461.913734
+      },
+      {
+        "name": "m",
+        "domain": "m.stripe.com",
+        "expires": 1826337467.57583
+      },
+      {
+        "name": "__stripe_mid",
+        "domain": "127.0.0.1",
+        "expires": 1823313467
+      },
+      {
+        "name": "__stripe_sid",
+        "domain": "127.0.0.1",
+        "expires": 1791779267
+      }
+    ],
+    "storage": {
+      "local": [],
+      "session": []
+    },
+    "overflow": false,
+    "errors": []
+  },
+  {
+    "page": "privacy",
+    "language": "es",
+    "width": 390,
+    "overflow": false
+  },
+  {
+    "page": "signin",
+    "language": "es",
+    "width": 390,
+    "overflow": false
+  },
+  {
+    "page": "quote",
+    "language": "es",
+    "width": 390,
+    "overflow": false
+  },
+  {
+    "page": "payment",
+    "language": "en",
+    "width": 390,
+    "cookies": [
+      {
+        "name": "invoices-language",
+        "domain": "127.0.0.1",
+        "expires": 1826337472.548003
+      },
+      {
+        "name": "m",
+        "domain": "m.stripe.com",
+        "expires": 1826337477.625793
+      },
+      {
+        "name": "__stripe_mid",
+        "domain": "127.0.0.1",
+        "expires": 1823313477
+      },
+      {
+        "name": "__stripe_sid",
+        "domain": "127.0.0.1",
+        "expires": 1791779277
+      }
+    ],
+    "storage": {
+      "local": [],
+      "session": []
+    },
+    "overflow": false,
+    "errors": []
+  },
+  {
+    "page": "privacy",
+    "language": "en",
+    "width": 390,
+    "overflow": false,
+    "readingWidth": 326,
+    "readingMeasure": 32.80503144654088,
+    "maxWidth": "716.04px",
+    "fontSize": "15px",
+    "lineHeight": "21.75px",
+    "figures": "tabular-nums",
+    "contrast": 6.554746973142527,
+    "locale": "en"
+  },
+  {
+    "page": "signin",
+    "language": "en",
+    "width": 390,
+    "overflow": false
+  },
+  {
+    "page": "quote",
+    "language": "en",
+    "width": 390,
+    "overflow": false
+  }
+]
