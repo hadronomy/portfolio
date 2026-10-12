@@ -11,9 +11,12 @@ import {
 import type { Answer } from '@portfolio/invoices/quote-model';
 import { type QuoteError, Quotes } from '@portfolio/invoices/quotes';
 import { InvoiceStore } from '@portfolio/invoices/store';
-import { getRequestIP } from '@tanstack/react-start/server';
 import { Effect, Option } from 'effect';
 import { requireOwner } from '../../server/auth.server';
+import {
+  clientAddress,
+  clientAddressHeader,
+} from '../../server/client-address.server';
 import { invitationEmail, Mailer } from '../../server/mail.server';
 import { PageImages } from '../../server/page-images.server';
 import {
@@ -230,13 +233,12 @@ export const quotePage = Effect.fn('QuotesServer.page')(function* (
 /** The evidence a request carries: the network address and the browser. */
 const evidence = Effect.gen(function* () {
   const request = yield* CurrentRequest;
-  // A Web Request carries no peer address; the server's own request
-  // context does. Behind a proxy the client is the first forwarded hop.
-  const address = yield* Effect.sync(
-    () => getRequestIP({ xForwardedFor: true }) ?? '',
-  );
   return {
-    address: address.split(',')[0]?.trim() ?? '',
+    address:
+      clientAddress(
+        request,
+        request.headers.get(clientAddressHeader) ?? undefined,
+      ) ?? '',
     agent: request.headers.get('user-agent') ?? '',
   };
 });

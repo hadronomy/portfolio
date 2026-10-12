@@ -1,34 +1,13 @@
-import type { ErrorComponentProps } from '@tanstack/react-router';
 import { createFileRoute, redirect } from '@tanstack/react-router';
 import { getViewer } from '../features/invoices/api';
 import { InvoiceShell } from '../features/invoices/shell';
+import { InvoiceError } from './-invoice-error';
+import { invoiceRouteError } from './-invoice-errors';
 
 function InvoicesPending() {
   return (
     <div className="iv-signin">
       <output className="iv-message">Loading workspace…</output>
-    </div>
-  );
-}
-
-function InvoicesError({ error, reset }: ErrorComponentProps) {
-  return (
-    <div className="iv-signin">
-      <div className="iv-message" role="alert">
-        <p>
-          {error instanceof Error
-            ? error.message
-            : 'The workspace could not load.'}
-        </p>
-        <button
-          type="button"
-          className="iv-btn"
-          data-variant="primary"
-          onClick={() => reset()}
-        >
-          <span>Try again</span>
-        </button>
-      </div>
     </div>
   );
 }
@@ -50,7 +29,8 @@ export const Route = createFileRoute('/invoices')({
     ],
   }),
   pendingComponent: InvoicesPending,
-  errorComponent: InvoicesError,
+  onError: invoiceRouteError,
+  errorComponent: InvoiceError,
   component: () => (
     <InvoiceShell signedIn={Route.useLoaderData()?._tag === 'Owner'} />
   ),

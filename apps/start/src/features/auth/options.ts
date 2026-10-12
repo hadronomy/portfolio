@@ -58,6 +58,7 @@ export const authOptions = (deps: AuthDependencies) =>
   ({
     appName: 'Hadronomy Invoices',
     basePath: authBasePath,
+    // Each serverless instance shares these counters through PostgreSQL.
     rateLimit: { storage: 'database' },
     onAPIError: { errorURL: '/invoices' },
     user: {
@@ -105,6 +106,7 @@ export const authOptions = (deps: AuthDependencies) =>
       }),
       emailOTP({
         expiresIn: codeLifetime,
+        rateLimit: { window: 60, max: 3 },
         storeOTP: 'hashed',
         async sendVerificationOTP({ email, otp, type }, ctx) {
           if (type !== 'sign-in' || !ctx) return;

@@ -22,7 +22,9 @@ import {
   authNamespace,
 } from '../features/auth/shared';
 import * as tables from '../features/auth/tables';
+import { clientAddressHeader } from './client-address.server';
 import { AppConfig } from './config.server';
+import { reportedError } from './errors.server';
 import { Mailer } from './mail.server';
 import { agentOrigin, fixedOrigin } from './origin.server';
 import { CurrentRequest, Refused } from './request.server';
@@ -133,7 +135,19 @@ export const authLayer = Layer.effect(
         // User and account are created together, or not at all.
         transaction: true,
       }),
-      advanced: { trustedProxyHeaders: !origin },
+      ...(settings.production && {
+        logger: {
+          level: 'error' as const,
+          // Auth driver messages can include query values and email addresses.
+          log: (_level: string, _message: string, ...causes: unknown[]) => {
+            reportedError(causes);
+          },
+        },
+      }),
+      advanced: {
+        trustedProxyHeaders: !origin,
+        ipAddress: { ipAddressHeaders: [clientAddressHeader] },
+      },
     });
     const ownerId = async () => {
       const [owner] = await authDb

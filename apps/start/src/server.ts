@@ -1,5 +1,11 @@
 import handler, { createServerEntry } from '@tanstack/react-start/server-entry';
 import { getRouteOwner, getRouter, matchesAstro } from './router';
+import {
+  clientAddress,
+  clientAddressHeader,
+} from './server/client-address.server';
+import { reportedError } from './server/errors.server';
+import { invoiceHeaders, isInvoiceResponse } from './server/headers.server';
 
 /**
  * In development Astro reaches this server through fetch, which replaces the
@@ -23,8 +29,23 @@ function restoreFetchMode(request: Request) {
 }
 
 export default createServerEntry({
-  fetch(incoming) {
-    const request = restoreFetchMode(incoming);
+  async fetch(incoming) {
+    const restored = restoreFetchMode(incoming);
+    // Astro supplies its socket address as request context. A Node client
+    // cannot supply this property through HTTP headers.
+    const transport = incoming as Request & {
+      context?: { clientAddress?: string };
+      ip?: string;
+    };
+    const ip = clientAddress(
+      incoming,
+      transport.context?.clientAddress ?? transport.ip,
+      process.env.VERCEL === '1',
+    );
+    const headers = new Headers(restored.headers);
+    headers.delete(clientAddressHeader);
+    if (ip) headers.set(clientAddressHeader, ip);
+    const request = new Request(restored, { headers });
     const url = new URL(request.url);
     const router = getRouter();
     const owner = getRouteOwner(router, url.pathname);
@@ -37,6 +58,19 @@ export default createServerEntry({
         headers: { 'x-portfolio-route-owner': 'astro' },
       });
     }
-    return handler.fetch(request);
+    try {
+      return invoiceHeaders(request, await handler.fetch(request));
+    } catch (error) {
+      if (!import.meta.env.PROD || !isInvoiceResponse(url.pathname))
+        throw error;
+      const safe = reportedError(error);
+      return invoiceHeaders(
+        request,
+        new Response(safe.message, {
+          status: 500,
+          headers: { 'content-type': 'text/plain; charset=utf-8' },
+        }),
+      );
+    }
   },
 });

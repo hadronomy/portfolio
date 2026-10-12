@@ -7,7 +7,12 @@ import {
   QuotePage,
 } from '../features/invoices/quote-page';
 
+import { InvoiceError } from './-invoice-error';
+import { invoiceRouteError } from './-invoice-errors';
+
 export const Route = createFileRoute('/invoices_/quote/$token')({
+  onError: invoiceRouteError,
+  errorComponent: InvoiceError,
   loader: ({ params }) => getQuotePage({ data: { token: params.token } }),
   head: ({ loaderData }) => {
     const title = !loaderData
