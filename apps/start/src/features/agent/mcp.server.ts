@@ -1,10 +1,11 @@
 import { Documents } from '@portfolio/invoices/documents';
 import { InvoiceId, Language } from '@portfolio/invoices/model';
-import { Effect, Layer } from 'effect';
+import { Context, Effect, Layer, Scope } from 'effect';
 import { McpProtocol, McpSchema, McpServer } from 'effect/ai';
-import { HttpRouter } from 'effect/http';
+import { HttpRouter, HttpServerRequest, HttpServerResponse } from 'effect/http';
 import { appLayer, runtime } from '../../server/runtime.server';
 import { invoiceToolsLayer } from './handlers.server';
+import { sessionlessHandler } from './http.server';
 import { InvoiceTools } from './tools';
 
 // The workspace as an MCP server, over Streamable HTTP at /invoices/mcp.
@@ -49,7 +50,7 @@ const pdfs =
   });
 
 /** The MCP server and its tools, over whichever app services it is given. */
-export const agentServer = Layer.mergeAll(
+const requestServer = Layer.mergeAll(
   McpServer.toolkit(InvoiceTools).pipe(Layer.provide(invoiceToolsLayer)),
   pdfs,
 ).pipe(
@@ -60,8 +61,6 @@ export const agentServer = Layer.mergeAll(
       instructions,
       description: 'Write, issue, send and get paid for invoices and quotes.',
       path: '/invoices/mcp',
-      // The current revision first; the stateful ones serve clients that
-      // have not moved to it yet.
       protocols: [
         McpProtocol.v2026_07_28,
         McpProtocol.v2025_11_25,
@@ -69,6 +68,33 @@ export const agentServer = Layer.mergeAll(
       ],
     }),
   ),
+);
+
+/** No protocol session survives an HTTP request. */
+export const agentServer = Layer.effectDiscard(
+  Effect.gen(function* () {
+    const services = Context.omit(
+      HttpRouter.HttpRouter,
+      Scope.Scope,
+    )(
+      yield* Effect.context<
+        Exclude<Layer.Services<typeof requestServer>, HttpRouter.HttpRouter>
+      >(),
+    );
+    const answer = sessionlessHandler(() =>
+      HttpRouter.toWebHandler(
+        requestServer.pipe(Layer.provide(Layer.succeedContext(services))),
+        { disableLogger: true },
+      ),
+    );
+    const router = yield* HttpRouter.HttpRouter;
+    yield* router.add('*', '/invoices/mcp', (request) =>
+      HttpServerRequest.toWeb(request).pipe(
+        Effect.flatMap((web) => Effect.promise(() => answer(web))),
+        Effect.map(HttpServerResponse.fromWeb),
+      ),
+    );
+  }),
 );
 
 declare global {
