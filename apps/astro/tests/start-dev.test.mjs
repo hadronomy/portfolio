@@ -294,3 +294,14 @@ test('Astro React islands render without invalid-hook warnings', async () => {
   expect((await response.text()).includes('Go back')).toBeTruthy();
   expect(reactWarnings.length, reactWarnings.join('\n')).toBe(0);
 });
+
+// Server functions reach Start's dev plugin directly, not through Astro's
+// proxy, so their request is not a native one. The entry must still accept it.
+test('server functions answer when called directly in development', async () => {
+  const response = await fetch(`${origin}/_apps/functions/unknown`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: '{}',
+  });
+  expect(response.status).toBeLessThan(500);
+});

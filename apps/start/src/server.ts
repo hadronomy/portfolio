@@ -8,6 +8,23 @@ import { reportedError } from './server/errors.server';
 import { invoiceHeaders, isInvoiceResponse } from './server/headers.server';
 
 /**
+ * A copy of the request with its headers edited. Rebuilt from its parts:
+ * the dev server's request is not a native one, and `new Request(request)`
+ * cannot read its private state.
+ */
+function withHeaders(request: Request, edit: (headers: Headers) => void) {
+  const headers = new Headers(request.headers);
+  edit(headers);
+  const bodiless = request.method === 'GET' || request.method === 'HEAD';
+  return new Request(request.url, {
+    method: request.method,
+    headers,
+    signal: request.signal,
+    ...(bodiless ? {} : { body: request.body, duplex: 'half' }),
+  });
+}
+
+/**
  * In development Astro reaches this server through fetch, which replaces the
  * browser's Sec-Fetch-Mode with its own. The proxy carries the original in
  * x-forwarded-fetch-mode; sign-in reads it to tell a page load from a call.
@@ -15,16 +32,9 @@ import { invoiceHeaders, isInvoiceResponse } from './server/headers.server';
 function restoreFetchMode(request: Request) {
   const mode = request.headers.get('x-forwarded-fetch-mode');
   if (!import.meta.env.DEV || !mode) return request;
-  const headers = new Headers(request.headers);
-  headers.set('sec-fetch-mode', mode);
-  headers.delete('x-forwarded-fetch-mode');
-  // Rebuilt from its parts: the dev server's request is not a native one.
-  const bodiless = request.method === 'GET' || request.method === 'HEAD';
-  return new Request(request.url, {
-    method: request.method,
-    headers,
-    signal: request.signal,
-    ...(bodiless ? {} : { body: request.body, duplex: 'half' }),
+  return withHeaders(request, (headers) => {
+    headers.set('sec-fetch-mode', mode);
+    headers.delete('x-forwarded-fetch-mode');
   });
 }
 
@@ -42,10 +52,10 @@ export default createServerEntry({
       transport.context?.clientAddress ?? transport.ip,
       process.env.VERCEL === '1',
     );
-    const headers = new Headers(restored.headers);
-    headers.delete(clientAddressHeader);
-    if (ip) headers.set(clientAddressHeader, ip);
-    const request = new Request(restored, { headers });
+    const request = withHeaders(restored, (headers) => {
+      headers.delete(clientAddressHeader);
+      if (ip) headers.set(clientAddressHeader, ip);
+    });
     const url = new URL(request.url);
     const router = getRouter();
     const owner = getRouteOwner(router, url.pathname);
