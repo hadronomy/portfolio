@@ -52,9 +52,10 @@ const routes = [
   ['/invoices', 'Invoice workspace'],
   ['/invoices/customers', 'iv-rows'],
   ['/invoices/items', 'iv-rows'],
-  // Settings and the invoice detail gate on the client workspace query, so SSR
-  // shows their loading states; the form itself renders after hydration.
-  ['/invoices/settings', 'iv-message'],
+  // The workspace loader fills the query cache before the page renders, so
+  // the settings form is in the server's HTML. A document that does not
+  // exist renders its message.
+  ['/invoices/settings', 'iv-settings-group'],
   ['/invoices/00000000-0000-4000-8000-000000000000', 'iv-message'],
 ];
 

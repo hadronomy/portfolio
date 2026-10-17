@@ -5,11 +5,8 @@ import * as Popover from '@radix-ui/react-popover';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Check, CircleAlert, Copy, Link2 } from 'lucide-react';
 import { useState } from 'react';
-import {
-  getCollection,
-  revokePaymentLinks,
-  sharePaymentLink,
-} from '~/features/invoices/api';
+import { revokePaymentLinks, sharePaymentLink } from '~/features/invoices/api';
+import { invoiceQueries } from '~/features/invoices/queries';
 import { shareFailureMessage as failureMessage } from '~/features/invoices/share-words';
 import { useToast } from '~/features/invoices/toast';
 import { Button, cn, layer, MorphText } from '~/features/invoices/ui';
@@ -54,10 +51,7 @@ type Made = { readonly url: string; readonly copied: boolean };
 
 /** The collection state both halves of this file read, from one cache entry. */
 function useCollection(id: InvoiceId) {
-  return useQuery({
-    queryKey: ['invoice-collection', id],
-    queryFn: () => getCollection({ data: { id } }),
-  });
+  return useQuery(invoiceQueries.collection(id));
 }
 
 /**
@@ -83,7 +77,7 @@ export function PaymentLinkMenu({
   const money = (amount: string) => formatMoney(amount, language, currency);
   const toast = useToast();
   const client = useQueryClient();
-  const key = ['invoice-collection', id];
+  const { queryKey: key } = invoiceQueries.collection(id);
   const status = useCollection(id);
   const [open, setOpen] = useState(false);
   const [made, setMade] = useState<Made | null>(null);

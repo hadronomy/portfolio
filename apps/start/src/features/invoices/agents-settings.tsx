@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Check, Copy } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { disconnectAgent, getAgents } from '~/features/invoices/api';
+import { disconnectAgent } from '~/features/invoices/api';
+import { invoiceQueries } from '~/features/invoices/queries';
 import { Button, MorphText } from '~/features/invoices/ui';
 
 // The agents the owner let in over MCP, in Settings. Each row names the
@@ -44,7 +45,8 @@ function Disconnect({ clientId }: { clientId: string }) {
   const [armed, setArmed] = useState(false);
   const drop = useMutation({
     mutationFn: () => disconnectAgent({ data: { clientId } }),
-    onSuccess: () => client.invalidateQueries({ queryKey: ['agents'] }),
+    onSuccess: () =>
+      client.invalidateQueries({ queryKey: invoiceQueries.agents().queryKey }),
   });
   // An armed button disarms itself if the owner looks away.
   useEffect(() => {
@@ -65,10 +67,7 @@ function Disconnect({ clientId }: { clientId: string }) {
 }
 
 export function AgentsSettings() {
-  const { data } = useQuery({
-    queryKey: ['agents'],
-    queryFn: () => getAgents(),
-  });
+  const { data } = useQuery(invoiceQueries.agents());
   if (!data) return <p className="iv-muted">Loading agents…</p>;
   return (
     <div className="iv-agents">

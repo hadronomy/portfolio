@@ -3,9 +3,9 @@ import type { Workspace } from '@portfolio/invoices/store';
 import { queryCollectionOptions } from '@tanstack/query-db-collection';
 import { createCollection } from '@tanstack/react-db';
 import {
-  QueryClient,
-  QueryClientProvider,
+  type QueryClient,
   useQuery,
+  useQueryClient,
 } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import {
@@ -13,7 +13,6 @@ import {
   type ReactNode,
   useCallback,
   useContext,
-  useMemo,
   useState,
 } from 'react';
 import {
@@ -21,30 +20,21 @@ import {
   type Mutation,
   mutateWorkspace,
 } from '~/features/invoices/api';
+import { invoiceQueries } from '~/features/invoices/queries';
 
-// Single source of truth: the live collection and useWorkspace share this one
-// query key and function, so a single fetch feeds both readers. mutate()
-// writes the same cache entry, which keeps every reader in sync.
-const workspaceQueryKey = ['invoice-workspace'];
-
-function workspaceQueryOptions() {
-  return { queryKey: workspaceQueryKey, queryFn: () => getWorkspace() };
-}
-
-// Trivial QueryClient seam: screens never touch the client directly.
-function writeWorkspaceCache(client: QueryClient, workspace: Workspace) {
-  client.setQueryData(workspaceQueryKey, workspace);
-}
-
-function createWorkspace() {
-  const client = new QueryClient({
-    defaultOptions: { queries: { retry: 1, staleTime: 30_000 } },
-  });
-  const options = workspaceQueryOptions();
+// The live collections and useWorkspace read one query: a single fetch
+// feeds every reader, and mutate() writes that same cache entry, which keeps
+// them all in sync. The client is the router's, so what the route's loader
+// fetched is already here.
+function createWorkspace(client: QueryClient) {
+  const workspace = invoiceQueries.workspace();
+  // Each collection names the factory's key but its own query function:
+  // queryCollectionOptions infers row types from a plain function, and the
+  // factory's tagged one would erase them. Both call getWorkspace.
   const invoices = createCollection(
     queryCollectionOptions({
-      queryKey: options.queryKey,
-      queryFn: options.queryFn,
+      queryKey: workspace.queryKey,
+      queryFn: () => getWorkspace(),
       select: (data: Workspace) => [...data.invoices],
       queryClient: client,
       getKey: (invoice) => invoice.id,
@@ -52,8 +42,8 @@ function createWorkspace() {
   );
   const customers = createCollection(
     queryCollectionOptions({
-      queryKey: options.queryKey,
-      queryFn: options.queryFn,
+      queryKey: workspace.queryKey,
+      queryFn: () => getWorkspace(),
       select: (data: Workspace) => [...data.customers],
       queryClient: client,
       getKey: (customer) => customer.id,
@@ -61,8 +51,8 @@ function createWorkspace() {
   );
   const items = createCollection(
     queryCollectionOptions({
-      queryKey: options.queryKey,
-      queryFn: options.queryFn,
+      queryKey: workspace.queryKey,
+      queryFn: () => getWorkspace(),
       select: (data: Workspace) => [...data.items],
       queryClient: client,
       getKey: (item) => item.id,
@@ -70,7 +60,7 @@ function createWorkspace() {
   );
   async function mutate(data: Mutation) {
     const result = await mutateWorkspace({ data });
-    if (result.ok) writeWorkspaceCache(client, result.workspace);
+    if (result.ok) client.setQueryData(workspace.queryKey, result.workspace);
     return result;
   }
   return { client, invoices, customers, items, mutate };
@@ -79,25 +69,19 @@ const WorkspaceContext = createContext<ReturnType<
   typeof createWorkspace
 > | null>(null);
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
-  const [value] = useState(createWorkspace);
+  const client = useQueryClient();
+  const [value] = useState(() => createWorkspace(client));
   return (
     <WorkspaceContext.Provider value={value}>
-      <QueryClientProvider client={value.client}>
-        {children}
-      </QueryClientProvider>
+      {children}
     </WorkspaceContext.Provider>
   );
 }
 export function useWorkspace() {
   const context = useContext(WorkspaceContext);
   if (!context) throw new Error('The invoice workspace is missing.');
-  const options = workspaceQueryOptions();
-  const query = useQuery({
-    queryKey: options.queryKey,
-    queryFn: options.queryFn,
-  });
-  const workspace = useMemo(() => query.data, [query.data]);
-  return { ...context, ...query, workspace };
+  const query = useQuery(invoiceQueries.workspace());
+  return { ...context, ...query, workspace: query.data };
 }
 
 /** Saves a fresh draft from the owner's defaults and opens it. Resolves false when the save fails. */

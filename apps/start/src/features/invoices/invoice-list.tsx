@@ -59,11 +59,19 @@ function onRowsKey(event: KeyboardEvent<HTMLDivElement>) {
 
 export function InvoiceList() {
   const { workspace, invoices, isError, refetch } = useWorkspace();
-  const { data = [] } = useLiveQuery((query) =>
+  const live = useLiveQuery((query) =>
     query
       .from({ invoice: invoices })
       .orderBy(({ invoice }) => invoice.updatedAt, 'desc'),
   );
+  // The collection syncs after hydration. Until then, and on the server, the
+  // rows come from the workspace the route loaded, in the same order, so the
+  // page never shows an empty list it does not have.
+  const data = live.isReady
+    ? live.data
+    : [...(workspace?.invoices ?? [])].sort((a, b) =>
+        b.updatedAt.localeCompare(a.updatedAt),
+      );
   const { create, pending, ready } = useCreateInvoice();
   const toast = useToast();
   const [search, setSearch] = useState('');

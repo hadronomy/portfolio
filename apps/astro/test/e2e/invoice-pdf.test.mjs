@@ -87,6 +87,16 @@ test('sign in as owner for PDF download check', async () => {
   sessionCookie = signedIn.cookie;
 });
 
+// The route's loader fills the query cache before the page renders, so the
+// workspace's documents are in the HTML the server sends, not fetched after.
+test('the workspace lists its documents in the server HTML', async () => {
+  const response = await fetch(`${origin}/invoices`, {
+    headers: { cookie: sessionCookie },
+  });
+  expect(response.status).toBe(200);
+  expect(await response.text()).toContain(`/invoices/${invoiceId}`);
+});
+
 test('draft PDF downloads with PDF bytes', async () => {
   const response = await fetch(`${origin}/invoices/pdf/${invoiceId}?lang=en`, {
     headers: { cookie: sessionCookie },

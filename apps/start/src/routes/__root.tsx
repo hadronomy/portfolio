@@ -1,4 +1,5 @@
 import type { RouteOwner } from '@portfolio/site-routing';
+import type { QueryClient } from '@tanstack/react-query';
 import {
   createRootRouteWithContext,
   ErrorComponent,
@@ -17,6 +18,7 @@ import { InvoiceError } from '~/routes/-invoice-error';
 
 export const Route = createRootRouteWithContext<{
   ownerOf: (pathname: string) => RouteOwner;
+  queryClient: QueryClient;
 }>()({
   beforeLoad: ({ context, location }) => {
     if (context.ownerOf(location.pathname) === 'astro')

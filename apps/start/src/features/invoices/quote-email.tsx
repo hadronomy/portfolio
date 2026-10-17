@@ -7,11 +7,8 @@ import { useHotkey } from '@tanstack/react-hotkeys';
 import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query';
 import { Check, FileText, Reply, X } from 'lucide-react';
 import { useEffect, useId, useRef, useState } from 'react';
-import {
-  emailQuoteLink,
-  previewQuoteEmail,
-  quoteNoteLimit,
-} from '~/features/invoices/api';
+import { emailQuoteLink, quoteNoteLimit } from '~/features/invoices/api';
+import { invoiceQueries } from '~/features/invoices/queries';
 import { Button, cn, layer, MorphText } from '~/features/invoices/ui';
 import { appHotkeys, useHotkeyLabel } from '~/lib/hotkeys';
 
@@ -128,8 +125,7 @@ export function QuoteEmailDialog({
   const near = note.length > quoteNoteLimit * 0.8;
 
   const preview = useQuery({
-    queryKey: ['quote-email-preview', id, settledNote],
-    queryFn: () => previewQuoteEmail({ data: { id, note: settledNote } }),
+    ...invoiceQueries.quoteEmailPreview(id, settledNote),
     enabled: open,
     placeholderData: keepPreviousData,
   });

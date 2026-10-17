@@ -15,10 +15,10 @@ import { type AddressSuggestion, streetLine } from '@portfolio/invoices/photon';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { findAddresses, findLocality } from '~/features/invoices/api';
 import { Combobox } from '~/features/invoices/combobox';
 import { CountryField } from '~/features/invoices/country-field';
 import { Picker } from '~/features/invoices/picker';
+import { invoiceQueries } from '~/features/invoices/queries';
 import { Field } from '~/features/invoices/ui';
 
 // A postal address laid out the way its country writes it. The country comes
@@ -137,11 +137,8 @@ export function AddressFields({
   const [typed, setTyped] = useState('');
   const query = useDebounced(typed, 250);
   const search = useQuery({
-    queryKey: ['address-search', country, query.trim().toLowerCase()],
-    queryFn: ({ signal }) =>
-      findAddresses({ data: { query, country }, signal }),
+    ...invoiceQueries.addresses(country, query),
     enabled: !disabled && query.trim().length >= 3,
-    staleTime: 5 * 60_000,
     // The last answer stays up while the next is on its way, so the list
     // refines under the pointer instead of blinking empty on every key.
     placeholderData: keepPreviousData,
@@ -151,14 +148,8 @@ export function AddressFields({
   const postalOk =
     !!value.postalCode.trim() && postalCodeValid(country, value.postalCode);
   const locality = useQuery({
-    queryKey: ['postal-locality', country, value.postalCode.trim()],
-    queryFn: ({ signal }) =>
-      findLocality({
-        data: { postalCode: value.postalCode, country },
-        signal,
-      }),
+    ...invoiceQueries.locality(country, value.postalCode),
     enabled: !disabled && postalOk && !value.locality.trim(),
-    staleTime: 60 * 60_000,
   });
 
   const [postalLeft, setPostalLeft] = useState(() => !!value.postalCode.trim());

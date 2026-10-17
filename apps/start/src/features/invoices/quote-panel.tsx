@@ -36,15 +36,12 @@ import {
 } from 'lucide-react';
 import { type CSSProperties, useEffect, useState } from 'react';
 import {
-  getQuoteDeliveries,
-  getQuoteDetails,
-  getQuoteEmails,
-  getQuoteLinks,
   retryEmail,
   revokeQuoteLinks,
   shareQuoteLink,
 } from '~/features/invoices/api';
 import { pagesMorph } from '~/features/invoices/pages-studio';
+import { invoiceQueries } from '~/features/invoices/queries';
 import { QuoteEmailDialog } from '~/features/invoices/quote-email';
 import {
   type DocumentStatus,
@@ -107,11 +104,8 @@ function QuoteLinkMenu({
 }) {
   const toast = useToast();
   const client = useQueryClient();
-  const key = ['quote-links', id];
-  const links = useQuery({
-    queryKey: key,
-    queryFn: () => getQuoteLinks({ data: { id } }),
-  });
+  const { queryKey: key } = invoiceQueries.quoteLinks(id);
+  const links = useQuery(invoiceQueries.quoteLinks(id));
   const [open, setOpen] = useState(false);
   const [composing, setComposing] = useState(false);
   const [made, setMade] = useState<{ url: string; copied: boolean } | null>(
@@ -285,8 +279,12 @@ function QuoteLinkMenu({
             ),
           );
           void client.invalidateQueries({ queryKey: key });
-          void client.invalidateQueries({ queryKey: ['quote-emails', id] });
-          void client.invalidateQueries({ queryKey: ['quote-deliveries', id] });
+          void client.invalidateQueries({
+            queryKey: invoiceQueries.quoteEmails(id).queryKey,
+          });
+          void client.invalidateQueries({
+            queryKey: invoiceQueries.quoteDeliveries(id).queryKey,
+          });
         }}
       />
     </>
@@ -295,10 +293,7 @@ function QuoteLinkMenu({
 
 /** Where the quote went by email: the latest send, and how many before it. */
 function EmailedLine({ id }: { id: InvoiceId }) {
-  const emails = useQuery({
-    queryKey: ['quote-emails', id],
-    queryFn: () => getQuoteEmails({ data: { id } }),
-  });
+  const emails = useQuery(invoiceQueries.quoteEmails(id));
   const [latest, ...earlier] = emails.data ?? [];
   // A send made just now is marked for a moment; one from before is not.
   const [seen] = useState(() => new Date().toISOString());
@@ -323,8 +318,7 @@ function DeliveryRows({ id }: { id: InvoiceId }) {
   const query = useQueryClient();
   const { refetch: refreshWorkspace } = useWorkspace();
   const deliveries = useQuery({
-    queryKey: ['quote-deliveries', id],
-    queryFn: () => getQuoteDeliveries({ data: { id } }),
+    ...invoiceQueries.quoteDeliveries(id),
     refetchInterval: (query) =>
       query.state.data?.some((mail) => mail.state === 'pending')
         ? 15_000
@@ -338,14 +332,20 @@ function DeliveryRows({ id }: { id: InvoiceId }) {
   // The Worker can finish delivery while this panel is open.
   useEffect(() => {
     if (!sent) return;
-    void query.invalidateQueries({ queryKey: ['quote-emails', id] });
+    void query.invalidateQueries({
+      queryKey: invoiceQueries.quoteEmails(id).queryKey,
+    });
     void refreshWorkspace();
   }, [id, query, refreshWorkspace, sent]);
   const retry = useMutation({
     mutationFn: (email: string) => retryEmail({ data: { id, email } }),
     onSuccess: () => {
-      void query.invalidateQueries({ queryKey: ['quote-deliveries', id] });
-      void query.invalidateQueries({ queryKey: ['quote-emails', id] });
+      void query.invalidateQueries({
+        queryKey: invoiceQueries.quoteDeliveries(id).queryKey,
+      });
+      void query.invalidateQueries({
+        queryKey: invoiceQueries.quoteEmails(id).queryKey,
+      });
     },
   });
   const rows = deliveries.data?.filter((mail) => mail.state !== 'sent') ?? [];
@@ -401,8 +401,7 @@ function DeliveryRows({ id }: { id: InvoiceId }) {
 function DetailsStatus({ id, data }: { id: InvoiceId; data: InvoiceData }) {
   const t = useT();
   const { data: details } = useQuery({
-    queryKey: ['quote-details', id],
-    queryFn: () => getQuoteDetails({ data: { id } }),
+    ...invoiceQueries.quoteDetails(id),
     refetchInterval: 15_000,
   });
   if (!details) return null;

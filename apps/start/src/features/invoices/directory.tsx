@@ -280,10 +280,11 @@ function ConfirmRemove({
 }
 
 export function CustomerDirectory() {
-  const { customers, mutate, isError } = useWorkspace();
-  const { data: rows = [] } = useLiveQuery((query) =>
-    query.from({ customer: customers }),
-  );
+  const { workspace, customers, mutate, isError } = useWorkspace();
+  const live = useLiveQuery((query) => query.from({ customer: customers }));
+  // Until the collection syncs, after hydration, the workspace the route
+  // loaded has the same rows.
+  const rows = live.isReady ? live.data : (workspace?.customers ?? []);
   const toast = useToast();
   const [editing, setEditing] = useState<Customer | null>(null);
   const [removing, setRemoving] = useState<Customer | null>(null);
@@ -463,10 +464,9 @@ function CustomerForm({
 }
 
 export function ItemDirectory() {
-  const { items, mutate, isError } = useWorkspace();
-  const { data: rows = [] } = useLiveQuery((query) =>
-    query.from({ item: items }),
-  );
+  const { workspace, items, mutate, isError } = useWorkspace();
+  const live = useLiveQuery((query) => query.from({ item: items }));
+  const rows = live.isReady ? live.data : (workspace?.items ?? []);
   const toast = useToast();
   const [editing, setEditing] = useState<CatalogItem | null>(null);
   const [removing, setRemoving] = useState<CatalogItem | null>(null);
