@@ -7,12 +7,15 @@ import {
 import type { InvoiceId, Language } from '@portfolio/invoices/model';
 import { privacyController } from '@portfolio/invoices/privacy';
 import { Effect, Option } from 'effect';
-import { requireCustomer, viewer } from '../../server/auth.server';
-import { customerAccounts } from '../../server/config.server';
-import { Payments } from '../../server/payments.server';
-import { requestLanguage } from '../../server/request.server';
-import { checkout } from '../invoices/collection.server';
-import { pdfResponse, unavailable } from '../invoices/operations.server';
+import { checkout } from '~/features/invoices/collection.server';
+import {
+  pdfResponse,
+  unavailable,
+} from '~/features/invoices/operations.server';
+import { requireCustomer, viewer } from '~/server/auth.server';
+import { customerAccounts } from '~/server/config.server';
+import { Payments } from '~/server/payments.server';
+import { requestLanguage } from '~/server/request.server';
 
 // The customer's side of the app: the list of invoices billed to them, each
 // one's page to pay it on, and its PDF. Everything here starts from the

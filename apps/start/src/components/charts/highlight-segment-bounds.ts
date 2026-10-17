@@ -1,5 +1,5 @@
-import type { TooltipData } from './chart-context';
-import type { ChartSelection } from './use-chart-interaction';
+import type { TooltipData } from '~/components/charts/chart-context';
+import type { ChartSelection } from '~/components/charts/use-chart-interaction';
 
 // Pure geometry for the hover-highlight band, split out from the hook so it can
 // be unit-tested without React/motion (see __tests__).

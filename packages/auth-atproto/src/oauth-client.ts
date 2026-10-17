@@ -8,8 +8,8 @@ import {
 } from '@atproto/oauth-client-node';
 import type { AuthContext } from '@better-auth/core';
 import { APIError } from 'better-auth/api';
-import { ATPROTO_ERROR_CODES } from './error-codes';
-import { verificationStore } from './store';
+import { ATPROTO_ERROR_CODES } from '#error-codes';
+import { verificationStore } from '#store';
 
 /** Paths the plugin serves under the auth base path. */
 export const paths = {

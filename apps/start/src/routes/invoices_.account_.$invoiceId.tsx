@@ -1,9 +1,9 @@
 import { translate } from '@portfolio/i18n';
 import { m } from '@portfolio/i18n/messages';
 import { createFileRoute, redirect } from '@tanstack/react-router';
-import { MissingInvoicePage } from '../features/account/account';
-import { getAccountInvoice } from '../features/account/api';
-import { PaymentPage } from '../features/invoices/pay';
+import { MissingInvoicePage } from '~/features/account/account';
+import { getAccountInvoice } from '~/features/account/api';
+import { PaymentPage } from '~/features/invoices/pay';
 
 export const Route = createFileRoute('/invoices_/account_/$invoiceId')({
   loader: async ({ params }) => {

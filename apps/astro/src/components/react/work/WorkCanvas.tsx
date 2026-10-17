@@ -7,14 +7,14 @@ import {
 } from 'motion/react';
 import * as m from 'motion/react-m';
 import { type ReactNode, useId, useRef, useState } from 'react';
+import { CanvasDetails } from '~/components/react/work/CanvasControls';
+import CanvasPrint from '~/components/react/work/CanvasPrint';
+import { placePrints } from '~/components/react/work/canvas-layout';
+import { useCanvasGestures } from '~/components/react/work/use-canvas-gestures';
+import { useCanvasSession } from '~/components/react/work/use-canvas-session';
+import { useWorkCamera } from '~/components/react/work/use-work-camera';
 import type { WorkProject } from '~/lib/work';
-import { CanvasDetails } from './CanvasControls';
-import CanvasPrint from './CanvasPrint';
-import { placePrints } from './canvas-layout';
-import { useCanvasGestures } from './use-canvas-gestures';
-import { useCanvasSession } from './use-canvas-session';
-import { useWorkCamera } from './use-work-camera';
-import './canvas.css';
+import '~/components/react/work/canvas.css';
 
 interface Props {
   projects: readonly WorkProject[];

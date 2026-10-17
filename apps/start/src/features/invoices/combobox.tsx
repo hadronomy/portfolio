@@ -7,7 +7,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { cn, Field, layer } from './ui';
+import { cn, Field, layer } from '~/features/invoices/ui';
 
 export type ComboboxProps<T> = {
   label: string;

@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { ConnectSignIn } from '../features/agent/connect';
-import { getViewer } from '../features/invoices/api';
+import { ConnectSignIn } from '~/features/agent/connect';
+import { getViewer } from '~/features/invoices/api';
 
 export const Route = createFileRoute('/invoices_/connect')({
   loader: () => getViewer(),

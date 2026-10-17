@@ -8,9 +8,9 @@ import type {
 import { type QuoteError, Quotes } from '@portfolio/invoices/quotes';
 import { InvoiceStore, type StoreError } from '@portfolio/invoices/store';
 import { Effect, Match } from 'effect';
-import { requireOwner } from '../../server/auth.server';
-import { Refused, sameOrigin } from '../../server/request.server';
-import type { Mutation } from './api';
+import type { Mutation } from '~/features/invoices/api';
+import { requireOwner } from '~/server/auth.server';
+import { Refused, sameOrigin } from '~/server/request.server';
 
 // The owner's workspace, as effects: read it, change it, preview and
 // download its documents. Each one checks who is asking before it reads.

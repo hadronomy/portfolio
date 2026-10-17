@@ -1,8 +1,8 @@
 import { Invoice, type InvoiceData } from '@portfolio/invoices/model';
 import { Schema } from 'effect';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { previewInvoice } from './api';
-import { useWorkspace } from './workspace';
+import { previewInvoice } from '~/features/invoices/api';
+import { useWorkspace } from '~/features/invoices/workspace';
 
 // Server saves wait for this pause in typing...
 const saveDelay = 800;

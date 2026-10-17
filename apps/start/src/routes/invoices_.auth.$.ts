@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { Auth } from '../server/auth.server';
-import { serve } from '../server/runtime.server';
+import { Auth } from '~/server/auth.server';
+import { serve } from '~/server/runtime.server';
 
 const handle = ({ request }: { request: Request }) =>
   serve(

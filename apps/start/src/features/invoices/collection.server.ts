@@ -12,10 +12,13 @@ import type {
   RecordId,
 } from '@portfolio/invoices/model';
 import { Effect, Match, Option } from 'effect';
-import { requireOwner, viewer } from '../../server/auth.server';
-import { Payments, type PaymentsApi } from '../../server/payments.server';
-import { origin, Refused, sameOrigin } from '../../server/request.server';
-import { pdfResponse, unavailable } from './operations.server';
+import {
+  pdfResponse,
+  unavailable,
+} from '~/features/invoices/operations.server';
+import { requireOwner, viewer } from '~/server/auth.server';
+import { Payments, type PaymentsApi } from '~/server/payments.server';
+import { origin, Refused, sameOrigin } from '~/server/request.server';
 
 // The request side of online payments. Each effect authorizes its caller,
 // runs one Collection operation, and turns the result into something a

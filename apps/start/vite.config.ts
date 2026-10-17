@@ -26,9 +26,9 @@ export default defineConfig({
   // editor and the preview load. The entry stays near 400 kB, so a heavy
   // module that leaks into it still trips this limit.
   build: { chunkSizeWarningLimit: 700 },
-  // The `@/` alias is shadcn's: the bklit charts in src/components import
-  // each other through it.
-  resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
+  // `~/` is declared once, in tsconfig.json, and every module of the app
+  // imports another through it: no path climbs out of its folder.
+  resolve: { tsconfigPaths: true },
   plugins: [
     // Recompiles the messages as they are edited; the i18n package's own
     // build does the same outside Vite. Both read project.inlang.

@@ -1,8 +1,8 @@
 import { InvoiceId } from '@portfolio/invoices/model';
 import { createServerFn } from '@tanstack/react-start';
 import { Result, Schema } from 'effect';
-import { serve } from '../../server/runtime.server';
-import { accountInvoice, accountPage } from './account.server';
+import { accountInvoice, accountPage } from '~/features/account/account.server';
+import { serve } from '~/server/runtime.server';
 
 // Client/server seam, as in features/invoices/api.ts: the build swaps each
 // handler for an RPC stub in client bundles.

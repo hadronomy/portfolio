@@ -1,9 +1,9 @@
 import { createHash } from 'node:crypto';
 import { and, desc, eq } from 'drizzle-orm';
 import { Context, Effect, Layer, Schema } from 'effect';
-import { billData, bills } from './billing';
-import { InvoiceDatabase } from './database';
-import { Documents } from './documents';
+import { billData, bills } from '#billing';
+import { InvoiceDatabase } from '#database';
+import { Documents } from '#documents';
 import {
   createLink,
   type LinkInvalid,
@@ -11,7 +11,7 @@ import {
   openLinks,
   resolveLink,
   revokeLinks,
-} from './links';
+} from '#links';
 import {
   type Customer,
   Invoice,
@@ -21,10 +21,10 @@ import {
   newInvoice,
   type OwnerDid,
   RecordId,
-} from './model';
-import { enqueueMail } from './outbox';
-import type { MailKind } from './outbox-model';
-import { PaymentPlan } from './plan';
+} from '#model';
+import { enqueueMail } from '#outbox';
+import type { MailKind } from '#outbox-model';
+import { PaymentPlan } from '#plan';
 import {
   type CustomerDetails,
   DetailsConfirmation,
@@ -35,17 +35,17 @@ import {
   InvalidDetails,
   territoryOf,
   tidyDetails,
-} from './quote-details';
+} from '#quote-details';
 import {
   type Answer,
   QuoteEmail,
   QuoteResponse,
   type QuoteState,
   quoteState,
-} from './quote-model';
-import { decodeStored, stored } from './storage';
-import { InvoiceStore, type StoreError } from './store';
-import * as tables from './tables';
+} from '#quote-model';
+import { decodeStored, stored } from '#storage';
+import { InvoiceStore, type StoreError } from '#store';
+import * as tables from '#tables';
 
 // Customer confirmation creates a revision of the same quote. The answer
 // binds to that revision's PDF. An owner's revision creates a new quote.

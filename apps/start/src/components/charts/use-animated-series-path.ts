@@ -2,14 +2,14 @@
 
 import { animate, useReducedMotion } from 'motion/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { LINE_LOADING_PULSE_EASE } from './line-loading-timing';
+import { LINE_LOADING_PULSE_EASE } from '~/components/charts/line-loading-timing';
 import {
   computeSeriesPathPoints,
   interpolateSeriesPathPoints,
   type SeriesPathPoint,
   seriesPathFromPoints,
   seriesPathTransitionSignature,
-} from './series-path-utils';
+} from '~/components/charts/series-path-utils';
 
 // biome-ignore lint/suspicious/noExplicitAny: d3 curve factory type
 type CurveFactory = any;

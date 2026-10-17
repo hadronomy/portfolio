@@ -1,8 +1,8 @@
 import Decimal from 'decimal.js';
 import { and, desc, eq, sql } from 'drizzle-orm';
 import { Context, Effect, Layer } from 'effect';
-import { balance, calculate } from './calculate';
-import { InvoiceDatabase } from './database';
+import { balance, calculate } from '#calculate';
+import { InvoiceDatabase } from '#database';
 import {
   type Actor,
   CatalogItem,
@@ -20,18 +20,18 @@ import {
   RecordId,
   RevisionConflict,
   type StorageFailure,
-} from './model';
+} from '#model';
 import {
   defaultsFor,
   InvoiceOffer,
   noOffer,
   type Offer,
   PlanLibrary,
-} from './plan';
-import { QuoteResponse } from './quote-model';
-import { decodeStored, stored } from './storage';
-import * as tables from './tables';
-import { issueErrors } from './validate';
+} from '#plan';
+import { QuoteResponse } from '#quote-model';
+import { decodeStored, stored } from '#storage';
+import * as tables from '#tables';
+import { issueErrors } from '#validate';
 
 /** Failures a store method can return. Callers match on `_tag` to render field errors, reload on conflict, or retry on storage faults. */
 export type StoreError =

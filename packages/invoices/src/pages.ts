@@ -1,8 +1,8 @@
 import type { JSONContent } from '@tiptap/core';
 import { Result, Schema } from 'effect';
+import { clauseVersion } from '#clauses';
 import { schemaIssue } from '#page-check';
-import { clauseVersion } from './clauses';
-import { linkable } from './page-links';
+import { linkable } from '#page-links';
 
 // A quote's pages: the long-form writing that follows the priced lines.
 // They are stored and sent as ProseMirror JSON text. A flat string crosses

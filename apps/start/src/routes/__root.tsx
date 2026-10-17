@@ -11,8 +11,8 @@ import {
 } from '@tanstack/react-router';
 // A plain import, not ?url: Start links it on the server for the first
 // paint and Vite hot-updates it in development.
-import '../styles.css';
-import { InvoiceError } from './-invoice-error';
+import '~/styles.css';
+import { InvoiceError } from '~/routes/-invoice-error';
 
 export const Route = createRootRouteWithContext<{
   ownerOf: (pathname: string) => RouteOwner;

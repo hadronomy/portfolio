@@ -4,7 +4,7 @@ import * as RadixSeparator from '@radix-ui/react-separator';
 import type { VariantProps } from 'tailwind-variants';
 import { tv } from 'tailwind-variants';
 
-import { cn } from './utils/cn';
+import { cn } from '#utils/cn';
 
 export const separatorStyle = tv({
   base: 'bg-border shrink-0',

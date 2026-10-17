@@ -1,8 +1,8 @@
 'use client';
 
 import { useCallback } from 'react';
-import { useChartStable, useYScale } from './chart-context';
-import type { ProjectionPoint } from './projection-utils';
+import { useChartStable, useYScale } from '~/components/charts/chart-context';
+import type { ProjectionPoint } from '~/components/charts/projection-utils';
 
 export interface ProjectionLineEndMarkerProps {
   data: ProjectionPoint[];

@@ -1,9 +1,9 @@
 import { Language } from '@portfolio/invoices/model';
 import { createFileRoute } from '@tanstack/react-router';
 import { Effect, Schema } from 'effect';
-import { quotePageImage } from '../features/invoices/quotes.server';
-import { Refused } from '../server/request.server';
-import { serve } from '../server/runtime.server';
+import { quotePageImage } from '~/features/invoices/quotes.server';
+import { Refused } from '~/server/request.server';
+import { serve } from '~/server/runtime.server';
 
 const Query = Schema.Struct({
   lang: Language,

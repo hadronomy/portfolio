@@ -1,14 +1,14 @@
 import { translate } from '@portfolio/i18n';
 import { m } from '@portfolio/i18n/messages';
 import Decimal from 'decimal.js';
-import { calculate, formatMoney } from './calculate';
+import { calculate, formatMoney } from '#calculate';
 import {
   type Currency,
   type InvoiceData,
   type Language,
   type Line,
   RecordId,
-} from './model';
+} from '#model';
 import {
   type Due,
   type Laid,
@@ -17,7 +17,7 @@ import {
   type Portion,
   type Span,
   type Terms,
-} from './plan';
+} from '#plan';
 
 // How an accepted quote is billed. The customer accepts it with one of
 // its payment plans, and every payment of that plan gets an invoice of its

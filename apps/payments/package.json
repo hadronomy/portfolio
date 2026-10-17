@@ -25,6 +25,7 @@
   "devDependencies": {
     "@cloudflare/workers-types": "5.20261005.1",
     "@effect/platform-node": "4.0.0",
+    "@portfolio/vitest-config": "workspace:",
     "@types/node": "catalog:types",
     "typescript": "catalog:dev",
     "vitest": "catalog:test"

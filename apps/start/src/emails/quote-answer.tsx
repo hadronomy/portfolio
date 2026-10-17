@@ -1,9 +1,9 @@
 import { type Locale, translate } from '@portfolio/i18n';
 import { m } from '@portfolio/i18n/messages';
 import { Section, Text } from 'react-email';
-import { Action } from './_parts/action';
-import { Foot, Frame, text, tone } from './_parts/frame';
-import { Face, Signed, Ticket } from './_parts/ticket';
+import { Action } from '~/emails/_parts/action';
+import { Foot, Frame, text, tone } from '~/emails/_parts/frame';
+import { Face, Signed, Ticket } from '~/emails/_parts/ticket';
 
 // The confirmation the law asks for within 24 hours of an online
 // acceptance (Ley 34/2002, art. 28), sent to the customer. It is the

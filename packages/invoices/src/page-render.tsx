@@ -7,12 +7,12 @@ import {
   renderJSONContentToReactElement,
 } from '@tiptap/static-renderer/json/react';
 import type { CSSProperties, ReactNode } from 'react';
-import { planTerms } from './billing';
-import { clauseVersion } from './clauses';
-import type { InvoiceData, Language, QuoteTerms } from './model';
-import { markdownToJSON } from './page-markdown';
-import { hasPages, readPages, toJSONContent } from './pages';
-import { partyLines } from './party-lines';
+import { planTerms } from '#billing';
+import { clauseVersion } from '#clauses';
+import type { InvoiceData, Language, QuoteTerms } from '#model';
+import { markdownToJSON } from '#page-markdown';
+import { hasPages, readPages, toJSONContent } from '#pages';
+import { partyLines } from '#party-lines';
 import {
   faint,
   grid,
@@ -22,9 +22,9 @@ import {
   ruleStrong,
   soft,
   text,
-} from './pdf-style';
-import { type QuoteResponse, signatureSource } from './quote-model';
-import { printsWithdrawalForm, quoteNotices } from './quote-notices';
+} from '#pdf-style';
+import { type QuoteResponse, signatureSource } from '#quote-model';
+import { printsWithdrawalForm, quoteNotices } from '#quote-notices';
 
 // A quote's pages, notices and withdrawal form as the PDF prints them, set
 // the way a printed proposal or contract is: a title and its lede, then

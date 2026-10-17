@@ -27,28 +27,28 @@ import {
 import { InvoiceStore, type Workspace } from '@portfolio/invoices/store';
 import { issueErrors } from '@portfolio/invoices/validate';
 import { Effect, Match, Result } from 'effect';
-import { AppConfig } from '../../server/config.server';
-import { Mailer } from '../../server/mail.server';
-import { agentOrigin } from '../../server/origin.server';
-import type { Payments } from '../../server/payments.server';
-import { ownerDid } from '../auth/options';
-import type { Mutation } from '../invoices/api';
-import {
-  linkStatus,
-  revokeLinks,
-  shareLink,
-} from '../invoices/collection.server';
-import { perform } from '../invoices/operations.server';
-import { emailQuoteTo, sendQuote } from '../invoices/quotes.server';
-import { shareFailureMessage } from '../invoices/share-words';
-import { documentStatus } from '../invoices/status';
 import {
   type DocumentRow,
   type DraftChanges,
   InvoiceTools,
   type LineInput,
   ToolFailure,
-} from './tools';
+} from '~/features/agent/tools';
+import { ownerDid } from '~/features/auth/options';
+import type { Mutation } from '~/features/invoices/api';
+import {
+  linkStatus,
+  revokeLinks,
+  shareLink,
+} from '~/features/invoices/collection.server';
+import { perform } from '~/features/invoices/operations.server';
+import { emailQuoteTo, sendQuote } from '~/features/invoices/quotes.server';
+import { shareFailureMessage } from '~/features/invoices/share-words';
+import { documentStatus } from '~/features/invoices/status';
+import { AppConfig } from '~/server/config.server';
+import { Mailer } from '~/server/mail.server';
+import { agentOrigin } from '~/server/origin.server';
+import type { Payments } from '~/server/payments.server';
 
 // The tools at work. Each one finds what it was pointed at, runs the
 // operation the invoice pages run, as the owner, and reads the result back

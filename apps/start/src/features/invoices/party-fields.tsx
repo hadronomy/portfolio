@@ -1,7 +1,12 @@
 import type { Issuer, Party } from '@portfolio/invoices/model';
-import { AddressFields } from './address-fields';
-import { activities, censusStates, legalForms, regimes } from './choices';
-import { checkIban, ownDomain } from './identity';
+import { AddressFields } from '~/features/invoices/address-fields';
+import {
+  activities,
+  censusStates,
+  legalForms,
+  regimes,
+} from '~/features/invoices/choices';
+import { checkIban, ownDomain } from '~/features/invoices/identity';
 import {
   AmountField,
   BicField,
@@ -9,8 +14,8 @@ import {
   IbanField,
   TaxIdField,
   WebsiteField,
-} from './smart-fields';
-import { Field, Select } from './ui';
+} from '~/features/invoices/smart-fields';
+import { Field, Select } from '~/features/invoices/ui';
 
 /**
  * A legal identity. `self` marks the owner's own details, the only place the

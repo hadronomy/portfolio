@@ -15,31 +15,35 @@ import {
   useRef,
   useState,
 } from 'react';
-import { chartCssVars, useChartStable, useYScale } from './chart-context';
-import type { LoadingStyle } from './chart-phase';
+import {
+  chartCssVars,
+  useChartStable,
+  useYScale,
+} from '~/components/charts/chart-context';
+import type { LoadingStyle } from '~/components/charts/chart-phase';
 import {
   type FadeEdges,
   fadeGradientStops,
   resolveFadeSides,
   viewportFadeGradientAttrs,
-} from './fade-edges';
+} from '~/components/charts/fade-edges';
 import {
   type LineLoadingPulseMode,
   LineLoadingPulseStroke,
   resolveLineLoadingPulseMode,
-} from './line-loading-pulse';
-import { LINE_LOADING_LOOP_PAUSE_MS } from './line-loading-timing';
-import { LineLoadingSweep } from './loading-sweep';
+} from '~/components/charts/line-loading-pulse';
+import { LINE_LOADING_LOOP_PAUSE_MS } from '~/components/charts/line-loading-timing';
+import { LineLoadingSweep } from '~/components/charts/loading-sweep';
 import {
   resolveDashTailBounds,
   usePathStrokeMetrics,
-} from './path-stroke-utils';
-import { SeriesDashTailOverlay } from './series-dash-tail-overlay';
-import { SeriesHighlightLayer } from './series-highlight-layer';
-import { SeriesHoverDim } from './series-hover-dim';
-import { SeriesMarkers } from './series-markers';
-import type { SeriesPointMarkerStyle } from './series-point-marker';
-import { useAnimatedSeriesPath } from './use-animated-series-path';
+} from '~/components/charts/path-stroke-utils';
+import { SeriesDashTailOverlay } from '~/components/charts/series-dash-tail-overlay';
+import { SeriesHighlightLayer } from '~/components/charts/series-highlight-layer';
+import { SeriesHoverDim } from '~/components/charts/series-hover-dim';
+import { SeriesMarkers } from '~/components/charts/series-markers';
+import type { SeriesPointMarkerStyle } from '~/components/charts/series-point-marker';
+import { useAnimatedSeriesPath } from '~/components/charts/use-animated-series-path';
 
 export interface LineProps {
   /** Key in data to use for y values */

@@ -17,7 +17,7 @@ import {
   authBasePath,
   codeLifetime,
   ownerHandle,
-} from './shared';
+} from '~/features/auth/shared';
 
 // Who may use the invoices app, and how they prove it. Two kinds of people
 // sign in. The owner uses their AT Protocol account and is recognised by DID

@@ -1,5 +1,5 @@
-import { engineeringExperience } from '../lib/profile';
-import type { Locale } from './locales';
+import type { Locale } from '~/i18n/locales';
+import { engineeringExperience } from '~/lib/profile';
 
 export const cvProjects = [
   { id: 'inari', name: 'Inari', url: 'https://github.com/hadronomy/inari' },

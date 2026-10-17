@@ -1,5 +1,5 @@
-import { type CountryCode, formatAddress } from './address';
-import type { Language, Party } from './model';
+import { type CountryCode, formatAddress } from '#address';
+import type { Language, Party } from '#model';
 
 /**
  * The lines under a party's name, as the invoice prints them: email, the

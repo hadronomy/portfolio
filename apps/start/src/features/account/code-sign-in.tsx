@@ -9,12 +9,16 @@ import {
   useRef,
   useState,
 } from 'react';
-import { useT } from '../../lib/i18n';
-import { authClient } from '../auth/client';
-import { SuccessCheck } from '../invoices/toast';
-import { Button, MorphText } from '../invoices/ui';
-import { CollectionNotice } from '../privacy/collection-notice';
-import { CodeField, type CodeState, codeLength } from './code-field';
+import {
+  CodeField,
+  type CodeState,
+  codeLength,
+} from '~/features/account/code-field';
+import { authClient } from '~/features/auth/client';
+import { SuccessCheck } from '~/features/invoices/toast';
+import { Button, MorphText } from '~/features/invoices/ui';
+import { CollectionNotice } from '~/features/privacy/collection-notice';
+import { useT } from '~/lib/i18n';
 
 // Sign-in by a code sent to an inbox, in two steps on one form: the address,
 // then the code. A fixed address skips the first step, as on a payment link,

@@ -1,6 +1,6 @@
 import { m } from '@portfolio/i18n/messages';
-import { useT } from '../../lib/i18n';
-import './privacy.css';
+import { useT } from '~/lib/i18n';
+import '~/features/privacy/privacy.css';
 
 export function CollectionNotice({
   purpose,

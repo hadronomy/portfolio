@@ -3,10 +3,10 @@ import { formatAddress } from '@portfolio/invoices/address';
 import type { Language } from '@portfolio/invoices/model';
 import type { PrivacyController } from '@portfolio/invoices/privacy';
 import { ArrowLeft, ArrowUpRight } from 'lucide-react';
-import { Speak, useT } from '../../lib/i18n';
-import { coverArt } from '../invoices/covers';
-import '../invoices/invoices.css';
-import './privacy.css';
+import { coverArt } from '~/features/invoices/covers';
+import { Speak, useT } from '~/lib/i18n';
+import '~/features/invoices/invoices.css';
+import '~/features/privacy/privacy.css';
 
 const sections = [
   { id: 'purposes', title: m.privacy_purposes_title },

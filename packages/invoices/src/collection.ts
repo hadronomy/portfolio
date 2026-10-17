@@ -4,7 +4,7 @@ import { m } from '@portfolio/i18n/messages';
 import Decimal from 'decimal.js';
 import { and, asc, eq, gt, isNotNull, ne, or } from 'drizzle-orm';
 import { Context, Effect, Layer, Schema } from 'effect';
-import { balance, calculate } from './calculate';
+import { balance, calculate } from '#calculate';
 import {
   type AttemptId,
   Checkout,
@@ -12,8 +12,8 @@ import {
   CollectionStatus,
   PayFailure,
   Review,
-} from './collection-model';
-import { InvoiceDatabase } from './database';
+} from '#collection-model';
+import { InvoiceDatabase } from '#database';
 import {
   type LinkInvalid,
   type LinkToken,
@@ -21,7 +21,7 @@ import {
   openLinks,
   resolveLink,
   revokeLinks,
-} from './links';
+} from '#links';
 import {
   type Actor,
   type Invoice,
@@ -30,8 +30,8 @@ import {
   type Payment,
   RecordId,
   StorageFailure,
-} from './model';
-import { partyLines } from './party-lines';
+} from '#model';
+import { partyLines } from '#party-lines';
 import {
   allows,
   type InvoiceOffer,
@@ -40,11 +40,11 @@ import {
   options,
   schedule,
   termsOf,
-} from './plan';
-import { Settlement } from './settlement';
-import { decodeStored, stored } from './storage';
-import { InvoiceStore, type StoreError } from './store';
-import { StripeGateway } from './stripe/gateway';
+} from '#plan';
+import { Settlement } from '#settlement';
+import { decodeStored, stored } from '#storage';
+import { InvoiceStore, type StoreError } from '#store';
+import { StripeGateway } from '#stripe/gateway';
 import {
   customerDetails,
   differences,
@@ -52,15 +52,15 @@ import {
   project,
   projectionVersion,
   toMinor,
-} from './stripe/projection';
+} from '#stripe/projection';
 import {
   StripeCustomerId,
   type StripeFailure,
   type StripeInvoice,
   StripeInvoiceId,
   type StripeInvoicePayment,
-} from './stripe/schema';
-import * as tables from './tables';
+} from '#stripe/schema';
+import * as tables from '#tables';
 
 // Collection puts an issued invoice up for payment and keeps the ledger in
 // step with what Stripe received. The local invoice stays the record: Stripe

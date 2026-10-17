@@ -1,5 +1,5 @@
 'use client';
 
-export * from './ripple';
+export * from '#ripple/ripple';
 
-export * from './use-ripple';
+export * from '#ripple/use-ripple';

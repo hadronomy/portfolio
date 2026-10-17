@@ -2,7 +2,7 @@ import { settlementOf } from '@portfolio/invoices/settlement';
 import { StripeWebhooks } from '@portfolio/invoices/stripe/webhooks';
 import { Effect } from 'effect';
 import { HttpRouter, HttpServerRequest, HttpServerResponse } from 'effect/http';
-import { Settlements } from './settlements';
+import { Settlements } from '~/settlements';
 
 // Stripe's way in. A delivery is verified against its raw body, reduced to
 // the settlement it calls for, and queued; only then does Stripe hear 200.

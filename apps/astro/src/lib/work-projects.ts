@@ -1,4 +1,4 @@
-import type { WorkProject } from './work';
+import type { WorkProject } from '~/lib/work';
 
 /**
  * The projects the gallery shows.

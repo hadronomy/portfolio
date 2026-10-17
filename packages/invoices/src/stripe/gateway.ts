@@ -1,7 +1,7 @@
 import { Config, Context, Effect, Layer, Redacted, Schema } from 'effect';
 import Stripe from 'stripe';
-import type { InvoiceId } from '../model';
-import { call } from './call';
+import type { InvoiceId } from '#model';
+import { call } from '#stripe/call';
 import {
   InvoicePaymentId,
   Minor,
@@ -12,7 +12,7 @@ import {
   StripeInvoice,
   StripeInvoiceId,
   type StripeInvoicePayment,
-} from './schema';
+} from '#stripe/schema';
 
 /**
  * The Stripe calls invoice collection makes, each one decoded, classified,

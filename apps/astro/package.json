@@ -15,8 +15,8 @@
     "seo:check": "node scripts/seo/check.mjs",
     "preview": "astro preview",
     "astro": "astro",
-    "test:routing": "vitest run tests/start-routing.test.mjs",
-    "test:dev": "vitest run tests/start-dev.test.mjs",
+    "test:routing": "vitest run test/e2e/start-routing.test.mjs",
+    "test:dev": "vitest run test/e2e/start-dev.test.mjs",
     "test": "vitest run"
   },
   "dependencies": {
@@ -64,6 +64,7 @@
   },
   "devDependencies": {
     "@astrojs/language-server": "catalog:dev",
+    "@portfolio/vitest-config": "workspace:",
     "@shikijs/twoslash": "catalog:syntax",
     "@tailwindcss/vite": "catalog:build",
     "@types/react": "catalog:types",
@@ -75,6 +76,12 @@
     "prettier-plugin-astro": "catalog:lint",
     "rollup-preserve-directives": "catalog:build",
     "typescript": "catalog:dev",
-    "vitest": "catalog:test"
+    "vitest": "catalog:test",
+    "@portfolio/database": "workspace:",
+    "@portfolio/invoices": "workspace:",
+    "effect": "4.0.0"
+  },
+  "imports": {
+    "#support/*": "./test/support/*"
   }
 }

@@ -1,15 +1,15 @@
 import { and, asc, desc, eq, gt, isNull, lte, or } from 'drizzle-orm';
 import { Context, Effect, Layer, Schema } from 'effect';
-import { InvoiceDatabase } from './database';
-import { type InvoiceId, type OwnerDid, StorageFailure } from './model';
+import { InvoiceDatabase } from '#database';
+import { type InvoiceId, type OwnerDid, StorageFailure } from '#model';
 import {
   type MailDelivery,
   type MailKind,
   MailPayload,
   PreparedMail,
-} from './outbox-model';
-import { decodeStored, stored } from './storage';
-import * as tables from './tables';
+} from '#outbox-model';
+import { decodeStored, stored } from '#storage';
+import * as tables from '#tables';
 
 type Transaction = Parameters<
   Parameters<InvoiceDatabase['Service']['transaction']>[0]

@@ -2,16 +2,16 @@
 
 import { memo, useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useChartStable, useYScale } from './chart-context';
-import { DEFAULT_Y_DOMAIN_TWEEN_MS } from './chart-phase';
-import { LINE_LOADING_PULSE_EASE } from './line-loading-timing';
-import { resolveReferenceDataRange } from './reference-area-geometry';
-import type { YAxisOrientation } from './y-axis-scales';
-import { normalizeYAxisId } from './y-axis-scales';
+import { useChartStable, useYScale } from '~/components/charts/chart-context';
+import { DEFAULT_Y_DOMAIN_TWEEN_MS } from '~/components/charts/chart-phase';
+import { LINE_LOADING_PULSE_EASE } from '~/components/charts/line-loading-timing';
+import { resolveReferenceDataRange } from '~/components/charts/reference-area-geometry';
+import type { YAxisOrientation } from '~/components/charts/y-axis-scales';
+import { normalizeYAxisId } from '~/components/charts/y-axis-scales';
 import {
   resolveYAxisTickCount,
   Y_AXIS_DEFAULT_TICK_COUNT,
-} from './y-axis-ticks';
+} from '~/components/charts/y-axis-ticks';
 
 const Y_AXIS_POSITION_TWEEN_MS = DEFAULT_Y_DOMAIN_TWEEN_MS;
 

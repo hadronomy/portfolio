@@ -1,4 +1,4 @@
-import { type CountryCode, countryCodes } from './address';
+import { type CountryCode, countryCodes } from '#address';
 
 // Countries as the owner thinks of them: by name, in English or Spanish, or by
 // the everyday short forms people type. The two-letter ISO code is what is

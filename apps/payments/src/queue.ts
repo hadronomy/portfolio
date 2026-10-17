@@ -3,7 +3,7 @@ import type { RuntimeContext } from 'alchemy';
 import * as Alchemy from 'alchemy';
 import * as Cloudflare from 'alchemy/Cloudflare';
 import { Array as Arr, Effect, Layer, Schema } from 'effect';
-import { QueueUnavailable, Settlements } from './settlements';
+import { QueueUnavailable, Settlements } from '~/settlements';
 
 // The Cloudflare Queues behind Settlements.
 

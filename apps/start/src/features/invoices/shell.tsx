@@ -18,17 +18,25 @@ import {
 } from 'lucide-react';
 import { MotionConfig } from 'motion/react';
 import { type ReactNode, useCallback, useState } from 'react';
-import { authClient } from '../auth/client';
-import { ownerHandle } from '../auth/shared';
-import { coverArt } from './covers';
-import { ToastProvider, useToast } from './toast';
-import { Button, MorphText, Tip, TooltipProvider } from './ui';
-import { useCreateInvoice, WorkspaceProvider } from './workspace';
+import { authClient } from '~/features/auth/client';
+import { ownerHandle } from '~/features/auth/shared';
+import { coverArt } from '~/features/invoices/covers';
+import { ToastProvider, useToast } from '~/features/invoices/toast';
+import {
+  Button,
+  MorphText,
+  Tip,
+  TooltipProvider,
+} from '~/features/invoices/ui';
+import {
+  useCreateInvoice,
+  WorkspaceProvider,
+} from '~/features/invoices/workspace';
 // Imported here, with the workspace, rather than in the route file: the
 // route's component code is split into its own chunk, so the styles ship
 // with the invoice pages and nowhere else. A plain import lets Start link
 // it for the first paint and Vite hot-update it in development.
-import './invoices.css';
+import '~/features/invoices/invoices.css';
 
 // What the callback's `?error=` means, in words the owner can act on.
 const signInErrors: Record<string, string> = {

@@ -1,5 +1,5 @@
 import { Button } from 'react-email';
-import { tone } from './frame';
+import { tone } from '~/emails/_parts/frame';
 
 /** The email's one action, drawn as the pages' primary button. */
 export function Action({ href, children }: { href: string; children: string }) {

@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { Auth } from '../server/auth.server';
-import { serve } from '../server/runtime.server';
+import { Auth } from '~/server/auth.server';
+import { serve } from '~/server/runtime.server';
 
 // The discovery documents MCP clients read before they sign in. OAuth puts
 // them at the site's root, outside /invoices/auth; anything else here is

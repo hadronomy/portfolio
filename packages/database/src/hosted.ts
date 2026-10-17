@@ -4,7 +4,7 @@ import { drizzle as nodePostgres } from 'drizzle-orm/node-postgres';
 import { Effect, Layer, Redacted } from 'effect';
 import * as Reactivity from 'effect/reactivity/Reactivity';
 import { Pool } from 'pg';
-import { Postgres } from './postgres';
+import { Postgres } from '#postgres';
 
 /**
  * A hosted PostgreSQL server. Its schema is applied at deploy time with
@@ -55,4 +55,4 @@ export const layer = (options: { readonly url: Redacted.Redacted<string> }) =>
     }),
   ).pipe(Layer.provide(Reactivity.layer));
 
-export * as PostgresHosted from './hosted';
+export * as PostgresHosted from '#hosted';

@@ -4,7 +4,7 @@ import { PdfiumNative } from '@embedpdf/engines/pdfium';
 import { init } from '@embedpdf/pdfium';
 import { Context, Effect, Layer, Semaphore } from 'effect';
 import sharp from 'sharp';
-import { ByteCache } from './byte-cache';
+import { ByteCache } from '~/server/byte-cache';
 
 // A customer reads the quote's PDF itself, as images of its pages. A PDF
 // viewer in the browser ships a 2 MB engine to every customer; here the

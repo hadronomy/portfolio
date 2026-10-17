@@ -1,10 +1,10 @@
 import { createHash, randomBytes } from 'node:crypto';
 import { and, eq, gt, isNull } from 'drizzle-orm';
 import { Effect, Schema } from 'effect';
-import type { InvoiceDatabase } from './database';
-import { InvoiceId, type OwnerDid } from './model';
-import { stored } from './storage';
-import * as tables from './tables';
+import type { InvoiceDatabase } from '#database';
+import { InvoiceId, type OwnerDid } from '#model';
+import { stored } from '#storage';
+import * as tables from '#tables';
 
 // Links that open one document for its customer: a payment link for an
 // invoice, an acceptance link for a quote. The kind of document decides

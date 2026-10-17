@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef } from 'react';
-import type { useWorkCamera } from './use-work-camera';
+import type { useWorkCamera } from '~/components/react/work/use-work-camera';
 
 interface CanvasSession {
   selectedId: string | null;

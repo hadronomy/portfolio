@@ -35,7 +35,6 @@ import {
   X,
 } from 'lucide-react';
 import { type CSSProperties, useEffect, useState } from 'react';
-import { Speak, useT } from '../../lib/i18n';
 import {
   getQuoteDeliveries,
   getQuoteDetails,
@@ -44,13 +43,23 @@ import {
   retryEmail,
   revokeQuoteLinks,
   shareQuoteLink,
-} from './api';
-import { pagesMorph } from './pages-studio';
-import { QuoteEmailDialog } from './quote-email';
-import { type DocumentStatus, documentStatus } from './status';
-import { useToast } from './toast';
-import { Button, cn, layer, MorphText, StatusChip } from './ui';
-import { useWorkspace } from './workspace';
+} from '~/features/invoices/api';
+import { pagesMorph } from '~/features/invoices/pages-studio';
+import { QuoteEmailDialog } from '~/features/invoices/quote-email';
+import {
+  type DocumentStatus,
+  documentStatus,
+} from '~/features/invoices/status';
+import { useToast } from '~/features/invoices/toast';
+import {
+  Button,
+  cn,
+  layer,
+  MorphText,
+  StatusChip,
+} from '~/features/invoices/ui';
+import { useWorkspace } from '~/features/invoices/workspace';
+import { Speak, useT } from '~/lib/i18n';
 
 // The owner's end of a quote, in the inspector: how long it stands, the
 // pages the customer will read, the link that sends it, and what came back.

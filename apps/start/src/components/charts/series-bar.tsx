@@ -3,10 +3,10 @@
 import type { Transition } from 'motion/react';
 import { motion } from 'motion/react';
 import { useMemo } from 'react';
-import { chartCssVars, useChart } from './chart-context';
-import { useChartLegendHover } from './chart-legend-hover';
-import { transitionWithDelay } from './motion-utils';
-import { computeSeriesBarWidth } from './series-bar-layout';
+import { chartCssVars, useChart } from '~/components/charts/chart-context';
+import { useChartLegendHover } from '~/components/charts/chart-legend-hover';
+import { transitionWithDelay } from '~/components/charts/motion-utils';
+import { computeSeriesBarWidth } from '~/components/charts/series-bar-layout';
 
 function computeSeriesBarLayout(input: {
   stacked: boolean;

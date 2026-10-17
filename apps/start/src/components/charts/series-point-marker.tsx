@@ -3,7 +3,7 @@
 import type { Variants } from 'motion/react';
 import { motion } from 'motion/react';
 import { memo } from 'react';
-import { DEFAULT_ENTER_EASE } from './animation';
+import { DEFAULT_ENTER_EASE } from '~/components/charts/animation';
 
 export interface SeriesPointMarkerStyle {
   /** Fill color for the inner circle */

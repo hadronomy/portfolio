@@ -7,7 +7,7 @@ import type {
   Line,
   Payment,
   RecordId,
-} from './model';
+} from '#model';
 
 const D = Decimal.clone({ precision: 40, rounding: Decimal.ROUND_HALF_UP });
 const money = (value: Decimal) => value.toDecimalPlaces(2).toFixed(2);

@@ -5,13 +5,20 @@
   "exports": {
     "./*": "./src/*.ts",
     "./pdf": "./src/pdf.tsx",
-    "./covers/*": "./src/covers/*"
+    "./covers/*": "./src/covers/*",
+    "./testing": "./test/support/testing.ts",
+    "./fixtures": "./test/support/fixtures.ts"
   },
   "imports": {
     "#page-check": {
       "browser": "./src/page-check.browser.ts",
       "default": "./src/page-check.ts"
-    }
+    },
+    "#*": "./src/*.ts",
+    "#page-render": "./src/page-render.tsx",
+    "#pdf": "./src/pdf.tsx",
+    "#covers/*": "./src/covers/*",
+    "#fonts/*": "./src/fonts/*"
   },
   "scripts": {
     "check": "tsc --noEmit",
@@ -38,6 +45,7 @@
   },
   "devDependencies": {
     "@embedpdf/engines": "2.15.0",
+    "@portfolio/vitest-config": "workspace:",
     "@types/node": "catalog:types",
     "@types/react": "catalog:types",
     "drizzle-kit": "1.0.0-rc.5-5935859",

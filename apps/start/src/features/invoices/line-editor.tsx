@@ -3,9 +3,14 @@ import type { Currency, Language, Line } from '@portfolio/invoices/model';
 import { ChevronDown, Copy, Trash2 } from 'lucide-react';
 import { Reorder, useDragControls } from 'motion/react';
 import { type KeyboardEvent, memo, useId, useRef, useState } from 'react';
-import { currencySymbol, igicRates, lineKinds, treatments } from './choices';
-import { AmountField } from './smart-fields';
-import { Button, cn, Field, MorphText, Select } from './ui';
+import {
+  currencySymbol,
+  igicRates,
+  lineKinds,
+  treatments,
+} from '~/features/invoices/choices';
+import { AmountField } from '~/features/invoices/smart-fields';
+import { Button, cn, Field, MorphText, Select } from '~/features/invoices/ui';
 
 type LineEditorProps = {
   /** Just created: its description takes focus. */

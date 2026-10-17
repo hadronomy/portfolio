@@ -12,15 +12,15 @@ import {
   Download,
 } from 'lucide-react';
 import { useId, useState } from 'react';
-import { Speak, useT } from '../../lib/i18n';
-import { authClient } from '../auth/client';
-import { ClosedLink } from '../invoices/closed-link';
-import { coverArt } from '../invoices/covers';
-import { moneyOf } from '../invoices/money';
-import { Button, MorphText } from '../invoices/ui';
-import type { AccountPage } from './account.server';
-import { CodeSignIn } from './code-sign-in';
-import '../invoices/invoices.css';
+import type { AccountPage } from '~/features/account/account.server';
+import { CodeSignIn } from '~/features/account/code-sign-in';
+import { authClient } from '~/features/auth/client';
+import { ClosedLink } from '~/features/invoices/closed-link';
+import { coverArt } from '~/features/invoices/covers';
+import { moneyOf } from '~/features/invoices/money';
+import { Button, MorphText } from '~/features/invoices/ui';
+import { Speak, useT } from '~/lib/i18n';
+import '~/features/invoices/invoices.css';
 
 // The customer's account: a sign-in card until they prove their inbox, then
 // every invoice billed to it, the next payment first. Each invoice opens its

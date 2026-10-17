@@ -16,7 +16,11 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { getWorkspace, type Mutation, mutateWorkspace } from './api';
+import {
+  getWorkspace,
+  type Mutation,
+  mutateWorkspace,
+} from '~/features/invoices/api';
 
 // Single source of truth: the live collection and useWorkspace share this one
 // query key and function, so a single fetch feeds both readers. mutate()

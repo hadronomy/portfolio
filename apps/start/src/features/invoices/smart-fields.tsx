@@ -3,15 +3,19 @@ import { countryOf } from '@portfolio/invoices/countries';
 import { checkTaxId } from '@portfolio/invoices/tax-id';
 import type { ClipboardEvent, KeyboardEvent, ReactNode } from 'react';
 import { useState } from 'react';
-import { type Territory, territories, territoryNames } from './choices';
+import {
+  type Territory,
+  territories,
+  territoryNames,
+} from '~/features/invoices/choices';
 import {
   checkEmail,
   checkIban,
   completeEmail,
   correctEmail,
   formatIban,
-} from './identity';
-import { Field, MorphText, Select, Tip } from './ui';
+} from '~/features/invoices/identity';
+import { Field, MorphText, Select, Tip } from '~/features/invoices/ui';
 
 // Fields that know their data. Help lives where the eye already is: a likely
 // value is drawn inside the field as a ghost that Tab accepts, and a checked

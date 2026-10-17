@@ -8,8 +8,8 @@ import {
   Schema,
 } from 'effect';
 import Stripe from 'stripe';
-import { call } from './call';
-import { StripeEvent, type StripeFailure } from './schema';
+import { call } from '#stripe/call';
+import { StripeEvent, type StripeFailure } from '#stripe/schema';
 
 // Proof that a webhook delivery came from Stripe. It is its own capability,
 // apart from the gateway: it needs the endpoint's signing secret and Web

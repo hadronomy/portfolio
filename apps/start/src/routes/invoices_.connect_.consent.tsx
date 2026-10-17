@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { ConnectConsent } from '../features/agent/connect';
-import { getViewer } from '../features/invoices/api';
+import { ConnectConsent } from '~/features/agent/connect';
+import { getViewer } from '~/features/invoices/api';
 
 export const Route = createFileRoute('/invoices_/connect_/consent')({
   loader: () => getViewer(),

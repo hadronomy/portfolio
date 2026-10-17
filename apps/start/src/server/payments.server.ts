@@ -5,7 +5,7 @@ import {
 } from '@portfolio/invoices/collection';
 import { stripeGatewayLayer } from '@portfolio/invoices/stripe/gateway';
 import { Context, Effect, Layer, Option } from 'effect';
-import { AppConfig } from './config.server';
+import { AppConfig } from '~/server/config.server';
 
 // Online payment, when it is set up. Without Stripe keys the app works as
 // before, invoices are paid by transfer, and every payment surface answers

@@ -29,12 +29,12 @@ import type { ReactElement } from 'react';
 import { render } from 'react-email';
 import { Resend } from 'resend';
 import sharp from 'sharp';
-import { QuoteAnswer } from '../emails/quote-answer';
-import { QuoteAnswered } from '../emails/quote-answered';
-import { QuoteInvitation } from '../emails/quote-invitation';
-import { SignInCode } from '../emails/sign-in-code';
-import { codeLifetime } from '../features/auth/shared';
-import { AppConfig } from './config.server';
+import { QuoteAnswer } from '~/emails/quote-answer';
+import { QuoteAnswered } from '~/emails/quote-answered';
+import { QuoteInvitation } from '~/emails/quote-invitation';
+import { SignInCode } from '~/emails/sign-in-code';
+import { codeLifetime } from '~/features/auth/shared';
+import { AppConfig } from '~/server/config.server';
 
 /** Safe to persist: provider error bodies can contain addresses and message content. */
 export class MailFailure extends Schema.TaggedError<MailFailure>()(

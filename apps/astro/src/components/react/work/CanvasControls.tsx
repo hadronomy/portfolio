@@ -1,5 +1,5 @@
+import { Arrow } from '~/components/react/work/WorkShared';
 import type { WorkProject } from '~/lib/work';
-import { Arrow } from './WorkShared';
 
 export function CanvasDetails({
   projects,

@@ -1,13 +1,13 @@
 import { createHash } from 'node:crypto';
 import { Context, Effect, Layer, Schema } from 'effect';
-import { calculate } from './calculate';
-import { InvoiceDatabase } from './database';
-import type { Invoice, InvoiceId, Language } from './model';
-import { defaultsFor, noOffer } from './plan';
-import type { QuoteResponse } from './quote-model';
-import { stored } from './storage';
-import { InvoiceStore, type StoreError } from './store';
-import * as tables from './tables';
+import { calculate } from '#calculate';
+import { InvoiceDatabase } from '#database';
+import type { Invoice, InvoiceId, Language } from '#model';
+import { defaultsFor, noOffer } from '#plan';
+import type { QuoteResponse } from '#quote-model';
+import { stored } from '#storage';
+import { InvoiceStore, type StoreError } from '#store';
+import * as tables from '#tables';
 
 // An invoice as a PDF. An issued invoice is a legal record, so its PDF is
 // rendered once per language and kept: every later download, preview, and
@@ -68,7 +68,7 @@ export const makeDocuments = Effect.gen(function* () {
   ) {
     const plans = yield* plansOf(invoice);
     return yield* Effect.promise(async () => {
-      const { renderInvoice } = await import('./pdf');
+      const { renderInvoice } = await import('#pdf');
       return renderInvoice(invoice, language, plans);
     });
   });
@@ -161,8 +161,8 @@ export const makeDocuments = Effect.gen(function* () {
         acceptance.language,
         Effect.promise(async () => {
           const [{ renderAcceptance }, { appendPdf }] = await Promise.all([
-            import('./pdf'),
-            import('./pdf-append'),
+            import('#pdf'),
+            import('#pdf-append'),
           ]);
           return appendPdf(bytes, await renderAcceptance(quote, acceptance));
         }),

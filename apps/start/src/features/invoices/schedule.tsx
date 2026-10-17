@@ -3,8 +3,8 @@ import { m } from '@portfolio/i18n/messages';
 import type { CheckoutInvoice } from '@portfolio/invoices/collection-model';
 import type { Instalment, Schedule } from '@portfolio/invoices/plan';
 import { Check } from 'lucide-react';
-import { useT } from '../../lib/i18n';
-import { fromCents, moneyOf, toCents } from './money';
+import { fromCents, moneyOf, toCents } from '~/features/invoices/money';
+import { useT } from '~/lib/i18n';
 
 // The plan on the customer's stub: one bar, a segment per instalment sized
 // by its amount, and a line per instalment under it. The bar also answers

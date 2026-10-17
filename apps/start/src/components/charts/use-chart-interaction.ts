@@ -3,9 +3,13 @@
 import { localPoint } from '@visx/event';
 import type { scaleLinear, scaleTime } from '@visx/scale';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { LineConfig, Margin, TooltipData } from './chart-context';
-import { useScheduledTooltip } from './use-scheduled-tooltip';
-import { normalizeYAxisId } from './y-axis-scales';
+import type {
+  LineConfig,
+  Margin,
+  TooltipData,
+} from '~/components/charts/chart-context';
+import { useScheduledTooltip } from '~/components/charts/use-scheduled-tooltip';
+import { normalizeYAxisId } from '~/components/charts/y-axis-scales';
 
 type ScaleTime = ReturnType<typeof scaleTime<number>>;
 type ScaleLinear = ReturnType<typeof scaleLinear<number>>;

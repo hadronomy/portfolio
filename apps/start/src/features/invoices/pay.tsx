@@ -23,16 +23,16 @@ import {
   useRef,
   useState,
 } from 'react';
-import { Speak, useT } from '../../lib/i18n';
-import { CodeSignIn } from '../account/code-sign-in';
-import type { Access } from './api';
-import { ClosedLink } from './closed-link';
-import { coverArt } from './covers';
-import { fromCents, moneyOf, toCents } from './money';
-import { PayStub } from './pay-form';
-import { partName } from './schedule';
-import { Button, MorphText } from './ui';
-import './invoices.css';
+import { CodeSignIn } from '~/features/account/code-sign-in';
+import type { Access } from '~/features/invoices/api';
+import { ClosedLink } from '~/features/invoices/closed-link';
+import { coverArt } from '~/features/invoices/covers';
+import { fromCents, moneyOf, toCents } from '~/features/invoices/money';
+import { PayStub } from '~/features/invoices/pay-form';
+import { partName } from '~/features/invoices/schedule';
+import { Button, MorphText } from '~/features/invoices/ui';
+import { Speak, useT } from '~/lib/i18n';
+import '~/features/invoices/invoices.css';
 
 // The customer's page for one invoice, behind a payment link or in their
 // account, drawn as what it is: the invoice, and below it the remittance

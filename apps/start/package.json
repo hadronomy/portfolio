@@ -91,6 +91,7 @@
   "devDependencies": {
     "@inlang/paraglide-js": "2.27.0",
     "@playwright/test": "^1.63.0",
+    "@portfolio/vitest-config": "workspace:",
     "@react-email/ui": "6.11.1",
     "@tailwindcss/vite": "catalog:build",
     "@types/d3-array": "^3.2.2",

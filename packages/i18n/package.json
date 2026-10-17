@@ -21,6 +21,7 @@
   },
   "devDependencies": {
     "@inlang/plugin-message-format": "4.5.1",
+    "@portfolio/vitest-config": "workspace:",
     "@types/node": "catalog:types",
     "@types/react": "catalog:types",
     "typescript": "catalog:dev",
@@ -28,5 +29,8 @@
   },
   "peerDependencies": {
     "react": "^19"
+  },
+  "imports": {
+    "#paraglide/*": "./src/paraglide/*"
   }
 }

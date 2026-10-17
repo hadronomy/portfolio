@@ -2,9 +2,9 @@ import { translate } from '@portfolio/i18n';
 import { m } from '@portfolio/i18n/messages';
 import Decimal from 'decimal.js';
 import type Stripe from 'stripe';
-import { calculate, formatMoney } from '../calculate';
-import type { Currency, Invoice, Line, Party } from '../model';
-import type { Minor, StripeInvoice } from './schema';
+import { calculate, formatMoney } from '#calculate';
+import type { Currency, Invoice, Line, Party } from '#model';
+import type { Minor, StripeInvoice } from '#stripe/schema';
 
 // An issued invoice, restated in Stripe's terms. The local calculation stays
 // the authority: every line goes over as the taxable amount it ended up with

@@ -1,7 +1,7 @@
 import { type Locale, translate } from '@portfolio/i18n';
 import { m } from '@portfolio/i18n/messages';
 import { Column, Row, Section, Text } from 'react-email';
-import { Foot, Frame, text, tone } from './_parts/frame';
+import { Foot, Frame, text, tone } from '~/emails/_parts/frame';
 
 // A customer's one-time code. The code is the whole message, so it stands
 // alone on the card, one digit to a box as the page's code field draws it,

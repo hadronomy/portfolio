@@ -1,14 +1,14 @@
 import { translate } from '@portfolio/i18n';
 import { m } from '@portfolio/i18n/messages';
 import { createFileRoute } from '@tanstack/react-router';
-import { getQuotePage } from '../features/invoices/api';
+import { getQuotePage } from '~/features/invoices/api';
 import {
   InvalidQuoteLinkPage,
   QuotePage,
-} from '../features/invoices/quote-page';
+} from '~/features/invoices/quote-page';
 
-import { InvoiceError } from './-invoice-error';
-import { invoiceRouteError } from './-invoice-errors';
+import { InvoiceError } from '~/routes/-invoice-error';
+import { invoiceRouteError } from '~/routes/-invoice-errors';
 
 export const Route = createFileRoute('/invoices_/quote/$token')({
   onError: invoiceRouteError,

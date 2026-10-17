@@ -2,8 +2,8 @@
 
 import { motion } from 'motion/react';
 import { useMemo } from 'react';
-import { useChartStable, useYScale } from './chart-context';
-import { StaticSeriesPointMarker } from './series-point-marker';
+import { useChartStable, useYScale } from '~/components/charts/chart-context';
+import { StaticSeriesPointMarker } from '~/components/charts/series-point-marker';
 
 export interface LineSeriesTerminalMarkerProps {
   dataKey: string;

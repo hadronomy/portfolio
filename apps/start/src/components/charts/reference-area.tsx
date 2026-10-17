@@ -2,15 +2,22 @@
 
 import { motion } from 'motion/react';
 import { useId, useLayoutEffect, useMemo } from 'react';
-import { chartCssVars, useChartStable, useYScale } from './chart-context';
-import { type PatternPresetId, renderPatternPreset } from './pattern-preset';
+import {
+  chartCssVars,
+  useChartStable,
+  useYScale,
+} from '~/components/charts/chart-context';
+import {
+  type PatternPresetId,
+  renderPatternPreset,
+} from '~/components/charts/pattern-preset';
 import {
   computeReferenceAreaRect,
   type ReferenceAreaIfOverflow,
-} from './reference-area-geometry';
-import { useReferenceAreaRegistration } from './reference-area-registration-context';
-import { normalizeYAxisId } from './y-axis-scales';
-import { isReferenceAreaVisiblePhase } from './y-domain-utils';
+} from '~/components/charts/reference-area-geometry';
+import { useReferenceAreaRegistration } from '~/components/charts/reference-area-registration-context';
+import { normalizeYAxisId } from '~/components/charts/y-axis-scales';
+import { isReferenceAreaVisiblePhase } from '~/components/charts/y-domain-utils';
 
 const DEFAULT_FILL =
   'color-mix(in oklch, var(--chart-foreground-muted) 12%, transparent)';

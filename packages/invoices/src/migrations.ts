@@ -1,5 +1,5 @@
 import type { Postgres } from '@portfolio/database';
-import { ledger } from './ledger';
+import { ledger } from '#ledger';
 
 /**
  * The invoice migrations drizzle-kit generated, inlined at build time so a

@@ -16,8 +16,14 @@
     "resolveJsonModule": true,
     "types": ["vite/client", "node"],
     "paths": {
-      "@/*": ["./src/*"]
+      "~/*": ["./src/*"]
     }
   },
-  "include": ["src", "vite.config.ts", "scripts/seed-auth.ts"]
+  "include": [
+    "src",
+    "vite.config.ts",
+    "scripts/seed-auth.ts",
+    "test",
+    "vitest.config.ts"
+  ]
 }

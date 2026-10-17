@@ -1,4 +1,4 @@
-import type { ShareFailure } from './collection.server';
+import type { ShareFailure } from '~/features/invoices/collection.server';
 
 // What the owner, or an agent working for them, hears when an invoice
 // cannot be opened for online payment. One set of words for both.

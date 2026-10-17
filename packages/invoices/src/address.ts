@@ -1,5 +1,5 @@
 import { Schema } from 'effect';
-import { addressData } from './address-data';
+import { addressData } from '#address-data';
 
 // Postal addresses for any country, modelled the way libaddressinput models
 // them: a fixed set of fields, and per-country metadata saying which of them

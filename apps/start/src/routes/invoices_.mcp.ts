@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { answerAgent } from '../features/agent/mcp.server';
-import { Auth } from '../server/auth.server';
-import { serve } from '../server/runtime.server';
+import { answerAgent } from '~/features/agent/mcp.server';
+import { Auth } from '~/server/auth.server';
+import { serve } from '~/server/runtime.server';
 
 // The MCP endpoint. Only a request with the owner's agent token reaches the
 // server; any other gets the challenge that starts the client's sign-in.

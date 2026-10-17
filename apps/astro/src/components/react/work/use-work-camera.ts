@@ -4,7 +4,7 @@ import {
   compositionBounds,
   type PrintPlacement,
   printHeight,
-} from './canvas-layout';
+} from '~/components/react/work/canvas-layout';
 
 export function useWorkCamera(
   placements: readonly PrintPlacement[],

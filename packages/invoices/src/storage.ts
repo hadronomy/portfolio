@@ -1,5 +1,5 @@
 import { Effect, Predicate, Schema } from 'effect';
-import { StorageFailure } from './model';
+import { StorageFailure } from '#model';
 
 // The invoice modules speak of one database failure, StorageFailure: the
 // database did not answer, or what it holds no longer reads as a record.

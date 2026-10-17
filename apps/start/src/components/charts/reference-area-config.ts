@@ -4,7 +4,7 @@ import {
   type ReactElement,
   type ReactNode,
 } from 'react';
-import { normalizeYAxisId } from './y-axis-scales';
+import { normalizeYAxisId } from '~/components/charts/y-axis-scales';
 
 export interface ReferenceAreaConfig {
   yAxisId: string;

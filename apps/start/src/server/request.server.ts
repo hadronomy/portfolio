@@ -1,8 +1,8 @@
 import { extractLocaleFromRequest } from '@portfolio/i18n/runtime';
 import type { Language } from '@portfolio/invoices/model';
 import { Context, Effect, Schema } from 'effect';
-import { AppConfig } from './config.server';
-import { applicationOrigin } from './origin.server';
+import { AppConfig } from '~/server/config.server';
+import { applicationOrigin } from '~/server/origin.server';
 
 // The request being served, as a service, and the one way to turn it away.
 // Server code fails with Refused; the edge (serve, in runtime.ts) answers

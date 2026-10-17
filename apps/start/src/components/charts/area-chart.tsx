@@ -12,19 +12,19 @@ import {
   useRef,
   useState,
 } from 'react';
-import { cn } from '@/lib/utils';
-import { Area, type AreaProps } from './area';
-import type { LineConfig, Margin } from './chart-context';
-import { ChartLoadingLabel } from './chart-loading-label';
+import { Area, type AreaProps } from '~/components/charts/area';
+import type { LineConfig, Margin } from '~/components/charts/chart-context';
+import { ChartLoadingLabel } from '~/components/charts/chart-loading-label';
 import {
   type ChartPhase,
   type ChartStatus,
   DEFAULT_CHART_STATUS,
   DEFAULT_Y_DOMAIN_TWEEN_MS,
   resolveRestingChartPhase,
-} from './chart-phase';
-import { PatternArea } from './pattern-area';
-import { TimeSeriesChartInner } from './time-series-chart-shell';
+} from '~/components/charts/chart-phase';
+import { PatternArea } from '~/components/charts/pattern-area';
+import { TimeSeriesChartInner } from '~/components/charts/time-series-chart-shell';
+import { cn } from '~/lib/utils';
 
 export interface AreaChartProps {
   /** Data array - each item should have a date field and numeric values */
@@ -267,6 +267,6 @@ export function AreaChart({
   );
 }
 
-export { Area, type AreaProps } from './area';
+export { Area, type AreaProps } from '~/components/charts/area';
 
 export default AreaChart;

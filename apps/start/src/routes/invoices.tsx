@@ -1,8 +1,8 @@
 import { createFileRoute, redirect } from '@tanstack/react-router';
-import { getViewer } from '../features/invoices/api';
-import { InvoiceShell } from '../features/invoices/shell';
-import { InvoiceError } from './-invoice-error';
-import { invoiceRouteError } from './-invoice-errors';
+import { getViewer } from '~/features/invoices/api';
+import { InvoiceShell } from '~/features/invoices/shell';
+import { InvoiceError } from '~/routes/-invoice-error';
+import { invoiceRouteError } from '~/routes/-invoice-errors';
 
 function InvoicesPending() {
   return (

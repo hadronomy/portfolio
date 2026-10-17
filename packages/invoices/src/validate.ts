@@ -1,10 +1,10 @@
 import Decimal from 'decimal.js';
-import { addressLabels, postalCodeValid, requiredFields } from './address';
-import { calculate } from './calculate';
-import { clauseVersion } from './clauses';
-import type { InvoiceData, QuoteTerms } from './model';
-import { clausesIn } from './pages';
-import { igicRates, repepLegend } from './tax-policy';
+import { addressLabels, postalCodeValid, requiredFields } from '#address';
+import { calculate } from '#calculate';
+import { clauseVersion } from '#clauses';
+import type { InvoiceData, QuoteTerms } from '#model';
+import { clausesIn } from '#pages';
+import { igicRates, repepLegend } from '#tax-policy';
 /** One field-addressed issuance blocker. */
 export interface Issue {
   readonly path: string;

@@ -7,7 +7,7 @@ import {
   countryOf,
   searchCountries,
 } from '@portfolio/invoices/countries';
-import { Picker } from './picker';
+import { Picker } from '~/features/invoices/picker';
 
 /**
  * A country, picked by name and stored as its two-letter code. Typing

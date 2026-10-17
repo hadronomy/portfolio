@@ -1,8 +1,8 @@
 import type { ErrorComponentProps } from '@tanstack/react-router';
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { InvoiceEditor } from '../features/invoices/editor';
-import { InvoiceError } from './-invoice-error';
-import { invoiceRouteError } from './-invoice-errors';
+import { InvoiceEditor } from '~/features/invoices/editor';
+import { InvoiceError } from '~/routes/-invoice-error';
+import { invoiceRouteError } from '~/routes/-invoice-errors';
 
 function EditorPending() {
   return <output className="iv-message">Loading invoice…</output>;

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Column, Img, Row, Section, Text } from 'react-email';
-import { text, tone } from './frame';
+import { text, tone } from '~/emails/_parts/frame';
 
 // The quote's ticket, as the customer's page draws it, built from what a
 // mail client keeps: a white face, a perforation with a notch cut into each

@@ -6,8 +6,8 @@ import {
   DecimalText,
   type Invoice,
   RecordId,
-} from './model';
-import { fromMinor, minimumCharge } from './stripe/projection';
+} from '#model';
+import { fromMinor, minimumCharge } from '#stripe/projection';
 
 // How a customer may pay an invoice. A plan is rules, not amounts: it holds
 // "30% when issued, then the rest in six monthly payments", and `lay` turns

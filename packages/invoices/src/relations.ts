@@ -1,5 +1,5 @@
 import { defineRelations } from 'drizzle-orm';
-import * as tables from './tables';
+import * as tables from '#tables';
 
 /** How the invoice tables join, for Drizzle's relational queries (`db.query.*`). */
 export const relations = defineRelations(tables, (r) => ({

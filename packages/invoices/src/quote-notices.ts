@@ -1,6 +1,6 @@
 import { translate } from '@portfolio/i18n';
 import { m } from '@portfolio/i18n/messages';
-import type { InvoiceData, Language, QuoteTerms } from './model';
+import type { InvoiceData, Language, QuoteTerms } from '#model';
 
 // The notices a quote prints whatever its pages say. They follow from who
 // the customer is and from the quote being accepted online, so the owner

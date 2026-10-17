@@ -38,9 +38,16 @@ import {
 import { AnimatePresence, motion } from 'motion/react';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
-import { attachCanvasGestures, type CanvasGestures } from './canvas-gestures';
-import { fadeStill, paintStill, visibleSheets } from './still';
-import { IconButton, MorphText } from './ui';
+import {
+  attachCanvasGestures,
+  type CanvasGestures,
+} from '~/features/invoices/canvas-gestures';
+import {
+  fadeStill,
+  paintStill,
+  visibleSheets,
+} from '~/features/invoices/still';
+import { IconButton, MorphText } from '~/features/invoices/ui';
 
 // Content swaps inside the dock: the icon-swap values from transitions.dev
 // (#09), a 2px cross-blur and a small scale, in quicker than the morph and

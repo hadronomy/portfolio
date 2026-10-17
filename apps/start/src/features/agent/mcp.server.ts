@@ -3,10 +3,10 @@ import { InvoiceId, Language } from '@portfolio/invoices/model';
 import { Context, Effect, Layer, Scope } from 'effect';
 import { McpProtocol, McpSchema, McpServer } from 'effect/ai';
 import { HttpRouter, HttpServerRequest, HttpServerResponse } from 'effect/http';
-import { appLayer, runtime } from '../../server/runtime.server';
-import { invoiceToolsLayer } from './handlers.server';
-import { sessionlessHandler } from './http.server';
-import { InvoiceTools } from './tools';
+import { invoiceToolsLayer } from '~/features/agent/handlers.server';
+import { sessionlessHandler } from '~/features/agent/http.server';
+import { InvoiceTools } from '~/features/agent/tools';
+import { appLayer, runtime } from '~/server/runtime.server';
 
 // The workspace as an MCP server, over Streamable HTTP at /invoices/mcp.
 // It runs on the app's own runtime: the memo map hands it the services the

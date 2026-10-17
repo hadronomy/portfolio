@@ -1,8 +1,8 @@
 import type { JSONContent } from '@tiptap/core';
 import { MarkdownManager } from '@tiptap/markdown';
 import type { Result } from 'effect';
-import { pageExtensions } from './page-schema';
-import { type Pages, pagesFrom, readPages, toJSONContent } from './pages';
+import { pageExtensions } from '#page-schema';
+import { type Pages, pagesFrom, readPages, toJSONContent } from '#pages';
 
 // Pages as Markdown, the form agents read and write. It sits apart from
 // pages.ts because the parser carries the whole editor schema, which a

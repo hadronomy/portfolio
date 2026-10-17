@@ -2,7 +2,7 @@
 
 import { motion } from 'motion/react';
 import * as React from 'react';
-import CursorHint from './CursorHint';
+import CursorHint from '~/components/react/CursorHint';
 
 /*
   The pointer. Not a follower any more — this replaces the native cursor, so

@@ -9,8 +9,12 @@ import type { Editor } from '@tiptap/core';
 import { useEditorState } from '@tiptap/react';
 import { ArrowLeft, Check, Plus } from 'lucide-react';
 import { type CSSProperties, useState } from 'react';
-import { clauseContent, dismissMenus, PagesEditor } from './pages-editor';
-import { Button, cn, layer, MorphText } from './ui';
+import {
+  clauseContent,
+  dismissMenus,
+  PagesEditor,
+} from '~/features/invoices/pages-editor';
+import { Button, cn, layer, MorphText } from '~/features/invoices/ui';
 
 // The room where a quote's pages are written. The sheet is the page the
 // PDF prints, at its own proportions and type, so what the owner writes is

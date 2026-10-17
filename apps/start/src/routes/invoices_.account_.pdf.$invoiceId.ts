@@ -1,9 +1,9 @@
 import { InvoiceId, Language } from '@portfolio/invoices/model';
 import { createFileRoute } from '@tanstack/react-router';
 import { Effect, Option, Schema } from 'effect';
-import { customerPdf } from '../features/account/account.server';
-import { Refused } from '../server/request.server';
-import { serve } from '../server/runtime.server';
+import { customerPdf } from '~/features/account/account.server';
+import { Refused } from '~/server/request.server';
+import { serve } from '~/server/runtime.server';
 
 export const Route = createFileRoute('/invoices_/account_/pdf/$invoiceId')({
   server: {

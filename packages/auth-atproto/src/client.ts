@@ -1,6 +1,6 @@
 import type { BetterAuthClientPlugin } from 'better-auth/client';
-import { ATPROTO_CALLBACK_ERRORS, ATPROTO_ERROR_CODES } from './error-codes';
-import type { atproto } from './index';
+import { ATPROTO_CALLBACK_ERRORS, ATPROTO_ERROR_CODES } from '#error-codes';
+import type { atproto } from '#index';
 
 export { ATPROTO_CALLBACK_ERRORS, ATPROTO_ERROR_CODES };
 

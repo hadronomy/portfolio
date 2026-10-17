@@ -1,5 +1,5 @@
 import { scaleLinear } from '@visx/scale';
-import type { LineConfig } from './chart-context';
+import type { LineConfig } from '~/components/charts/chart-context';
 
 /** Default axis id when `yAxisId` is omitted (Recharts-style `0` / primary left axis). */
 export const DEFAULT_Y_AXIS_ID = 'left';

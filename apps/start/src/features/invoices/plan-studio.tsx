@@ -45,9 +45,9 @@ import {
   useRef,
   useState,
 } from 'react';
-import { currencySymbol } from './choices';
-import { fromCents, toCents } from './money';
-import { PlanStrip, PlanTimeline } from './plan-chart';
+import { currencySymbol } from '~/features/invoices/choices';
+import { fromCents, toCents } from '~/features/invoices/money';
+import { PlanStrip, PlanTimeline } from '~/features/invoices/plan-chart';
 import {
   addPart,
   bounds,
@@ -57,8 +57,8 @@ import {
   reshape,
   restPart,
   updatePart,
-} from './plan-edit';
-import { starters } from './plan-starters';
+} from '~/features/invoices/plan-edit';
+import { starters } from '~/features/invoices/plan-starters';
 import {
   CountEditor,
   DueEditor,
@@ -67,7 +67,7 @@ import {
   PortionEditor,
   Toggle,
   Token,
-} from './plan-tokens';
+} from '~/features/invoices/plan-tokens';
 import {
   AnchorContext,
   dueText,
@@ -77,10 +77,16 @@ import {
   planName,
   portionText,
   quoteAnchors,
-} from './plan-words';
-import { useToast } from './toast';
-import { Button, cn, IconButton, layer, MorphText } from './ui';
-import { useWorkspace } from './workspace';
+} from '~/features/invoices/plan-words';
+import { useToast } from '~/features/invoices/toast';
+import {
+  Button,
+  cn,
+  IconButton,
+  layer,
+  MorphText,
+} from '~/features/invoices/ui';
+import { useWorkspace } from '~/features/invoices/workspace';
 
 // The room where plans are made. The owner sees every option the customer
 // will choose from, builds the one in front of them as sentences whose

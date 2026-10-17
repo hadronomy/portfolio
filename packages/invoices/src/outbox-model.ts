@@ -1,5 +1,5 @@
 import { Schema } from 'effect';
-import { InvoiceId, Language } from './model';
+import { InvoiceId, Language } from '#model';
 
 export const MailKind = Schema.Literals([
   'quote-invitation',

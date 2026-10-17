@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Check, Copy } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { disconnectAgent, getAgents } from './api';
-import { Button, MorphText } from './ui';
+import { disconnectAgent, getAgents } from '~/features/invoices/api';
+import { Button, MorphText } from '~/features/invoices/ui';
 
 // The agents the owner let in over MCP, in Settings. Each row names the
 // agent and its site, and disconnects it on a second press: a first press

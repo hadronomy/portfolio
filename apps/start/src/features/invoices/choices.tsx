@@ -1,5 +1,5 @@
 import type { Line } from '@portfolio/invoices/model';
-import { Bars, type Option } from './ui';
+import { Bars, type Option } from '~/features/invoices/ui';
 
 // Every closed list in the workspace, with the one line of help each choice
 // needs. Select shows the line for whichever option is highlighted, so the

@@ -2,14 +2,18 @@ import { readFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { renderSvg } from 'takumi-js';
 import { render } from 'takumi-pdf';
-import portrait from '../assets/cv-portrait.png?inline';
-import bodyBold from '../assets/pdf-fonts/DMSans-Bold.ttf?inline';
-import bodyRegular from '../assets/pdf-fonts/DMSans-Regular.ttf?inline';
-import displayBold from '../assets/pdf-fonts/SpaceGrotesk-Bold.ttf?inline';
-import displayLight from '../assets/pdf-fonts/SpaceGrotesk-Light.ttf?inline';
-import { cvCopy, cvProjects } from '../i18n/cv';
-import { defaultLocale, type Locale } from '../i18n/locales';
-import { engineeringExperience, engineeringSkills, profile } from './profile';
+import portrait from '~/assets/cv-portrait.png?inline';
+import bodyBold from '~/assets/pdf-fonts/DMSans-Bold.ttf?inline';
+import bodyRegular from '~/assets/pdf-fonts/DMSans-Regular.ttf?inline';
+import displayBold from '~/assets/pdf-fonts/SpaceGrotesk-Bold.ttf?inline';
+import displayLight from '~/assets/pdf-fonts/SpaceGrotesk-Light.ttf?inline';
+import { cvCopy, cvProjects } from '~/i18n/cv';
+import { defaultLocale, type Locale } from '~/i18n/locales';
+import {
+  engineeringExperience,
+  engineeringSkills,
+  profile,
+} from '~/lib/profile';
 
 const css = `
   * { box-sizing: border-box; }

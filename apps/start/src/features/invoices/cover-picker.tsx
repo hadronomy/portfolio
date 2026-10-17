@@ -1,7 +1,7 @@
 import type { Cover } from '@portfolio/invoices/model';
 import { Slash } from 'lucide-react';
 import { useId } from 'react';
-import { coverArt, coverLabel, coverOptions } from './covers';
+import { coverArt, coverLabel, coverOptions } from '~/features/invoices/covers';
 
 /** Radio group of cover swatches. Also used for the default in settings. */
 export function CoverPicker({

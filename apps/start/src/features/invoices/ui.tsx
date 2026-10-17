@@ -17,7 +17,7 @@ import {
 } from 'react';
 import { flushSync } from 'react-dom';
 import { TextMorph as TorphText } from 'torph/react';
-import type { DocumentStatus } from './status';
+import type { DocumentStatus } from '~/features/invoices/status';
 
 // Minimal local cn: clsx + tailwind-merge live in @portfolio/ui, which the
 // start app does not depend on, so join here instead of adding a new dep.

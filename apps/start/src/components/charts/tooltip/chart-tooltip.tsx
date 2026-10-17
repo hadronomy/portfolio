@@ -7,20 +7,23 @@ import {
   resolveTooltipBoxMotion,
   type SpringConfig,
   useChartConfig,
-} from '../chart-config-context';
+} from '~/components/charts/chart-config-context';
 import {
   chartCssVars,
   type LineConfig,
   useChart,
   useChartStable,
-} from '../chart-context';
-import { weekdayDateFmt } from '../chart-formatters';
-import type { IndicatorFadeEdges } from '../indicator-fade';
-import { DateTicker } from './date-ticker';
-import { TooltipBox } from './tooltip-box';
-import { TooltipContent, type TooltipRow } from './tooltip-content';
-import { TooltipDot } from './tooltip-dot';
-import { TooltipIndicator } from './tooltip-indicator';
+} from '~/components/charts/chart-context';
+import { weekdayDateFmt } from '~/components/charts/chart-formatters';
+import type { IndicatorFadeEdges } from '~/components/charts/indicator-fade';
+import { DateTicker } from '~/components/charts/tooltip/date-ticker';
+import { TooltipBox } from '~/components/charts/tooltip/tooltip-box';
+import {
+  TooltipContent,
+  type TooltipRow,
+} from '~/components/charts/tooltip/tooltip-content';
+import { TooltipDot } from '~/components/charts/tooltip/tooltip-dot';
+import { TooltipIndicator } from '~/components/charts/tooltip/tooltip-indicator';
 
 export interface ChartTooltipProps {
   /** Whether to show the date pill at bottom. Default: true */

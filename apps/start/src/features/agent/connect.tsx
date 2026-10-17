@@ -1,12 +1,12 @@
 import { useRouterState } from '@tanstack/react-router';
 import { ArrowLeft, ArrowUpRight, Check } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { authClient } from '../auth/client';
-import { agentScope, ownerHandle } from '../auth/shared';
-import { coverArt } from '../invoices/covers';
-import { Button, MorphText } from '../invoices/ui';
-import { step } from './step';
-import '../invoices/invoices.css';
+import { step } from '~/features/agent/step';
+import { authClient } from '~/features/auth/client';
+import { agentScope, ownerHandle } from '~/features/auth/shared';
+import { coverArt } from '~/features/invoices/covers';
+import { Button, MorphText } from '~/features/invoices/ui';
+import '~/features/invoices/invoices.css';
 
 // Where the owner lets an agent in. An MCP client sends them here twice:
 // first to sign in, then to approve it. The page names the agent and the

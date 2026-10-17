@@ -1,5 +1,5 @@
 import { createIsomorphicFn } from '@tanstack/react-start';
-import { reportedError } from '../server/errors.server';
+import { reportedError } from '~/server/errors.server';
 
 /** Server errors carry this ID in a message that contains no private values. */
 export const errorRequestId = (error: unknown) =>

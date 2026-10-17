@@ -6,8 +6,12 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query';
 import { Check, CornerDownLeft, FileText, Reply, X } from 'lucide-react';
 import { useEffect, useId, useRef, useState } from 'react';
-import { emailQuoteLink, previewQuoteEmail, quoteNoteLimit } from './api';
-import { Button, cn, layer, MorphText } from './ui';
+import {
+  emailQuoteLink,
+  previewQuoteEmail,
+  quoteNoteLimit,
+} from '~/features/invoices/api';
+import { Button, cn, layer, MorphText } from '~/features/invoices/ui';
 
 // Emailing a quote: who it goes to, a few words of the owner's own, and,
 // beside them, the email itself as the customer will get it, redrawn as

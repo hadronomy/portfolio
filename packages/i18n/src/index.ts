@@ -1,11 +1,11 @@
-import type { Locale } from './paraglide/runtime.js';
+import type { Locale } from '#paraglide/runtime.js';
 
 export {
   baseLocale,
   isLocale,
   type Locale,
   locales,
-} from './paraglide/runtime.js';
+} from '#paraglide/runtime.js';
 
 /** A compiled message: its inputs, and the locale it speaks when asked. */
 export type Message<Inputs> = (

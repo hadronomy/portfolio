@@ -11,10 +11,19 @@ import {
 } from '@portfolio/invoices/plan';
 import { CircleAlert, SlidersHorizontal } from 'lucide-react';
 import { type CSSProperties, useMemo, useState } from 'react';
-import { MiniBar, PlanStudio, studioMorph } from './plan-studio';
-import { invoiceAnchors, planLine, planName, quoteAnchors } from './plan-words';
-import { Button, morph } from './ui';
-import { useWorkspace } from './workspace';
+import {
+  MiniBar,
+  PlanStudio,
+  studioMorph,
+} from '~/features/invoices/plan-studio';
+import {
+  invoiceAnchors,
+  planLine,
+  planName,
+  quoteAnchors,
+} from '~/features/invoices/plan-words';
+import { Button, morph } from '~/features/invoices/ui';
+import { useWorkspace } from '~/features/invoices/workspace';
 
 // How the invoice gets paid, as the inspector shows it: the options the
 // customer will choose from, each a name, a line and a bar. The card is

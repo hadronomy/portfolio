@@ -6,11 +6,11 @@ import {
   regionOfPostalCode,
   regionsOf,
   requiredFields,
-} from './address';
-import { countryOf, fold } from './countries';
-import { Customer, Invoice, Party } from './model';
-import { EmailAddress } from './quote-model';
-import { checkTaxId, compactTaxId } from './tax-id';
+} from '#address';
+import { countryOf, fold } from '#countries';
+import { Customer, Invoice, Party } from '#model';
+import { EmailAddress } from '#quote-model';
+import { checkTaxId, compactTaxId } from '#tax-id';
 
 /** The identity the customer confirms before reading and answering a quote. */
 export const CustomerDetails = Schema.Struct({

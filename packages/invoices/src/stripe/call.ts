@@ -1,6 +1,6 @@
 import { Effect, Schedule, Schema } from 'effect';
 import Stripe from 'stripe';
-import { StripeFailure } from './schema';
+import { StripeFailure } from '#stripe/schema';
 
 // One way to make a Stripe call, shared by every service that talks to
 // Stripe: classify what went wrong, retry only what Stripe says is safe to

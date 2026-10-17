@@ -1,6 +1,6 @@
 import { Schema } from 'effect';
-import { Cover, Currency, DecimalText, Language, RecordId } from './model';
-import { Options, Schedule } from './plan';
+import { Cover, Currency, DecimalText, Language, RecordId } from '#model';
+import { Options, Schedule } from '#plan';
 
 // The shapes collection hands to the interface: the owner's view of where an
 // invoice's payment stands, and the customer's page behind a payment link.

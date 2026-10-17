@@ -1,5 +1,5 @@
+import ShaderCover from '~/components/react/work/ShaderCover';
 import type { WorkProject } from '~/lib/work';
-import ShaderCover from './ShaderCover';
 
 export function Arrow({
   direction = 'out',

@@ -25,12 +25,14 @@
     "@biomejs/biome": "catalog:lint",
     "@commitlint/cli": "catalog:lint",
     "@commitlint/config-conventional": "catalog:lint",
+    "@portfolio/vitest-config": "workspace:",
     "husky": "catalog:dev",
     "lint-staged": "catalog:dev",
     "prettier": "catalog:lint",
     "prettier-plugin-astro": "catalog:lint",
     "taze": "catalog:cli",
-    "turbo": "catalog:monorepo"
+    "turbo": "catalog:monorepo",
+    "vitest": "catalog:test"
   },
   "lint-staged": {
     "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}": [
@@ -144,5 +146,8 @@
   },
   "patchedDependencies": {
     "@tanstack/router-generator@1.167.41": "patches/@tanstack%2Frouter-generator@1.167.41.patch"
+  },
+  "imports": {
+    "#deploy/*": "./scripts/deploy/*"
   }
 }

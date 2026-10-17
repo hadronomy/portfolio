@@ -1,7 +1,7 @@
 import { getSchema, mergeAttributes, Node } from '@tiptap/core';
 import { TableKit } from '@tiptap/extension-table';
 import StarterKit from '@tiptap/starter-kit';
-import { linkable } from './page-links';
+import { linkable } from '#page-links';
 
 // What a quote's pages may hold, as one Tiptap extension list. The editor,
 // the server's validation, the Markdown an agent reads and writes, and the

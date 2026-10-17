@@ -5,10 +5,14 @@ import * as Popover from '@radix-ui/react-popover';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Check, CircleAlert, Copy, Link2 } from 'lucide-react';
 import { useState } from 'react';
-import { getCollection, revokePaymentLinks, sharePaymentLink } from './api';
-import { shareFailureMessage as failureMessage } from './share-words';
-import { useToast } from './toast';
-import { Button, cn, layer, MorphText } from './ui';
+import {
+  getCollection,
+  revokePaymentLinks,
+  sharePaymentLink,
+} from '~/features/invoices/api';
+import { shareFailureMessage as failureMessage } from '~/features/invoices/share-words';
+import { useToast } from '~/features/invoices/toast';
+import { Button, cn, layer, MorphText } from '~/features/invoices/ui';
 
 // The owner's end of online payments: a link to send, and one line saying
 // where payment stands. How the customer pays is the invoice's payment plan,

@@ -15,11 +15,11 @@ import { type AddressSuggestion, streetLine } from '@portfolio/invoices/photon';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { findAddresses, findLocality } from './api';
-import { Combobox } from './combobox';
-import { CountryField } from './country-field';
-import { Picker } from './picker';
-import { Field } from './ui';
+import { findAddresses, findLocality } from '~/features/invoices/api';
+import { Combobox } from '~/features/invoices/combobox';
+import { CountryField } from '~/features/invoices/country-field';
+import { Picker } from '~/features/invoices/picker';
+import { Field } from '~/features/invoices/ui';
 
 // A postal address laid out the way its country writes it. The country comes
 // first because it decides everything after it: which fields exist, what

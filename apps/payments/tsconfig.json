@@ -10,7 +10,10 @@
     "noUnusedLocals": true,
     "noEmit": true,
     "skipLibCheck": true,
-    "types": ["node"]
+    "types": ["node"],
+    "paths": {
+      "~/*": ["./src/*"]
+    }
   },
-  "include": ["src", "alchemy.run.ts"]
+  "include": ["src", "alchemy.run.ts", "test", "vitest.config.ts"]
 }

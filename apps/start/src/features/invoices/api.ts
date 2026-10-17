@@ -15,22 +15,20 @@ import { CustomerDetails } from '@portfolio/invoices/quote-details';
 import { Answer, EmailAddress } from '@portfolio/invoices/quote-model';
 import { createServerFn } from '@tanstack/react-start';
 import { Effect, Result, Schema } from 'effect';
-import { Auth, requireOwner, viewer } from '../../server/auth.server';
-import { AppConfig } from '../../server/config.server';
-import { Geocoder } from '../../server/geocoder.server';
-import { agentOrigin } from '../../server/origin.server';
-import { requestLanguage, sameOrigin } from '../../server/request.server';
-import { serve } from '../../server/runtime.server';
-import { accountOffer } from '../account/account.server';
-import { agentResource } from '../auth/shared';
+import { accountOffer } from '~/features/account/account.server';
+import { agentResource } from '~/features/auth/shared';
 import {
   checkout,
   collectionStatus,
   revoke,
   share,
   startPayment,
-} from './collection.server';
-import { mutate, preview, workspace } from './operations.server';
+} from '~/features/invoices/collection.server';
+import {
+  mutate,
+  preview,
+  workspace,
+} from '~/features/invoices/operations.server';
 import {
   answerQuote,
   confirmQuoteDetails,
@@ -44,7 +42,13 @@ import {
   retryQuoteEmail,
   revokeQuote,
   shareQuote,
-} from './quotes.server';
+} from '~/features/invoices/quotes.server';
+import { Auth, requireOwner, viewer } from '~/server/auth.server';
+import { AppConfig } from '~/server/config.server';
+import { Geocoder } from '~/server/geocoder.server';
+import { agentOrigin } from '~/server/origin.server';
+import { requestLanguage, sameOrigin } from '~/server/request.server';
+import { serve } from '~/server/runtime.server';
 
 export const SaveMutation = Schema.Struct({
   action: Schema.Literal('save'),

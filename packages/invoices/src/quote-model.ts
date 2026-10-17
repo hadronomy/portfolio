@@ -1,7 +1,7 @@
 import { Schema } from 'effect';
-import { bills } from './billing';
-import { type Invoice, InvoiceId, Language, RecordId } from './model';
-import { PaymentPlan } from './plan';
+import { bills } from '#billing';
+import { type Invoice, InvoiceId, Language, RecordId } from '#model';
+import { PaymentPlan } from '#plan';
 
 // A quote's life after it is issued, as data: the customer's answer, and
 // the invoices an accepted quote is billed in. Safe in the browser.

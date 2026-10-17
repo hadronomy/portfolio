@@ -1,5 +1,5 @@
 import { Context, Effect, FileSystem, Layer, Path, Redacted } from 'effect';
-import { AppConfig } from './config.server';
+import { AppConfig } from '~/server/config.server';
 
 // The key that signs sessions and seals sign-in state. Production sets it;
 // development makes one the first time and keeps it beside its database, so

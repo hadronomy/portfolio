@@ -1,8 +1,8 @@
 import { translate } from '@portfolio/i18n';
 import { m } from '@portfolio/i18n/messages';
 import { createFileRoute, redirect } from '@tanstack/react-router';
-import { AccountScreen } from '../features/account/account';
-import { getAccountPage } from '../features/account/api';
+import { AccountScreen } from '~/features/account/account';
+import { getAccountPage } from '~/features/account/api';
 
 export const Route = createFileRoute('/invoices_/account')({
   loader: async () => {

@@ -42,26 +42,32 @@ import {
   customerTypes,
   documentKinds,
   paymentMethods,
-} from './choices';
-import { CoverPicker } from './cover-picker';
-import { coverArt, coverLabel } from './covers';
-import { LineEditor } from './line-editor';
-import { PagesStudio } from './pages-studio';
-import { PartyFields } from './party-fields';
-import { PaymentLinkMenu, PaymentReview } from './payment-link';
-import { PaymentList } from './payment-list';
-import type { DockParts } from './pdf-viewer';
-import { CatalogMenu, CustomerPicker } from './pickers';
-import { OfferPanel, offerSummary, useOffer } from './plans';
-import { QuotePanel } from './quote-panel';
+} from '~/features/invoices/choices';
+import { CoverPicker } from '~/features/invoices/cover-picker';
+import { coverArt, coverLabel } from '~/features/invoices/covers';
+import { LineEditor } from '~/features/invoices/line-editor';
+import { PagesStudio } from '~/features/invoices/pages-studio';
+import { PartyFields } from '~/features/invoices/party-fields';
+import {
+  PaymentLinkMenu,
+  PaymentReview,
+} from '~/features/invoices/payment-link';
+import { PaymentList } from '~/features/invoices/payment-list';
+import type { DockParts } from '~/features/invoices/pdf-viewer';
+import { CatalogMenu, CustomerPicker } from '~/features/invoices/pickers';
+import { OfferPanel, offerSummary, useOffer } from '~/features/invoices/plans';
+import { QuotePanel } from '~/features/invoices/quote-panel';
 import {
   AmountField,
   DueDateField,
   SeriesField,
   TerritorySelect,
-} from './smart-fields';
-import { type DocumentStatus, documentStatus } from './status';
-import { useToast } from './toast';
+} from '~/features/invoices/smart-fields';
+import {
+  type DocumentStatus,
+  documentStatus,
+} from '~/features/invoices/status';
+import { useToast } from '~/features/invoices/toast';
 import {
   Button,
   Field,
@@ -74,11 +80,15 @@ import {
   Select,
   StatusChip,
   Tip,
-} from './ui';
-import { type DraftStatus, type PreviewStatus, useDraft } from './use-draft';
-import { useWorkspace } from './workspace';
+} from '~/features/invoices/ui';
+import {
+  type DraftStatus,
+  type PreviewStatus,
+  useDraft,
+} from '~/features/invoices/use-draft';
+import { useWorkspace } from '~/features/invoices/workspace';
 
-const PdfViewer = lazy(() => import('./pdf-viewer'));
+const PdfViewer = lazy(() => import('~/features/invoices/pdf-viewer'));
 
 function useInvoiceForm(data: InvoiceData) {
   return useForm({ defaultValues: data });

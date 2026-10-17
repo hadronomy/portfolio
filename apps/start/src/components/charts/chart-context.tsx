@@ -22,11 +22,11 @@ import {
   useContext,
   useMemo,
 } from 'react';
-import type { ChartPhase, ChartStatus } from './chart-phase';
-import type { ReferenceAreaConfig } from './reference-area-config';
-import type { ChartSelection } from './use-chart-interaction';
-import { DEFAULT_Y_AXIS_ID } from './y-axis-scales';
-import type { YDomain } from './y-domain-utils';
+import type { ChartPhase, ChartStatus } from '~/components/charts/chart-phase';
+import type { ReferenceAreaConfig } from '~/components/charts/reference-area-config';
+import type { ChartSelection } from '~/components/charts/use-chart-interaction';
+import { DEFAULT_Y_AXIS_ID } from '~/components/charts/y-axis-scales';
+import type { YDomain } from '~/components/charts/y-domain-utils';
 
 // CSS variable references for theming
 export const chartCssVars = {

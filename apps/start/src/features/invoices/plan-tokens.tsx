@@ -21,11 +21,11 @@ import {
   useRef,
   useState,
 } from 'react';
-import { currencySymbol } from './choices';
-import { fromCents, toCents } from './money';
-import { convertPortion } from './plan-edit';
-import { AnchorContext, shortDate } from './plan-words';
-import { cn, layer, MorphText, Segmented } from './ui';
+import { currencySymbol } from '~/features/invoices/choices';
+import { fromCents, toCents } from '~/features/invoices/money';
+import { convertPortion } from '~/features/invoices/plan-edit';
+import { AnchorContext, shortDate } from '~/features/invoices/plan-words';
+import { cn, layer, MorphText, Segmented } from '~/features/invoices/ui';
 
 // The words of a plan sentence that can change. Each is a token tinted by
 // what it holds (money, time, a count, a rule) and opens, right where it

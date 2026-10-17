@@ -1,9 +1,9 @@
 import { type Locale, translate } from '@portfolio/i18n';
 import { m } from '@portfolio/i18n/messages';
 import { Section, Text } from 'react-email';
-import { Action } from './_parts/action';
-import { Foot, Frame, text, tone } from './_parts/frame';
-import { Face, Ticket } from './_parts/ticket';
+import { Action } from '~/emails/_parts/action';
+import { Foot, Frame, text, tone } from '~/emails/_parts/frame';
+import { Face, Ticket } from '~/emails/_parts/ticket';
 
 // A quote, sent to its customer. It is the ticket they will sign, face up:
 // what the quote is and until when it stands. The price waits for the

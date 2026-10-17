@@ -1,5 +1,5 @@
 import type { Transition } from 'motion/react';
-import { DEFAULT_CHART_ENTER_TRANSITION } from './animation';
+import { DEFAULT_CHART_ENTER_TRANSITION } from '~/components/charts/animation';
 
 export function transitionWithDelay(
   transition: Transition | undefined,

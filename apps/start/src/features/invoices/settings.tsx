@@ -3,14 +3,18 @@ import { useForm, useSelector } from '@tanstack/react-form';
 import { Schema } from 'effect';
 import type { ReactNode } from 'react';
 import { useState } from 'react';
-import { AgentsSettings } from './agents-settings';
-import { languages } from './choices';
-import { CoverPicker } from './cover-picker';
-import { BankFields, PartyFields, TaxProfileFields } from './party-fields';
-import { SeriesField } from './smart-fields';
-import { useToast } from './toast';
-import { Button, Field, MorphText, Select } from './ui';
-import { useWorkspace } from './workspace';
+import { AgentsSettings } from '~/features/invoices/agents-settings';
+import { languages } from '~/features/invoices/choices';
+import { CoverPicker } from '~/features/invoices/cover-picker';
+import {
+  BankFields,
+  PartyFields,
+  TaxProfileFields,
+} from '~/features/invoices/party-fields';
+import { SeriesField } from '~/features/invoices/smart-fields';
+import { useToast } from '~/features/invoices/toast';
+import { Button, Field, MorphText, Select } from '~/features/invoices/ui';
+import { useWorkspace } from '~/features/invoices/workspace';
 
 export function Settings() {
   const { workspace, isError } = useWorkspace();

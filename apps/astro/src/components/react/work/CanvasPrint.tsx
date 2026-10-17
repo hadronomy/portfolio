@@ -1,9 +1,12 @@
 import { useReducedMotion, useSpring } from 'motion/react';
 import * as m from 'motion/react-m';
 import { useRef } from 'react';
+import {
+  type PrintPlacement,
+  printHeight,
+} from '~/components/react/work/canvas-layout';
+import { Arrow, ProjectCover } from '~/components/react/work/WorkShared';
 import type { WorkProject } from '~/lib/work';
-import { type PrintPlacement, printHeight } from './canvas-layout';
-import { Arrow, ProjectCover } from './WorkShared';
 
 const spring = { stiffness: 260, damping: 26, mass: 0.6 };
 

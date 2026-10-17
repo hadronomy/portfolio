@@ -4,9 +4,9 @@ import {
   type ErrorComponentProps,
   useRouterState,
 } from '@tanstack/react-router';
-import { coverArt } from '../features/invoices/covers';
-import { errorRequestId } from './-invoice-errors';
-import '../features/invoices/invoices.css';
+import { coverArt } from '~/features/invoices/covers';
+import { errorRequestId } from '~/routes/-invoice-errors';
+import '~/features/invoices/invoices.css';
 
 // Customer pages speak their document's language, which a failed page can
 // no longer read, so they fall back to Spanish. The owner's workspace is

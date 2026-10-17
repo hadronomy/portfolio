@@ -26,12 +26,19 @@ import {
   lineKinds,
   territoryNames,
   treatments,
-} from './choices';
-import { PartyFields } from './party-fields';
-import { AmountField, TerritorySelect } from './smart-fields';
-import { useToast } from './toast';
-import { Button, Field, IconButton, Modal, MorphText, Select } from './ui';
-import { useWorkspace } from './workspace';
+} from '~/features/invoices/choices';
+import { PartyFields } from '~/features/invoices/party-fields';
+import { AmountField, TerritorySelect } from '~/features/invoices/smart-fields';
+import { useToast } from '~/features/invoices/toast';
+import {
+  Button,
+  Field,
+  IconButton,
+  Modal,
+  MorphText,
+  Select,
+} from '~/features/invoices/ui';
+import { useWorkspace } from '~/features/invoices/workspace';
 
 /** Replays a short horizontal shake on the form, the transitions.dev error cue (#12). */
 function useShake() {

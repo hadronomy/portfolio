@@ -1,7 +1,7 @@
 import { locales } from '@portfolio/i18n';
 import { Schema } from 'effect';
-import { Address, blankAddress } from './address';
-import { blankPages, Pages } from './pages';
+import { Address, blankAddress } from '#address';
+import { blankPages, Pages } from '#pages';
 
 /** A decimal amount as text: money, quantities, and rates cross the wire this way. */
 export const DecimalText = Schema.String.check(

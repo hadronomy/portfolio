@@ -21,11 +21,11 @@ import {
 } from '@portfolio/invoices/quote-details';
 import { useRouter } from '@tanstack/react-router';
 import { type InputHTMLAttributes, useId, useMemo, useState } from 'react';
-import { useT } from '../../lib/i18n';
-import { CollectionNotice } from '../privacy/collection-notice';
-import { confirmQuoteLinkDetails } from './api';
-import { coverArt } from './covers';
-import { Button, MorphText } from './ui';
+import { confirmQuoteLinkDetails } from '~/features/invoices/api';
+import { coverArt } from '~/features/invoices/covers';
+import { Button, MorphText } from '~/features/invoices/ui';
+import { CollectionNotice } from '~/features/privacy/collection-notice';
+import { useT } from '~/lib/i18n';
 
 function DetailsInput({
   label,

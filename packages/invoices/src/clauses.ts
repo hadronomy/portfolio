@@ -1,4 +1,4 @@
-import type { Language } from './model';
+import type { Language } from '#model';
 
 // Reusable conditions for quotes. A clause is published by id and version,
 // and a published version never changes its words: an accepted quote's

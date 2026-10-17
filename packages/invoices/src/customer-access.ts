@@ -1,8 +1,8 @@
 import Decimal from 'decimal.js';
 import { and, eq, gt, inArray, isNotNull, isNull, sql } from 'drizzle-orm';
 import { Context, Effect, Layer, Schema } from 'effect';
-import { balance, calculate } from './calculate';
-import { InvoiceDatabase } from './database';
+import { balance, calculate } from '#calculate';
+import { InvoiceDatabase } from '#database';
 import {
   Cover,
   Currency,
@@ -14,10 +14,10 @@ import {
   MissingInvoice,
   Payment,
   type StorageFailure,
-} from './model';
-import { effective, InvoiceOffer, noOffer, schedule, termsOf } from './plan';
-import { decodeStored, stored } from './storage';
-import * as tables from './tables';
+} from '#model';
+import { effective, InvoiceOffer, noOffer, schedule, termsOf } from '#plan';
+import { decodeStored, stored } from '#storage';
+import * as tables from '#tables';
 
 // What a customer sees once they sign in. A customer is known by the address
 // their invoices are billed to: proving they read that inbox opens every

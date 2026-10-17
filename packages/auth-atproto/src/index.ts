@@ -17,8 +17,8 @@ import { expireCookie, setSessionCookie } from 'better-auth/cookies';
 import { constantTimeEqual, generateRandomString } from 'better-auth/crypto';
 import { handleOAuthUserInfo } from 'better-auth/oauth2';
 import * as z from 'zod';
-import { ATPROTO_CALLBACK_ERRORS, ATPROTO_ERROR_CODES } from './error-codes';
-import { createOAuthClient, paths, scope } from './oauth-client';
+import { ATPROTO_CALLBACK_ERRORS, ATPROTO_ERROR_CODES } from '#error-codes';
+import { createOAuthClient, paths, scope } from '#oauth-client';
 
 export { ATPROTO_CALLBACK_ERRORS, ATPROTO_ERROR_CODES };
 

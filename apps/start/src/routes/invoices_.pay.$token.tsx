@@ -2,10 +2,10 @@ import { baseLocale, translate } from '@portfolio/i18n';
 import { m } from '@portfolio/i18n/messages';
 import type { ErrorComponentProps } from '@tanstack/react-router';
 import { createFileRoute } from '@tanstack/react-router';
-import { getCheckout } from '../features/invoices/api';
-import { InvalidLinkPage, PaymentPage } from '../features/invoices/pay';
-import { InvoiceError } from './-invoice-error';
-import { invoiceRouteError } from './-invoice-errors';
+import { getCheckout } from '~/features/invoices/api';
+import { InvalidLinkPage, PaymentPage } from '~/features/invoices/pay';
+import { InvoiceError } from '~/routes/-invoice-error';
+import { invoiceRouteError } from '~/routes/-invoice-errors';
 
 // The page failed before it knew the invoice, so it cannot know its
 // language either: it says so in Spanish, as every unsure page does.

@@ -2,12 +2,12 @@
 
 import { motion } from 'motion/react';
 import { useId, useMemo } from 'react';
-import { useChartStable } from './chart-context';
+import { useChartStable } from '~/components/charts/chart-context';
 import {
   type PatternPresetId,
   type PatternPresetOptions,
   renderPatternPreset,
-} from './pattern-preset';
+} from '~/components/charts/pattern-preset';
 
 export type BackgroundPatternPreset = PatternPresetId;
 

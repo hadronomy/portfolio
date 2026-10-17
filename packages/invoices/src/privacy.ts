@@ -1,9 +1,9 @@
 import { eq } from 'drizzle-orm';
 import { Effect } from 'effect';
-import { InvoiceDatabase } from './database';
-import { Preferences } from './model';
-import { decodeStored, stored } from './storage';
-import { records } from './tables';
+import { InvoiceDatabase } from '#database';
+import { Preferences } from '#model';
+import { decodeStored, stored } from '#storage';
+import { records } from '#tables';
 
 /** Public controller details, without bank details, tax settings, or customer records. */
 export const privacyController = Effect.fn('Privacy.controller')(function* () {

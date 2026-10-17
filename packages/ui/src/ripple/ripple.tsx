@@ -3,7 +3,7 @@
 import type { HTMLMotionProps } from 'motion/react';
 import { AnimatePresence, motion } from 'motion/react';
 
-import type { RippleType } from './use-ripple';
+import type { RippleType } from '#ripple/use-ripple';
 
 export type RippleProps = HTMLMotionProps<'span'> & {
   ripples: RippleType[];

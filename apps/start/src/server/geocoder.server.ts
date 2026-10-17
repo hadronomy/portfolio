@@ -7,7 +7,7 @@ import {
 } from '@portfolio/invoices/photon';
 import { Cache, Context, Duration, Effect, Exit, Layer } from 'effect';
 import { HttpClient, HttpClientRequest, HttpClientResponse } from 'effect/http';
-import { AppConfig } from './config.server';
+import { AppConfig } from '~/server/config.server';
 
 // Address search goes through the server so the browser never talks to the
 // geocoder: the answer is decoded before it is trusted, and repeats are

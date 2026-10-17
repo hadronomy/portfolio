@@ -9,7 +9,7 @@ import { drizzle as pglite } from 'drizzle-orm/pglite';
 import type { AnyRelations } from 'drizzle-orm/relations';
 import { Effect, Layer } from 'effect';
 import * as Reactivity from 'effect/reactivity/Reactivity';
-import { type Database, type Migrations, Postgres } from './postgres';
+import { type Database, type Migrations, Postgres } from '#postgres';
 
 /** Reads migration files the way drizzle-kit's own migrator reads its folder. */
 function plan(files: Migrations['files']): MigrationMeta[] {
@@ -66,4 +66,4 @@ export const layer = (options: {
     }),
   ).pipe(Layer.provide(Reactivity.layer));
 
-export * as PostgresLocal from './local';
+export * as PostgresLocal from '#local';

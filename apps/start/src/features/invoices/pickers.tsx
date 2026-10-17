@@ -3,7 +3,7 @@ import type { CatalogItem, Customer } from '@portfolio/invoices/model';
 import * as Popover from '@radix-ui/react-popover';
 import { Check, ChevronsUpDown, Package, Search } from 'lucide-react';
 import { type KeyboardEvent, type ReactNode, useState } from 'react';
-import { Button, cn, layer } from './ui';
+import { Button, cn, layer } from '~/features/invoices/ui';
 
 /** Arrow keys walk the options; the search box hands focus to the first one. */
 function onListKey(event: KeyboardEvent<HTMLDivElement>) {

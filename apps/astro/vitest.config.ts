@@ -1,16 +1,10 @@
-import { defineConfig } from 'vitest/config';
+import { packageTests } from '@portfolio/vitest-config';
 
-// Integration suites: each one starts a real server (dev or built) on a free
-// port, so files run one at a time and hooks get room to boot.
-export default defineConfig({
+// End-to-end suites against the real dev and built servers.
+export default packageTests(import.meta.dirname, {
   test: {
-    include: ['tests/**/*.test.mjs'],
-    setupFiles: ['tests/setup.mjs'],
+    setupFiles: ['test/support/setup.mjs'],
     // Each test's spies come off when it ends, as node:test's t.mock did.
     restoreMocks: true,
-    environment: 'node',
-    fileParallelism: false,
-    hookTimeout: 180_000,
-    testTimeout: 60_000,
   },
 });

@@ -1,6 +1,6 @@
 import { Postgres } from '@portfolio/database';
 import { Context, Effect, Layer } from 'effect';
-import { relations } from './relations';
+import { relations } from '#relations';
 
 /** The invoice tables as a Drizzle database whose queries are Effects. */
 export class InvoiceDatabase extends Context.Service<

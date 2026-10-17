@@ -8,7 +8,7 @@ import {
   placeLine,
   regionOfPostalCode,
   regionsOf,
-} from './address';
+} from '#address';
 
 // Photon (https://github.com/komoot/photon) is an OpenStreetMap geocoder
 // built for search-as-you-type. This module reads its answers and turns them

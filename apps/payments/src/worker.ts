@@ -6,11 +6,11 @@ import * as Alchemy from 'alchemy';
 import * as Cloudflare from 'alchemy/Cloudflare';
 import { Effect, Layer, Stream } from 'effect';
 import { HttpRouter } from 'effect/http';
-import { invoiceDatabase } from './database';
-import { retryMail } from './mail-retry';
-import { failedQueueName, queueLayer, SettlementQueue } from './queue';
-import { decode, Settlements } from './settlements';
-import { webhookRoute } from './webhook';
+import { invoiceDatabase } from '~/database';
+import { retryMail } from '~/mail-retry';
+import { failedQueueName, queueLayer, SettlementQueue } from '~/queue';
+import { decode, Settlements } from '~/settlements';
+import { webhookRoute } from '~/webhook';
 
 // The payments Worker: Stripe's side of invoice collection, off the web
 // app's servers. Three ways in, one piece of work:

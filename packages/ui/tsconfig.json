@@ -1,5 +1,10 @@
 {
   "extends": "@portfolio/tsconfig/internal-package",
+  "compilerOptions": {
+    // Declarations land in dist/src, the layout the exports map points at;
+    // the "imports" map needs the root spelled out to find its targets there.
+    "rootDir": "."
+  },
   "buildOptions": {
     "tsBuildInfoFile": "node_modules/.cache/.tsbuildinfo"
   },

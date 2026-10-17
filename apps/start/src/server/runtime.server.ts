@@ -20,16 +20,20 @@ import {
   Path,
 } from 'effect';
 import { FetchHttpClient } from 'effect/http';
-import { migrations as authMigrations } from '../features/auth/migrations';
-import { authLayer } from './auth.server';
-import { AppConfig, appConfigLayer } from './config.server';
-import { invoiceLogger, newRequestId, reportedError } from './errors.server';
-import { geocoderLayer } from './geocoder.server';
-import { mailerLayer } from './mail.server';
-import { pageImagesLayer } from './page-images.server';
-import { paymentsLayer } from './payments.server';
-import { CurrentRequest, Refused } from './request.server';
-import { appSecretLayer } from './secret.server';
+import { migrations as authMigrations } from '~/features/auth/migrations';
+import { authLayer } from '~/server/auth.server';
+import { AppConfig, appConfigLayer } from '~/server/config.server';
+import {
+  invoiceLogger,
+  newRequestId,
+  reportedError,
+} from '~/server/errors.server';
+import { geocoderLayer } from '~/server/geocoder.server';
+import { mailerLayer } from '~/server/mail.server';
+import { pageImagesLayer } from '~/server/page-images.server';
+import { paymentsLayer } from '~/server/payments.server';
+import { CurrentRequest, Refused } from '~/server/request.server';
+import { appSecretLayer } from '~/server/secret.server';
 
 // The invoice server as one layer graph, built once per process, and the
 // edge where its effects meet TanStack Start. Server functions and routes

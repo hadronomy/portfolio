@@ -2,17 +2,20 @@
 
 import { animate, motion, useMotionValue, useTransform } from 'motion/react';
 import { useEffect, useId } from 'react';
-import { chartCssVars, useChartStable } from './chart-context';
-import type { ChartPhase } from './chart-phase';
+import {
+  chartCssVars,
+  useChartStable,
+} from '~/components/charts/chart-context';
+import type { ChartPhase } from '~/components/charts/chart-phase';
 import {
   fadeGradientStops,
   resolveFadeSides,
   viewportFadeGradientAttrs,
-} from './fade-edges';
+} from '~/components/charts/fade-edges';
 import {
   LINE_LOADING_PULSE_CYCLE_S,
   LINE_LOADING_PULSE_EASE,
-} from './line-loading-timing';
+} from '~/components/charts/line-loading-timing';
 
 const CLIP_PADDING = 10;
 

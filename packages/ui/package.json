@@ -56,5 +56,10 @@
     "react-icons": "catalog:icons",
     "tailwind-merge": "catalog:style",
     "tailwind-variants": "catalog:prod"
+  },
+  "imports": {
+    "#*": "./src/*.ts",
+    "#utils/cn": "./src/utils/cn.tsx",
+    "#ripple/ripple": "./src/ripple/ripple.tsx"
   }
 }

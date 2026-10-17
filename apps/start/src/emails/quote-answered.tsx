@@ -1,10 +1,10 @@
 import { type Locale, translate } from '@portfolio/i18n';
 import { m } from '@portfolio/i18n/messages';
 import { Section, Text } from 'react-email';
-import { Action } from './_parts/action';
-import { Foot, Frame, text, tone } from './_parts/frame';
-import { Face, Signed, Ticket } from './_parts/ticket';
-import type { QuoteAnswerProps } from './quote-answer';
+import { Action } from '~/emails/_parts/action';
+import { Foot, Frame, text, tone } from '~/emails/_parts/frame';
+import { Face, Signed, Ticket } from '~/emails/_parts/ticket';
+import type { QuoteAnswerProps } from '~/emails/quote-answer';
 
 // The owner's word that a customer answered: the same ticket the customer
 // signed, what to do next, and the evidence the acceptance rests on. On an

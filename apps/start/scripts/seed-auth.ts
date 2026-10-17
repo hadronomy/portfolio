@@ -2,11 +2,11 @@ import { drizzleAdapter } from '@better-auth/drizzle-adapter/relations-v2';
 import { betterAuth } from 'better-auth';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Effect, Redacted } from 'effect';
-import { authOptions } from '../src/features/auth/options';
-import { authNamespace } from '../src/features/auth/shared';
-import * as tables from '../src/features/auth/tables';
-import { AppConfig, appConfigLayer } from '../src/server/config.server';
-import { agentOrigin } from '../src/server/origin.server';
+import { authOptions } from '~/features/auth/options';
+import { authNamespace } from '~/features/auth/shared';
+import * as tables from '~/features/auth/tables';
+import { AppConfig, appConfigLayer } from '~/server/config.server';
+import { agentOrigin } from '~/server/origin.server';
 
 const settings = await Effect.runPromise(
   AppConfig.useSync((settings) => settings).pipe(

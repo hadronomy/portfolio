@@ -1,5 +1,5 @@
-import type { Locale } from '../i18n/locales';
-import { renderCV } from './cv';
+import type { Locale } from '~/i18n/locales';
+import { renderCV } from '~/lib/cv';
 
 export async function cvResponse(locale: Locale) {
   const pdf = await renderCV(locale);

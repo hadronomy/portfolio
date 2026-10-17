@@ -9,16 +9,21 @@ import {
   useRef,
   useState,
 } from 'react';
-import { Area } from '@/components/charts/area';
-import { ComposedChart } from '@/components/charts/composed-chart';
-import { ReferenceArea } from '@/components/charts/reference-area';
-import { SeriesBar } from '@/components/charts/series-bar';
-import { ChartTooltip } from '@/components/charts/tooltip';
-import '@/components/charts/charts.css';
-import { fromCents, toCents } from './money';
-import { type LaidPart, movable, moveSeam, seamStep } from './plan-edit';
-import { shortDate } from './plan-words';
-import { MorphText } from './ui';
+import { Area } from '~/components/charts/area';
+import { ComposedChart } from '~/components/charts/composed-chart';
+import { ReferenceArea } from '~/components/charts/reference-area';
+import { SeriesBar } from '~/components/charts/series-bar';
+import { ChartTooltip } from '~/components/charts/tooltip';
+import '~/components/charts/charts.css';
+import { fromCents, toCents } from '~/features/invoices/money';
+import {
+  type LaidPart,
+  movable,
+  moveSeam,
+  seamStep,
+} from '~/features/invoices/plan-edit';
+import { shortDate } from '~/features/invoices/plan-words';
+import { MorphText } from '~/features/invoices/ui';
 
 // Two drawings of the same plan. The strip is the money: one segment per
 // part, to scale, with seams the owner drags to move money between

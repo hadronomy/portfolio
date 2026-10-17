@@ -1,8 +1,8 @@
 import { isLocale, translate } from '@portfolio/i18n';
 import { m } from '@portfolio/i18n/messages';
 import { createFileRoute } from '@tanstack/react-router';
-import { getPrivacyNotice } from '../features/privacy/api';
-import { PrivacyPage } from '../features/privacy/privacy-page';
+import { getPrivacyNotice } from '~/features/privacy/api';
+import { PrivacyPage } from '~/features/privacy/privacy-page';
 
 export const Route = createFileRoute('/invoices_/privacy')({
   validateSearch: (search: Record<string, unknown>) => ({

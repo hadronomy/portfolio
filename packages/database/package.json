@@ -20,9 +20,13 @@
     "pg": "8.16.3"
   },
   "devDependencies": {
+    "@portfolio/vitest-config": "workspace:",
     "@types/node": "catalog:types",
     "@types/pg": "8.15.6",
     "typescript": "catalog:dev",
     "vitest": "catalog:test"
+  },
+  "imports": {
+    "#*": "./src/*.ts"
   }
 }

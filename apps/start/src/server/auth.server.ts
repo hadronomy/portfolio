@@ -14,22 +14,22 @@ import type { OwnerDid } from '@portfolio/invoices/model';
 import { betterAuth } from 'better-auth';
 import { and, desc, eq } from 'drizzle-orm';
 import { Context, Effect, Layer, Redacted } from 'effect';
-import { authOptions, ownerDid } from '../features/auth/options';
-import { withOfflineAccess } from '../features/auth/refresh';
+import { authOptions, ownerDid } from '~/features/auth/options';
+import { withOfflineAccess } from '~/features/auth/refresh';
 import {
   agentIssuer,
   agentResource,
   agentScope,
   authNamespace,
-} from '../features/auth/shared';
-import * as tables from '../features/auth/tables';
-import { clientAddressHeader } from './client-address.server';
-import { AppConfig } from './config.server';
-import { reportedError } from './errors.server';
-import { Mailer } from './mail.server';
-import { agentOrigin, fixedOrigin } from './origin.server';
-import { CurrentRequest, Refused } from './request.server';
-import { AppSecret } from './secret.server';
+} from '~/features/auth/shared';
+import * as tables from '~/features/auth/tables';
+import { clientAddressHeader } from '~/server/client-address.server';
+import { AppConfig } from '~/server/config.server';
+import { reportedError } from '~/server/errors.server';
+import { Mailer } from '~/server/mail.server';
+import { agentOrigin, fixedOrigin } from '~/server/origin.server';
+import { CurrentRequest, Refused } from '~/server/request.server';
+import { AppSecret } from '~/server/secret.server';
 
 // Sign-in, as a service: better-auth underneath, Effects on top. better-auth
 // awaits promises, so the services it calls back into (who may open an

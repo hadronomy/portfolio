@@ -1,5 +1,5 @@
-import type { Mutation } from '../invoices/api';
-import type { ToolName } from './tools';
+import type { ToolName } from '~/features/agent/tools';
+import type { Mutation } from '~/features/invoices/api';
 
 // What the owner can do, and how an agent does the same. The type checker
 // holds the first map complete: a new kind of workspace edit does not

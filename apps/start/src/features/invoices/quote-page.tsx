@@ -31,18 +31,20 @@ import {
   type PadWords,
   SignaturePad,
   signatureToSvg,
-} from '../../components/arc/signature-pad/signature-pad';
-import { Speak, useT } from '../../lib/i18n';
-import { CollectionNotice } from '../privacy/collection-notice';
-import { answerQuoteLink } from './api';
-import { ClosedLink } from './closed-link';
-import { coverArt } from './covers';
-import { QuoteDetailsForm } from './quote-details-form';
-import { Button, MorphText } from './ui';
-import './invoices.css';
+} from '~/components/arc/signature-pad/signature-pad';
+import { answerQuoteLink } from '~/features/invoices/api';
+import { ClosedLink } from '~/features/invoices/closed-link';
+import { coverArt } from '~/features/invoices/covers';
+import { QuoteDetailsForm } from '~/features/invoices/quote-details-form';
+import { Button, MorphText } from '~/features/invoices/ui';
+import { CollectionNotice } from '~/features/privacy/collection-notice';
+import { Speak, useT } from '~/lib/i18n';
+import '~/features/invoices/invoices.css';
 
 const PageView = lazy(() =>
-  import('./page-view').then((module) => ({ default: module.PageView })),
+  import('~/features/invoices/page-view').then((module) => ({
+    default: module.PageView,
+  })),
 );
 
 // The customer's page for one quote, behind its link. They read the PDF

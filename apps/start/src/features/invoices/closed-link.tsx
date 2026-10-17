@@ -2,8 +2,8 @@ import type { Locale, Sentence } from '@portfolio/i18n';
 import { m } from '@portfolio/i18n/messages';
 import { locales, setLocale } from '@portfolio/i18n/runtime';
 import { ArrowRight } from 'lucide-react';
-import { Speak, useT } from '../../lib/i18n';
-import './invoices.css';
+import { Speak, useT } from '~/lib/i18n';
+import '~/features/invoices/invoices.css';
 
 // What a customer sees when a link leads nowhere: the ticket they expected,
 // stamped closed, its stub torn off. No document means no cover art, so

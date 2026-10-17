@@ -4,9 +4,9 @@ import {
   routeOwner,
 } from '@portfolio/site-routing';
 import { type AnyRouter, createRouter } from '@tanstack/react-router';
-import astroRoutes from './astro-routes.gen.json';
-import { matchesStartRoute } from './matches-route';
-import { routeTree } from './routeTree.gen';
+import astroRoutes from '~/astro-routes.gen.json';
+import { matchesStartRoute } from '~/matches-route';
+import { routeTree } from '~/routeTree.gen';
 
 export const matchesAstro = astroMatcher(astroRoutes);
 

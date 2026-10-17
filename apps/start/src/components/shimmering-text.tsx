@@ -2,7 +2,7 @@
 
 import { motion, useReducedMotion, type Variants } from 'motion/react';
 import { type ComponentProps, useCallback } from 'react';
-import { cn } from '@/lib/utils';
+import { cn } from '~/lib/utils';
 
 export type ShimmeringTextProps = Omit<
   ComponentProps<typeof motion.span>,

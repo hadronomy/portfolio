@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
+import WorkCanvas from '~/components/react/work/WorkCanvas';
 import type { WorkProject } from '~/lib/work';
-import WorkCanvas from './work/WorkCanvas';
-import './work/work.css';
+import '~/components/react/work/work.css';
 
 export interface WorkGalleryProps {
   readonly projects: readonly WorkProject[];

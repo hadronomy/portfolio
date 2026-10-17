@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
-import { fingerprint } from '../../lib/fingerprint';
+import { fingerprint } from '~/lib/fingerprint';
 
 export const Route = createFileRoute('/experiments/text')({
   component: TextTool,

@@ -62,7 +62,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { cn } from './ui';
+import { cn } from '~/features/invoices/ui';
 
 // The editor for a quote's pages. It edits the document the PDF prints,
 // with the page schema's own extensions, and adds only what writing needs:

@@ -1,6 +1,6 @@
 import type { Payment } from '@portfolio/invoices/model';
 import { Undo2 } from 'lucide-react';
-import { IconButton } from './ui';
+import { IconButton } from '~/features/invoices/ui';
 
 // The ledger for one invoice, one row per payment: when and how on the left,
 // the amount in a right-aligned column, and the one action a row allows at

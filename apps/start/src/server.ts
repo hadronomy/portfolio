@@ -1,11 +1,11 @@
 import handler, { createServerEntry } from '@tanstack/react-start/server-entry';
-import { getRouteOwner, getRouter, matchesAstro } from './router';
+import { getRouteOwner, getRouter, matchesAstro } from '~/router';
 import {
   clientAddress,
   clientAddressHeader,
-} from './server/client-address.server';
-import { reportedError } from './server/errors.server';
-import { invoiceHeaders, isInvoiceResponse } from './server/headers.server';
+} from '~/server/client-address.server';
+import { reportedError } from '~/server/errors.server';
+import { invoiceHeaders, isInvoiceResponse } from '~/server/headers.server';
 
 /**
  * A copy of the request with its headers edited. Rebuilt from its parts:

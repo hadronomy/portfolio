@@ -5,7 +5,7 @@ import {
   PaymentIntentId,
   type StripeEvent,
   StripeInvoiceId,
-} from './stripe/schema';
+} from '#stripe/schema';
 
 /**
  * Work that brings one Stripe invoice's payments into the ledger. It names

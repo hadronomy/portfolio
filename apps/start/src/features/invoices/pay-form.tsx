@@ -28,14 +28,20 @@ import {
   useRef,
   useState,
 } from 'react';
-import { useT } from '../../lib/i18n';
-import { CollectionNotice } from '../privacy/collection-notice';
-import { type Access, beginPayment } from './api';
-import { currencySymbol } from './choices';
-import { decimalMark, fromCents, moneyOf, readAmount, toCents } from './money';
-import { planLine, planName } from './plan-words';
-import { PlanSchedule, partName } from './schedule';
-import { Button, MorphText } from './ui';
+import { type Access, beginPayment } from '~/features/invoices/api';
+import { currencySymbol } from '~/features/invoices/choices';
+import {
+  decimalMark,
+  fromCents,
+  moneyOf,
+  readAmount,
+  toCents,
+} from '~/features/invoices/money';
+import { planLine, planName } from '~/features/invoices/plan-words';
+import { PlanSchedule, partName } from '~/features/invoices/schedule';
+import { Button, MorphText } from '~/features/invoices/ui';
+import { CollectionNotice } from '~/features/privacy/collection-notice';
+import { useT } from '~/lib/i18n';
 
 // The stub's working part: which plan, how much, how, and the one button
 // that pays it. When the invoice offers several plans the customer picks
