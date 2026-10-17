@@ -5,6 +5,7 @@ import { authClient } from '../auth/client';
 import { agentScope, ownerHandle } from '../auth/shared';
 import { coverArt } from '../invoices/covers';
 import { Button, MorphText } from '../invoices/ui';
+import { step } from './step';
 import '../invoices/invoices.css';
 
 // Where the owner lets an agent in. An MCP client sends them here twice:
@@ -45,12 +46,9 @@ function useClient() {
   useEffect(() => {
     const id = new URLSearchParams(search()).get('client_id');
     if (!id) return;
-    void authClient
-      .$fetch<Client>('/oauth2/public-client-prelogin', {
-        method: 'POST',
-        body: { client_id: id },
-      })
-      .then(({ data }) => data && setClient(data));
+    void authClient.oauth2
+      .publicClientPrelogin({ client_id: id })
+      .then(({ data }) => data && setClient(data as Client));
   }, []);
   return client;
 }
@@ -97,21 +95,12 @@ export function ConnectSignIn({ signedIn }: { signedIn: boolean }) {
     if (!signedIn) return;
     // Back from AT Protocol sign-in: the provider picks the request up
     // where it left it, and sends the browser on to approve the agent.
-    void authClient
-      .$fetch<{ redirect_uri: string }>('/oauth2/continue', {
-        method: 'POST',
-        body: { selected: true },
-      })
-      .then(({ data, error: failure }) => {
-        if (data?.redirect_uri) window.location.assign(data.redirect_uri);
-        else {
-          setPending(false);
-          setError(
-            failure?.message ??
-              'This request has expired. Start again from your agent.',
-          );
-        }
-      });
+    void authClient.oauth2.continue({ selected: true }).then((answer) => {
+      const next = step(answer);
+      if (next.kind === 'leaving') return;
+      setPending(false);
+      setError(next.problem);
+    });
   }, [signedIn]);
   const signIn = async () => {
     setPending(true);
@@ -164,18 +153,12 @@ export function ConnectConsent({ owner }: { owner: boolean }) {
   const answer = async (accept: boolean) => {
     setPending(accept ? 'allow' : 'decline');
     setError('');
-    const { data, error: failure } = await authClient.$fetch<{
-      redirect_uri: string;
-    }>('/oauth2/consent', { method: 'POST', body: { accept } });
-    if (data?.redirect_uri) {
-      window.location.assign(data.redirect_uri);
-      return;
-    }
+    const next = step(await authClient.oauth2.consent({ accept }));
+    // The buttons stay disabled while the browser goes to the agent: a
+    // second answer would send it a second code.
+    if (next.kind === 'leaving') return;
     setPending(null);
-    setError(
-      failure?.message ??
-        'This request has expired. Start again from your agent.',
-    );
+    setError(next.problem);
   };
   if (!owner)
     return (
