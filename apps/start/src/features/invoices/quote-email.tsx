@@ -3,8 +3,9 @@ import { m } from '@portfolio/i18n/messages';
 import type { InvoiceData, InvoiceId } from '@portfolio/invoices/model';
 import type { MailDelivery } from '@portfolio/invoices/outbox-model';
 import * as Dialog from '@radix-ui/react-dialog';
+import { useHotkey } from '@tanstack/react-hotkeys';
 import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query';
-import { Check, CornerDownLeft, FileText, Reply, X } from 'lucide-react';
+import { Check, FileText, Reply, X } from 'lucide-react';
 import { useEffect, useId, useRef, useState } from 'react';
 import {
   emailQuoteLink,
@@ -12,6 +13,7 @@ import {
   quoteNoteLimit,
 } from '~/features/invoices/api';
 import { Button, cn, layer, MorphText } from '~/features/invoices/ui';
+import { appHotkeys, useHotkeyLabel } from '~/lib/hotkeys';
 
 // Emailing a quote: who it goes to, a few words of the owner's own, and,
 // beside them, the email itself as the customer will get it, redrawn as
@@ -161,6 +163,11 @@ export function QuoteEmailDialog({
     setProblem(null);
     send.mutate();
   };
+  // Bound to the open dialog, so ⌘↵ sends from the note as from anywhere
+  // else in it.
+  const [compose, setCompose] = useState<HTMLDivElement | null>(null);
+  useHotkey(appHotkeys['mail.send'], submit, { target: compose });
+  const sendKeys = useHotkeyLabel(appHotkeys['mail.send']);
 
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
@@ -176,12 +183,7 @@ export function QuoteEmailDialog({
               .querySelector<HTMLElement>(valid ? 'textarea' : 'input')
               ?.focus();
           }}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
-              event.preventDefault();
-              submit();
-            }
-          }}
+          ref={setCompose}
         >
           <form
             className="iv-compose-form"
@@ -321,10 +323,8 @@ export function QuoteEmailDialog({
                       ? 'Sending…'
                       : 'Send'}
                 </MorphText>
-                {!sent && !send.isPending && (
-                  <kbd aria-hidden>
-                    ⌘<CornerDownLeft size={11} />
-                  </kbd>
+                {!sent && !send.isPending && sendKeys && (
+                  <kbd aria-hidden>{sendKeys}</kbd>
                 )}
               </Button>
             </div>

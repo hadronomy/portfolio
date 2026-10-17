@@ -1,6 +1,7 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import * as SelectPrimitive from '@radix-ui/react-select';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
+import type { AppHotkey } from '@tanstack/react-hotkeys';
 import { Check, ChevronDown, ChevronsUpDown, X } from 'lucide-react';
 import { motion } from 'motion/react';
 import {
@@ -18,6 +19,7 @@ import {
 import { flushSync } from 'react-dom';
 import { TextMorph as TorphText } from 'torph/react';
 import type { DocumentStatus } from '~/features/invoices/status';
+import { useHotkeyLabel, useHotkeyProps } from '~/lib/hotkeys';
 
 // Minimal local cn: clsx + tailwind-merge live in @portfolio/ui, which the
 // start app does not depend on, so join here instead of adding a new dep.
@@ -129,12 +131,13 @@ export function TooltipProvider({ children }: { children: ReactNode }) {
 export function Tip({
   label,
   side = 'bottom',
-  shortcut,
+  hotkey,
   children,
 }: {
   label: string;
   side?: 'top' | 'right' | 'bottom' | 'left';
-  shortcut?: string;
+  /** The action's shortcut, written out in the tooltip. */
+  hotkey?: AppHotkey;
   children: ReactNode;
 }) {
   return (
@@ -147,18 +150,27 @@ export function Tip({
           className={cn(layer, 'iv-tip')}
         >
           {label}
-          {shortcut && <kbd className="iv-kbd">{shortcut}</kbd>}
+          {hotkey && <TipKeys hotkey={hotkey} />}
         </TooltipPrimitive.Content>
       </TooltipPrimitive.Portal>
     </TooltipPrimitive.Root>
   );
 }
 
-/** A square icon button. The label doubles as its tooltip and accessible name. */
+function TipKeys({ hotkey }: { hotkey: AppHotkey }) {
+  const label = useHotkeyLabel(hotkey);
+  return label && <kbd className="iv-kbd">{label}</kbd>;
+}
+
+/**
+ * A square icon button. The label doubles as its tooltip and accessible
+ * name; its shortcut, if any, shows in the tooltip and beside the button
+ * while ⌘ is held.
+ */
 export function IconButton({
   label,
   side,
-  shortcut,
+  hotkey,
   variant = 'ghost',
   className,
   children,
@@ -167,21 +179,22 @@ export function IconButton({
 }: Omit<ButtonProps, 'aria-label' | 'size'> & {
   label: string;
   side?: 'top' | 'right' | 'bottom' | 'left';
-  /** Keyboard shortcut shown in the tooltip. */
-  shortcut?: string;
+  hotkey?: AppHotkey;
   ref?: Ref<HTMLButtonElement>;
 }) {
+  const keys = useHotkeyProps(...(hotkey ? [hotkey] : []));
   return (
     <Tip
       label={label}
       {...(side ? { side } : {})}
-      {...(shortcut ? { shortcut } : {})}
+      {...(hotkey ? { hotkey } : {})}
     >
       <button
         {...props}
         ref={ref}
         type={props.type ?? 'button'}
         aria-label={label}
+        {...keys}
         className={cn('iv-icon-btn', className)}
         data-variant={variant}
       >

@@ -1,14 +1,9 @@
 import { formatMoney } from '@portfolio/invoices/calculate';
 import { useLiveQuery } from '@tanstack/react-db';
+import { useHotkey } from '@tanstack/react-hotkeys';
 import { Link } from '@tanstack/react-router';
 import { Plus, Search } from 'lucide-react';
-import {
-  type KeyboardEvent,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { type KeyboardEvent, useMemo, useRef, useState } from 'react';
 import { documentStatus, today } from '~/features/invoices/status';
 import { useToast } from '~/features/invoices/toast';
 import {
@@ -18,6 +13,7 @@ import {
   StatusChip,
 } from '~/features/invoices/ui';
 import { useCreateInvoice, useWorkspace } from '~/features/invoices/workspace';
+import { appHotkeys } from '~/lib/hotkeys';
 
 type Filter = 'all' | 'draft' | 'open' | 'paid';
 
@@ -74,18 +70,8 @@ export function InvoiceList() {
   const [filter, setFilter] = useState<Filter>('all');
   const searchRef = useRef<HTMLInputElement>(null);
 
-  // "/" jumps to search from anywhere on the page that is not a text field.
-  useEffect(() => {
-    const onKey = (event: globalThis.KeyboardEvent) => {
-      if (event.key !== '/' || event.metaKey || event.ctrlKey) return;
-      const target = event.target as HTMLElement;
-      if (target.closest('input, textarea, [contenteditable="true"]')) return;
-      event.preventDefault();
-      searchRef.current?.focus();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, []);
+  // Typing in a field keeps its "/": a single key never fires from one.
+  useHotkey(appHotkeys['documents.search'], () => searchRef.current?.focus());
 
   const on = useMemo(() => today(), []);
   const documents = useMemo(() => {

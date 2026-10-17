@@ -25,6 +25,7 @@ import {
 } from '@embedpdf/plugin-viewport/react';
 import { ZoomMode, ZoomPluginPackage } from '@embedpdf/plugin-zoom';
 import { useZoom, useZoomCapability } from '@embedpdf/plugin-zoom/react';
+import { useHotkey } from '@tanstack/react-hotkeys';
 import {
   ChevronDown,
   ChevronUp,
@@ -48,6 +49,7 @@ import {
   visibleSheets,
 } from '~/features/invoices/still';
 import { IconButton, MorphText } from '~/features/invoices/ui';
+import { appHotkeys } from '~/lib/hotkeys';
 
 // Content swaps inside the dock: the icon-swap values from transitions.dev
 // (#09), a 2px cross-blur and a small scale, in quicker than the morph and
@@ -494,6 +496,7 @@ function Pages({
   }, [query, searching, search]);
   const searchButton = useRef<HTMLButtonElement>(null);
   const dockRef = useRef<HTMLDivElement>(null);
+  const findRef = useRef<HTMLInputElement>(null);
   function openSearch() {
     setError('');
     setSearching(true);
@@ -505,21 +508,6 @@ function Pages({
     // Focus returns to where search was opened from, not to the page body.
     requestAnimationFrame(() => searchButton.current?.focus());
   }
-  // ⌘F / Ctrl+F finds in the document, not in the surrounding app chrome.
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key !== 'f' || !(event.metaKey || event.ctrlKey)) return;
-      event.preventDefault();
-      setError('');
-      setSearching(true);
-      // Already open: select the query so typing replaces it.
-      dockRef.current
-        ?.querySelector<HTMLInputElement>('input[type="search"]')
-        ?.select();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, []);
   // "No matches" gets the transitions.dev error shake (#12) when the owner
   // presses Enter on it, so the dead end is felt, not only read.
   function nudge() {
@@ -532,6 +520,29 @@ function Pages({
   const settledQuery = query.trim() !== '' && !searchState.loading;
   const found = searchState.total;
   const noMatches = settledQuery && found === 0;
+  // ⌘F / Ctrl+F finds in the document, not in the surrounding app chrome.
+  useHotkey(appHotkeys['preview.find'], () => {
+    setError('');
+    setSearching(true);
+    // Already open: select the query so typing replaces it.
+    findRef.current?.select();
+  });
+  useHotkey(appHotkeys['preview.close'], closeSearch, {
+    target: dockRef,
+    enabled: searching,
+  });
+  // Bound to the field itself, so Enter steps through matches there and
+  // nowhere else.
+  useHotkey(
+    appHotkeys['preview.next'],
+    () => (noMatches ? nudge() : search?.nextResult()),
+    { target: findRef, enabled: searching },
+  );
+  useHotkey(
+    appHotkeys['preview.previous'],
+    () => (noMatches ? nudge() : search?.previousResult()),
+    { target: findRef, enabled: searching },
+  );
   const message = problem || error;
   // Drag, flick, and pinch act on the page directly. A drag moves the page,
   // so the preview carries no text-selection layer: copying belongs to the
@@ -622,12 +633,6 @@ function Pages({
           onAnimationEnd={(event) =>
             event.currentTarget.classList.remove('iv-shake')
           }
-          onKeyDown={(event) => {
-            if (event.key === 'Escape' && searching) {
-              event.preventDefault();
-              closeSearch();
-            }
-          }}
         >
           <AnimatePresence mode="popLayout" initial={false}>
             {searching ? (
@@ -635,10 +640,12 @@ function Pages({
                 key="search"
                 layout="position"
                 className="iv-dock-search"
+                data-hotkey-scope
                 {...dockSwap}
               >
                 <Search size={15} className="iv-dock-search-icon" />
                 <input
+                  ref={findRef}
                   // biome-ignore lint/a11y/noAutofocus: opening search means typing next.
                   autoFocus
                   type="search"
@@ -647,13 +654,6 @@ function Pages({
                   value={query}
                   spellCheck={false}
                   onChange={(event) => setQuery(event.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key !== 'Enter') return;
-                    event.preventDefault();
-                    if (noMatches) nudge();
-                    else if (event.shiftKey) search?.previousResult();
-                    else search?.nextResult();
-                  }}
                 />
                 <output
                   className="iv-dock-count"
@@ -673,7 +673,7 @@ function Pages({
                 <span className="iv-dock-divider" />
                 <IconButton
                   label="Previous match"
-                  shortcut="⇧↵"
+                  hotkey={appHotkeys['preview.previous']}
                   side="top"
                   disabled={!found}
                   onClick={() => search?.previousResult()}
@@ -682,7 +682,7 @@ function Pages({
                 </IconButton>
                 <IconButton
                   label="Next match"
-                  shortcut="↵"
+                  hotkey={appHotkeys['preview.next']}
                   side="top"
                   disabled={!found}
                   onClick={() => search?.nextResult()}
@@ -691,7 +691,7 @@ function Pages({
                 </IconButton>
                 <IconButton
                   label="Close search"
-                  shortcut="esc"
+                  hotkey={appHotkeys['preview.close']}
                   side="top"
                   onClick={closeSearch}
                 >
@@ -769,7 +769,7 @@ function Pages({
                   <IconButton
                     ref={searchButton}
                     label="Find in document"
-                    shortcut="⌘F"
+                    hotkey={appHotkeys['preview.find']}
                     side="top"
                     onClick={openSearch}
                   >

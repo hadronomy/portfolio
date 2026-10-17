@@ -1,8 +1,9 @@
 import { formatMoney } from '@portfolio/invoices/calculate';
 import type { Currency, Language, Line } from '@portfolio/invoices/model';
+import { useHotkey } from '@tanstack/react-hotkeys';
 import { ChevronDown, Copy, Trash2 } from 'lucide-react';
 import { Reorder, useDragControls } from 'motion/react';
-import { type KeyboardEvent, memo, useId, useRef, useState } from 'react';
+import { memo, useId, useRef, useState } from 'react';
 import {
   currencySymbol,
   igicRates,
@@ -11,6 +12,7 @@ import {
 } from '~/features/invoices/choices';
 import { AmountField } from '~/features/invoices/smart-fields';
 import { Button, cn, Field, MorphText, Select } from '~/features/invoices/ui';
+import { appHotkeys, useHotkeyProps } from '~/lib/hotkeys';
 
 type LineEditorProps = {
   /** Just created: its description takes focus. */
@@ -75,6 +77,7 @@ export const LineEditor = memo(function LineEditor({
   const controls = useDragControls();
   const head = useRef<HTMLButtonElement>(null);
   const root = useRef<HTMLElement>(null);
+  const clip = useRef<HTMLDivElement>(null);
   // A drag ends with a click on the row it started from; that click must not
   // also open or close the line.
   const dragged = useRef(false);
@@ -85,16 +88,38 @@ export const LineEditor = memo(function LineEditor({
   const amount = net === null ? '—' : formatMoney(net, language, currency);
   const needsReason = line.tax.treatment !== 'taxable' || !!line.tax.reason;
 
-  function keys(event: KeyboardEvent<HTMLButtonElement>) {
-    if (disabled || !event.altKey) return;
-    if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
-    event.preventDefault();
-    onMove(event.key === 'ArrowUp' ? -1 : 1);
+  const move = (by: -1 | 1) => {
+    onMove(by);
     // The row moved under the focus; keep it in view at its new place.
     requestAnimationFrame(() =>
       head.current?.scrollIntoView({ block: 'nearest' }),
     );
-  }
+  };
+  const moveKeys = useHotkeyProps(
+    appHotkeys['line.up'],
+    appHotkeys['line.down'],
+  );
+  useHotkey(appHotkeys['line.up'], () => move(-1), {
+    target: head,
+    enabled: !disabled,
+  });
+  useHotkey(appHotkeys['line.down'], () => move(1), {
+    target: head,
+    enabled: !disabled,
+  });
+  // Esc from anywhere inside the open line closes it, unless a select or
+  // suggestion in it used the Esc first.
+  useHotkey(
+    appHotkeys['line.close'],
+    (event) => {
+      if (event.defaultPrevented) return;
+      if (!clip.current?.contains(event.target as Node)) return;
+      event.preventDefault();
+      onToggle();
+      head.current?.focus();
+    },
+    { enabled: open },
+  );
 
   return (
     // Layout carries the row to its new slot when lines reorder or a
@@ -139,9 +164,10 @@ export const LineEditor = memo(function LineEditor({
         className="iv-line-head"
         aria-expanded={open}
         aria-controls={panel}
-        {...(disabled
-          ? {}
-          : { 'aria-keyshortcuts': 'Alt+ArrowUp Alt+ArrowDown' })}
+        {...(disabled ? {} : moveKeys)}
+        // The move keys work from this button alone, so their hint shows
+        // only while it has the focus.
+        data-hotkey-scope
         onPointerDown={(event) => {
           dragged.current = false;
           if (!disabled && event.button === 0) controls.start(event);
@@ -166,7 +192,6 @@ export const LineEditor = memo(function LineEditor({
             260,
           );
         }}
-        onKeyDown={keys}
       >
         <span className="iv-line-text">
           {open ? (
@@ -195,18 +220,7 @@ export const LineEditor = memo(function LineEditor({
         )}
       </button>
       <div className="iv-line-panel" id={panel} data-open={open}>
-        {/* biome-ignore lint/a11y/noStaticElementInteractions: Esc from anywhere inside closes the editor; every control in it keeps its own keys. */}
-        <div
-          className="iv-line-clip"
-          inert={!open}
-          onKeyDown={(event) => {
-            // A select or suggestion that used the Esc marks it handled.
-            if (event.key !== 'Escape' || event.defaultPrevented) return;
-            event.preventDefault();
-            onToggle();
-            head.current?.focus();
-          }}
-        >
+        <div ref={clip} className="iv-line-clip" inert={!open}>
           <div className="iv-line-body">
             <Field
               label="Description"

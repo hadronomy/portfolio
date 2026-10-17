@@ -12,6 +12,7 @@ import {
   signatureSource,
 } from '@portfolio/invoices/quote-model';
 import { quoteNotices } from '@portfolio/invoices/quote-notices';
+import { useHotkey } from '@tanstack/react-hotkeys';
 import { useRouter } from '@tanstack/react-router';
 import { Check, ChevronDown, Download, Hourglass, Mail, X } from 'lucide-react';
 import {
@@ -38,6 +39,7 @@ import { coverArt } from '~/features/invoices/covers';
 import { QuoteDetailsForm } from '~/features/invoices/quote-details-form';
 import { Button, MorphText } from '~/features/invoices/ui';
 import { CollectionNotice } from '~/features/privacy/collection-notice';
+import { appHotkeys } from '~/lib/hotkeys';
 import { Speak, useT } from '~/lib/i18n';
 import '~/features/invoices/invoices.css';
 
@@ -598,16 +600,14 @@ function useDock(
     const paper = document.querySelector<HTMLElement>('.iv-quote-paper');
     root.style.overflow = 'hidden';
     paper?.setAttribute('inert', '');
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setOpen(false);
-    };
-    window.addEventListener('keydown', onKey);
     return () => {
       root.style.overflow = '';
       paper?.removeAttribute('inert');
-      window.removeEventListener('keydown', onKey);
     };
   }, [docked, open]);
+  useHotkey(appHotkeys['quote.close'], () => setOpen(false), {
+    enabled: docked && open,
+  });
 
   const closedOffset = () =>
     (ticket.current?.offsetHeight ?? 0) - (face.current?.offsetHeight ?? 0);

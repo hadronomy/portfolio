@@ -132,3 +132,37 @@ body {
     --button-hover: #353535;
   }
 }
+
+/* Shortcut hints, shown over the page while ⌘ is held (lib/hotkeys.tsx).
+   Each sits centred under its action, or over it near the window's foot. */
+.hotkey-hints {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  pointer-events: none;
+}
+.hotkey-hints kbd {
+  position: absolute;
+  translate: -50% 0;
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 6px;
+  background: #1b1b1b;
+  color: #fff;
+  font: 500 11px/1 'Geist Variable', 'Inter Variable', system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px -2px rgb(0 0 0 / 0.35);
+  animation: hotkey-hint-in 100ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.hotkey-hints kbd[data-above] {
+  translate: -50% -100%;
+}
+@keyframes hotkey-hint-in {
+  from {
+    opacity: 0;
+  }
+}

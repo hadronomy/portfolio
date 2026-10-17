@@ -13,7 +13,7 @@ export const prerender = false;
     screen — hence no back link and no chrome of its own.
   */
   }
-  <section class="flex h-[76vh] w-full flex-col items-center justify-center gap-4 px-4">
+  <section data-go-home class="flex h-[76vh] w-full flex-col items-center justify-center gap-4 px-4">
     <p class="type-body-sm text-muted-foreground select-none" aria-hidden="true">¯\_(ツ)_/¯</p>
 
     <p
@@ -28,22 +28,24 @@ export const prerender = false;
   </section>
 </Layout>
 
-<script is:inline>
-  document.addEventListener('keydown', (event) => {
-    if (event.key !== 'h' && event.key !== 'H') return;
-    if (event.metaKey || event.ctrlKey || event.altKey) return;
+<script>
+  import { getHotkeyManager } from '@tanstack/hotkeys';
+  import { navigate } from 'astro:transitions/client';
 
-    // Same guards as the copy shortcut: never steal a keystroke from a field,
-    // and never fire while the visitor is selecting text.
-    const el = document.activeElement;
-    if (
-      el instanceof HTMLElement &&
-      (el.isContentEditable || /^(input|textarea|select)$/i.test(el.tagName))
-    ) {
-      return;
-    }
-    if (window.getSelection()?.toString()) return;
-
-    window.location.href = '/';
+  // H goes home from this page only. Client-side navigation keeps the
+  // module alive, so the shortcut comes and goes with the page.
+  document.addEventListener('astro:page-load', () => {
+    if (!document.querySelector('[data-go-home]')) return;
+    const home = getHotkeyManager().register(
+      'H',
+      () => {
+        // Same guard as the copy shortcut: never fire while selecting text.
+        if (!window.getSelection()?.toString()) navigate('/');
+      },
+      { preventDefault: false },
+    );
+    document.addEventListener('astro:before-swap', () => home.unregister(), {
+      once: true,
+    });
   });
 </script>

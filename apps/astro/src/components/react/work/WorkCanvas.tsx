@@ -1,3 +1,4 @@
+import { useHotkeys } from '@tanstack/react-hotkeys';
 import {
   domMax,
   LazyMotion,
@@ -96,6 +97,59 @@ function Canvas({ projects, terrain }: Props) {
     () => setKeyboard(false),
   );
 
+  // The canvas keys act on the stage itself; a focused print or control
+  // inside it keeps its own keys, so those never move the camera.
+  const onStage = (act: () => void) => (event: KeyboardEvent) => {
+    if (event.target !== camera.viewport.current) return;
+    event.preventDefault();
+    act();
+  };
+  const pan = (x: number, y: number) =>
+    onStage(() => {
+      setKeyboard(true);
+      camera.move(
+        {
+          x: camera.x.get() + x,
+          y: camera.y.get() + y,
+          scale: camera.scale.get(),
+        },
+        true,
+      );
+    });
+  const step = (by: 1 | -1) =>
+    onStage(() =>
+      choose((selectedIndex + by + projects.length) % projects.length, true),
+    );
+  const zoom = (by: number) =>
+    onStage(() => {
+      setKeyboard(true);
+      camera.zoomBy(by, true);
+    });
+  const fit = onStage(() => {
+    setKeyboard(true);
+    camera.fit(true);
+  });
+  useHotkeys(
+    [
+      { hotkey: 'ArrowLeft', callback: step(-1) },
+      { hotkey: 'ArrowRight', callback: step(1) },
+      { hotkey: 'ArrowUp', callback: pan(0, 100) },
+      { hotkey: 'ArrowDown', callback: pan(0, -100) },
+      { hotkey: 'S', callback: onStage(() => toggleSpread(true)) },
+      { hotkey: '+', callback: zoom(1.2) },
+      { hotkey: '=', callback: zoom(1.2) },
+      { hotkey: '-', callback: zoom(1 / 1.2) },
+      { hotkey: 'Home', callback: fit },
+      { hotkey: '0', callback: fit },
+      { hotkey: 'Escape', callback: fit },
+    ],
+    {
+      target: camera.viewport,
+      preventDefault: false,
+      stopPropagation: false,
+    },
+  );
+
   return (
     <div
       className="work-canvas-layout"
@@ -151,54 +205,6 @@ function Canvas({ projects, terrain }: Props) {
             event.preventDefault();
             event.stopPropagation();
             suppressClick.current = false;
-          }
-        }}
-        onKeyDown={(event) => {
-          if (event.target !== event.currentTarget) return;
-          const shifts: Record<string, [number, number]> = {
-            ArrowUp: [0, 100],
-            ArrowDown: [0, -100],
-          };
-          const shift = shifts[event.key];
-          if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
-            event.preventDefault();
-            choose(
-              (selectedIndex +
-                (event.key === 'ArrowRight' ? 1 : -1) +
-                projects.length) %
-                projects.length,
-              true,
-            );
-          } else if (event.key.toLowerCase() === 's') {
-            event.preventDefault();
-            toggleSpread(true);
-          } else if (shift) {
-            event.preventDefault();
-            setKeyboard(true);
-            camera.move(
-              {
-                x: camera.x.get() + shift[0],
-                y: camera.y.get() + shift[1],
-                scale: camera.scale.get(),
-              },
-              true,
-            );
-          } else if (event.key === '+' || event.key === '=') {
-            event.preventDefault();
-            setKeyboard(true);
-            camera.zoomBy(1.2, true);
-          } else if (event.key === '-') {
-            event.preventDefault();
-            setKeyboard(true);
-            camera.zoomBy(1 / 1.2, true);
-          } else if (
-            event.key === 'Home' ||
-            event.key === '0' ||
-            event.key === 'Escape'
-          ) {
-            event.preventDefault();
-            setKeyboard(true);
-            camera.fit(true);
           }
         }}
       >

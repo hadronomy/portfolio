@@ -9,6 +9,7 @@ import { profile } from '~/lib/profile';
 */}
 <div
   id="copy-toast"
+  data-email={profile.email}
   role="status"
   aria-live="polite"
   class="pointer-events-none fixed inset-x-0 bottom-8 z-50 flex justify-center px-4 opacity-0 transition-[opacity,transform] duration-200 ease-out translate-y-2 data-[visible]:translate-y-0 data-[visible]:opacity-100"
@@ -21,36 +22,37 @@ import { profile } from '~/lib/profile';
   </p>
 </div>
 
-<script is:inline define:vars={{ email: profile.email }}>
-  (() => {
-    let hideTimer;
+<script>
+  import { getHotkeyManager } from '@tanstack/hotkeys';
 
-    const flash = () => {
-      const toast = document.getElementById('copy-toast');
-      if (!toast) return;
+  // Registered once for the whole visit: the module runs on the first page
+  // and stays across client-side navigations, while the toast it flashes is
+  // looked up anew, since every page brings its own.
+  let hideTimer: number | undefined;
 
-      toast.dataset.visible = '';
-      window.clearTimeout(hideTimer);
-      hideTimer = window.setTimeout(() => delete toast.dataset.visible, 2000);
+  const flash = () => {
+    const toast = document.getElementById('copy-toast');
+    if (!toast) return;
 
-      // The toast is pinned to the bottom of the window, and the shortcut is
-      // offered at the top next to the avatar. Anything up there that wants to
-      // acknowledge the copy listens for this rather than watching the toast.
-      document.dispatchEvent(new CustomEvent('email-copied'));
-    };
+    toast.dataset.visible = '';
+    window.clearTimeout(hideTimer);
+    hideTimer = window.setTimeout(() => delete toast.dataset.visible, 2000);
 
-    document.addEventListener('keydown', (event) => {
-      if (event.key !== 'c' && event.key !== 'C') return;
-      // Leave the browser's own copy alone, and stay out of the way of typing.
-      if (event.metaKey || event.ctrlKey || event.altKey) return;
+    // The toast is pinned to the bottom of the window, and the shortcut is
+    // offered at the top next to the avatar. Anything up there that wants to
+    // acknowledge the copy listens for this rather than watching the toast.
+    document.dispatchEvent(new CustomEvent('email-copied'));
+  };
 
-      const el = document.activeElement;
-      if (el instanceof HTMLElement && (el.isContentEditable || /^(input|textarea|select)$/i.test(el.tagName))) {
-        return;
-      }
+  // A bare C only: ⌘C stays the browser's copy, and a field keeps its typing.
+  getHotkeyManager().register(
+    'C',
+    () => {
+      // Never fire while the visitor is selecting text to copy.
       if (window.getSelection()?.toString()) return;
-
-      navigator.clipboard.writeText(email).then(flash, () => {});
-    });
-  })();
+      const email = document.getElementById('copy-toast')?.dataset.email;
+      if (email) navigator.clipboard.writeText(email).then(flash, () => {});
+    },
+    { preventDefault: false },
+  );
 </script>

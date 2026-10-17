@@ -12,6 +12,7 @@ import {
 // A plain import, not ?url: Start links it on the server for the first
 // paint and Vite hot-updates it in development.
 import '~/styles.css';
+import { Hotkeys } from '~/lib/hotkeys';
 import { InvoiceError } from '~/routes/-invoice-error';
 
 export const Route = createRootRouteWithContext<{
@@ -44,7 +45,11 @@ export const Route = createRootRouteWithContext<{
     );
   },
   shellComponent: Document,
-  component: Outlet,
+  component: () => (
+    <Hotkeys>
+      <Outlet />
+    </Hotkeys>
+  ),
   notFoundComponent: () => (
     <section>
       <h1>This experiment has no page here.</h1>

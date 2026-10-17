@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
 import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent, ReactNode } from "react";
+import { type AppHotkey, useHotkey } from "@tanstack/react-hotkeys";
+import { appHotkeys, useHotkeyProps } from "~/lib/hotkeys";
 import { AnimatePresence, animate, motion, useReducedMotion } from "motion/react";
 import type { Transition } from "motion/react";
 import { Check, Download, Eraser, Play, Redo2, Square, Undo2, X } from "lucide-react";
@@ -311,6 +313,7 @@ export function SignaturePad({ signer, hint = "Sign here", defaultColor = "black
   const [status, setStatus] = useState("");
 
   const padRef = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
   const inkRef = useRef<HTMLDivElement>(null);
   const liveRef = useRef<SVGPathElement>(null);
   const live = useRef<{ id: number; stroke: InkStroke; stamp: number } | null>(null);
@@ -458,14 +461,16 @@ export function SignaturePad({ signer, hint = "Sign here", defaultColor = "black
     savedTimer.current = window.setTimeout(() => setSaved(null), 1800);
   }
 
-  function onKeyDown(event: ReactKeyboardEvent<HTMLDivElement>) {
-    const mod = event.metaKey || event.ctrlKey;
-    const key = event.key.toLowerCase();
-    if (mod && key === "z") { event.preventDefault(); if (event.shiftKey) redo(); else undo(); }
-    else if (mod && key === "y") { event.preventDefault(); redo(); }
-    else if (!mod && (event.key === "Delete" || event.key === "Backspace") && event.currentTarget === event.target) { event.preventDefault(); clear(); }
-    else if (event.key === "Escape" && replaying) { stopReplay(); }
-  }
+  // The shortcuts work wherever focus is inside the pad and its toolbar;
+  // clearing takes the pad itself, so Delete on a button never wipes it.
+  const scope = { target: rootRef };
+  useHotkey(appHotkeys["signature.undo"], undo, scope);
+  useHotkey(appHotkeys["signature.redo"], redo, scope);
+  useHotkey(appHotkeys["signature.redo-y"], redo, scope);
+  const clearPad = (event: KeyboardEvent) => { if (event.target === padRef.current) clear(); };
+  useHotkey(appHotkeys["signature.clear"], clearPad, scope);
+  useHotkey(appHotkeys["signature.clear-forward"], clearPad, scope);
+  useHotkey(appHotkeys["signature.stop"], stopReplay, { ...scope, enabled: replaying });
 
   // During replay each stroke shows only the part drawn so far, and the nib rides its newest point.
   let nib: InkPoint | null = null, nibColor: InkColor = color;
@@ -485,11 +490,11 @@ export function SignaturePad({ signer, hint = "Sign here", defaultColor = "black
   const hintHidden = reduced ? { opacity: 0 } : { opacity: 0, y: 6, scale: .97, filter: `blur(${blur.soft}px)` };
   const t: Transition = reduced ? { duration: duration.instant } : spring.snappy;
 
-  return <div className={[styles.root, className].filter(Boolean).join(" ")} data-ink={color} data-variant={variant}>
+  return <div ref={rootRef} className={[styles.root, className].filter(Boolean).join(" ")} data-ink={color} data-variant={variant} data-hotkey-scope="">
     <div ref={padRef} className={styles.pad} tabIndex={0} role="img" aria-roledescription="signature pad"
       aria-label={`${label}. ${words.state(strokes.length)}`}
       aria-describedby={`${uid}-keys`} data-drawing={drawing ? "" : undefined}
-      onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp} onKeyDown={onKeyDown}>
+      onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp}>
       <div className={styles.guide} aria-hidden="true">
         <X className={styles.mark} size={14} strokeWidth={1.75} />
         <span className={styles.baseline} />
@@ -525,8 +530,8 @@ export function SignaturePad({ signer, hint = "Sign here", defaultColor = "black
           render={option => <span className={styles.weight} style={{ width: WIDTHS[option].size + 2, height: WIDTHS[option].size + 2 }} />} name={option => WIDTHS[option].label} />
       </div>}
       <div className={styles.group}>
-        <IconButton label={words.undo} onClick={undo} disabled={!history.past.length || wiping}><Undo2 size={18} strokeWidth={1.75} aria-hidden="true" /></IconButton>
-        <IconButton label={words.redo} onClick={redo} disabled={!history.future.length || wiping}><Redo2 size={18} strokeWidth={1.75} aria-hidden="true" /></IconButton>
+        <IconButton label={words.undo} hotkey={appHotkeys["signature.undo"]} onClick={undo} disabled={!history.past.length || wiping}><Undo2 size={18} strokeWidth={1.75} aria-hidden="true" /></IconButton>
+        <IconButton label={words.redo} hotkey={appHotkeys["signature.redo"]} onClick={redo} disabled={!history.future.length || wiping}><Redo2 size={18} strokeWidth={1.75} aria-hidden="true" /></IconButton>
         {studio && <IconButton label={replaying ? "Stop replay" : "Replay signature"} onClick={toggleReplay} disabled={empty || wiping} pressed={replaying}>
           <AnimatePresence mode="popLayout" initial={false}>
             <motion.span key={replaying ? "stop" : "play"} className={styles.swap} initial={{ opacity: 0, scale: .6 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: .6 }} transition={t}>
@@ -534,7 +539,7 @@ export function SignaturePad({ signer, hint = "Sign here", defaultColor = "black
             </motion.span>
           </AnimatePresence>
         </IconButton>}
-        <IconButton label={words.clear} onClick={clear} disabled={empty || wiping}><Eraser size={18} strokeWidth={1.75} aria-hidden="true" /></IconButton>
+        <IconButton label={words.clear} hotkey={appHotkeys["signature.clear"]} onClick={clear} disabled={empty || wiping}><Eraser size={18} strokeWidth={1.75} aria-hidden="true" /></IconButton>
       </div>
     </div>
 
@@ -556,8 +561,9 @@ export function SignaturePad({ signer, hint = "Sign here", defaultColor = "black
   </div>;
 }
 
-function IconButton({ label, onClick, disabled, pressed, children }: { label: string; onClick: () => void; disabled?: boolean; pressed?: boolean; children: ReactNode }) {
-  return <button type="button" className={styles.iconButton} aria-label={label} title={label} onClick={onClick} disabled={disabled} aria-pressed={pressed}>{children}</button>;
+function IconButton({ label, hotkey, onClick, disabled, pressed, children }: { label: string; hotkey?: AppHotkey; onClick: () => void; disabled?: boolean; pressed?: boolean; children: ReactNode }) {
+  const keys = useHotkeyProps(...(hotkey ? [hotkey] : []));
+  return <button type="button" className={styles.iconButton} aria-label={label} title={label} onClick={onClick} disabled={disabled} aria-pressed={pressed} {...keys}>{children}</button>;
 }
 
 /** A compact radio group with a highlight that glides to the chosen option. Arrow keys move the choice. */

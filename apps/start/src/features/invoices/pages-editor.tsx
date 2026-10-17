@@ -16,6 +16,7 @@ import {
   readPages,
   toJSONContent,
 } from '@portfolio/invoices/pages';
+import { useHotkey } from '@tanstack/react-hotkeys';
 import { type Editor, Extension, type Range } from '@tiptap/core';
 import Typography from '@tiptap/extension-typography';
 import { Placeholder } from '@tiptap/extensions';
@@ -63,6 +64,7 @@ import {
   useState,
 } from 'react';
 import { cn } from '~/features/invoices/ui';
+import { appHotkeys } from '~/lib/hotkeys';
 
 // The editor for a quote's pages. It edits the document the PDF prints,
 // with the page schema's own extensions, and adds only what writing needs:
@@ -92,16 +94,6 @@ function moveBlock(editor: Editor, direction: -1 | 1) {
   view.dispatch(tr.scrollIntoView());
   return true;
 }
-
-const BlockMoves = Extension.create({
-  name: 'blockMoves',
-  addKeyboardShortcuts() {
-    return {
-      'Alt-ArrowUp': () => moveBlock(this.editor, -1),
-      'Alt-ArrowDown': () => moveBlock(this.editor, 1),
-    };
-  },
-});
 
 interface Block {
   readonly id: string;
@@ -482,7 +474,6 @@ function editorExtensions(language: Language, consumer: boolean) {
     }),
     Typography.configure(quotes),
     SlashCommand.configure({ language, consumer }),
-    BlockMoves,
   ];
 }
 
@@ -500,6 +491,15 @@ function linkTarget(typed: string): string | null {
 function FormatBar({ editor }: { editor: Editor }) {
   const [linking, setLinking] = useState(false);
   const [href, setHref] = useState('');
+  const linkField = useRef<HTMLInputElement>(null);
+  useHotkey(
+    appHotkeys['link.cancel'],
+    () => {
+      setLinking(false);
+      editor.commands.focus();
+    },
+    { target: linkField, enabled: linking },
+  );
   const state = useEditorState({
     editor,
     selector: ({ editor: current }) => ({
@@ -554,19 +554,13 @@ function FormatBar({ editor }: { editor: Editor }) {
           }}
         >
           <input
+            ref={linkField}
             // biome-ignore lint/a11y/noAutofocus: the field opens on purpose, from the link button, to take the address at once.
             autoFocus
             aria-label="Link address"
             placeholder="example.com or name@example.com"
             value={href}
             onChange={(event) => setHref(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === 'Escape') {
-                event.preventDefault();
-                setLinking(false);
-                editor.commands.focus();
-              }
-            }}
           />
         </form>
       ) : (
@@ -677,9 +671,23 @@ export function PagesEditor({
     return () => onEditor?.(null);
   }, [editor, onEditor]);
   useEffect(() => () => flush(), []);
+  const box = useRef<HTMLDivElement>(null);
+  const moveBy = (direction: -1 | 1) => (event: KeyboardEvent) => {
+    if (!editor || !moveBlock(editor, direction)) return;
+    event.preventDefault();
+    event.stopPropagation();
+  };
+  useHotkey(appHotkeys['block.up'], moveBy(-1), {
+    target: box,
+    enabled: editable,
+  });
+  useHotkey(appHotkeys['block.down'], moveBy(1), {
+    target: box,
+    enabled: editable,
+  });
   if (!editor) return null;
   return (
-    <div className="iv-pages">
+    <div ref={box} className="iv-pages">
       <EditorContent editor={editor} />
       <FormatBar editor={editor} />
     </div>

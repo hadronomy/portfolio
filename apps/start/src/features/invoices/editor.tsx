@@ -15,6 +15,7 @@ import { newLine, quoteTerms, RecordId } from '@portfolio/invoices/model';
 import { blankPages } from '@portfolio/invoices/pages';
 import { issueErrors } from '@portfolio/invoices/validate';
 import { useForm, useSelector } from '@tanstack/react-form';
+import { useHotkey } from '@tanstack/react-hotkeys';
 import { Link, useNavigate } from '@tanstack/react-router';
 import {
   ArrowLeft,
@@ -87,6 +88,7 @@ import {
   useDraft,
 } from '~/features/invoices/use-draft';
 import { useWorkspace } from '~/features/invoices/workspace';
+import { appHotkeys, useHotkeyProps } from '~/lib/hotkeys';
 
 const PdfViewer = lazy(() => import('~/features/invoices/pdf-viewer'));
 
@@ -256,15 +258,7 @@ function Editor({ invoice }: { invoice: Invoice }) {
 
   // Saving is automatic; ⌘S only saves now instead of opening the browser's
   // save-page dialog.
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key !== 's' || !(event.metaKey || event.ctrlKey)) return;
-      event.preventDefault();
-      flush();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [flush]);
+  useHotkey(appHotkeys['document.save'], () => void flush());
 
   const issue = useCallback(async () => {
     await run(async () => {
@@ -595,9 +589,10 @@ function SaveState({
   status: DraftStatus;
   onRetry: () => void;
 }) {
+  const saveKeys = useHotkeyProps(appHotkeys['document.save']);
   return (
-    <Tip label="Drafts save as you type" shortcut="⌘S">
-      <output className="iv-save" data-state={status}>
+    <Tip label="Drafts save as you type" hotkey={appHotkeys['document.save']}>
+      <output className="iv-save" data-state={status} {...saveKeys}>
         {status === 'saved' && <CircleCheck size={13} />}
         {(status === 'failed' || status === 'conflict') && (
           <CircleAlert size={13} />

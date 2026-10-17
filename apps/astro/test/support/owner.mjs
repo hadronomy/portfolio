@@ -1,27 +1,15 @@
-import { createRequire } from 'node:module';
-import { pathToFileURL } from 'node:url';
+import { NodeOAuthClient } from '@atproto/oauth-client-node';
 import { vi } from 'vitest';
 
 // Signs in to the invoices through the real AT Protocol plugin and
 // better-auth. Only the exchange with the account's server is faked: it
-// answers as `did`. The dev server runs in this process, so the spy reaches
-// the client the plugin uses.
+// answers as `did`. The dev server runs in this process, and this app pins
+// the client's version the plugin uses, so the spy reaches the plugin's copy.
 
 export const ownerDid = 'did:plc:tvgjv46t4ebxbrvekr2vrnls';
 
-async function oauthClient() {
-  const require = createRequire(
-    new URL('../../../../packages/auth-atproto/package.json', import.meta.url),
-  );
-  const module = await import(
-    pathToFileURL(require.resolve('@atproto/oauth-client-node')).href
-  );
-  return module.NodeOAuthClient;
-}
-
 /** The callback's response, the session cookie it set, and the faked grant's sign-out. */
 export async function signIn(origin, did = ownerDid) {
-  const NodeOAuthClient = await oauthClient();
   const signOut = vi.fn(async () => {});
   vi.spyOn(NodeOAuthClient.prototype, 'callback').mockImplementation(
     async (params) => ({
