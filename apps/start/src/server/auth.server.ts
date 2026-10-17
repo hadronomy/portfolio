@@ -15,6 +15,7 @@ import { betterAuth } from 'better-auth';
 import { and, desc, eq } from 'drizzle-orm';
 import { Context, Effect, Layer, Redacted } from 'effect';
 import { authOptions, ownerDid } from '../features/auth/options';
+import { withOfflineAccess } from '../features/auth/refresh';
 import {
   agentIssuer,
   agentResource,
@@ -219,8 +220,12 @@ export const authLayer = Layer.effect(
     const openIdConfiguration = oauthProviderOpenIdConfigMetadata(provider);
     const resourcePath = new URL(resource).pathname;
     const issuerPath = new URL(issuer).pathname;
+    const authorizePath = `${issuerPath}/oauth2/authorize`;
     return Auth.of({
-      handle: (request) => Effect.promise(() => auth.handler(request)),
+      handle: (request) =>
+        Effect.promise(() =>
+          auth.handler(withOfflineAccess(request, authorizePath, resource)),
+        ),
       agent: (request, serve) => Effect.promise(() => guard(serve)(request)),
       discovery: (request) =>
         Effect.promise(async () => {
