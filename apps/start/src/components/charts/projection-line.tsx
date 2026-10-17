@@ -40,8 +40,6 @@ export interface ProjectionLineProps {
   strokeOpacity?: number | undefined;
   /** Show horizon endpoint marker. Default: true */
   showEndMarker?: boolean | undefined;
-  /** @deprecated Use `showEndMarker`. */
-  showEndpoints?: boolean | undefined;
   /** Endpoint marker radius. Default: 5 */
   endpointRadius?: number | undefined;
   className?: string | undefined;
@@ -112,14 +110,13 @@ export function ProjectionLine({
   strokeDasharray = '6,4',
   strokeOpacity = 1,
   showEndMarker,
-  showEndpoints,
   endpointRadius = 5,
   className,
 }: ProjectionLineProps) {
   const { xScale, chartPhase, innerWidth } = useChartStable();
   const yScale = useYScale(yAxisId);
   const gradientId = useId().replace(/:/g, '');
-  const showMarker = showEndMarker ?? showEndpoints ?? true;
+  const showMarker = showEndMarker ?? true;
   const resolvedGradientStart = gradientStart ?? stroke;
 
   const getX = useCallback(

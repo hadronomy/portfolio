@@ -2,9 +2,6 @@ export type ProjectionMode = 'auto' | 'target' | 'manual';
 export type ProjectionAutoMethod = 'linearRegression' | 'lastSegment';
 /** How the projection segment is drawn between anchor and horizon. */
 export type ProjectionCurveKind = 'linear' | 'bezier';
-/** @deprecated Stepped density removed — projections always anchor → horizon. */
-export type ProjectionPathDensity = 'stepped' | 'endpoints';
-
 export interface ProjectionPoint {
   date: Date;
   value: number;
@@ -16,8 +13,6 @@ export interface BuildProjectionPathOptions {
   xDataKey?: string | undefined;
   mode: ProjectionMode;
   autoMethod?: ProjectionAutoMethod | undefined;
-  /** Auto mode: stepped points per interval, or anchor + end only. Default: stepped */
-  pathDensity?: ProjectionPathDensity | undefined;
   /** Index in sourceData where projection anchors (default: last point). */
   startIndex?: number | undefined;
   /** How many future points to generate (matches source cadence). */
@@ -140,7 +135,6 @@ function buildAutoFutureValues(options: {
   historyPoints: { t: number; y: number }[];
   horizonPoints: number;
   intervalMs: number;
-  pathDensity: ProjectionPathDensity;
 }): ProjectionPoint[] {
   const {
     anchorTime,
@@ -149,7 +143,6 @@ function buildAutoFutureValues(options: {
     historyPoints,
     horizonPoints,
     intervalMs,
-    pathDensity,
   } = options;
 
   const slope =
@@ -165,26 +158,13 @@ function buildAutoFutureValues(options: {
         })()
       : linearRegressionSlope(historyPoints);
 
-  if (pathDensity === 'endpoints') {
-    const endTime = anchorTime + intervalMs * horizonPoints;
-    const endValue = anchorValue + slope * intervalMs * horizonPoints;
-    return [
-      { date: new Date(anchorTime), value: anchorValue },
-      { date: new Date(endTime), value: endValue },
-    ];
-  }
-
-  const result: ProjectionPoint[] = [
+  // A projection is a straight line from the anchor to the horizon.
+  const endTime = anchorTime + intervalMs * horizonPoints;
+  const endValue = anchorValue + slope * intervalMs * horizonPoints;
+  return [
     { date: new Date(anchorTime), value: anchorValue },
+    { date: new Date(endTime), value: endValue },
   ];
-
-  for (let i = 1; i <= horizonPoints; i++) {
-    const t = anchorTime + intervalMs * i;
-    const value = anchorValue + slope * intervalMs * i;
-    result.push({ date: new Date(t), value });
-  }
-
-  return result;
 }
 
 /** Slope (value change per ms) at the projection anchor from the last data segment. */
@@ -267,7 +247,6 @@ export function buildProjectionPath(
     xDataKey = 'date',
     mode,
     autoMethod = 'linearRegression',
-    pathDensity = 'endpoints',
     startIndex: startIndexProp,
     horizonPoints = 6,
     endValue,
@@ -330,7 +309,6 @@ export function buildProjectionPath(
     historyPoints,
     horizonPoints,
     intervalMs,
-    pathDensity,
   });
 }
 

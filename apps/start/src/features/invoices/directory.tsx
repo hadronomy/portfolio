@@ -8,7 +8,7 @@ import {
   RecordId,
 } from '@portfolio/invoices/model';
 import { useLiveQuery } from '@tanstack/react-db';
-import { useForm, useStore } from '@tanstack/react-form';
+import { useForm, useSelector } from '@tanstack/react-form';
 import { Schema } from 'effect';
 import { Plus, Search, Trash2 } from 'lucide-react';
 import {
@@ -410,7 +410,7 @@ function CustomerForm({
       }
     },
   });
-  const customer = useStore(form.store, (state) => state.values.customer);
+  const customer = useSelector(form.store, (state) => state.values.customer);
   return (
     <FormShell
       formRef={ref}
@@ -588,7 +588,7 @@ function ItemForm({
       }
     },
   });
-  const item = useStore(form.store, (state) => state.values.item);
+  const item = useSelector(form.store, (state) => state.values.item);
   return (
     <FormShell
       formRef={ref}

@@ -14,7 +14,7 @@ import type {
 import { newLine, quoteTerms, RecordId } from '@portfolio/invoices/model';
 import { blankPages } from '@portfolio/invoices/pages';
 import { issueErrors } from '@portfolio/invoices/validate';
-import { useForm, useStore } from '@tanstack/react-form';
+import { useForm, useSelector } from '@tanstack/react-form';
 import { Link, useNavigate } from '@tanstack/react-router';
 import {
   ArrowLeft,
@@ -144,9 +144,9 @@ function useMutationState() {
 }
 
 function useTotals(form: InvoiceForm): Totals | null {
-  const lines = useStore(form.store, (state) => state.values.lines);
-  const discount = useStore(form.store, (state) => state.values.discount);
-  const withholdingRate = useStore(
+  const lines = useSelector(form.store, (state) => state.values.lines);
+  const discount = useSelector(form.store, (state) => state.values.discount);
+  const withholdingRate = useSelector(
     form.store,
     (state) => state.values.withholdingRate,
   );
@@ -630,7 +630,7 @@ const LanguageToggle = memo(function LanguageToggle({
  * mounted so switching covers cross-fades instead of flashing an empty frame.
  */
 const Backdrop = memo(function Backdrop({ form }: { form: InvoiceForm }) {
-  const cover = useStore(form.store, (state) => state.values.cover);
+  const cover = useSelector(form.store, (state) => state.values.cover);
   return (
     <div className="iv-backdrop" aria-hidden>
       {Object.entries(coverArt).map(([name, art]) => (
@@ -657,7 +657,7 @@ function DownloadButton({
   flush: () => Promise<Invoice | null>;
   onError: (message: string) => void;
 }) {
-  const language = useStore(form.store, (state) => state.values.language);
+  const language = useSelector(form.store, (state) => state.values.language);
   // Plain anchor, not a router Link: this route serves PDF bytes with no
   // component, so client-side navigation would render nothing and download
   // nothing. A document request lets the browser handle the file.
@@ -1007,8 +1007,8 @@ const TotalsFoot = memo(function TotalsFoot({
   form: InvoiceForm;
   totals: Totals | null;
 }) {
-  const currency = useStore(form.store, (state) => state.values.currency);
-  const language = useStore(form.store, (state) => state.values.language);
+  const currency = useSelector(form.store, (state) => state.values.currency);
+  const language = useSelector(form.store, (state) => state.values.language);
   const money = (value: string) => formatMoney(value, language, currency);
   return (
     <div className="iv-inspector-foot" aria-live="polite">
@@ -1060,8 +1060,8 @@ const CustomerSection = memo(function CustomerSection({
   issued,
 }: SectionProps) {
   const { workspace } = useWorkspace();
-  const name = useStore(form.store, (state) => state.values.customer.name);
-  const address = useStore(
+  const name = useSelector(form.store, (state) => state.values.customer.name);
+  const address = useSelector(
     form.store,
     (state) => state.values.customer.address,
   );
@@ -1141,10 +1141,10 @@ const ItemsSection = memo(function ItemsSection({
   totals,
 }: SectionProps & { totals: Totals | null }) {
   const { workspace } = useWorkspace();
-  const lines = useStore(form.store, (state) => state.values.lines);
-  const regime = useStore(form.store, (state) => state.values.issuer.regime);
-  const language = useStore(form.store, (state) => state.values.language);
-  const currency = useStore(form.store, (state) => state.values.currency);
+  const lines = useSelector(form.store, (state) => state.values.lines);
+  const regime = useSelector(form.store, (state) => state.values.issuer.regime);
+  const language = useSelector(form.store, (state) => state.values.language);
+  const currency = useSelector(form.store, (state) => state.values.currency);
   const setLines = useCallback(
     (update: (lines: Line[]) => Line[]) =>
       form.setFieldValue('lines', update([...form.state.values.lines])),
@@ -1418,10 +1418,13 @@ const DetailsSection = memo(function DetailsSection({
   form,
   issued,
 }: SectionProps) {
-  const dueDate = useStore(form.store, (state) => state.values.dueDate);
-  const issueDate = useStore(form.store, (state) => state.values.issueDate);
-  const correction = useStore(form.store, (state) => state.values.correction);
-  const validUntil = useStore(
+  const dueDate = useSelector(form.store, (state) => state.values.dueDate);
+  const issueDate = useSelector(form.store, (state) => state.values.issueDate);
+  const correction = useSelector(
+    form.store,
+    (state) => state.values.correction,
+  );
+  const validUntil = useSelector(
     form.store,
     (state) => state.values.quote?.validUntil ?? null,
   );
@@ -1626,7 +1629,7 @@ const TermsSection = memo(function TermsSection({
   form,
   issued,
 }: SectionProps) {
-  const terms = useStore(form.store, (state) => state.values.paymentTerms);
+  const terms = useSelector(form.store, (state) => state.values.paymentTerms);
   return (
     <Section
       title="Payment & notes"
@@ -1670,7 +1673,7 @@ const FromSection = memo(function FromSection({
   issued,
 }: SectionProps) {
   const { workspace } = useWorkspace();
-  const issuer = useStore(form.store, (state) => state.values.issuer);
+  const issuer = useSelector(form.store, (state) => state.values.issuer);
   const current = workspace?.preferences.issuer;
   // A draft copies the owner's identity when it is made; the button to
   // refresh that copy only means something once settings have moved on.
@@ -1753,12 +1756,15 @@ const PlanSection = memo(function PlanSection({
   invoice,
   totals,
 }: Omit<SectionProps, 'issued'> & { invoice: Invoice; totals: Totals | null }) {
-  const kind = useStore(form.store, (state) => state.values.kind);
-  const currency = useStore(form.store, (state) => state.values.currency);
-  const language = useStore(form.store, (state) => state.values.language);
-  const issueDate = useStore(form.store, (state) => state.values.issueDate);
-  const dueDate = useStore(form.store, (state) => state.values.dueDate);
-  const customer = useStore(form.store, (state) => state.values.customer.name);
+  const kind = useSelector(form.store, (state) => state.values.kind);
+  const currency = useSelector(form.store, (state) => state.values.currency);
+  const language = useSelector(form.store, (state) => state.values.language);
+  const issueDate = useSelector(form.store, (state) => state.values.issueDate);
+  const dueDate = useSelector(form.store, (state) => state.values.dueDate);
+  const customer = useSelector(
+    form.store,
+    (state) => state.values.customer.name,
+  );
   const issued = invoice.status === 'issued';
   const terms =
     totals && Number(totals.total) > 0
@@ -1832,7 +1838,7 @@ const QuoteSection = memo(function QuoteSection({
   onBill: (payment: number) => void;
   onRevise: () => void;
 }) {
-  const data = useStore(form.store, (state) => state.values);
+  const data = useSelector(form.store, (state) => state.values);
   const [studio, setStudio] = useState(false);
   const show = (next: boolean) => morph(() => setStudio(next));
   return (
@@ -1899,8 +1905,8 @@ const PaymentsSection = memo(function PaymentsSection({
   onPayment: () => void;
 }) {
   const { workspace } = useWorkspace();
-  const currency = useStore(form.store, (state) => state.values.currency);
-  const language = useStore(form.store, (state) => state.values.language);
+  const currency = useSelector(form.store, (state) => state.values.currency);
+  const language = useSelector(form.store, (state) => state.values.language);
   const payments = useMemo(
     () =>
       (workspace?.payments ?? []).filter(

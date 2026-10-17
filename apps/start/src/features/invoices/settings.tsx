@@ -1,5 +1,5 @@
 import { Preferences } from '@portfolio/invoices/model';
-import { useForm, useStore } from '@tanstack/react-form';
+import { useForm, useSelector } from '@tanstack/react-form';
 import { Schema } from 'effect';
 import type { ReactNode } from 'react';
 import { useState } from 'react';
@@ -65,7 +65,7 @@ function SettingsForm({ initial }: { initial: Preferences }) {
       }
     },
   });
-  const dirty = useStore(form.store, (state) => state.isDirty);
+  const dirty = useSelector(form.store, (state) => state.isDirty);
   return (
     <form
       className="iv-page iv-settings"

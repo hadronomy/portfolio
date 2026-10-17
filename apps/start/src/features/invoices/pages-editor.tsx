@@ -55,7 +55,7 @@ import {
   Unlink,
 } from 'lucide-react';
 import {
-  forwardRef,
+  type Ref,
   useEffect,
   useImperativeHandle,
   useMemo,
@@ -239,78 +239,73 @@ interface MenuHandle {
   onKeyDown: (event: KeyboardEvent) => boolean;
 }
 
-const BlockMenu = forwardRef<MenuHandle, SuggestionProps<Block, Block>>(
-  function BlockMenu({ items, command }, ref) {
-    const [active, setActive] = useState(0);
-    const list = useRef<HTMLDivElement>(null);
-    useEffect(() => setActive(0), [items]);
-    useEffect(() => {
-      list.current
-        ?.querySelector('[data-active]')
-        ?.scrollIntoView({ block: 'nearest' });
-    }, [active]);
-    useImperativeHandle(ref, () => ({
-      onKeyDown: (event) => {
-        if (!items.length) return false;
-        if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-          const step = event.key === 'ArrowDown' ? 1 : -1;
-          setActive(
-            (current) => (current + step + items.length) % items.length,
-          );
-          return true;
-        }
-        if (event.key === 'Enter' || event.key === 'Tab') {
-          const item = items[active];
-          if (item) command(item);
-          return true;
-        }
-        return false;
-      },
-    }));
-    if (!items.length)
-      return (
-        <div className="iv-blockmenu" data-empty>
-          No blocks match
-        </div>
-      );
-    let group = '';
+function BlockMenu({
+  items,
+  command,
+  ref,
+}: SuggestionProps<Block, Block> & { ref?: Ref<MenuHandle> }) {
+  const [active, setActive] = useState(0);
+  const list = useRef<HTMLDivElement>(null);
+  useEffect(() => setActive(0), [items]);
+  useEffect(() => {
+    list.current
+      ?.querySelector('[data-active]')
+      ?.scrollIntoView({ block: 'nearest' });
+  }, [active]);
+  useImperativeHandle(ref, () => ({
+    onKeyDown: (event) => {
+      if (!items.length) return false;
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        const step = event.key === 'ArrowDown' ? 1 : -1;
+        setActive((current) => (current + step + items.length) % items.length);
+        return true;
+      }
+      if (event.key === 'Enter' || event.key === 'Tab') {
+        const item = items[active];
+        if (item) command(item);
+        return true;
+      }
+      return false;
+    },
+  }));
+  if (!items.length)
     return (
-      <div
-        className="iv-blockmenu"
-        ref={list}
-        role="listbox"
-        aria-label="Blocks"
-      >
-        {items.map((item, index) => {
-          const heading = item.group !== group ? item.group : null;
-          group = item.group;
-          const Icon = item.icon;
-          return (
-            <div key={item.id} role="presentation">
-              {heading && <p className="iv-blockmenu-group">{heading}</p>}
-              <button
-                type="button"
-                role="option"
-                aria-selected={index === active}
-                data-active={index === active || undefined}
-                onMouseMove={() => setActive(index)}
-                onMouseDown={(event) => {
-                  // Keep the editor's selection: the menu acts on it.
-                  event.preventDefault();
-                  command(item);
-                }}
-              >
-                <Icon size={15} aria-hidden />
-                <span>{item.title}</span>
-                {item.shortcut && <kbd>{item.shortcut}</kbd>}
-              </button>
-            </div>
-          );
-        })}
+      <div className="iv-blockmenu" data-empty>
+        No blocks match
       </div>
     );
-  },
-);
+  let group = '';
+  return (
+    <div className="iv-blockmenu" ref={list} role="listbox" aria-label="Blocks">
+      {items.map((item, index) => {
+        const heading = item.group !== group ? item.group : null;
+        group = item.group;
+        const Icon = item.icon;
+        return (
+          <div key={item.id} role="presentation">
+            {heading && <p className="iv-blockmenu-group">{heading}</p>}
+            <button
+              type="button"
+              role="option"
+              aria-selected={index === active}
+              data-active={index === active || undefined}
+              onMouseMove={() => setActive(index)}
+              onMouseDown={(event) => {
+                // Keep the editor's selection: the menu acts on it.
+                event.preventDefault();
+                command(item);
+              }}
+            >
+              <Icon size={15} aria-hidden />
+              <span>{item.title}</span>
+              {item.shortcut && <kbd>{item.shortcut}</kbd>}
+            </button>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 const slashKey = new PluginKey('slashCommand');
 

@@ -1,4 +1,4 @@
-import { forwardRef, useState } from 'react';
+import { type Ref, useState } from 'react';
 
 // A one-time code drawn as six slots over one real input. The input stays a
 // single native field, so autofill from the mail app, paste, the numeric
@@ -10,16 +10,21 @@ export const codeLength = 6;
 /** Where the code stands: being typed, being checked, refused, or accepted. */
 export type CodeState = 'typing' | 'checking' | 'wrong' | 'accepted';
 
-export const CodeField = forwardRef<
-  HTMLInputElement,
-  {
-    id: string;
-    value: string;
-    state: CodeState;
-    describedBy?: string | undefined;
-    onChange: (digits: string) => void;
-  }
->(function CodeField({ id, value, state, describedBy, onChange }, ref) {
+export function CodeField({
+  id,
+  value,
+  state,
+  describedBy,
+  onChange,
+  ref,
+}: {
+  id: string;
+  value: string;
+  state: CodeState;
+  describedBy?: string | undefined;
+  onChange: (digits: string) => void;
+  ref?: Ref<HTMLInputElement>;
+}) {
   const [focused, setFocused] = useState(false);
   const busy = state === 'checking' || state === 'accepted';
   return (
@@ -65,4 +70,4 @@ export const CodeField = forwardRef<
       </div>
     </div>
   );
-});
+}

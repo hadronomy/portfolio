@@ -112,6 +112,6 @@ test('draft PDF downloads with PDF bytes', async () => {
   expect(response.headers.get('content-type') ?? '').toMatch(
     /application\/pdf/,
   );
-  expect(body.slice(0, 8).toString('utf8')).toMatch(/^%PDF/);
+  expect(body.subarray(0, 8).toString('utf8')).toMatch(/^%PDF/);
   expect(body.length > 5000).toBeTruthy();
 });
