@@ -796,22 +796,63 @@ const PreviewBody = memo(function PreviewBody({
     }),
     [busy, previewStatus, actions],
   );
-  if (!client || !bytes)
+  const [arrival, setArrival] = useState<Arrival>('waiting');
+  const settle = useCallback(() => {
+    setArrival((current) => (current === 'waiting' ? 'arriving' : current));
+  }, []);
+  useEffect(() => {
+    if (arrival !== 'arriving') return;
+    const timer = setTimeout(() => setArrival('shown'), sheetFade);
+    return () => clearTimeout(timer);
+  }, [arrival]);
+  if (!bytes && previewStatus !== 'rendering')
     return (
-      <output className="iv-stage-message">
+      <output
+        className="iv-stage-message"
+        data-tone={previewStatus === 'outdated' ? 'error' : undefined}
+      >
         {previewStatus === 'idle'
           ? 'Complete the numeric values to see the document.'
-          : 'Preparing the document…'}
+          : 'The preview could not load. Edit the document to try again.'}
       </output>
     );
   return (
-    <Suspense
-      fallback={<output className="iv-stage-message">Opening viewer…</output>}
-    >
-      <PdfViewer bytes={bytes} dock={dock} />
-    </Suspense>
+    <div className="iv-preview" data-arrival={arrival}>
+      {client && bytes && (
+        <Suspense fallback={null}>
+          <PdfViewer bytes={bytes} dock={dock} onSettle={settle} />
+        </Suspense>
+      )}
+      {arrival !== 'shown' && <BlankSheet leaving={arrival === 'arriving'} />}
+    </div>
   );
 });
+
+/**
+ * The first preview, from the server's HTML until its first page has drawn:
+ * `waiting` shows the blank sheet over the viewer, `arriving` fades it off
+ * the drawn page, and `shown` hands the stage to the viewer for good. Later
+ * renders swap under the viewer's still instead (see still.ts).
+ */
+type Arrival = 'waiting' | 'arriving' | 'shown';
+
+/** Matches the fade on `.iv-blank-sheet[data-leaving]`. */
+const sheetFade = 320;
+
+/**
+ * A blank sheet in the exact place and size the first page will take, so
+ * the page arrives as ink settling onto paper that was already there. One
+ * sheet stands in for the whole start-up (the viewer's code, the PDF engine,
+ * the document, its first render) instead of a message for each step.
+ */
+function BlankSheet({ leaving }: { leaving: boolean }) {
+  return (
+    <output className="iv-blank-sheet" data-leaving={leaving || undefined}>
+      <div className="iv-page-sheet" />
+      <span className="iv-sr-only">Loading the document</span>
+    </output>
+  );
+}
 
 type InspectorProps = {
   form: InvoiceForm;

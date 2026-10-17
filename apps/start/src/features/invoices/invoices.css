@@ -1981,6 +1981,104 @@ body:has(.iv-dock) .iv-toast-region {
     0 calc(12 * var(--iv-unit)) calc(32 * var(--iv-unit)) rgb(0 0 0 / 0.22);
 }
 
+/* The first preview starts on a blank sheet that stands where its first page
+   will land, and the page arrives as ink settling onto it. The viewer stays
+   hidden under it until the page has drawn, so nothing it lays out on the
+   way (empty sheets, the dock) shows first. */
+.iv-preview {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+.iv-preview[data-arrival='waiting'] .iv-pdf-viewer {
+  visibility: hidden;
+}
+/* Placed as the viewer places a fitted page: the viewport gap on every side
+   (viewportGap in pdf-viewer.tsx; keep the two in sync), A4's proportions,
+   centred across and set at the top. */
+.iv-blank-sheet {
+  --gap: 72px;
+  position: absolute;
+  inset: var(--gap);
+  z-index: 4;
+  container-type: size;
+  pointer-events: none;
+  transition: opacity 320ms var(--iv-ease);
+}
+@media (max-width: 900px) {
+  .iv-blank-sheet {
+    --gap: 20px;
+  }
+}
+/* Paper a shade under white: the page that replaces it is the first pure
+   white on the stage, so the change reads as the sheet being printed. */
+.iv-blank-sheet .iv-page-sheet {
+  position: relative;
+  width: min(100cqw, 100cqh * 595.28 / 841.89);
+  aspect-ratio: 595.28 / 841.89;
+  margin-inline: auto;
+  background: var(--iv-canvas);
+}
+/* Light passing over the paper, at the rhythm of the dock's shimmer, so the
+   app has one way of saying it is working. It only comes in after a beat:
+   a fast start goes from blank paper to the page with nothing moving. */
+.iv-blank-sheet .iv-page-sheet::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 35%,
+    rgb(255 255 255 / 0.9) 50%,
+    transparent 65%
+  );
+  translate: -100% 0;
+  animation: iv-sheen 1.6s linear infinite,
+    iv-fade-in 400ms ease-out 450ms backwards;
+}
+@keyframes iv-sheen {
+  to {
+    translate: 100% 0;
+  }
+}
+/* The live page under the sheet has the same shadow, so the sheet drops its
+   own at once and only its face fades: two shadows fading over each other
+   would darken the edge for the length of the fade. */
+.iv-blank-sheet[data-leaving] {
+  opacity: 0;
+}
+.iv-blank-sheet[data-leaving] .iv-page-sheet {
+  box-shadow: none;
+}
+/* The dock follows the page in, once, from just below where it rests. */
+.iv-preview[data-arrival='arriving'] .iv-dock-slot {
+  animation: iv-dock-arrive 240ms var(--iv-ease) 60ms backwards;
+}
+@keyframes iv-dock-arrive {
+  from {
+    opacity: 0;
+    translate: 0 8px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .iv-blank-sheet .iv-page-sheet::after {
+    display: none;
+  }
+  .iv-preview[data-arrival='arriving'] .iv-dock-slot {
+    animation: none;
+  }
+}
+.iv-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 /* The dock: one dark pill holding every way of looking at the document. A
    full-width slot centres it, so Motion can animate the dock's own box
    without a translate in the way. */

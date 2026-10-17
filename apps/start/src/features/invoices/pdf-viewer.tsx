@@ -77,7 +77,8 @@ const plugins = [
   createPluginRegistration(DocumentManagerPluginPackage),
   // The gap keeps a fitted page clear of the floating top bar and dock. On a
   // phone the bar sits above the stage, so the page can use the width. This
-  // module only loads in the browser, so matchMedia is always there.
+  // module only loads in the browser, so matchMedia is always there. The
+  // editor's blank sheet (.iv-blank-sheet) stands in the same gap.
   createPluginRegistration(ViewportPluginPackage, {
     viewportGap: matchMedia('(max-width: 900px)').matches ? 20 : 72,
   }),
@@ -227,12 +228,19 @@ function releaseStill(root: HTMLElement, still: Still, onGone: () => void) {
   requestAnimationFrame(step);
 }
 
+/**
+ * `onSettle` runs once the viewer has something to show: its first pages,
+ * drawn, or a problem. Until then the viewer shows nothing of its own, and
+ * the editor's blank sheet stands in for the page.
+ */
 export default function PdfViewer({
   bytes,
   dock,
+  onSettle,
 }: {
   bytes: string;
   dock: DockParts;
+  onSettle: () => void;
 }) {
   // Resolve against the document base on the main thread: the PDFium worker
   // is created from a blob: URL, so a relative or root-relative asset URL
@@ -258,25 +266,35 @@ export default function PdfViewer({
   useEffect(() => {
     if (engine) setTimedOut(false);
   }, [engine]);
+  const failed = !engine && (!!error || timedOut);
+  useEffect(() => {
+    if (failed) onSettle();
+  }, [failed, onSettle]);
   if (!engine)
-    return (
-      <output className="iv-stage-message">
-        {error || timedOut
-          ? 'The PDF viewer could not start. Reload the page to try again.'
-          : 'Preparing the document viewer…'}
+    return failed ? (
+      <output className="iv-stage-message" data-tone="error">
+        The PDF viewer could not start. Reload the page to try again.
       </output>
-    );
+    ) : null;
   return (
     <EmbedPDF engine={engine} plugins={plugins}>
       {/* Handles print requests with a hidden iframe; without it the print
           task pends forever and the button silently does nothing. */}
       <PrintFrame />
-      <Document bytes={bytes} dock={dock} />
+      <Document bytes={bytes} dock={dock} onSettle={onSettle} />
     </EmbedPDF>
   );
 }
 
-function Document({ bytes, dock }: { bytes: string; dock: DockParts }) {
+function Document({
+  bytes,
+  dock,
+  onSettle,
+}: {
+  bytes: string;
+  dock: DockParts;
+  onSettle: () => void;
+}) {
   const { provides: documents } = useDocumentManagerCapability();
   const { provides: zoom } = useZoomCapability();
   const { provides: viewport } = useViewportCapability();
@@ -286,7 +304,7 @@ function Document({ bytes, dock }: { bytes: string; dock: DockParts }) {
   const [error, setError] = useState('');
   // Watchdog: with a dead engine the open call pends forever and
   // activeDocumentId never arrives. Flag the stall so the preview shows a
-  // recoverable error instead of "Opening document…" without end.
+  // recoverable error instead of a blank sheet without end.
   const [stalled, setStalled] = useState(false);
   useEffect(() => {
     setStalled(false);
@@ -425,6 +443,10 @@ function Document({ bytes, dock }: { bytes: string; dock: DockParts }) {
     (stalled && !activeDocumentId
       ? 'The preview is taking too long to open. Reload the page to try again.'
       : '');
+  const stuck = !!problem && !activeDocumentId;
+  useEffect(() => {
+    if (stuck) onSettle();
+  }, [stuck, onSettle]);
   return (
     <div className="iv-pdf-viewer" ref={frame}>
       {activeDocumentId ? (
@@ -435,19 +457,17 @@ function Document({ bytes, dock }: { bytes: string; dock: DockParts }) {
                 documentId={activeDocumentId}
                 dock={dock}
                 problem={problem}
+                onSettle={onSettle}
               />
-            ) : (
-              <output className="iv-stage-message">Loading document…</output>
-            )
+            ) : null
           }
         </DocumentContent>
       ) : (
-        <output
-          className="iv-stage-message"
-          data-tone={problem ? 'error' : undefined}
-        >
-          {problem || 'Opening document…'}
-        </output>
+        stuck && (
+          <output className="iv-stage-message" data-tone="error">
+            {problem}
+          </output>
+        )
       )}
     </div>
   );
@@ -457,10 +477,12 @@ function Pages({
   documentId,
   dock,
   problem,
+  onSettle,
 }: {
   documentId: string;
   dock: DockParts;
   problem: string;
+  onSettle: () => void;
 }) {
   const { provides: zoom, state: zoomState } = useZoom(documentId);
   const { provides: scroll, state } = useScroll(documentId);
@@ -585,6 +607,28 @@ function Pages({
       gestures.current = null;
     };
   }, []);
+  // Settles once every page in view has its image, so the blank sheet over
+  // the first preview leaves when there is ink to show, not a white page.
+  // Later documents settle too; the editor only listens the first time.
+  useEffect(() => {
+    const started = performance.now();
+    let frame = 0;
+    const check = () => {
+      const viewport = surface.current?.querySelector('.iv-pdf-viewport');
+      const sheets = viewport ? visibleSheets(viewport) : [];
+      const drawn =
+        sheets.length > 0 &&
+        sheets.every((sheet) => {
+          const image = sheet.querySelector('img');
+          return !!image?.complete && image.naturalWidth > 0;
+        });
+      // A render that never lands must not hold the sheet up forever.
+      if (drawn || performance.now() - started > 2500) onSettle();
+      else frame = requestAnimationFrame(check);
+    };
+    frame = requestAnimationFrame(check);
+    return () => cancelAnimationFrame(frame);
+  }, [onSettle]);
   return (
     <>
       <div className="iv-pdf-surface" ref={surface}>

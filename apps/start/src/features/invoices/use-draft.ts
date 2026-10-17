@@ -22,7 +22,11 @@ export function useDraft(original: Invoice, data: InvoiceData) {
   const [status, setStatus] = useState<DraftStatus>('saved');
   const [conflict, setConflict] = useState<Invoice | null>(null);
   const [bytes, setBytes] = useState('');
-  const [previewStatus, setPreviewStatus] = useState<PreviewStatus>('idle');
+  // Decided on the first render, not by the effect below, so the server's
+  // HTML already knows whether a preview is coming.
+  const [previewStatus, setPreviewStatus] = useState<PreviewStatus>(() =>
+    Schema.is(Invoice)({ ...original, data }) ? 'rendering' : 'idle',
+  );
   const [recovery, setRecovery] = useState<InvoiceData | null>(null);
   const pendingData = useRef(data);
   const lastAcked = useRef(original);
